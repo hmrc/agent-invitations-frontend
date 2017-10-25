@@ -21,6 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
+import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm.postCodeForm
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.agentinvitationsfrontend.views.html
 
@@ -29,6 +30,7 @@ import scala.concurrent.Future
 @Singleton
 class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi)
   extends FrontendController with I18nSupport {
+
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(html.agents.enter_nino(ninoForm))
   }
@@ -38,7 +40,20 @@ class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi
       formWithErrors => {
         Future successful Ok(html.agents.enter_nino(formWithErrors))
       },
-      nino => Future successful Ok(html.agents.enter_nino(ninoForm.fill(nino)))
+      nino => Future successful Redirect(routes.InvitationsController.enterPostcode())
+    )
+  }
+
+  def enterPostcode: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Ok(html.agents.enter_postcode(postCodeForm))
+  }
+
+  def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
+    postCodeForm.bindFromRequest().fold(
+      formWithErrors => {
+        Future successful Ok(html.agents.enter_postcode(formWithErrors))
+      },
+      postCode => Future successful Ok(html.agents.enter_postcode(postCodeForm.fill(postCode)))
     )
   }
 }
