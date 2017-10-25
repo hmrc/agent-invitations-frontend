@@ -1,0 +1,8 @@
+app.name=Agent Services account
+
+enterNino.title = Invite an individual to report Self Assessment tax using software
+enterNino.label = National Insurance number
+enterNino.button = Continue
+
+
+

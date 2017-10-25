@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
+package uk.gov.hmrc.agentinvitationsfrontend.form
 
-@contentHeader = {
-  <h1>@heading</h1>
+import play.api.data.Form
+import play.api.data.Forms._
+import uk.gov.hmrc.domain.Nino
+
+object NinoForm {
+  val ninoForm: Form[Nino] = {
+    Form(mapping( "nino" -> text)(Nino.apply)(Nino.unapply))
+  }
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govuk_wrapper(appConfig = uk.gov.hmrc.agentinvitationsfrontend.FrontendAppConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)
