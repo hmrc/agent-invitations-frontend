@@ -9,7 +9,7 @@ object FrontendBuild extends Build with MicroService {
 
   val appName = "agent-invitations-frontend"
 
-  override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
+  override lazy val appDependencies: Seq[ModuleID] = compile ++ test() ++ test("it")
 
   val compile = Seq(
     ws,
@@ -19,10 +19,13 @@ object FrontendBuild extends Build with MicroService {
 
   def test(scope: String = "test") = Seq(
     "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
+    "com.github.tomakehurst" % "wiremock" % "2.3.1" % scope,
     "org.scalatest" %% "scalatest" % "2.2.6" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
     "org.jsoup" % "jsoup" % "1.8.1" % scope,
-    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % scope,
+    "org.mockito" % "mockito-core" % "2.7.4" % scope
   )
 
 }
