@@ -19,13 +19,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.form
 import play.api.data.Form
 import play.api.data.Forms._
 
-case class PostCode(value: String)
+case class PostCode(postcode: String)
 
 object PostcodeForm {
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$".r
 
   val postCodeForm: Form[PostCode] = {
-    Form(mapping("value" -> text)(PostCode.apply)(PostCode.unapply))
+    Form(mapping("postcode" -> text)(PostCode.apply)(PostCode.unapply))
   }
 }

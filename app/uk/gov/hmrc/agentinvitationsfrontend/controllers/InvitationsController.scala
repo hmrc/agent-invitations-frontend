@@ -53,7 +53,11 @@ class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi
       formWithErrors => {
         Future successful Ok(html.agents.enter_postcode(formWithErrors))
       },
-      postCode => Future successful Ok(html.agents.enter_postcode(postCodeForm.fill(postCode)))
+      postcode => Future successful Redirect(routes.InvitationsController.confirmInvitation())
     )
+  }
+
+  def confirmInvitation: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Ok(html.agents.confirm_invitation())
   }
 }

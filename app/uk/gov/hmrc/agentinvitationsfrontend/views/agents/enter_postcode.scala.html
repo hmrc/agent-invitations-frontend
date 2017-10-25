@@ -19,9 +19,9 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @(postcodeForm : Form[PostCode])(implicit request: Request[_], messages: Messages)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enterPostcode.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-postcode.title"), bodyClasses = None) {
   <header class="page-header">
-    <h1>@Messages("enterPostcode.title")</h1>
+    <h1>@Messages("enter-postcode.title")</h1>
   </header>
 
   @form(
@@ -31,7 +31,7 @@
     <div class="form-field">
     @input(
       postcodeForm("postcode"),
-      '_label -> Messages("enterPostcode.label"),
+      '_label -> Messages("enter-postcode.label"),
       '_inputClass -> "input--medium input--cleared",
       '_labelClass -> "bold"
     )

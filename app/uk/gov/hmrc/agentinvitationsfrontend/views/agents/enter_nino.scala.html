@@ -22,9 +22,9 @@
 
 @(ninoForm : Form[Nino])(implicit request: Request[_], messages: Messages)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enterNino.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-nino.title"), bodyClasses = None) {
  <header class="page-header">
-  <h1>@Messages("enterNino.title")</h1>
+  <h1>@Messages("enter-nino.title")</h1>
  </header>
 
  @form(
@@ -34,7 +34,7 @@
   <div class="form-field">
   @input(
    ninoForm("nino"),
-   '_label -> Messages("enterNino.label"),
+   '_label -> Messages("enter-nino.label"),
    '_inputClass -> "input--medium input--cleared",
    '_labelClass -> "bold"
   )

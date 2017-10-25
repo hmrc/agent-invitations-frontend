@@ -5,3 +5,5 @@ POST        /agents/enter-nino            @uk.gov.hmrc.agentinvitationsfrontend.
 
 GET         /agents/enter-postcode        @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.enterPostcode
 POST        /agents/enter-postcode        @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitPostcode
+
+GET         /agents/confirm-invitation    @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.confirmInvitation
