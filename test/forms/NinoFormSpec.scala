@@ -1,0 +1,5 @@
+package forms
+
+class NinoFormSpec {
+
+}
