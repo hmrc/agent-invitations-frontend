@@ -118,6 +118,7 @@ class InvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for not logged in user and redirected to Login Page" in {
+      givenUnauthorisedWith("MissingBearerToken")
       val result = controllers.enterNino()(request)
       status(result) shouldBe 303
       verifyAuthoriseAttempt()

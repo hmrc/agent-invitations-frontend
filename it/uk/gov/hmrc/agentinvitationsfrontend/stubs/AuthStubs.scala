@@ -56,14 +56,12 @@ trait AuthStubs {
         .withBody(
           s"""
             |{
-            |${enrolment.map(e => s""""authorisedEnrolments": [{ "key":"${e.serviceName}", "identifiers": [{"key":"${e.identifierName}", "value": "${e.identifierValue}"}] }]""").getOrElse("")}
+            |"authorisedEnrolments": [${enrolment.map(e => s"""{ "key":"${e.serviceName}", "identifiers": [{"key":"${e.identifierName}", "value": "${e.identifierValue}"}] }""").getOrElse("")}]
             |}
           """.stripMargin))
     )
 
-    //{"authorise":[{"affinityGroup":"Agent"},{"identifiers":[],"state":"Activated","enrolment":"HMRC-AS-AGENT"},{"authProviders":["GovernmentGateway"]}],"retrieve":["authorisedEnrolments"]}
-
-    stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
+   stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
       .willReturn(aResponse()
         .withStatus(401)
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")

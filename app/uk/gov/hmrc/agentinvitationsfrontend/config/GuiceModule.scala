@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpGet
 import uk.gov.hmrc.play.config.inject.ServicesConfig
 
-class GuiceModule(val environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
+class GuiceModule(val environment: Environment, val config: Configuration) extends AbstractModule with ServicesConfig {
 
   override def configure(): Unit = {
     bind(classOf[HttpGet]).toInstance(WSHttp)

@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend
 
-import com.typesafe.config.Config
-import net.ceedubs.ficus.Ficus._
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
-import play.api.mvc.Request
+import play.api.mvc.{Request, RequestHeader, Result}
 import play.api.{Application, Configuration, Play}
 import play.twirl.api.Html
+import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.config.{AppName, ControllerConfig, RunMode}
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
 import uk.gov.hmrc.play.frontend.filters.{FrontendAuditFilter, FrontendLoggingFilter, MicroserviceFilterSupport}
+import play.api.mvc.Results.Redirect
 
 
 object FrontendGlobal
@@ -45,6 +45,14 @@ object FrontendGlobal
     uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template(pageTitle, heading, message)
 
   override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig(s"microservice.metrics")
+
+  def toGGLogin(s: String): Result = Redirect("")
+
+  override def resolveError(rh: RequestHeader, ex: Throwable) = ex match {
+    case _:NoActiveSession => toGGLogin("")
+    case _:InsufficientEnrolments =>  toGGLogin("")
+    case _ => super.resolveError(rh, ex)
+  }
 }
 
 object ControllerConfiguration extends ControllerConfig {
