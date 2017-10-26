@@ -19,10 +19,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 
-trait AuthStub {
+trait AuthStubs {
   me: WireMockSupport =>
 
-  def givenRequestIsNotAuthorised(mdtpDetail: String): AuthStub = {
+  def givenUnauthorisedWith(mdtpDetail: String): AuthStubs = {
     stubFor(post(urlEqualTo("/auth/authorise"))
       .willReturn(aResponse()
         .withStatus(401)
@@ -32,20 +32,17 @@ trait AuthStub {
     this
   }
 
-  def givenAuthorisedFor(enrolment: String, authProvider: String): AuthStub = {
+  def givenAuthorisedFor(enrolment: Option[String], affinityGroup: String): AuthStubs = {
     stubFor(post(urlEqualTo("/auth/authorise")).atPriority(1)
       .withRequestBody(
         equalToJson(
           s"""
              |{
              |  "authorise": [
+             |    ${enrolment.map(e => s"""{ "enrolment": "$e" },""").getOrElse("")}
              |    {
-             |      "enrolment": "$enrolment"
-             |    },
-             |    {
-             |      "authProviders": [
-             |        "$authProvider"
-             |      ]
+             |      "authProviders": ["GovernmentGateway"],
+             |      "affinityGroup": "$affinityGroup"
              |    }
              |  ]
              |}
@@ -63,5 +60,9 @@ trait AuthStub {
       )
     )
     this
+  }
+
+  def verifyAuthoriseAttempt() = {
+    verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
   }
 }

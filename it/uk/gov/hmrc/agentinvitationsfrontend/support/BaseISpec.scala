@@ -8,11 +8,12 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AuthStubs
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport {
+abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -27,8 +28,12 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   protected implicit val materializer = app.materializer
 
-  protected def authenticatedRequest(method: String, path: String): FakeRequest[AnyContentAsEmpty.type] = {
-    FakeRequest(method,path).withSession(SessionKeys.authToken -> "Bearer XYZ")
+
+  protected def authorisedAsValidAgent[A](request: FakeRequest[A]) = authenticated(request, Some("HMRC-AS-AGENT"), isAgent = true)
+
+  protected def authenticated[A](request: FakeRequest[A], enrolment: Option[String], isAgent: Boolean): FakeRequest[A] = {
+    givenAuthorisedFor(enrolment, if(isAgent) "Agent" else "Individual")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
 
