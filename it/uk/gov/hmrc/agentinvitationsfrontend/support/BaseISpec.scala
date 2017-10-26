@@ -29,9 +29,9 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   protected implicit val materializer = app.materializer
 
 
-  protected def authorisedAsValidAgent[A](request: FakeRequest[A]) = authenticated(request, Some("HMRC-AS-AGENT"), isAgent = true)
+  protected def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Some(Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn)), isAgent = true)
 
-  protected def authenticated[A](request: FakeRequest[A], enrolment: Option[String], isAgent: Boolean): FakeRequest[A] = {
+  protected def authenticated[A](request: FakeRequest[A], enrolment: Option[Enrolment], isAgent: Boolean): FakeRequest[A] = {
     givenAuthorisedFor(enrolment, if(isAgent) "Agent" else "Individual")
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }

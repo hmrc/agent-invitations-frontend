@@ -24,15 +24,21 @@ import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
 import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm.postCodeForm
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.agentinvitationsfrontend.views.html
+import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
 
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi)
-  extends FrontendController with I18nSupport {
+class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi,
+                                      val authConnector: AuthConnector)
+  extends FrontendController with I18nSupport with AuthorisedFunctions {
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(html.agents.enter_nino(ninoForm))
+    authorised(AffinityGroup.Agent and Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway)).retrieve(authorisedEnrolments) {
+      enrolments => Future successful Ok(html.agents.enter_nino(ninoForm))
+    }
   }
 
   def submitNino: Action[AnyContent] = Action.async { implicit request =>

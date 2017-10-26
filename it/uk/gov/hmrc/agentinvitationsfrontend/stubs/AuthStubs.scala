@@ -22,6 +22,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 trait AuthStubs {
   me: WireMockSupport =>
 
+  case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
+
   def givenUnauthorisedWith(mdtpDetail: String): AuthStubs = {
     stubFor(post(urlEqualTo("/auth/authorise"))
       .willReturn(aResponse()
@@ -32,26 +34,34 @@ trait AuthStubs {
     this
   }
 
-  def givenAuthorisedFor(enrolment: Option[String], affinityGroup: String): AuthStubs = {
+  def givenAuthorisedFor(enrolment: Option[Enrolment], affinityGroup: String): AuthStubs = {
     stubFor(post(urlEqualTo("/auth/authorise")).atPriority(1)
       .withRequestBody(
         equalToJson(
           s"""
              |{
              |  "authorise": [
-             |    ${enrolment.map(e => s"""{ "enrolment": "$e" },""").getOrElse("")}
+             |    { "affinityGroup": "$affinityGroup" },
+             |    ${enrolment.map(e => s"""{ "identifiers":[], "state":"Activated", "enrolment": "${e.serviceName}" },""").getOrElse("")}
              |    {
-             |      "authProviders": ["GovernmentGateway"],
-             |      "affinityGroup": "$affinityGroup"
+             |      "authProviders": ["GovernmentGateway"]
              |    }
-             |  ]
+             |  ],
+             |  "retrieve":["authorisedEnrolments"]
              |}
            """.stripMargin, true, true))
       .willReturn(aResponse()
         .withStatus(200)
         .withHeader("Content-Type","application/json")
-        .withBody("{}"))
+        .withBody(
+          s"""
+            |{
+            |${enrolment.map(e => s""""authorisedEnrolments": [{ "key":"${e.serviceName}", "identifiers": [{"key":"${e.identifierName}", "value": "${e.identifierValue}"}] }]""").getOrElse("")}
+            |}
+          """.stripMargin))
     )
+
+    //{"authorise":[{"affinityGroup":"Agent"},{"identifiers":[],"state":"Activated","enrolment":"HMRC-AS-AGENT"},{"authProviders":["GovernmentGateway"]}],"retrieve":["authorisedEnrolments"]}
 
     stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
       .willReturn(aResponse()

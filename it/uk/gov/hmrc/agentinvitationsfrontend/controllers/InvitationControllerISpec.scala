@@ -24,12 +24,14 @@ class InvitationControllerISpec extends BaseISpec {
 
   lazy val controllers: InvitationsController = app.injector.instanceOf[InvitationsController]
 
+  val arn = "???"
+
   "GET /agents/enter-nino" should {
 
     val request = FakeRequest("GET", "/agents/enter-nino")
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = controllers.enterNino()(authorisedAsValidAgent(request))
+      val result = controllers.enterNino()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
@@ -42,13 +44,13 @@ class InvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/enter-nino")
 
     "return 303 for authorised Agent with valid nino and redirected to Postcode Page" in {
-      val result = controllers.submitNino()(authorisedAsValidAgent(request))
+      val result = controllers.submitNino()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
 
     "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
-      val result = controllers.submitNino()(authorisedAsValidAgent(request))
+      val result = controllers.submitNino()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
@@ -61,7 +63,7 @@ class InvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/enter-postcode")
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request))
+      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
@@ -74,13 +76,13 @@ class InvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/enter-postcode")
 
     "return 303 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request))
+      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request))
+      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
@@ -93,7 +95,7 @@ class InvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/confirm-invitation")
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment with valid nino and postcode" in {
-      val result = controllers.confirmInvitation()(authorisedAsValidAgent(request))
+      val result = controllers.confirmInvitation()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
@@ -110,7 +112,7 @@ class InvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for no Agent and redirected to Login Page" in {
-      val result = controllers.enterNino()(authenticated(request, Some("IR-PAYE"), isAgent = false))
+      val result = controllers.enterNino()(authenticated(request, Some(Enrolment("OtherEnrolment","Key","Value")), isAgent = false))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
