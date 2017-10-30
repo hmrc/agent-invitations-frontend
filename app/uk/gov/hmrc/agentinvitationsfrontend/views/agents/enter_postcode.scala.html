@@ -17,7 +17,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.form.PostCode
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
-@(postcodeForm : Form[PostCode])(implicit request: Request[_], messages: Messages)
+@import play.api.Configuration
+@(postcodeForm : Form[PostCode])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-postcode.title"), bodyClasses = None) {
   <header class="page-header">

@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
@@ -32,7 +33,7 @@ import scala.concurrent.Future
 
 @Singleton
 class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi,
-                                      val authConnector: AuthConnector)
+                                      val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthorisedFunctions {
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>

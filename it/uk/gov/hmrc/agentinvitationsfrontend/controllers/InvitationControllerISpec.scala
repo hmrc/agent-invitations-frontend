@@ -106,13 +106,13 @@ class InvitationControllerISpec extends BaseISpec {
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type]) = {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
-      val result = controllers.enterNino()(authenticated(request, None, isAgent = true))
+      val result = controllers.enterNino()(authenticated(request, Enrolment("", "", ""), isAgent = true))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
 
     "return 303 for no Agent and redirected to Login Page" in {
-      val result = controllers.enterNino()(authenticated(request, Some(Enrolment("OtherEnrolment","Key","Value")), isAgent = false))
+      val result = controllers.enterNino()(authenticated(request, Enrolment("OtherEnrolment","Key","Value"), isAgent = false))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
