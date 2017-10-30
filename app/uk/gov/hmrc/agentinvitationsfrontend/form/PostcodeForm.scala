@@ -23,9 +23,12 @@ case class PostCode(postcode: String)
 
 object PostcodeForm {
 
-  private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$".r
+  private def postcodeCheck(postcode: String) = postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
 
   val postCodeForm: Form[PostCode] = {
-    Form(mapping("postcode" -> text)(PostCode.apply)(PostCode.unapply))
+    Form(mapping("postcode" -> text
+        .verifying("enter-postcode.error-empty", _.nonEmpty)
+        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode))
+    )(PostCode.apply)(PostCode.unapply))
   }
 }

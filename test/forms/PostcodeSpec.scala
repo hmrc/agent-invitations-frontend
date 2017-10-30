@@ -16,6 +16,38 @@
 
 package forms
 
-class PostcodeSpec {
+import play.api.data.FormError
+import play.api.libs.json.Json
+import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm
+import uk.gov.hmrc.play.test.UnitSpec
+
+class PostcodeSpec extends UnitSpec {
+
+  val postcodeEmptyMessage: String = "enter-postcode.error-empty"
+  val postcodeFormatMessage: String = "enter-postcode.invalid-format"
+  val postcodeEmptyFormError: FormError = FormError("postcode", List(postcodeEmptyMessage))
+  val postcodeFormatFormError: FormError = FormError("postcode", List(postcodeFormatMessage))
+
+  "PostCodeForm" should {
+    "return no error message for valid postcode" in {
+      val data = Json.obj("postcode" -> "W12 7TQ")
+      val postcodeForm = PostcodeForm.postCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
+    "return an error message for invalid postcode" in {
+      val data = Json.obj("postcode" -> "W12")
+      val postcodeForm = PostcodeForm.postCodeForm.bind(data)
+      postcodeForm.errors.contains(postcodeFormatFormError) shouldBe true
+      postcodeForm.errors.length shouldBe 1
+    }
+
+    "return an error message for empty form" in {
+      val data = Json.obj("postcode" -> "")
+      val postcodeForm = PostcodeForm.postCodeForm.bind(data)
+      postcodeForm.errors.contains(postcodeEmptyFormError) shouldBe true
+      postcodeForm.errors.length shouldBe 2
+    }
+  }
 
 }

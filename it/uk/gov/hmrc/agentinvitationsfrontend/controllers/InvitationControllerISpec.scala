@@ -18,109 +18,122 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentinvitationsfrontend.form.{NinoForm, PostCode, PostcodeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.domain.Nino
+import play.api.mvc._
+import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments, NoActiveSession}
 
 class InvitationControllerISpec extends BaseISpec {
 
   lazy val controllers: InvitationsController = app.injector.instanceOf[InvitationsController]
 
-  val arn = "???"
+  val arn = "TARN0000001"
 
   "GET /agents/enter-nino" should {
 
     val request = FakeRequest("GET", "/agents/enter-nino")
+    val enterNino = controllers.enterNino()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = controllers.enterNino()(authorisedAsValidAgent(request, arn))
+      val result = enterNino(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
-
-    behave like anAuthorisedEndpoint(request)
+    behave like anAuthorisedEndpoint(request, enterNino)
   }
 
   "POST /agents/enter-nino" should {
 
     val request = FakeRequest("POST", "/agents/enter-nino")
+    val submitNino = controllers.submitNino()
 
     "return 303 for authorised Agent with valid nino and redirected to Postcode Page" in {
-      val result = controllers.submitNino()(authorisedAsValidAgent(request, arn))
+      val ninoForm = NinoForm.ninoForm.fill(Nino("AB123456A"))
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
 
     "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
-      val result = controllers.submitNino()(authorisedAsValidAgent(request, arn))
+      val result = submitNino(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
 
-    behave like anAuthorisedEndpoint(request)
+    behave like anAuthorisedEndpoint(request, submitNino)
   }
 
   "GET /agents/enter-postcode" should {
 
     val request = FakeRequest("GET", "/agents/enter-postcode")
+    val enterPostcode = controllers.enterPostcode()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
+      val result = enterPostcode(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
 
-    behave like anAuthorisedEndpoint(request)
+    behave like anAuthorisedEndpoint(request, enterPostcode)
   }
 
   "POST /agents/enter-postcode" should {
 
     val request = FakeRequest("POST", "/agents/enter-postcode")
+    val submitPostcode = controllers.submitPostcode()
 
     "return 303 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
+      val postcode = PostcodeForm.postCodeForm.fill(PostCode("BN12 6BX"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(postcode.data.toSeq: _*), arn))
       status(result) shouldBe 303
       verifyAuthoriseAttempt()
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
-      val result = controllers.enterPostcode()(authorisedAsValidAgent(request, arn))
+      val result = controllers.submitPostcode()(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
 
-    behave like anAuthorisedEndpoint(request)
+    behave like anAuthorisedEndpoint(request, submitPostcode)
   }
 
   "GET /agents/confirm-invitation" should {
 
     val request = FakeRequest("GET", "/agents/confirm-invitation")
+    val confirmInvitation = controllers.confirmInvitation()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment with valid nino and postcode" in {
-      val result = controllers.confirmInvitation()(authorisedAsValidAgent(request, arn))
+      val result = confirmInvitation(authorisedAsValidAgent(request, arn))
       status(result) shouldBe 200
       verifyAuthoriseAttempt()
     }
 
-    behave like anAuthorisedEndpoint(request)
+    behave like anAuthorisedEndpoint(request, confirmInvitation)
   }
 
-  def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type]) = {
+  def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
-      val result = controllers.enterNino()(authenticated(request, Enrolment("", "", ""), isAgent = true))
-      status(result) shouldBe 303
+      an[InsufficientEnrolments] shouldBe thrownBy {
+        await(action(authenticated(request, Enrolment("", "", ""), isAgent = true)))
+      }
       verifyAuthoriseAttempt()
     }
 
     "return 303 for no Agent and redirected to Login Page" in {
-      val result = controllers.enterNino()(authenticated(request, Enrolment("OtherEnrolment","Key","Value"), isAgent = false))
-      status(result) shouldBe 303
+      an[InsufficientEnrolments] shouldBe thrownBy {
+        await(action(authenticated(request, Enrolment("OtherEnrolment", "Key", "Value"), isAgent = false)))
+      }
       verifyAuthoriseAttempt()
     }
 
     "return 303 for not logged in user and redirected to Login Page" in {
       givenUnauthorisedWith("MissingBearerToken")
-      val result = controllers.enterNino()(request)
-      status(result) shouldBe 303
+      an[AuthorisationException] shouldBe thrownBy {
+        await(action(request))
+      }
       verifyAuthoriseAttempt()
     }
   }

@@ -1,15 +1,33 @@
 app.name=Agent Services account
 
+# Enter Nino
 enter-nino.title = Invite an individual to report Self Assessment tax using software
 enter-nino.label = National Insurance number
+enter-nino.error-empty = Please enter your client''s National Insurance Number
+enter-nino.invalid-format = Enter a valid National Insurance number
 
+# Enter Postcode
 enter-postcode.title=We need more information about this individual
 enter-postcode.label=Postcode
+enter-postcode.error-empty = Please Enter a UK Postcode
+enter-postcode.invalid-format = You can only enter these characters: A-Z 0-9
 
 continue.button = Continue
 
+# Confirm Invitation
 confirm-invitation-link.title = Send your client this link
 confirm-invitation.header = What happens next
 confirm-invitation.description.advice.pt1 = You need to share this link with the taxpayer you want to represent.
 confirm-invitation.description.advice.pt2 = They can then accept your invitation. HMRC will not do this for you.
 confirm-invitation.button = Return to your account
+
+# Error messages for digital services
+global.error.400.title=Bad request - 400
+global.error.400.heading=Bad request
+global.error.400.message=Please check that you have entered the correct web address.
+global.error.404.title=Page not found - 404
+global.error.404.heading=This page can’t be found
+global.error.404.message=Please check that you have entered the correct web address.
+global.error.500.title=Sorry, we are experiencing technical difficulties - 500
+global.error.500.heading=Sorry, we’re experiencing technical difficulties
+global.error.500.message=Please try again in a few minutes.

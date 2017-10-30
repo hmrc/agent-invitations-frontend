@@ -21,13 +21,14 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port" -> wireMockPort,
-        "microservice.services.agent-client-authorisation.port" -> wireMockPort
-      )
+        "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+        "microservice.services.company-auth.login-url" -> wireMockHost,
+        "microservice.services.company-auth.port" -> wireMockPort
+    )
   }
 
 
   protected implicit val materializer = app.materializer
-
 
   protected def checkHtmlResultWithBodyText(result: Result, expectedSubstrings: String*): Unit = {
     status(result) shouldBe OK
