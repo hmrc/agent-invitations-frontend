@@ -14,13 +14,14 @@
  * limitations under the License.
  *@
 
+@import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.play.views.html.helpers.input
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.domain.Nino
 
-@(ninoForm : Form[Nino])(implicit request: Request[_], messages: Messages)
+@(ninoForm : Form[Nino])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-nino.title"), bodyClasses = None) {
  <header class="page-header">

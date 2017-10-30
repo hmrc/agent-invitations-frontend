@@ -19,9 +19,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.form
 import play.api.data.Form
 import play.api.data.Forms._
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.Nino._
 
 object NinoForm {
   val ninoForm: Form[Nino] = {
-    Form(mapping( "nino" -> text)(Nino.apply)(Nino.unapply))
+    Form(mapping( "nino" -> text
+        .verifying("enter-nino.error-empty", _.nonEmpty)
+        .verifying("enter-nino.invalid-format", nino => isValid(nino))
+    )(Nino.apply)(Nino.unapply))
   }
 }

@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.form
+package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import play.api.data.Form
-import play.api.data.Forms._
+import java.net.URL
+import javax.inject.{Inject, Named, Singleton}
 
-case class PostCode(postcode: String)
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.http.HttpPost
+import uk.gov.hmrc.play.http.ws.WSPost
 
-object PostcodeForm {
+@Singleton
+class FrontendAuthConnector @Inject() (@Named("auth-baseUrl") baseUrl: URL)
+  extends PlayAuthConnector {
 
-  private def postcodeCheck(postcode: String) = postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
+  override val serviceUrl = baseUrl.toString
 
-  val postCodeForm: Form[PostCode] = {
-    Form(mapping("postcode" -> text
-        .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode))
-    )(PostCode.apply)(PostCode.unapply))
+  override def http = new HttpPost with WSPost {
+    override val hooks = NoneRequired
   }
 }

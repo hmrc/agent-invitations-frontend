@@ -16,48 +16,67 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Named, Singleton}
 
+import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
 import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm.postCodeForm
-import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.agentinvitationsfrontend.views.html
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsController @Inject()(val messagesApi: play.api.i18n.MessagesApi)
-  extends FrontendController with I18nSupport {
+class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUrl: String,
+                                      @Named("agent-invitations-frontend.start-url") startInvitationsUrl: String,
+                                      @Named("appName") originUrl: String,
+                                      val messagesApi: play.api.i18n.MessagesApi,
+                                      val authConnector: AuthConnector)(implicit val configuration: Configuration)
+  extends FrontendController with I18nSupport with AuthActions {
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(html.agents.enter_nino(ninoForm))
+    withAuthorisedAsAgent { arn =>
+        Future successful Ok(html.agents.enter_nino(ninoForm))
+    }
   }
 
   def submitNino: Action[AnyContent] = Action.async { implicit request =>
-    ninoForm.bindFromRequest().fold(
-      formWithErrors => {
-        Future successful Ok(html.agents.enter_nino(formWithErrors))
-      },
-      nino => Future successful Redirect(routes.InvitationsController.enterPostcode())
-    )
+    withAuthorisedAsAgent { arn =>
+      ninoForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(html.agents.enter_nino(formWithErrors))
+        },
+        nino =>
+          Future successful Redirect(routes.InvitationsController.enterPostcode()).addingToSession("USER_NINO" -> s"$nino")
+      )
+    }
   }
 
   def enterPostcode: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(html.agents.enter_postcode(postCodeForm))
+    withAuthorisedAsAgent { arn =>
+        Future successful Ok(html.agents.enter_postcode(postCodeForm))
+    }
   }
 
   def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
-    postCodeForm.bindFromRequest().fold(
-      formWithErrors => {
-        Future successful Ok(html.agents.enter_postcode(formWithErrors))
-      },
-      postcode => Future successful Redirect(routes.InvitationsController.confirmInvitation())
-    )
+    withAuthorisedAsAgent { arn =>
+      postCodeForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(html.agents.enter_postcode(formWithErrors))
+        },
+        postcode =>
+          Future successful Redirect(routes.InvitationsController.confirmInvitation())
+      )
+    }
   }
 
+
   def confirmInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(html.agents.confirm_invitation())
+    withAuthorisedAsAgent { arn =>
+      Future successful Ok(html.agents.confirm_invitation())
+    }
   }
 }
