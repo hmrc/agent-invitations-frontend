@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.form
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.data.Form
-import play.api.data.Forms._
+import play.api.libs.json.Json
 
-case class PostCode(postcode: String)
+case class AgentInvitation(
+  service: String,
+  clientIdType: String,
+  clientId: String,
+  clientPostcode: String)
 
-object PostcodeForm {
-
-  private def postcodeCheck(postcode: String) = postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
-
-  val postCodeForm: Form[PostCode] = {
-    Form(mapping("postcode" -> text
-        .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode))
-    )(PostCode.apply)(PostCode.unapply))
-  }
+object AgentInvitation {
+  implicit val format = Json.format[AgentInvitation]
 }

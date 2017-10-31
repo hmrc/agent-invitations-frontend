@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.http.HttpErrorHandler
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.i18n.{ I18nSupport, Messages, MessagesApi }
 import play.api.mvc.Results._
-import play.api.mvc.{RequestHeader, Result}
-import play.api.{Configuration, Environment, Mode}
+import play.api.mvc.{ RequestHeader, Result }
+import play.api.{ Configuration, Environment, Mode }
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.auth.core.{ InsufficientEnrolments, NoActiveSession }
 import uk.gov.hmrc.play.frontend.config.AuthRedirects
 
 import scala.concurrent.Future

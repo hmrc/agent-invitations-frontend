@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import javax.inject.{Inject, Named}
+import javax.inject.{ Inject, Named }
 
 import akka.stream.Materializer
 import com.kenshoo.play.metrics.MetricsFilter

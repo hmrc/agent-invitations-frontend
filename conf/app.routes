@@ -3,5 +3,3 @@
 GET         /agents/enter-nino            @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.enterNino
 POST        /agents/submit-nino            @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitNino
 POST        /agents/submit-postcode        @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitPostcode
-
-GET         /agents/confirm-invitation    @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.confirmInvitation(invitationUrl: String)

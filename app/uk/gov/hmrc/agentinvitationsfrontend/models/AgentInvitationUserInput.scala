@@ -16,47 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.data.{Form, Mapping}
-import play.api.data.Forms._
-import play.api.data.validation._
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.domain.Nino._
-
-
-case class AgentInvitation(service: String,
-                           clientIdType: String,
-                           clientId: String,
-                           clientPostcode: String)
-
-object AgentInvitation {
-  implicit val format = Json.format[AgentInvitation]
-}
 
 case class AgentInvitationUserInput(nino: Nino, postcode: String)
-
-object AgentInvitationsForm {
-
-  private def postcodeCheck(postcode: String) = postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
-
-  val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
-    Form(mapping(
-      "nino" -> text
-        .verifying("enter-nino.error-empty", _.nonEmpty)
-        .verifying("enter-nino.invalid-format", nino => isValid(nino)),
-      "postcode" -> text
-    )({(nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode)})({user => Some((user.nino.value, user.postcode))}))
-  }
-
-  val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
-    Form(mapping(
-      "nino" -> text,
-      "postcode" -> text
-        .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode))
-    )({(nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode)})({user => Some((user.nino.value, user.postcode))}))
-  }
-
-}
-

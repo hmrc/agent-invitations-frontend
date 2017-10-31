@@ -16,34 +16,35 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
-import play.api.{Configuration, Logger}
+import play.api.Configuration
+import play.api.data.Form
+import play.api.data.Forms.{mapping, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, Result}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput}
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationsForm.{agentInvitationNinoForm, agentInvitationPostCodeForm}
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUrl: String,
-                                      @Named("agent-invitations-frontend.start-url") startInvitationsUrl: String,
-                                      @Named("appName") originUrl: String,
-                                      @Named("agent-invitations-frontend.external-url") externalUrl: String,
-                                      invitationsService: InvitationsService,
-                                      val messagesApi: play.api.i18n.MessagesApi,
-                                      val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class InvitationsController @Inject()(
+                                       invitationsService: InvitationsService,
+                                       val messagesApi: play.api.i18n.MessagesApi,
+                                       val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
+
+  import InvitationsController._
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-        Future successful Ok(enter_nino(agentInvitationNinoForm))
+      Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
@@ -54,10 +55,8 @@ class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUr
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Logger.info(s"User Details $userInput")
           Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(userInput)))
-        }
-      )
+        })
     }
   }
 
@@ -68,33 +67,34 @@ class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUr
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          Logger.info(s"User Details $userInput")
-//          createInvitation(arn, userInput)
-          Future successful Ok(confirm_invitation("localhost:9999/yourinvitation.com"))
-        }
-      )
+          invitationsService.createInvitation(arn, userInput).map {
+            case Some(location) => Ok(confirm_invitation(location.selfUrl.toString))
+            case None => NotImplemented
+          }
+        })
     }
   }
+}
 
-//  private def createInvitation(arn: Arn, agentInvitation: AgentInvitationUserInput): Future[Result] = {
-//    invitationsService.createInvitation(arn, agentInvitation).map {
-//      case Some(invitation) => Ok(confirm_invitation())
-//      case None => NotImplemented
-//    }
-//  }
+object InvitationsController {
 
-//  private def clientInvitationUrl(id: String) = {
-//    s"$externalUrl${routes.InvitationsController.viewInvitation(id)}"
-//  }
+  private def postcodeCheck(postcode: String) =
+    postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
 
-  private def extractInvitationId(url: String) = url.substring(url.lastIndexOf("/") + 1)
-
-
-  def confirmInvitation(invitationUrl: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
-      Future successful Ok(confirm_invitation(invitationUrl))
-    }
+  val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
+    Form(mapping(
+      "nino" -> text
+        .verifying("enter-nino.error-empty", _.nonEmpty)
+        .verifying("enter-nino.invalid-format", nino => isValid(nino)),
+      "postcode" -> text)({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
   }
 
+  val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
+    Form(mapping(
+      "nino" -> text,
+      "postcode" -> text
+        .verifying("enter-postcode.error-empty", _.nonEmpty)
+        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode)))({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
+  }
 
 }
