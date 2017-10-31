@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(invitationUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation-link.title"), bodyClasses = None) {
 
@@ -24,7 +24,7 @@
     @Messages("confirm-invitation-link.title")
     </h1>
     <h1 class="transaction-banner__heading">
-    http://localhost:9000/hello-world
+    @invitationUrl
     </h1>
   </div>
 

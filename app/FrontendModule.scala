@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import java.net.URL
+import java.net.{InetSocketAddress, URL}
+import java.util.concurrent.TimeUnit._
 import javax.inject.{Inject, Provider, Singleton}
 
+import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
+import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.google.inject.AbstractModule
 import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
+import play.api.inject.ApplicationLifecycle
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{FrontendAuditConnector, FrontendAuthConnector}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -28,6 +32,8 @@ import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.inject.ServicesConfig
 import uk.gov.hmrc.play.http.ws.WSHttp
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class FrontendModule(val environment: Environment, val configuration: Configuration) extends AbstractModule with ServicesConfig {
 
@@ -52,6 +58,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-client-authorisation")
     bindServiceProperty("company-auth.login-url")
     bindServiceProperty("agent-invitations-frontend.start-url")
+    bindServiceProperty("agent-invitations-frontend.external-url")
   }
 
   private def bindBaseUrl(serviceName: String) =

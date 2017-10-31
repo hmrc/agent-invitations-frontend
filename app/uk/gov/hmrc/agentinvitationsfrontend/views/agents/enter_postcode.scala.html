@@ -15,10 +15,10 @@
  *@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.form.PostCode
+@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @import play.api.Configuration
-@(postcodeForm : Form[PostCode])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-postcode.title"), bodyClasses = None) {
   <header class="page-header">
@@ -31,12 +31,14 @@
 
     <div class="form-field">
     @input(
-      postcodeForm("postcode"),
+      agentInvitationsForm("postcode"),
       '_label -> Messages("enter-postcode.label"),
       '_inputClass -> "input--medium input--cleared",
       '_labelClass -> "bold"
     )
     </div>
+
+    <input type="hidden" name="nino" id="nino" value="@agentInvitationsForm("nino").value">
 
     <div class="form-field">
       <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

@@ -18,12 +18,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
-import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm.postCodeForm
-import uk.gov.hmrc.agentinvitationsfrontend.views.html
+import play.api.mvc.{Action, AnyContent, Result}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationsForm.{agentInvitationNinoForm, agentInvitationPostCodeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
@@ -33,50 +35,66 @@ import scala.concurrent.Future
 class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUrl: String,
                                       @Named("agent-invitations-frontend.start-url") startInvitationsUrl: String,
                                       @Named("appName") originUrl: String,
+                                      @Named("agent-invitations-frontend.external-url") externalUrl: String,
+                                      invitationsService: InvitationsService,
                                       val messagesApi: play.api.i18n.MessagesApi,
                                       val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-        Future successful Ok(html.agents.enter_nino(ninoForm))
+        Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
   def submitNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      ninoForm.bindFromRequest().fold(
+      agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(html.agents.enter_nino(formWithErrors))
+          Future successful Ok(enter_nino(formWithErrors))
         },
-        nino =>
-          Future successful Redirect(routes.InvitationsController.enterPostcode()).addingToSession("USER_NINO" -> s"$nino")
+        userInput => {
+          Logger.info(s"User Details $userInput")
+          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(userInput)))
+        }
       )
-    }
-  }
-
-  def enterPostcode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
-        Future successful Ok(html.agents.enter_postcode(postCodeForm))
     }
   }
 
   def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      postCodeForm.bindFromRequest().fold(
+      agentInvitationPostCodeForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(html.agents.enter_postcode(formWithErrors))
+          Future successful Ok(enter_postcode(formWithErrors))
         },
-        postcode =>
-          Future successful Redirect(routes.InvitationsController.confirmInvitation())
+        userInput => {
+          Logger.info(s"User Details $userInput")
+//          createInvitation(arn, userInput)
+          Future successful Ok(confirm_invitation("localhost:9999/yourinvitation.com"))
+        }
       )
     }
   }
 
+//  private def createInvitation(arn: Arn, agentInvitation: AgentInvitationUserInput): Future[Result] = {
+//    invitationsService.createInvitation(arn, agentInvitation).map {
+//      case Some(invitation) => Ok(confirm_invitation())
+//      case None => NotImplemented
+//    }
+//  }
 
-  def confirmInvitation: Action[AnyContent] = Action.async { implicit request =>
+//  private def clientInvitationUrl(id: String) = {
+//    s"$externalUrl${routes.InvitationsController.viewInvitation(id)}"
+//  }
+
+  private def extractInvitationId(url: String) = url.substring(url.lastIndexOf("/") + 1)
+
+
+  def confirmInvitation(invitationUrl: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      Future successful Ok(html.agents.confirm_invitation())
+      Future successful Ok(confirm_invitation(invitationUrl))
     }
   }
+
+
 }

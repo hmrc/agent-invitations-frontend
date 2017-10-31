@@ -19,9 +19,9 @@
 @import uk.gov.hmrc.play.views.html.helpers.input
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.domain.Nino
+@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 
-@(ninoForm : Form[Nino])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-nino.title"), bodyClasses = None) {
  <header class="page-header">
@@ -34,12 +34,14 @@
 
   <div class="form-field">
   @input(
-   ninoForm("nino"),
+   agentInvitationsForm("nino"),
    '_label -> Messages("enter-nino.label"),
    '_inputClass -> "input--medium input--cleared",
    '_labelClass -> "bold"
   )
   </div>
+
+  <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
   <div class="form-field">
    <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
