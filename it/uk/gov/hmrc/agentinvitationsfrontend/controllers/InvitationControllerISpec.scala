@@ -16,13 +16,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import play.api.mvc.{AnyContentAsEmpty, _}
+import play.api.mvc.{ AnyContentAsEmpty, _ }
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.{agentInvitationNinoForm, agentInvitationPostCodeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.{ agentInvitationNinoForm, agentInvitationPostCodeForm }
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
-import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
+import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.auth.core.{ AuthorisationException, InsufficientEnrolments }
 import uk.gov.hmrc.domain.Nino
 
 class InvitationControllerISpec extends BaseISpec {
@@ -60,9 +60,9 @@ class InvitationControllerISpec extends BaseISpec {
 
     "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
       val ninoForm = agentInvitationNinoForm
-      val ninoData = Map("nino"->"", "postcode" -> "")
+      val ninoData = Map("nino" -> "", "postcode" -> "")
       val result = submitNino(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq:_*), arn.value))
+        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.error-empty"))
@@ -91,9 +91,9 @@ class InvitationControllerISpec extends BaseISpec {
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
       val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino"->"AB123456A", "postcode" -> "")
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "")
       val result = controllers.submitPostcode()(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq:_*), arn.value))
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.error-empty"))

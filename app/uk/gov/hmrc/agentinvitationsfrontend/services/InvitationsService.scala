@@ -37,8 +37,4 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
       invitation <- invitationsConnector.getInvitation(location.getOrElse(""))
     } yield invitation
   }
-
-  def getInvitation(location: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] =
-    invitationsConnector.getInvitation(location)
-
 }

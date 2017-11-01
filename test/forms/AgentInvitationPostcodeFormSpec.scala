@@ -36,7 +36,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
     }
 
     "return an error message for invalid postcode" in {
-      val data = Json.obj("nino" -> "WM123456C","postcode" -> "W12")
+      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "W12")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeFormatFormError) shouldBe true
       postcodeForm.errors.length shouldBe 1

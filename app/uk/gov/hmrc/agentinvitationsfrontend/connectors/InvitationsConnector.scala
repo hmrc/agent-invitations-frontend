@@ -42,9 +42,6 @@ class InvitationsConnector @Inject() (
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
-  private[connectors] def viewInvitationUrl(mtdItId: MtdItId, invitationId: String) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId")
-
   def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
       r.header("location")
