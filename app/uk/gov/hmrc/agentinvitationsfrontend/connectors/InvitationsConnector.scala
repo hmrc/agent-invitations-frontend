@@ -43,7 +43,7 @@ class InvitationsConnector @Inject() (
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
   def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    monitor(s"ConsumedAPI-Agent-Create-Invitations-POST") {
+    monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
       http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
         r.header("location")
       }
@@ -51,7 +51,7 @@ class InvitationsConnector @Inject() (
   }
 
   def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
-    monitor(s"ConsumedAPI-Agent-Get-Invitations-GET") {
+    monitor(s"ConsumedAPI-Agent-Get-Invitation-GET") {
       val url = invitationUrl(location)
       implicit val readsInvitation = Invitation.reads(url)
       http.GET[Option[Invitation]](url.toString)
