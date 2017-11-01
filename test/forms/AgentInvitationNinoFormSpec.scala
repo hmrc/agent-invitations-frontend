@@ -18,10 +18,10 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.agentInvitationNinoForm
 import uk.gov.hmrc.play.test.UnitSpec
 
-class NinoFormSpec extends UnitSpec {
+class AgentInvitationNinoFormSpec extends UnitSpec {
 
   val ninoEmptyMessage: String = "enter-nino.error-empty"
   val ninoFormatMessage: String = "enter-nino.invalid-format"
@@ -30,21 +30,21 @@ class NinoFormSpec extends UnitSpec {
 
   "NinoForm" should {
     "return no error message for valid Nino" in {
-      val data = Json.obj("nino" -> "WM123456C")
-      val ninoForm = NinoForm.ninoForm.bind(data)
+      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for invalid Nino" in {
-      val data = Json.obj("nino" -> "12345")
-      val ninoForm = NinoForm.ninoForm.bind(data)
+      val data = Json.obj("nino" -> "12345", "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.contains(ninoFormatFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }
 
     "return an error message for empty form" in {
-      val data = Json.obj("nino" -> "")
-      val ninoForm = NinoForm.ninoForm.bind(data)
+      val data = Json.obj("nino" -> "", "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 2
     }
