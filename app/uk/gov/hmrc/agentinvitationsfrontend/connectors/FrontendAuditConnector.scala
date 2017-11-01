@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
-import uk.gov.hmrc.play.audit.http.config.{AuditingConfig, BaseUri, Consumer}
+import uk.gov.hmrc.play.audit.http.config.{ AuditingConfig, BaseUri, Consumer }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 @Singleton

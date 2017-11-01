@@ -2,18 +2,18 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
-import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.api.i18n.{ Lang, Messages, MessagesApi }
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentType, _}
+import play.api.test.Helpers.{ contentType, _ }
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.AuthStubs
-import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.{ ACAStubs, AuthStubs }
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs {
+abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -23,10 +23,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.auth.port" -> wireMockPort,
         "microservice.services.agent-client-authorisation.port" -> wireMockPort,
         "microservice.services.company-auth.login-url" -> wireMockHost,
-        "microservice.services.company-auth.port" -> wireMockPort
-    )
+        "microservice.services.company-auth.port" -> wireMockPort)
   }
-
 
   protected implicit val materializer = app.materializer
 
@@ -45,5 +43,4 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
 }
-
 

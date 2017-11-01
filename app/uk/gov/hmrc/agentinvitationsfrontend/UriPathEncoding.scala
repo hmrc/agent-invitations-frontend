@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.form
+package uk.gov.hmrc.agentinvitationsfrontend
 
-import play.api.data.Form
-import play.api.data.Forms._
+import java.nio.charset.StandardCharsets.UTF_8
 
-case class PostCode(postcode: String)
+import play.utils.UriEncoding
 
-object PostcodeForm {
+object UriPathEncoding {
 
-  private def postcodeCheck(postcode: String) = postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
+  def encodePathSegments(pathSegments: String*): String =
+    pathSegments.map(encodePathSegment).mkString("/", "/", "")
 
-  val postCodeForm: Form[PostCode] = {
-    Form(mapping("postcode" -> text
-        .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode))
-    )(PostCode.apply)(PostCode.unapply))
-  }
+  def encodePathSegment(pathSegment: String): String =
+    UriEncoding.encodePathSegment(pathSegment, UTF_8.name)
+
 }

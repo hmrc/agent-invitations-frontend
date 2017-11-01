@@ -14,22 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.connectors
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import java.net.URL
-import javax.inject.{ Inject, Named, Singleton }
+import uk.gov.hmrc.domain.Nino
 
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.http.HttpPost
-import uk.gov.hmrc.play.http.ws.WSPost
-
-@Singleton
-class FrontendAuthConnector @Inject() (@Named("auth-baseUrl") baseUrl: URL)
-  extends PlayAuthConnector {
-
-  override val serviceUrl = baseUrl.toString
-
-  override def http = new HttpPost with WSPost {
-    override val hooks = NoneRequired
-  }
-}
+case class AgentInvitationUserInput(nino: Nino, postcode: String)

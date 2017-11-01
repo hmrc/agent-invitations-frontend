@@ -15,13 +15,13 @@
  */
 
 import java.net.URL
-import javax.inject.{Inject, Provider, Singleton}
+import javax.inject.{ Inject, Provider, Singleton }
 
 import com.google.inject.AbstractModule
-import com.google.inject.name.{Named, Names}
+import com.google.inject.name.{ Named, Names }
 import org.slf4j.MDC
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{FrontendAuditConnector, FrontendAuthConnector}
+import play.api.{ Configuration, Environment, Logger }
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{ FrontendAuditConnector, FrontendAuthConnector }
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.audit.http.HttpAuditing
@@ -50,8 +50,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
-    bindServiceProperty("company-auth.login-url")
-    bindServiceProperty("agent-invitations-frontend.start-url")
   }
 
   private def bindBaseUrl(serviceName: String) =
@@ -68,14 +66,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     override lazy val get = configuration.getString(confKey)
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
-
-  private def bindServiceProperty(propertyName: String) =
-    bind(classOf[String]).annotatedWith(Names.named(propertyName)).toProvider(new ServicePropertyProvider(propertyName))
-
-  private class ServicePropertyProvider(confKey: String) extends Provider[String] {
-    override lazy val get = getConfString(confKey, throw new IllegalStateException(s"No value found for configuration property $confKey"))
-  }
-
 }
 
 @Singleton

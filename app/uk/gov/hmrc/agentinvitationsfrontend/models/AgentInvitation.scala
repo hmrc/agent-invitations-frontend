@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.form
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.data.Form
-import play.api.data.Forms._
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.domain.Nino._
+import play.api.libs.json.Json
 
-object NinoForm {
-  val ninoForm: Form[Nino] = {
-    Form(mapping( "nino" -> text
-        .verifying("enter-nino.error-empty", _.nonEmpty)
-        .verifying("enter-nino.invalid-format", nino => isValid(nino))
-    )(Nino.apply)(Nino.unapply))
-  }
+case class AgentInvitation(
+  service: String,
+  clientIdType: String,
+  clientId: String,
+  clientPostcode: String)
+
+object AgentInvitation {
+  implicit val format = Json.format[AgentInvitation]
 }

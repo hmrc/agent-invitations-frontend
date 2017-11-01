@@ -15,22 +15,22 @@
  *@
 
 @import play.api.Configuration
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(invitationUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation-link.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-sent-link.title"), bodyClasses = None) {
 
   <div class="transaction-banner--complete">
     <h1 class="transaction-banner__heading">
-    @Messages("confirm-invitation-link.title")
+    @Messages("invitation-sent-link.title")
     </h1>
     <h1 class="transaction-banner__heading">
-    http://localhost:9000/hello-world
+    @invitationUrl
     </h1>
   </div>
 
-  <h2>@Messages("confirm-invitation.header")</h2>
-  <p>@Messages("confirm-invitation.description.advice.pt1")</p>
-  <p>@Messages("confirm-invitation.description.advice.pt2")</p>
+  <h2>@Messages("invitation-sent.header")</h2>
+  <p>@Messages("invitation-sent.description.advice.pt1")</p>
+  <p>@Messages("invitation-sent.description.advice.pt2")</p>
 
-  <button class="button" type="submit" id="continue">@Messages("confirm-invitation.button")</button>
+  <button class="button" type="submit" id="continue">@Messages("invitation-sent.button")</button>
 }

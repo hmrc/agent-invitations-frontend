@@ -16,67 +16,85 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
+import play.api.data.Form
+import play.api.data.Forms.{ mapping, text }
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentinvitationsfrontend.form.NinoForm.ninoForm
-import uk.gov.hmrc.agentinvitationsfrontend.form.PostcodeForm.postCodeForm
-import uk.gov.hmrc.agentinvitationsfrontend.views.html
+import play.api.mvc.{ Action, AnyContent }
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsController @Inject()(@Named("company-auth.login-url") ggLoginUrl: String,
-                                      @Named("agent-invitations-frontend.start-url") startInvitationsUrl: String,
-                                      @Named("appName") originUrl: String,
-                                      val messagesApi: play.api.i18n.MessagesApi,
-                                      val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class InvitationsController @Inject() (
+  invitationsService: InvitationsService,
+  val messagesApi: play.api.i18n.MessagesApi,
+  val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
+
+  import InvitationsController._
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-        Future successful Ok(html.agents.enter_nino(ninoForm))
+      Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
   def submitNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      ninoForm.bindFromRequest().fold(
+      agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(html.agents.enter_nino(formWithErrors))
+          Future successful Ok(enter_nino(formWithErrors))
         },
-        nino =>
-          Future successful Redirect(routes.InvitationsController.enterPostcode()).addingToSession("USER_NINO" -> s"$nino")
-      )
-    }
-  }
-
-  def enterPostcode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
-        Future successful Ok(html.agents.enter_postcode(postCodeForm))
+        userInput => {
+          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(userInput)))
+        })
     }
   }
 
   def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      postCodeForm.bindFromRequest().fold(
+      agentInvitationPostCodeForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(html.agents.enter_postcode(formWithErrors))
+          Future successful Ok(enter_postcode(formWithErrors))
         },
-        postcode =>
-          Future successful Redirect(routes.InvitationsController.confirmInvitation())
-      )
+        userInput => {
+          invitationsService.createInvitation(arn, userInput).map {
+            case Some(location) => Ok(invitation_sent(location.selfUrl.toString))
+            case None => NotImplemented
+          }
+        })
     }
   }
+}
 
+object InvitationsController {
 
-  def confirmInvitation: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
-      Future successful Ok(html.agents.confirm_invitation())
-    }
+  private def postcodeCheck(postcode: String) =
+    postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
+
+  val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
+    Form(mapping(
+      "nino" -> text
+        .verifying("enter-nino.error-empty", _.nonEmpty)
+        .verifying("enter-nino.invalid-format", nino => isValid(nino)),
+      "postcode" -> text)({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
   }
+
+  val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
+    Form(mapping(
+      "nino" -> text,
+      "postcode" -> text
+        .verifying("enter-postcode.error-empty", _.nonEmpty)
+        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode)))({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
+  }
+
 }
