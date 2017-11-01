@@ -26,6 +26,7 @@ import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
@@ -67,9 +68,12 @@ class InvitationsController @Inject() (
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          invitationsService.createInvitation(arn, userInput).map {
-            case Some(location) => Ok(invitation_sent(location.selfUrl.toString))
-            case None => NotImplemented
+          invitationsService.createInvitation(arn, userInput).flatMap {
+            case Some(location) => invitationsService.getInvitation(location).flatMap {
+              case Some(invitation) => Future successful Ok(invitation_sent(invitation.selfUrl.toString))
+              case None => Future successful Ok(not_enrolled())
+            }
+            case None => Future successful NotImplemented
           }
         })
     }

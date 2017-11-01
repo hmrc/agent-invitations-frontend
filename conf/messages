@@ -21,6 +21,13 @@ invitation-sent.description.advice.pt1 = You need to share this link with the ta
 invitation-sent.description.advice.pt2 = They can then accept your invitation. HMRC will not do this for you.
 invitation-sent.button = Return to your account
 
+
+# Not Enrolled
+not-enrolled.title = This individual has not signed up to report their tax using software.
+not-enrolled.description = You can''t authorise an individual until they have signed up.
+not-enrolled.description-bold = You can start the sign-up process but the individual needs to finish it.
+not-enrolled.description-advice = Invite an individual to sign up to report their tax using software
+
 # Error messages for digital services
 global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request

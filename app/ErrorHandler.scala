@@ -22,9 +22,13 @@ import play.api.i18n.{ I18nSupport, Messages, MessagesApi }
 import play.api.mvc.Results._
 import play.api.mvc.{ RequestHeader, Result }
 import play.api.{ Configuration, Environment, Mode }
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.{ InsufficientEnrolments, NoActiveSession }
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.frontend.config.AuthRedirects
+import uk.gov.hmrc.play.http.Upstream4xxResponse
 
 import scala.concurrent.Future
 
@@ -42,6 +46,7 @@ class ErrorHandler @Inject() (implicit val config: Configuration, val env: Envir
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     val response = exception match {
+      case _: Upstream4xxResponse => Ok
       case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
       case _: InsufficientEnrolments => Forbidden
       case _ => InternalServerError(error_template(
