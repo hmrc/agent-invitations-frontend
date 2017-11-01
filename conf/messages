@@ -14,12 +14,12 @@ enter-postcode.invalid-format = You can only enter these characters: A-Z 0-9
 
 continue.button = Continue
 
-# Confirm Invitation
-confirm-invitation-link.title = Send your client this link
-confirm-invitation.header = What happens next
-confirm-invitation.description.advice.pt1 = You need to share this link with the taxpayer you want to represent.
-confirm-invitation.description.advice.pt2 = They can then accept your invitation. HMRC will not do this for you.
-confirm-invitation.button = Return to your account
+# Invitation Sent
+invitation-sent-link.title = Send your client this link
+invitation-sent.header = What happens next
+invitation-sent.description.advice.pt1 = You need to share this link with the taxpayer you want to represent.
+invitation-sent.description.advice.pt2 = They can then accept your invitation. HMRC will not do this for you.
+invitation-sent.button = Return to your account
 
 # Error messages for digital services
 global.error.400.title=Bad request - 400

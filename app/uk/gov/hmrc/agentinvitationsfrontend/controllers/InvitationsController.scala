@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.{mapping, text}
+import play.api.data.Forms.{ mapping, text }
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -34,10 +34,10 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsController @Inject()(
-                                       invitationsService: InvitationsService,
-                                       val messagesApi: play.api.i18n.MessagesApi,
-                                       val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class InvitationsController @Inject() (
+  invitationsService: InvitationsService,
+  val messagesApi: play.api.i18n.MessagesApi,
+  val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import InvitationsController._
@@ -68,7 +68,7 @@ class InvitationsController @Inject()(
         },
         userInput => {
           invitationsService.createInvitation(arn, userInput).map {
-            case Some(location) => Ok(confirm_invitation(location.selfUrl.toString))
+            case Some(location) => Ok(invitation_sent(location.selfUrl.toString))
             case None => NotImplemented
           }
         })

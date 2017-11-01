@@ -46,4 +46,11 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
+  def notFoundGetInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
+      .willReturn(
+        aResponse()
+          .withStatus(404)))
+  }
+
 }
