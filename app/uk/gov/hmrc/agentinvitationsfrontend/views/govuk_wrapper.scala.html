@@ -39,7 +39,7 @@
 
 @insideHeader = {
 @uiLayouts.header_nav(
-  navTitle = configuration.getString("appName"),
+  navTitle = Some(Messages("app.name")),
   navTitleLink = None,
   showBetaLink = false,
   navLinks = Some(headerNavLinks))

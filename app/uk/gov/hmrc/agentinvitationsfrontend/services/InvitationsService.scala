@@ -34,7 +34,7 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
 
     for {
       location <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation <- invitationsConnector.getInvitation(location.getOrElse {throw new Exception("Invitation location expected but missing.")})
+      invitation <- invitationsConnector.getInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
     } yield invitation
   }
 }

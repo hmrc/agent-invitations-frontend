@@ -29,18 +29,19 @@
     action = routes.InvitationsController.submitPostcode(),
     'class -> "form js-form") {
 
-    <div class="form-field">
+    <div class="form-group">
     @input(
       agentInvitationsForm("postcode"),
       '_label -> Messages("enter-postcode.label"),
       '_inputClass -> "input--medium input--cleared",
-      '_labelClass -> "bold"
+      '_labelTextClass -> "h2-heading",
+      '_inputHint -> Messages("postcode.hint")
     )
     </div>
 
     <input type="hidden" name="nino" id="nino" value="@agentInvitationsForm("nino").value">
 
-    <div class="form-field">
+    <div class="form-group">
       <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
     </div>
   }
