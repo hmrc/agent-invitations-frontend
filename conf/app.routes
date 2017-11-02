@@ -1,5 +1,6 @@
 # microservice specific routes
 
+GET         /agents/                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.agentsRoot
 GET         /agents/enter-nino             @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.enterNino
 POST        /agents/enter-postcode         @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitNino
 POST        /agents/invitation-sent        @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitPostcode

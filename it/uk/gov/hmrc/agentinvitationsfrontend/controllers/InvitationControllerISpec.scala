@@ -24,17 +24,28 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
 import uk.gov.hmrc.auth.core.{ AuthorisationException, InsufficientEnrolments }
 import uk.gov.hmrc.domain.Nino
+import play.api.test.Helpers._
+import scala.concurrent.duration._
 
 class InvitationControllerISpec extends BaseISpec {
 
-  lazy val controllers: InvitationsController = app.injector.instanceOf[InvitationsController]
+  lazy val controller: InvitationsController = app.injector.instanceOf[InvitationsController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
+
+  "GET /agents/" should {
+    "redirect to /agent/enter-nino" in {
+      val result = controller.agentsRoot(FakeRequest())
+      status(result) shouldBe 303
+      val timeout = 2.seconds
+      redirectLocation(result)(timeout).get should include("/agents/enter-nino")
+    }
+  }
 
   "GET /agents/enter-nino" should {
 
     val request = FakeRequest("GET", "/agents/enter-nino")
-    val enterNino = controllers.enterNino()
+    val enterNino = controller.enterNino()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = enterNino(authorisedAsValidAgent(request, arn.value))
@@ -48,7 +59,7 @@ class InvitationControllerISpec extends BaseISpec {
   "POST /agents/enter-postcode" should {
 
     val request = FakeRequest("POST", "/agents/enter-postcode")
-    val submitNino = controllers.submitNino()
+    val submitNino = controller.submitNino()
 
     "return 200 for authorised Agent with valid nino and redirected to Postcode Page" in {
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(Nino("AB123456A"), ""))
@@ -76,7 +87,7 @@ class InvitationControllerISpec extends BaseISpec {
   "POST /agents/invitation-sent" should {
 
     val request = FakeRequest("POST", "/agents/invitation-sent")
-    val submitPostcode = controllers.submitPostcode()
+    val submitPostcode = controller.submitPostcode()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
       createInvitationStub(arn, mtdItId, "1")
@@ -92,7 +103,7 @@ class InvitationControllerISpec extends BaseISpec {
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "")
-      val result = controllers.submitPostcode()(authorisedAsValidAgent(request
+      val result = controller.submitPostcode()(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
