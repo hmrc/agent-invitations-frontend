@@ -44,13 +44,17 @@ class InvitationsController @Inject() (
 
   import InvitationsController._
 
-  def enterNino: Action[AnyContent] = Action.async { implicit request =>
+  val agentsRoot: Action[AnyContent] = Action { implicit request =>
+    Redirect(routes.InvitationsController.enterNino().url)
+  }
+
+  val enterNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
-  def submitNino: Action[AnyContent] = Action.async { implicit request =>
+  val submitNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
@@ -62,7 +66,7 @@ class InvitationsController @Inject() (
     }
   }
 
-  def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
+  val submitPostcode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationPostCodeForm.bindFromRequest().fold(
         formWithErrors => {
