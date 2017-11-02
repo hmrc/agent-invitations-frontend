@@ -43,7 +43,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if invitation not found" in {
-      notFoundGetInvitationStub(arn, mtdItId, invitationId)
+      notFoundGetInvitationStub(mtdItId, invitationId)
       val result = await(connector
         .getInvitation(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
 

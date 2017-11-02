@@ -135,6 +135,18 @@ class InvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return exception when invitation could not be retrieved after creation" in {
+      createInvitationStub(arn, mtdItId, "1")
+      notFoundGetInvitationStub(mtdItId, "1")
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controllers.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      an[Exception] shouldBe thrownBy { await(result) }
+    }
+
     behave like anAuthorisedEndpoint(request, submitPostcode)
   }
 

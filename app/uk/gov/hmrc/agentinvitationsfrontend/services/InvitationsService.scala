@@ -33,9 +33,9 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
     val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", userInput.nino.value, userInput.postcode)
 
     for {
-      location <- invitationsConnector.createInvitation(arn, agentInvitation)
+      locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
       invitationOpt <- invitationsConnector
-        .getInvitation(location.getOrElse { throw new Exception("Invitation location expected; but missing.") })
+        .getInvitation(locationOpt.getOrElse { throw new Exception("Invitation location expected; but missing.") })
       invitation = invitationOpt
         .getOrElse { throw new Exception("Invitation expected; but missing.") }
     } yield invitation
