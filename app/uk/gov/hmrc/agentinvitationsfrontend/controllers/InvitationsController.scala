@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
+import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -68,13 +69,13 @@ class InvitationsController @Inject() (
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          invitationsService.createInvitation(arn, userInput).flatMap {
-            case Some(location) => invitationsService.getInvitation(location).flatMap {
-              case Some(invitation) => Future successful Ok(invitation_sent(invitation.selfUrl.toString))
-              case None => Future successful Ok(not_enrolled())
+          invitationsService
+            .createInvitation(arn, userInput)
+            .map(invitation =>
+              Ok(invitation_sent(invitation.selfUrl.toString)))
+            .recoverWith {
+              case _: Upstream4xxResponse => Future.successful(Forbidden(not_enrolled()))
             }
-            case None => Future successful NotImplemented
-          }
         })
     }
   }

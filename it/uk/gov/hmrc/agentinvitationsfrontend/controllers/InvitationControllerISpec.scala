@@ -101,6 +101,40 @@ class InvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 403 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
+      failedCreateInvitationForNotEnrolled(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controllers.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description-bold"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description-advice"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return 403 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an invalid postcode" in {
+      failedCreateInvitationFoInvalidPostcode(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controllers.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description-bold"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description-advice"))
+      verifyAuthoriseAttempt()
+    }
+
     behave like anAuthorisedEndpoint(request, submitPostcode)
   }
 

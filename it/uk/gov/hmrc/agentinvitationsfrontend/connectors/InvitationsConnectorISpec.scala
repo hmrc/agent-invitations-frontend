@@ -26,7 +26,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if unexpected response when creating invitation" in {
-      failedCreateInvitation(arn, MtdItId("mtdItId"), "1")
+      failedCreateInvitation(arn)
       intercept[BadRequestException] {
         await(connector.createInvitation(arn, agentInvitation))
       }

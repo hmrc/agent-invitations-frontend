@@ -17,11 +17,37 @@ trait ACAStubs {
           .withHeader("location", s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId")))
   }
 
-  def failedCreateInvitation(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
+  def failedCreateInvitation(arn: Arn): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
       .willReturn(
         aResponse()
           .withStatus(400)))
+  }
+
+  def failedCreateInvitationForNotEnrolled(arn: Arn): Unit = {
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+            s"""
+             |{
+             |   "code":"CLIENT_REGISTRATION_NOT_FOUND",
+             |   "message":"The Client's MTDfB registration was not found."
+             |}
+           """.stripMargin)))
+  }
+
+  def failedCreateInvitationFoInvalidPostcode(arn: Arn): Unit = {
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+            s"""
+             |{
+             |   "code":"POSTCODE_DOES_NOT_MATCH",
+             |   "message":"The submitted postcode did not match the client's postcode as held by HMRC."
+             |}
+           """.stripMargin)))
   }
 
   def getInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
