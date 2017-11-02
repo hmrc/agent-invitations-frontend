@@ -10,14 +10,13 @@ trait AuthStubs {
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn), isAgent = true)
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
-  def authenticated[A](request: FakeRequest[A], enrolment: Enrolment, isAgent: Boolean): FakeRequest[A] = {
+  def authenticated[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
          |  "authorise": [
-         |    { "affinityGroup": "${if (isAgent) "Agent" else "Individual"}" },
          |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
          |    { "authProviders": ["GovernmentGateway"] }
          |  ],
