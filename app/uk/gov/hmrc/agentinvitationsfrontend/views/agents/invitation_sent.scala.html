@@ -23,13 +23,11 @@
     <h1 class="transaction-banner__heading">
     @Messages("invitation-sent-link.title")
     </h1>
-    <h1 class="transaction-banner__heading">
-    @invitationUrl
-    </h1>
+    <strong>@invitationUrl</strong>
   </div>
 
   <h2>@Messages("invitation-sent.header")</h2>
-  <p>@Messages("invitation-sent.description.advice.pt1")</p>
+  <p>@Html(Messages("invitation-sent.description.advice.pt1"))</p>
   <p>@Messages("invitation-sent.description.advice.pt2")</p>
 
   <button class="button" type="submit" id="continue">@Messages("invitation-sent.button")</button>

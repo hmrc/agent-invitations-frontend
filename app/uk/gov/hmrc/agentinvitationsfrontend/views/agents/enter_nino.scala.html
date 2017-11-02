@@ -32,18 +32,19 @@
   action = routes.InvitationsController.submitNino,
   'class -> "form js-form") {
 
-  <div class="form-field">
+  <div class="form-group">
   @input(
    agentInvitationsForm("nino"),
    '_label -> Messages("enter-nino.label"),
    '_inputClass -> "input--medium input--cleared",
-   '_labelClass -> "bold"
+   '_labelTextClass -> "h2-heading",
+   '_inputHint -> Messages("nino-example.hint")
   )
   </div>
 
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
-  <div class="form-field">
+  <div class="form-group">
    <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
   </div>
  }
