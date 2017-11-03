@@ -26,26 +26,21 @@
  </header>
 
  @form(routes.ClientInvitationsController.submitStart) {
-  <div>
-   <p class="lede">@Messages("landing-page.p1")</p>
-   <p class="font-xsmall">@Messages("landing-page.p2")
-   <b class="bold-xsmall font-xsmall">@Messages("landing-page.p3")</b>
-      @Messages("landing-page.p4")</p>
-  </div>
 
-  <div>
-   <h2>@Messages("landing-page.sub-header")</h2>
-  </div>
+    <span class="lede">@Messages("landing-page.p1")</span>
 
-  <div>
-   <p class="font-xsmall">@Messages("landing-page.p5")</p>
-  </div>
+    <p>@Messages("landing-page.p2") <strong>@Messages("landing-page.p3")</strong> @Messages("landing-page.p4")</p>
 
-  <div class="form-group">
-   <button class="button" type="submit" id="continue">@Messages("landing-page.accept")</button>
-  </div>
+    <br />
+
+    <h2>@Messages("landing-page.sub-header")</h2>
+
+    <p>@Messages("landing-page.p5")</p>
+
+    <button class="button" type="submit" id="continue">@Messages("landing-page.accept")</button>
  }
- <div>
-  <a href="#" class="link-back" id="back">@Messages("landing-page.decline")</a>
- </div>
+
+    <br />
+
+    <a href="#" id="declineInvitation">@Messages("landing-page.decline")</a>
 }
