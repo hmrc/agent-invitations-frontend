@@ -1,0 +1,51 @@
+@*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.form
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None) {
+ <header class="page-header">
+  <h1>@Messages("landing-page.title")</h1>
+ </header>
+
+ @form(routes.ClientInvitationsController.submitStart) {
+  <div>
+   <p class="lede">@Messages("landing-page.p1")</p>
+   <p class="font-xsmall">@Messages("landing-page.p2")
+   <b class="bold-xsmall font-xsmall">@Messages("landing-page.p3")</b>
+      @Messages("landing-page.p4")</p>
+  </div>
+
+  <div>
+   <h2>@Messages("landing-page.sub-header")</h2>
+  </div>
+
+  <div>
+   <p class="font-xsmall">@Messages("landing-page.p5")</p>
+  </div>
+
+  <div class="form-group">
+   <button class="button" type="submit" id="continue">@Messages("landing-page.accept")</button>
+  </div>
+ }
+ <div>
+  <a href="#" class="link-back" id="back">@Messages("landing-page.decline")</a>
+ </div>
+}
