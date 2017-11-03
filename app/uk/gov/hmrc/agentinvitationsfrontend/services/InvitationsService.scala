@@ -28,13 +28,16 @@ import scala.concurrent.{ ExecutionContext, Future }
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
 
-  def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+  def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
 
     val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", userInput.nino.value, userInput.postcode)
 
     for {
-      location <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation <- invitationsConnector.getInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
+      locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
+      invitationOpt <- invitationsConnector
+        .getInvitation(locationOpt.getOrElse { throw new Exception("Invitation location expected; but missing.") })
+      invitation = invitationOpt
+        .getOrElse { throw new Exception("Invitation expected; but missing.") }
     } yield invitation
   }
 }

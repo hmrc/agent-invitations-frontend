@@ -29,6 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
+import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -71,10 +72,16 @@ class AgentsInvitationController @Inject() (
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          invitationsService.createInvitation(arn, userInput).map {
-            case Some(location) => Ok(invitation_sent(location.selfUrl.toString))
-            case None => NotImplemented
-          }
+          invitationsService
+            .createInvitation(arn, userInput)
+            .map(invitation =>
+              Ok(invitation_sent(invitation.selfUrl.toString)))
+            .recoverWith {
+              case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") =>
+                Future.successful(Forbidden(not_enrolled()))
+              case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") =>
+                Future.successful(Forbidden(no_match()))
+            }
         })
     }
   }

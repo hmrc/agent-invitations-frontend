@@ -112,6 +112,48 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 403 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
+      failedCreateInvitationForNotEnrolled(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controller.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return 403 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an non-associated but valid postcode" in {
+      failedCreateInvitationFoInvalidPostcode(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controller.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-match.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-match.description"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return exception when invitation could not be retrieved after creation" in {
+      createInvitationStub(arn, mtdItId, "1")
+      notFoundGetInvitationStub(mtdItId, "1")
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = controller.submitPostcode()(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      an[Exception] shouldBe thrownBy { await(result) }
+    }
+
     behave like anAuthorisedEndpoint(request, submitPostcode)
   }
 

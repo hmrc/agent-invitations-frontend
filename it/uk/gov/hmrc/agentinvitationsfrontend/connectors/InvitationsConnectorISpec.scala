@@ -26,7 +26,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if unexpected response when creating invitation" in {
-      failedCreateInvitation(arn, MtdItId("mtdItId"), "1")
+      failedCreateInvitation(arn)
       intercept[BadRequestException] {
         await(connector.createInvitation(arn, agentInvitation))
       }
@@ -43,7 +43,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if invitation not found" in {
-      notFoundGetInvitationStub(arn, mtdItId, invitationId)
+      notFoundGetInvitationStub(mtdItId, invitationId)
       val result = await(connector
         .getInvitation(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
 

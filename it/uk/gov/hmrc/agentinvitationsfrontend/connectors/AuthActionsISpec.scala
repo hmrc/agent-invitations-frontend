@@ -1,17 +1,14 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import play.api.mvc.{ Request, Result }
-import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
-import uk.gov.hmrc.auth.core.{ AuthConnector, AuthorisationException, InsufficientEnrolments }
-import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier, SessionKeys }
+import play.api.mvc.Result
 import play.api.mvc.Results._
+import play.api.test.FakeRequest
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 class AuthActionsISpec extends BaseISpec {
 

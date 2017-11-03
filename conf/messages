@@ -24,6 +24,14 @@ invitation-sent.description.advice.pt1=You need to <strong>share this link</stro
 invitation-sent.description.advice.pt2=They can then accept your invitation. HMRC will not do this for you.
 invitation-sent.button=Return to your account
 
+# Not Enrolled
+not-enrolled.title = This individual has not signed up to report their tax using software
+not-enrolled.description = You can''t authorise an individual until they have signed up.
+
+# No Match
+no-match.title = There was a problem
+no-match.description = The details provided do not match our records.
+
 # Client Pages
 # Landing Page
 landing-page.title=Accept or decline an agent''s invitation
