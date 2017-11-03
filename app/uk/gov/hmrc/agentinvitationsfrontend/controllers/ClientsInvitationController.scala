@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import scala.concurrent.Future
 
 @Singleton
-class ClientInvitationsController @Inject() (val messagesApi: play.api.i18n.MessagesApi)(implicit val configuration: Configuration)
+class ClientsInvitationController @Inject() (val messagesApi: play.api.i18n.MessagesApi)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport {
 
   def start(token: String): Action[AnyContent] = Action.async { implicit request =>
@@ -35,7 +35,7 @@ class ClientInvitationsController @Inject() (val messagesApi: play.api.i18n.Mess
   }
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientInvitationsController.getConfirmInvitation())
+    Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
   }
 
   def getConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
@@ -43,7 +43,7 @@ class ClientInvitationsController @Inject() (val messagesApi: play.api.i18n.Mess
   }
 
   def submitConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientInvitationsController.getConfirmTerms())
+    Future successful Redirect(routes.ClientsInvitationController.getConfirmTerms())
   }
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
@@ -51,7 +51,7 @@ class ClientInvitationsController @Inject() (val messagesApi: play.api.i18n.Mess
   }
 
   def submitConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientInvitationsController.getCompletePage())
+    Future successful Redirect(routes.ClientsInvitationController.getCompletePage())
   }
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>

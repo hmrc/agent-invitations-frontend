@@ -1,16 +1,16 @@
 # microservice specific routes
 
 # Agent Endpoints
-GET         /agents/                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.agentsRoot
-GET         /agents/enter-nino                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.enterNino
-POST        /agents/enter-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.submitNino
-POST        /agents/invitation-sent               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.submitPostcode
+GET         /agents/                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
+GET         /agents/enter-nino                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.enterNino
+POST        /agents/enter-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
+POST        /agents/invitation-sent               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 
 # Client Endpoints
-GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.start(token: String)
-POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitStart
-GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getConfirmInvitation
-POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitConfirmInvitation
-GET         /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getConfirmTerms
-POST        /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitConfirmTerms
-GET         /accept-tax-agent-invitation/4        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getCompletePage
+GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(token: String)
+POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart
+GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation
+POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation
+GET         /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms
+POST        /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmTerms
+GET         /accept-tax-agent-invitation/4        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getCompletePage
