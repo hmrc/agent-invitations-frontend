@@ -36,10 +36,6 @@
 
     <h2>@Messages("confirm-terms.sub-header")</h2>
 
-<<<<<<< HEAD
-    @form(routes.ClientsInvitationController.submitConfirmTerms()) {
-        <fieldset>
-=======
     <p>@Messages("confirm-terms.p1")</p>
 
     <ul class="list list-bullet">
@@ -52,11 +48,10 @@
         <li>@Messages("confirm-terms.bullet7")</li>
         <li>@Messages("confirm-terms.bullet8")</li>
     </ul>
->>>>>>> [APB-1547][SS] fixed markup and styles on ui
 
     <p>@Messages("confirm-terms.p2")</p>
 
-    @form(routes.ClientInvitationsController.submitConfirmTerms()) {
+    @form(routes.ClientsInvitationController.submitConfirmTerms()) {
 
         <div class="form-group">
             <label class="block-label form-checkbox" for="waste-types">
