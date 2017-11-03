@@ -18,7 +18,7 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.agentInvitationNinoForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.agentInvitationNinoForm
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationNinoFormSpec extends UnitSpec {
