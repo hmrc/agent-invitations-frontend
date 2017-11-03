@@ -1,5 +1,15 @@
 # microservice specific routes
 
-GET         /agents/enter-nino             @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.enterNino
-POST        /agents/enter-postcode         @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitNino
-POST        /agents/invitation-sent        @uk.gov.hmrc.agentinvitationsfrontend.controllers.InvitationsController.submitPostcode
+# Agent Endpoints
+GET         /agents/enter-nino                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.enterNino
+POST        /agents/enter-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.submitNino
+POST        /agents/invitation-sent               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.submitPostcode
+
+# Client Endpoints
+GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.start(token: String)
+POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitStart
+GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getConfirmInvitation
+POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitConfirmInvitation
+GET         /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getConfirmTerms
+POST        /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.submitConfirmTerms
+GET         /accept-tax-agent-invitation/4        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationsController.getCompletePage
