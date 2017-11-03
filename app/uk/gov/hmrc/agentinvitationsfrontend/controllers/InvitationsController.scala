@@ -77,7 +77,10 @@ class InvitationsController @Inject() (
             .map(invitation =>
               Ok(invitation_sent(invitation.selfUrl.toString)))
             .recoverWith {
-              case _: Upstream4xxResponse => Future.successful(Forbidden(not_enrolled()))
+              case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") =>
+                Future.successful(Forbidden(not_enrolled()))
+              case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") =>
+                Future.successful(Forbidden(no_match()))
             }
         })
     }
