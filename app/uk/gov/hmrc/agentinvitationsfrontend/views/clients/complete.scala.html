@@ -19,23 +19,17 @@
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None) {
-    <div class="govuk-box-highlight">
-        <p>
-        @Messages("client-complete.title1")
-        </p>
-        <h1 class="heading-large">
-        @Messages("client-complete.title2")
-        </h1>
-        <p>
-            @Messages("client-complete.title3") <br>
-            <strong class="bold">@Messages("client-complete.title4")</strong>
-        </p>
+
+    <div class="transaction-banner--complete">
+        <p class="heading-24--normal">@Messages("client-complete.title1")</p>
+        <h1 class="transaction-banner__heading">@Messages("client-complete.title2")</h1>
+        <p class="heading-24--normal">@Messages("client-complete.title3")</p>
+        <span class="heading-24"><strong>@Messages("client-complete.title4")</strong></span>
     </div>
 
-    <div>
-        <h2>@Messages("client-complete.sub-header")</h2>
-        <p>@Messages("client-complete.p1")</p>
-    </div>
+    <h2>@Messages("client-complete.sub-header")</h2>
+
+    <p>@Messages("client-complete.p1")</p>
 
     <div class="form-group">
         <button class="button" type="submit" id="continue">@Messages("client-complete.button")</button>
