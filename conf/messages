@@ -25,10 +25,10 @@ invitation-sent.button = Return to your account
 
 
 # Not Enrolled
-not-enrolled.title = This individual has not signed up to report their tax using software.
+not-enrolled.title = This individual has not signed up to report their tax using software
 not-enrolled.description = You can''t authorise an individual until they have signed up.
-not-enrolled.description-bold = You can start the sign-up process but the individual needs to finish it.
-not-enrolled.description-advice = Invite an individual to sign up to report their tax using software
+
+
 
 # Error messages for digital services
 global.error.400.title=Bad request - 400
