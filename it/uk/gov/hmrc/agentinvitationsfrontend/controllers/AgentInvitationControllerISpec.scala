@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.mvc.{ AnyContentAsEmpty, _ }
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsController.{ agentInvitationNinoForm, agentInvitationPostCodeForm }
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{ agentInvitationNinoForm, agentInvitationPostCodeForm }
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 
 class AgentInvitationControllerISpec extends BaseISpec {
 
-  lazy val controller: AgentInvitationsController = app.injector.instanceOf[AgentInvitationsController]
+  lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
 

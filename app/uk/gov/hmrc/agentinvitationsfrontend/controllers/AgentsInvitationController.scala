@@ -34,16 +34,16 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import scala.concurrent.Future
 
 @Singleton
-class AgentInvitationsController @Inject() (
+class AgentsInvitationController @Inject() (
   invitationsService: InvitationsService,
   val messagesApi: play.api.i18n.MessagesApi,
   val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
-  import AgentInvitationsController._
+  import AgentsInvitationController._
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentInvitationsController.enterNino().url)
+    Redirect(routes.AgentsInvitationController.enterNino().url)
   }
 
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
@@ -80,7 +80,7 @@ class AgentInvitationsController @Inject() (
   }
 }
 
-object AgentInvitationsController {
+object AgentsInvitationController {
 
   private def postcodeCheck(postcode: String) =
     postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")

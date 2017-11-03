@@ -22,13 +22,13 @@ import org.scalatest.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ ClientInvitationsController, routes }
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ ClientsInvitationController, routes }
 
-class ClientInvitationsControllerSpec @Inject() (implicit val configuration: Configuration) extends PlayMessagesSpec with MockitoSugar {
+class ClientsInvitationControllerSpec @Inject() (implicit val configuration: Configuration) extends PlayMessagesSpec with MockitoSugar {
 
-  val controller = new ClientInvitationsController(messagesApi)
+  val controller = new ClientsInvitationController(messagesApi)
 
-  "ClientInvitationsController" should {
+  "ClientsInvitationController" should {
     "return Status: OK when loading the landing page" in {
       val result = controller.start("aToken").apply(FakeRequest())
 
@@ -39,7 +39,7 @@ class ClientInvitationsControllerSpec @Inject() (implicit val configuration: Con
       val result = controller.submitStart().apply(FakeRequest())
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientInvitationsController.getConfirmInvitation().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
     }
 
     "return Status: OK when loading the confirm invitation page" in {
@@ -52,7 +52,7 @@ class ClientInvitationsControllerSpec @Inject() (implicit val configuration: Con
       val result = controller.submitConfirmInvitation().apply(FakeRequest())
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientInvitationsController.getConfirmTerms().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmTerms().url
     }
 
     "return Status: OK when loading the confirm terms page" in {
@@ -65,7 +65,7 @@ class ClientInvitationsControllerSpec @Inject() (implicit val configuration: Con
       val result = controller.submitConfirmTerms().apply(FakeRequest())
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientInvitationsController.getCompletePage().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
     }
 
     "return Status: OK when loading the complete page" in {
