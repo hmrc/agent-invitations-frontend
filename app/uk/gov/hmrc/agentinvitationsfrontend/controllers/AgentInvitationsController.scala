@@ -42,6 +42,10 @@ class AgentInvitationsController @Inject() (
 
   import AgentInvitationsController._
 
+  def agentsRoot: Action[AnyContent] = Action { implicit request =>
+    Redirect(routes.AgentInvitationsController.enterNino().url)
+  }
+
   def enterNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       Future successful Ok(enter_nino(agentInvitationNinoForm))

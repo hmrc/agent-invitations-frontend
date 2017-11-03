@@ -22,9 +22,9 @@ import org.scalatest.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ClientInvitationsController, routes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ ClientInvitationsController, routes }
 
-class ClientInvitationsControllerSpec @Inject()(implicit val configuration: Configuration) extends PlayMessagesSpec with MockitoSugar {
+class ClientInvitationsControllerSpec @Inject() (implicit val configuration: Configuration) extends PlayMessagesSpec with MockitoSugar {
 
   val controller = new ClientInvitationsController(messagesApi)
 
