@@ -7,7 +7,7 @@ POST        /agents/enter-postcode                @uk.gov.hmrc.agentinvitationsf
 POST        /agents/invitation-sent               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 
 # Client Endpoints
-GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(token: String)
+GET         /:invitationId                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: String)
 POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart
 GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation
 POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation

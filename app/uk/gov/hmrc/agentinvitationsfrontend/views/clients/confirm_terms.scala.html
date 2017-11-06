@@ -21,7 +21,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+@(confirmTermsForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-terms.title"), bodyClasses = None) {
     <header class="page-header">
@@ -54,8 +55,8 @@
         <fieldset>
 
             <div class="multiple-choice">
-                <input id="waste-type-1" name="waste-types" type="checkbox">
-                <label for="waste-type-1">@Messages("confirm-terms.checkbox")</label>
+                <input id="confirm-terms" name="confirmTerms" type="checkbox" value="true">
+                <label for="confirm-terms">@Messages("confirm-terms.checkbox")</label>
             </div>
 
         </fieldset>

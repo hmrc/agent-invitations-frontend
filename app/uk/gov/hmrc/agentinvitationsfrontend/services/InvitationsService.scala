@@ -18,15 +18,17 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{ Inject, Singleton }
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{ DesConnector, InvitationsConnector }
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
-class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
+class InvitationsService @Inject() (
+  invitationsConnector: InvitationsConnector,
+  desConnector: DesConnector) {
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
 
@@ -34,7 +36,16 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
 
     for {
       location <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation <- invitationsConnector.getInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
+      invitation <- invitationsConnector.getSentInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
     } yield invitation
+  }
+
+  def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    for {
+      invitationOpt <- invitationsConnector.getInvitation(invitationId, mtdItId)
+      invitation = invitationOpt.getOrElse { throw new Exception("Invitation location expected but missing.") }
+      _ <- desConnector.createAgentRelationship(mtdItId, invitation.arn)
+      result <- invitationsConnector.acceptInvitation(mtdItId, invitationId)
+    } yield result
   }
 }

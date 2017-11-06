@@ -50,6 +50,16 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
+    bindBaseUrl("des")
+    bindProperty("des.environment", "des.environment")
+    bindProperty("des.authorizationToken", "des.authorization-token")
+  }
+
+  private def bindProperty(objectName: String, propertyName: String) =
+    bind(classOf[String]).annotatedWith(Names.named(objectName)).toProvider(new ServicePropertyProvider(propertyName))
+
+  private class ServicePropertyProvider(confKey: String) extends Provider[String] {
+    override lazy val get = getConfString(confKey, throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 
   private def bindBaseUrl(serviceName: String) =
