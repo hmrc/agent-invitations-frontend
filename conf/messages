@@ -28,9 +28,9 @@ invitation-sent.button=Return to your account
 not-enrolled.title = This individual has not signed up to report their tax using software
 not-enrolled.description = You can''t authorise an individual until they have signed up.
 
-# No Match
-no-match.title = There was a problem
-no-match.description = The details provided do not match our records.
+# Not Matched
+not-matched.title = There was a problem
+not-matched.description = The details provided do not match our records.
 
 # Client Pages
 # Landing Page

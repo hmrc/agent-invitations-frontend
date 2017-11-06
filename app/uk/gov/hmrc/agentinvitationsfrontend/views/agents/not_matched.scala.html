@@ -17,9 +17,9 @@
 @import play.api.Configuration
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("no-match.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("not-matched.title"), bodyClasses = None) {
   <header class="page-header">
-    <h1>@Messages("no-match.title")</h1>
+    <h1>@Messages("not-matched.title")</h1>
   </header>
-  <p>@Messages("no-match.description")</p>
+  <p>@Messages("not-matched.description")</p>
 }

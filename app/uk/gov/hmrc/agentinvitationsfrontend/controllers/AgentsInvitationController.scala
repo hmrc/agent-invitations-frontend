@@ -84,14 +84,26 @@ class AgentsInvitationController @Inject() (
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
                 auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail")
-                Future.successful(Forbidden(not_enrolled()))
+                Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
               }
               case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
                 auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail")
-                Future.successful(Forbidden(no_match()))
+                Future successful Redirect(routes.AgentsInvitationController.notMatched())
               }
             }
         })
+    }
+  }
+
+  def notEnrolled: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_enrolled())
+    }
+  }
+
+  def notMatched: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_matched())
     }
   }
 
