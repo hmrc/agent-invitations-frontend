@@ -36,11 +36,11 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import scala.concurrent.Future
 
 @Singleton
-class AgentsInvitationController @Inject()(
-                                            invitationsService: InvitationsService,
-                                            auditService: AuditService,
-                                            val messagesApi: play.api.i18n.MessagesApi,
-                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class AgentsInvitationController @Inject() (
+  invitationsService: InvitationsService,
+  auditService: AuditService,
+  val messagesApi: play.api.i18n.MessagesApi,
+  val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
