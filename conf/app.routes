@@ -6,6 +6,10 @@ GET         /agents/enter-nino                    @uk.gov.hmrc.agentinvitationsf
 POST        /agents/enter-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
 POST        /agents/invitation-sent               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 
+# Error Agent Endpoints
+GET         /agents/not-enrolled                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
+GET         /agents/not-matched                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
+
 # Client Endpoints
 GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(token: String)
 POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart
