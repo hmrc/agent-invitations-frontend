@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.{Authorization, RequestId, SessionId}
+import uk.gov.hmrc.http.logging.{ Authorization, RequestId, SessionId }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.test.UnitSpec
@@ -37,7 +37,7 @@ import scala.concurrent.ExecutionContext
 class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
 
   "auditEvent" should {
-    "send an AgentInvitationSubmitted Event" in {
+    "send an AgentClientInvitationSubmitted Event" in {
       val mockConnector = mock[AuditConnector]
       val service = new AuditService(mockConnector)
 
@@ -64,8 +64,8 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         verify(mockConnector).sendEvent(captor.capture())(any[HeaderCarrier], any[ExecutionContext])
         val sentEvent = captor.getValue.asInstanceOf[DataEvent]
 
-        sentEvent.auditType shouldBe "AgentInvitationSubmitted"
-        sentEvent.auditSource shouldBe "agent-invitation-frontend"
+        sentEvent.auditType shouldBe "AgentClientInvitationSubmitted"
+        sentEvent.auditSource shouldBe "agent-invitations-frontend"
         sentEvent.detail("result") shouldBe "Success"
         sentEvent.detail("invitationId") shouldBe "1"
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
@@ -77,7 +77,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
-        sentEvent.tags("transactionName") shouldBe "agent-invitation-submitted"
+        sentEvent.tags("transactionName") shouldBe "agent-client-invitation-submitted"
         sentEvent.tags("path") shouldBe "/path"
         sentEvent.tags("X-Session-ID") shouldBe "dummy session id"
         sentEvent.tags("X-Request-ID") shouldBe "dummy request id"
