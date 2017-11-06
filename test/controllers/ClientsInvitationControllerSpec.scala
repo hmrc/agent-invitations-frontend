@@ -23,16 +23,25 @@ import play.api.Configuration
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ ClientsInvitationController, routes }
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.auth.core.AuthConnector
 
 class ClientsInvitationControllerSpec @Inject() (implicit val configuration: Configuration) extends PlayMessagesSpec with MockitoSugar {
-
-  val controller = new ClientsInvitationController(messagesApi)
+  val invitationsService = mock[InvitationsService]
+  val controller = new ClientsInvitationController(invitationsService, messagesApi, mock[AuthConnector])
 
   "ClientsInvitationController" should {
     "return Status: OK when loading the landing page" in {
-      val result = controller.start("aToken").apply(FakeRequest())
+      val result = controller.start("someInvitationID").apply(FakeRequest())
 
       status(result) shouldBe OK
+    }
+
+    "session contains invitation ID when loading the landing page" in {
+      implicit val request = FakeRequest()
+      val result = controller.start("someInvitationID").apply(request)
+
+      await(result).session.get("invitationId") shouldBe Some("someInvitationID")
     }
 
     "redirect to confirmInvitation when clicking accept on the landing page" in {
@@ -48,11 +57,25 @@ class ClientsInvitationControllerSpec @Inject() (implicit val configuration: Con
       status(result) shouldBe OK
     }
 
-    "redirect to confirmTerms when clicking continue on the confirm invitation page" in {
+    "reshow confirm invitation page when clicking continue on the confirm invitation page without having chosen yes or no" in {
       val result = controller.submitConfirmInvitation().apply(FakeRequest())
+
+      status(result) shouldBe OK
+    }
+
+    "redirect to confirmTerms when clicking continue on the confirm invitation page having selected yes" in {
+      val req = FakeRequest().withFormUrlEncodedBody("confirmInvite" -> "true")
+      val result = controller.submitConfirmInvitation().apply(req)
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmTerms().url
+    }
+
+    "show an error page when clicking continue on the confirm invitation page having selected no" in {
+      val req = FakeRequest().withFormUrlEncodedBody("confirmInvite" -> "false")
+      val result = controller.submitConfirmInvitation().apply(req)
+
+      status(result) shouldBe NOT_IMPLEMENTED // TODO APB-1543
     }
 
     "return Status: OK when loading the confirm terms page" in {
@@ -61,11 +84,19 @@ class ClientsInvitationControllerSpec @Inject() (implicit val configuration: Con
       status(result) shouldBe OK
     }
 
-    "redirect to complete when clicking confirm on the confirm terms page" in {
-      val result = controller.submitConfirmTerms().apply(FakeRequest())
+    "redirect to complete when clicking confirm on the confirm terms page when the checkbox was checked" in {
+      val req = FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true")
+      val result = controller.submitConfirmTerms().apply(req)
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
+    }
+
+    "reshow confirm terms page when clicking confirm having not checked the checkbox" in {
+      val req = FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "")
+      val result = controller.submitConfirmTerms().apply(req)
+
+      status(result) shouldBe OK
     }
 
     "return Status: OK when loading the complete page" in {
