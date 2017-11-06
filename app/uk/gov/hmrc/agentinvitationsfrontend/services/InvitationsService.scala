@@ -36,13 +36,14 @@ class InvitationsService @Inject() (
 
     for {
       location <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation <- invitationsConnector.getSentInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
+      invitation <- invitationsConnector.getInvitation(location.getOrElse { throw new Exception("Invitation location expected but missing.") })
     } yield invitation
   }
 
   def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    val location = s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
     for {
-      invitationOpt <- invitationsConnector.getInvitation(invitationId, mtdItId)
+      invitationOpt <- invitationsConnector.getInvitation(location)
       invitation = invitationOpt.getOrElse { throw new Exception("Invitation location expected but missing.") }
       _ <- desConnector.createAgentRelationship(mtdItId, invitation.arn)
       result <- invitationsConnector.acceptInvitation(mtdItId, invitationId)

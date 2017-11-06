@@ -54,17 +54,8 @@ class InvitationsConnector @Inject() (
     }
   }
 
-  def getSentInvitation(location: String)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
-    monitor(s"ConsumedAPI-Agent-Get-Invitation-GET") {
-      val url = invitationUrl(location)
-      implicit val readsInvitation = Invitation.reads(url)
-      http.GET[Option[Invitation]](url.toString)
-    }
-  }
-
-  def getInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
-    monitor(s"ConsumedAPI-Client-Get-Invitation-GET") {
-      val location = s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
+  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
+    monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       implicit val readsInvitation = Invitation.reads(url)
       http.GET[Option[Invitation]](url.toString)
