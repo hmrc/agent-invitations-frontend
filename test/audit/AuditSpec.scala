@@ -71,8 +71,6 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
         sentEvent.detail("regimeId") shouldBe "WM123456C"
         sentEvent.detail("regime") shouldBe "HMRC-MTD-IT"
-        sentEvent.detail("authorization") shouldBe "dummy bearer token"
-        sentEvent.detail("token") shouldBe ""
 
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"

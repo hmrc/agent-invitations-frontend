@@ -47,9 +47,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "regimeId" -> agentInvitationUserInput.nino.value,
-        "regime" -> "HMRC-MTD-IT",
-        "authorization" -> hc.authorization.getOrElse(Authorization("")).value,
-        "token" -> ""))
+        "regime" -> "HMRC-MTD-IT"))
   }
 
   private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
