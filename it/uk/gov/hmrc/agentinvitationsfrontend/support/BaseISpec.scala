@@ -30,7 +30,6 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   protected implicit val materializer = app.materializer
 
   protected def checkHtmlResultWithBodyText(result: Result, expectedSubstrings: String*): Unit = {
-    status(result) shouldBe OK
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))

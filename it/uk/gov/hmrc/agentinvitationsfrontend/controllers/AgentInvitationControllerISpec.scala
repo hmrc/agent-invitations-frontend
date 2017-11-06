@@ -103,7 +103,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "")
-      val result = controller.submitPostcode()(authorisedAsValidAgent(request
+      val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
@@ -112,7 +112,81 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 303 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
+      failedCreateInvitationForNotEnrolled(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = submitPostcode(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an non-associated but valid postcode" in {
+      failedCreateInvitationFoInvalidPostcode(arn)
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = submitPostcode(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      verifyAuthoriseAttempt()
+    }
+
+    "return exception when invitation could not be retrieved after creation" in {
+      createInvitationStub(arn, mtdItId, "1")
+      notFoundGetInvitationStub(mtdItId, "1")
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
+
+      val result = submitPostcode(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
     behave like anAuthorisedEndpoint(request, submitPostcode)
+  }
+
+  "GET /agents/not-enrolled" should {
+
+    val request = FakeRequest("GET", "/agents/not-enrolled")
+    val notEnrolled = controller.notEnrolled()
+
+    "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
+      val result = notEnrolled(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      verifyAuthoriseAttempt()
+    }
+
+    behave like anAuthorisedEndpoint(request, notEnrolled)
+  }
+
+  "GET /agents/not-matched" should {
+
+    val request = FakeRequest("GET", "/agents/not-matched")
+    val notMatched = controller.notMatched()
+
+    "return 403 for authorised Agent who submitted not matching known facts" in {
+      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.description"))
+      verifyAuthoriseAttempt()
+    }
+
+    behave like anAuthorisedEndpoint(request, notMatched)
   }
 
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {

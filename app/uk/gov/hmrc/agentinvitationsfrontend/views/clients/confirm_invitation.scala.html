@@ -27,23 +27,20 @@
     </header>
 
     @form(routes.ClientsInvitationController.submitConfirmInvitation){
-        <div class="form-group">
-            <fieldset>
 
-                <legend>
-                    <h1 class="heading-medium">@Messages("confirm-invitation.sub-header")</h1>
-                </legend>
-
-                <div class="multiple-choice">
-                    <input id="radio-1" type="radio" name="confirmInvite" value="true">
-                    <label for="radio-1">@Messages("confirm-invitation.radio1")</label>
-                </div>
-                <div class="multiple-choice">
-                    <input id="radio-2" type="radio" name="confirmInvite" value="false">
-                    <label for="radio-2">@Messages("confirm-invitation.radio2")</label>
-                </div>
-            </fieldset>
-        </div>
+        <fieldset class="form-group inline">
+            <legend class="bold-medium">
+                @Messages("confirm-invitation.sub-header")
+            </legend>
+            <label class="block-label selection-button-radio" for="confirmInvite">
+                <input id="radio-1" type="radio" name="confirmInvite" value="true">
+                @Messages("confirm-invitation.radio1")
+            </label>
+            <label class="block-label selection-button-radio" for="confirmInvite">
+                <input id="radio-2" type="radio" name="confirmInvite" value="false">
+                @Messages("confirm-invitation.radio2")
+            </label>
+        </fieldset>
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("confirm-invitation.button")</button>

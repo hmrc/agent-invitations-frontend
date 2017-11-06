@@ -20,15 +20,17 @@ import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.{ mapping, text }
+import play.api.data.Forms.{mapping, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{ Action, AnyContent }
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
+import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -36,6 +38,7 @@ import scala.concurrent.Future
 @Singleton
 class AgentsInvitationController @Inject() (
   invitationsService: InvitationsService,
+  auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
   val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
@@ -71,13 +74,41 @@ class AgentsInvitationController @Inject() (
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          invitationsService.createInvitation(arn, userInput).map {
-            case Some(location) => Ok(invitation_sent(location.selfUrl.toString))
-            case None => NotImplemented
-          }
+          invitationsService
+            .createInvitation(arn, userInput)
+            .map(invitation => {
+              val id = extractInvitationId(invitation.selfUrl.toString)
+              auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
+              Ok(invitation_sent(invitation.selfUrl.toString))
+            })
+            .recoverWith {
+              case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
+                auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail")
+                Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
+              }
+              case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
+                auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail")
+                Future successful Redirect(routes.AgentsInvitationController.notMatched())
+              }
+            }
         })
     }
   }
+
+  def notEnrolled: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_enrolled())
+    }
+  }
+
+  def notMatched: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_matched())
+    }
+  }
+
+  private def extractInvitationId(url: String) = url.substring(url.lastIndexOf("/") + 1)
+
 }
 
 object AgentsInvitationController {
