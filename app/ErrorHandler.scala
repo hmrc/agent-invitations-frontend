@@ -32,6 +32,9 @@ import scala.concurrent.Future
 class ErrorHandler @Inject() (implicit val config: Configuration, val env: Environment, val messagesApi: MessagesApi)
   extends HttpErrorHandler with I18nSupport with AuthRedirects {
 
+  val authenticationRedirect: String = config.getString("authentication.login-callback.url")
+    .getOrElse(throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
+
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     Future successful
       Status(statusCode)(error_template(
@@ -42,7 +45,9 @@ class ErrorHandler @Inject() (implicit val config: Configuration, val env: Envir
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     val response = exception match {
-      case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
+      case _: NoActiveSession => toGGLogin(
+        if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
+        else s"$authenticationRedirect${request.uri}")
       case _: InsufficientEnrolments => Forbidden
       case _ => InternalServerError(error_template(
         Messages("global.error.500.title"),
