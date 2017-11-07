@@ -63,7 +63,7 @@ class InvitationsConnector @Inject() (
   }
 
   def acceptInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier): Future[Int] = {
-    monitor(s"ConsumedAPI-Agent-Accept-Invitation-PUT") {
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }
   }

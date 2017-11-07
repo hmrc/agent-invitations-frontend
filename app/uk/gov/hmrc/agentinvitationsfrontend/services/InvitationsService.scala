@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{ DesConnector, InvitationsConnector }
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsService @Inject() (
-  invitationsConnector: InvitationsConnector,
-  desConnector: DesConnector) {
+class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
 
@@ -44,12 +42,6 @@ class InvitationsService @Inject() (
   }
 
   def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    val location = s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
-    for {
-      invitationOpt <- invitationsConnector.getInvitation(location)
-      invitation = invitationOpt.getOrElse { throw new Exception("Invitation location expected but missing.") }
-      _ <- desConnector.createAgentRelationship(mtdItId, invitation.arn)
-      result <- invitationsConnector.acceptInvitation(mtdItId, invitationId)
-    } yield result
+    invitationsConnector.acceptInvitation(mtdItId, invitationId)
   }
 }

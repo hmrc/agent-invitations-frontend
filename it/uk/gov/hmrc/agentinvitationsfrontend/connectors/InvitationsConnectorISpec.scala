@@ -3,8 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
-import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 
 class InvitationsConnectorISpec extends BaseISpec {
 
@@ -51,4 +51,23 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
   }
 
+  "Accept invitation" should {
+    "return status 204 if invitation was accepted" in {
+      acceptInvitationStub(mtdItId, invitationId)
+      val result = await(connector.acceptInvitation(mtdItId, invitationId))
+
+      result shouldBe 204
+      verifyAcceptInvitationAttempt(mtdItId, invitationId)
+    }
+
+    "return an error if invitation not found" in {
+      notFoundAcceptInvitationStub(mtdItId, invitationId)
+
+      intercept[NotFoundException] {
+        await(connector.acceptInvitation(mtdItId, invitationId))
+      }
+
+      verifyAcceptInvitationAttempt(mtdItId, invitationId)
+    }
+  }
 }
