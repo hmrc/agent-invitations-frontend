@@ -20,6 +20,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.http.BadGatewayException
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -53,6 +54,15 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
       status(result) shouldBe NOT_FOUND
       contentType(result) shouldBe Some(HTML)
       checkIncludesMessages(result, "global.error.404.title", "global.error.404.heading", "global.error.404.message")
+    }
+  }
+
+  "ErrorHandler should redirect to GG Login" when {
+    "a user attempts to access a page without authentication" in {
+      val result = handler.onServerError(FakeRequest(), MissingBearerToken(""))
+      val expectedRedirect: String = "/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2F&origin=agent-invitations-frontend"
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe expectedRedirect
     }
   }
 
