@@ -95,6 +95,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /accept-tax-agent-invitation/3 (clicking confirm on the confirm terms page)" should {
+    def withSessionData[A](req: FakeRequest[A], key: String, value: String): FakeRequest[A] = {
+      req.withSession((req.session + (key -> value)).data.toSeq: _*)
+    }
 
     "redirect to complete page when the checkbox was checked" in {
       acceptInvitationStub(mtdItId, "someInvitationId")
@@ -136,9 +139,4 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
     }
   }
-
-  private def withSessionData[A](req: FakeRequest[A], key: String, value: String): FakeRequest[A] = {
-    req.withSession((req.session + (key -> value)).data.toSeq: _*)
-  }
-
 }
