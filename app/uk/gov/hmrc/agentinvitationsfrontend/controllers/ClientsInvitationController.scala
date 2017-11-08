@@ -43,10 +43,7 @@ class ClientsInvitationController @Inject() (
   import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
-      Future successful Ok(landing_page())
-        .withSession(request.session + (("invitationId", invitationId)))
-    }
+    Future successful Ok(landing_page()).withSession(request.session + ("invitationId", invitationId))
   }
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>

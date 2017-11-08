@@ -27,14 +27,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
 
   "GET /:invitationId (landing page)" should {
-    "show the landing page" in {
-      val result = controller.start("someInvitationID")(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+    "show the landing page even if the user is not authenticated" in {
+      val result = controller.start("someInvitationID")(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
     }
 
-    "session contains invitation ID when loading the landing page" in {
-      implicit val request = authorisedAsValidClient(FakeRequest(), mtdItId.value)
+    "session contains invitation ID when loading the landing page even if the user is not authenticated" in {
+      implicit val request = FakeRequest()
       val result = controller.start("someInvitationID")(request)
 
       await(result).session.get("invitationId") shouldBe Some("someInvitationID")
