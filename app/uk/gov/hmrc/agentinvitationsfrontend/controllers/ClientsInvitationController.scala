@@ -19,43 +19,96 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
+import play.api.data.Form
+import play.api.data.Forms._
 import play.api.i18n.I18nSupport
 import play.api.mvc.{ Action, AnyContent }
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
-@Singleton
-class ClientsInvitationController @Inject() (val messagesApi: play.api.i18n.MessagesApi)(implicit val configuration: Configuration)
-  extends FrontendController with I18nSupport {
+case class ConfirmForm(value: Option[Boolean])
 
-  def start(token: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page())
+@Singleton
+class ClientsInvitationController @Inject() (
+  invitationsService: InvitationsService,
+  val messagesApi: play.api.i18n.MessagesApi,
+  val authConnector: AuthConnector)(implicit val configuration: Configuration)
+  extends FrontendController with I18nSupport with AuthActions {
+
+  val confirmInvitationForm = Form[ConfirmForm](
+    mapping("confirmInvite" -> optional(boolean).verifying(_.isDefined))(ConfirmForm.apply)(ConfirmForm.unapply))
+
+  val confirmTermsForm = Form[ConfirmForm](
+    mapping("confirmTerms" -> optional(boolean).verifying(_.isDefined))(ConfirmForm.apply)(ConfirmForm.unapply))
+
+  def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsClient { mtdItId =>
+      Future successful Ok(landing_page())
+        .withSession(request.session + ("invitationId", invitationId))
+    }
   }
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+    withAuthorisedAsClient { mtdItId =>
+      Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+    }
   }
 
   def getConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(confirm_invitation())
+    withAuthorisedAsClient { mtdItId =>
+      Future successful Ok(confirm_invitation(confirmInvitationForm))
+    }
   }
 
   def submitConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientsInvitationController.getConfirmTerms())
+    withAuthorisedAsClient { mtdItId =>
+      confirmInvitationForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future.successful(Ok(confirm_invitation(formWithErrors)))
+        }, data => {
+          val result = if (data.value.getOrElse(false))
+            Redirect(routes.ClientsInvitationController.getConfirmTerms())
+          else
+            NotImplemented //TODO APB-1543
+
+          Future.successful(result)
+        })
+    }
   }
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(confirm_terms())
+    withAuthorisedAsClient { mtdItId =>
+      Future successful Ok(confirm_terms(confirmTermsForm))
+    }
   }
 
   def submitConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientsInvitationController.getCompletePage())
+    withAuthorisedAsClient { mtdItId =>
+      confirmTermsForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future.successful(Ok(confirm_terms(formWithErrors)))
+        }, data => {
+          if (data.value.getOrElse(false))
+            invitationsService.acceptInvitation(request.session.get("invitationId").getOrElse(""), mtdItId).flatMap { _ =>
+              Future.successful(Redirect(routes.ClientsInvitationController.getCompletePage()))
+            } recoverWith {
+              case ex => Future.successful(NotImplemented) //TODO APB-1524
+            }
+          else
+            Future.successful(NotImplemented) //TODO APB-1543
+        })
+    }
   }
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(complete())
+    withAuthorisedAsClient { mtdItId =>
+      Future successful Ok(complete())
+    }
+
   }
 
 }

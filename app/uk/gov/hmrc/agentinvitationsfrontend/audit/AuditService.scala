@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
@@ -38,7 +38,7 @@ object AgentInvitationEvent extends Enumeration {
 }
 
 @Singleton
-class AuditService @Inject()(val auditConnector: AuditConnector) {
+class AuditService @Inject() (val auditConnector: AuditConnector) {
 
   def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationUserInput: AgentInvitationUserInput, result: String)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientInvitationSubmitted, "agent-client-invitation-submitted",

@@ -11,7 +11,7 @@ GET         /agents/not-enrolled                  @uk.gov.hmrc.agentinvitationsf
 GET         /agents/not-matched                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
 
 # Client Endpoints
-GET         /:token                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(token: String)
+GET         /:invitationId                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: String)
 POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart
 GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation
 POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation
