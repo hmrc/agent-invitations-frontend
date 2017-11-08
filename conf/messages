@@ -78,7 +78,7 @@ client-complete.sub-header=What happens next
 client-complete.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete.button=Continue to your Business Tax account
 
-error.confirmInvite.invalid=Please choose an on option below
+error.confirmInvite.invalid=Please choose an option from below
 error.confirmTerms.invalid=Please accept the terms
 
 # General Messages
