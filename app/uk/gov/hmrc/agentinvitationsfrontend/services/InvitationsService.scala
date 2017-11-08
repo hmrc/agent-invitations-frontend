@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
+import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
@@ -43,5 +43,15 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
 
   def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     invitationsConnector.acceptInvitation(mtdItId, invitationId)
+  }
+
+  def invitationExists(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+    val location =
+      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
+
+    invitationsConnector.getInvitation(location).map {
+      case Some(_) => true
+      case None => throw new Exception("Invitation expected; but missing.")
+    }
   }
 }
