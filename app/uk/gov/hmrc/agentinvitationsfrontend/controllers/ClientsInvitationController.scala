@@ -51,9 +51,7 @@ class ClientsInvitationController @Inject() (
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      invitationsService.invitationExists(request.session.get("invitationId").getOrElse(""), mtdItId).map { _ =>
-        Redirect(routes.ClientsInvitationController.getConfirmInvitation())
-      }
+      Future.successful(Redirect(routes.ClientsInvitationController.getConfirmInvitation()))
     }
   }
 
@@ -113,19 +111,25 @@ class ClientsInvitationController @Inject() (
 }
 
 object ClientsInvitationController {
-  def validateClientChoice(message: String): Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+  def validateInviteChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
     if (fieldValue.isDefined)
       Valid
     else
-      Invalid(ValidationError(message))
+      Invalid(ValidationError("error.confirmInvite.invalid"))
+  }
+
+  def validateTermsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    fieldValue match {
+      case Some(true) => Valid
+      case _ => Invalid(ValidationError("error.confirmTerms.invalid"))
+    }
   }
 
   val confirmInvitationForm = Form[ConfirmForm](
     mapping("confirmInvite" -> optional(boolean)
-      .verifying(validateClientChoice("error.confirmInvite.invalid")))(ConfirmForm.apply)(ConfirmForm.unapply))
+      .verifying(validateInviteChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 
   val confirmTermsForm = Form[ConfirmForm](
     mapping("confirmTerms" -> optional(boolean)
-      .verifying(validateClientChoice("error.confirmTerms.invalid")))(ConfirmForm.apply)(ConfirmForm.unapply))
-
+      .verifying(validateTermsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 }

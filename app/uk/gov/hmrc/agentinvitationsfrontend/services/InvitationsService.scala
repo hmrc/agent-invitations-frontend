@@ -44,14 +44,4 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
   def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     invitationsConnector.acceptInvitation(mtdItId, invitationId)
   }
-
-  def invitationExists(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
-    val location =
-      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
-
-    invitationsConnector.getInvitation(location).map {
-      case Some(_) => true
-      case None => throw new Exception("Invitation expected; but missing.")
-    }
-  }
 }
