@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
@@ -39,5 +39,9 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
       invitation = invitationOpt
         .getOrElse { throw new Exception("Invitation expected; but missing.") }
     } yield invitation
+  }
+
+  def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    invitationsConnector.acceptInvitation(mtdItId, invitationId)
   }
 }

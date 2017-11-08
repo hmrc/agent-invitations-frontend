@@ -1,10 +1,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
 trait ACAStubs {
   me: WireMockSupport =>
@@ -79,4 +78,26 @@ trait ACAStubs {
           .withStatus(404)))
   }
 
+  def acceptInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    acceptInvitationStub(mtdItId, invitationId, responseStatus = 204)
+  }
+
+  def notFoundAcceptInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    acceptInvitationStub(mtdItId, invitationId, responseStatus = 404)
+  }
+
+  private def acceptInvitationStub(mtdItId: MtdItId, invitationId: String, responseStatus: Int): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+      .willReturn(
+        aResponse()
+          .withStatus(responseStatus)))
+  }
+
+  def verifyAcceptInvitationAttempt(mtdItId: MtdItId, invitationId: String) = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept")))
+  }
 }

@@ -12,6 +12,8 @@ trait AuthStubs {
 
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
+  def authorisedAsValidClient[A](request: FakeRequest[A], mtditid: String) = authenticated(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
+
   def authenticated[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""

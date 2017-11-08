@@ -17,8 +17,9 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmForm : Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation.title"), bodyClasses = None) {
     <header class="page-header">
@@ -31,12 +32,12 @@
             <legend class="bold-medium">
                 @Messages("confirm-invitation.sub-header")
             </legend>
-            <label class="block-label selection-button-radio" for="radio-1">
-                <input id="radio-1" type="radio" name="radio-1" value="">
+            <label class="block-label selection-button-radio" for="confirmInvite">
+                <input id="radio-1" type="radio" name="confirmInvite" value="true">
                 @Messages("confirm-invitation.radio1")
             </label>
-            <label class="block-label selection-button-radio" for="radio-2">
-                <input id="radio-2" type="radio" name="radio-2" value="">
+            <label class="block-label selection-button-radio" for="confirmInvite">
+                <input id="radio-2" type="radio" name="confirmInvite" value="false">
                 @Messages("confirm-invitation.radio2")
             </label>
         </fieldset>
