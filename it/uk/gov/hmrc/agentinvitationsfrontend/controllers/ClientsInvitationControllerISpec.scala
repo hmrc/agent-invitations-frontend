@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.MtdItId
+import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
 
 class ClientsInvitationControllerISpec extends BaseISpec {
 
@@ -60,11 +60,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /accept-tax-agent-invitation/2 (clicking continue on the confirm invitation page)" should {
-    "reshow the page when neither yes nor no choices were selected" in {
+    "reshow the page when neither yes nor no choices were selected with an error message" in {
       val result = controller.submitConfirmInvitation().apply(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmInvite.invalid"))
     }
 
     "redirect to confirm terms page when yes was selected" in {
@@ -119,12 +120,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAcceptInvitationAttempt(mtdItId, "someInvitationId")
     }
 
-    "reshow the page when the checkbox was not checked" in {
+    "reshow the page when the checkbox was not checked with an error message" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
       val result = controller.submitConfirmTerms().apply(req)
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmTerms.invalid"))
     }
 
   }
@@ -137,5 +139,4 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
     }
   }
-
 }

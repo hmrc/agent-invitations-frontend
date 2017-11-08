@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
+import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {

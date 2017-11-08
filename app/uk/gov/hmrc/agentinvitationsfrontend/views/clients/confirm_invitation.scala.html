@@ -32,6 +32,9 @@
             <legend class="bold-medium">
                 @Messages("confirm-invitation.sub-header")
             </legend>
+            <span style="display: block" class="error-notification" role="tooltip" data-journey="search-page:error:confirmInvite">
+                @Messages(confirmForm("confirmInvite").error.map(_.message).getOrElse(""))
+            </span>
             <label class="block-label selection-button-radio" for="confirmInviteTrue">
                 <input id="confirmInviteTrue" type="radio" name="confirmInvite" value="true">
                 @Messages("confirm-invitation.radio1")

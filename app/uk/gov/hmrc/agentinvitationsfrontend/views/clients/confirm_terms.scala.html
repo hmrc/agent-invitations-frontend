@@ -56,6 +56,9 @@
 
         <div class="form-group">
             <label class="block-label form-checkbox" for="confirm-terms">
+                <span style="display: block" class="error-notification" role="tooltip" data-journey="search-page:error:confirmTerms">
+                @Messages(confirmTermsForm("confirmTerms").error.map(_.message).getOrElse(""))
+                </span>
                 <input id="confirm-terms" type="checkbox" name="confirmTerms" value="true">
                 @Messages("confirm-terms.checkbox")
             </label>

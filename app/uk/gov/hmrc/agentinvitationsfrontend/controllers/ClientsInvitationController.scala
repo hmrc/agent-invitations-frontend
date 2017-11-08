@@ -21,6 +21,7 @@ import javax.inject.{ Inject, Singleton }
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.data.validation.{ Constraint, Invalid, Valid, ValidationError }
 import play.api.i18n.I18nSupport
 import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
@@ -39,11 +40,7 @@ class ClientsInvitationController @Inject() (
   val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
-  val confirmInvitationForm = Form[ConfirmForm](
-    mapping("confirmInvite" -> optional(boolean).verifying(_.isDefined))(ConfirmForm.apply)(ConfirmForm.unapply))
-
-  val confirmTermsForm = Form[ConfirmForm](
-    mapping("confirmTerms" -> optional(boolean).verifying(_.isDefined))(ConfirmForm.apply)(ConfirmForm.unapply))
+  import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(landing_page()).withSession(request.session + ("invitationId", invitationId))
@@ -51,7 +48,7 @@ class ClientsInvitationController @Inject() (
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+      Future.successful(Redirect(routes.ClientsInvitationController.getConfirmInvitation()))
     }
   }
 
@@ -90,8 +87,8 @@ class ClientsInvitationController @Inject() (
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
           if (data.value.getOrElse(false))
-            invitationsService.acceptInvitation(request.session.get("invitationId").getOrElse(""), mtdItId).flatMap { _ =>
-              Future.successful(Redirect(routes.ClientsInvitationController.getCompletePage()))
+            invitationsService.acceptInvitation(request.session.get("invitationId").getOrElse(""), mtdItId).map { _ =>
+              Redirect(routes.ClientsInvitationController.getCompletePage())
             } recoverWith {
               case ex => Future.successful(NotImplemented) //TODO APB-1524
             }
@@ -108,4 +105,28 @@ class ClientsInvitationController @Inject() (
 
   }
 
+}
+
+object ClientsInvitationController {
+  def invitationChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError("error.confirmInvite.invalid"))
+  }
+
+  def termsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    fieldValue match {
+      case Some(true) => Valid
+      case _ => Invalid(ValidationError("error.confirmTerms.invalid"))
+    }
+  }
+
+  val confirmInvitationForm = Form[ConfirmForm](
+    mapping("confirmInvite" -> optional(boolean)
+      .verifying(invitationChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
+
+  val confirmTermsForm = Form[ConfirmForm](
+    mapping("confirmTerms" -> optional(boolean)
+      .verifying(termsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 }
