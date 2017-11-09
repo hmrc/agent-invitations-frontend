@@ -26,7 +26,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
+import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -48,7 +49,20 @@ class ClientsInvitationController @Inject() (
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      Future.successful(Redirect(routes.ClientsInvitationController.getConfirmInvitation()))
+      val invitationId: String = request.session.get("invitationId").getOrElse("")
+      invitationsService.getInvitation(mtdItId, invitationId).flatMap {
+        case Some(invitation) if !invitation.status.contains("Pending") =>
+          Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+        case None =>
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        case _ =>
+          Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+      } recoverWith {
+        case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+          Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+      }
+    }.recoverWith {
+      case _: InsufficientEnrolments => Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
     }
   }
 
@@ -87,10 +101,8 @@ class ClientsInvitationController @Inject() (
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
           if (data.value.getOrElse(false))
-            invitationsService.acceptInvitation(request.session.get("invitationId").getOrElse(""), mtdItId).map { _ =>
+            invitationsService.acceptInvitation(mtdItId, request.session.get("invitationId").getOrElse("")).map { _ =>
               Redirect(routes.ClientsInvitationController.getCompletePage())
-            } recoverWith {
-              case ex => Future.successful(NotImplemented) //TODO APB-1524
             }
           else
             Future.successful(NotImplemented) //TODO APB-1543
@@ -102,7 +114,22 @@ class ClientsInvitationController @Inject() (
     withAuthorisedAsClient { mtdItId =>
       Future successful Ok(complete())
     }
+  }
 
+  def notSignedUp: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(not_signed_up())
+  }
+
+  def incorrectInvitation: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(incorrect_invitation())
+  }
+
+  def notFoundInvitation: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(not_found_invitation())
+  }
+
+  def invitationAlreadyResponded: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(invitation_already_responded())
   }
 
 }

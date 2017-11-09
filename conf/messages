@@ -78,8 +78,24 @@ client-complete.sub-header=What happens next
 client-complete.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete.button=Continue to your Business Tax account
 
+# Form Errors
 error.confirmInvite.invalid=Please choose an option from below
 error.confirmTerms.invalid=Please accept the terms
+
+# Generic Issue Title
+client-problem.title=There is a problem
+
+# Not Signed Up
+not-signed-up.description=You are not signed up to <a href="www.google.com">report tax using software</a>.
+
+# Incorrect Invitation
+incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
+
+# Not Found Invitation
+not-found-invitation.description=The invitation you have accepted does not match our records. Contact the tax agent who sent you the invitation.
+
+# Invitation Already Responded
+invitation-already-responded.description=Someone else has already responded to the invitation you are trying to accept. Contact the tax agent who sent you the invitation.
 
 # General Messages
 # Error messages for digital services

@@ -41,7 +41,11 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
     } yield invitation
   }
 
-  def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def acceptInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     invitationsConnector.acceptInvitation(mtdItId, invitationId)
+  }
+
+  def getInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+    invitationsConnector.getClientInvitation(mtdItId, invitationId)
   }
 }
