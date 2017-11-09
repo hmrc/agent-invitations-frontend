@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -33,21 +32,34 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object AgentInvitationEvent extends Enumeration {
-  val AgentClientInvitationSubmitted = Value
+  val AgentClientInvitationSubmitted, AgentClientInvitationResponse = Value
   type AgentInvitationEvent = Value
 }
 
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationUserInput: AgentInvitationUserInput, result: String)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationUserInput: AgentInvitationUserInput, result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientInvitationSubmitted, "agent-client-invitation-submitted",
       Seq(
         "result" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "regimeId" -> agentInvitationUserInput.nino.value,
-        "regime" -> "HMRC-MTD-IT"))
+        "regime" -> "HMRC-MTD-IT"
+      ) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
+    )
+  }
+
+  def sendAgentInvitationResponse(invitationId: String, arn: Arn, invitationStatus: String, mtdItId: MtdItId)
+                                 (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+    auditEvent(AgentInvitationEvent.AgentClientInvitationResponse, "agent-client-invitation-response",
+      Seq(
+        "invitationId" -> invitationId,
+        "agentReferenceNumber" -> arn.value,
+        "regimeId" -> mtdItId.value,
+        "regime" -> "HMRC-MTD-IT",
+        "clientResponse" -> invitationStatus))
   }
 
   private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
