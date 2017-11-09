@@ -126,7 +126,7 @@ class ClientsInvitationController @Inject() (
   }
 
   def notFoundInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Forbidden(not_found_invitation())
+    Future successful NotFound(not_found_invitation())
   }
 
   def invitationAlreadyResponded: Action[AnyContent] = Action.async { implicit request =>

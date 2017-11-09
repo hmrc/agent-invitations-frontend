@@ -181,4 +181,41 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
     }
   }
+
+  "GET /not-sign-up/" should {
+    "show not sign up page if user does not have a valid enrolment" in {
+      val result = controller.notSignedUp(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
+    }
+  }
+
+  "GET /incorrect/" should {
+    "show incorrect page if user accidentally attempted to respond to another client's invitation" in {
+      val result = controller.incorrectInvitation(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-invitation.description"))
+    }
+  }
+
+  "GET /not-found/" should {
+    "show not found page if user responds to an invitation that does not exist" in {
+      val result = controller.notFoundInvitation(FakeRequest())
+      status(result) shouldBe NOT_FOUND
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
+    }
+  }
+
+  "GET /already-responded/" should {
+    "show already responded page if user responds to an invitation that does not have a status Pending" in {
+      val result = controller.invitationAlreadyResponded(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
+    }
+  }
+
 }

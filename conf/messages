@@ -95,7 +95,7 @@ incorrect-invitation.description=The invitation you have accepted might be meant
 not-found-invitation.description=The invitation you have accepted does not match our records. Contact the tax agent who sent you the invitation.
 
 # Invitation Already Responded
-invitation-already-responded.description=Someone else has already responded to the invitation you are trying to accept. Contact the tax agent who sent you the invitation.
+invitation-already-responded.description=Someone has already responded to this invitation. If you think this is wrong, contact the tax agent who sent you the invitation.
 
 # General Messages
 # Error messages for digital services
