@@ -50,19 +50,20 @@ class ClientsInvitationController @Inject() (
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       val invitationId: String = request.session.get("invitationId").getOrElse("")
-      invitationsService.getInvitation(mtdItId, invitationId).flatMap {
+      invitationsService.getClientInvitation(mtdItId, invitationId).map {
         case Some(invitation) if !invitation.status.contains("Pending") =>
-          Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+          Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
         case None =>
-          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          Redirect(routes.ClientsInvitationController.notFoundInvitation())
         case _ =>
-          Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+          Redirect(routes.ClientsInvitationController.getConfirmInvitation())
       } recoverWith {
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
       }
     }.recoverWith {
-      case _: InsufficientEnrolments => Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
+      case _: InsufficientEnrolments =>
+        Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
     }
   }
 

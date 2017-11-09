@@ -86,7 +86,7 @@ error.confirmTerms.invalid=Please accept the terms
 client-problem.title=There is a problem
 
 # Not Signed Up
-not-signed-up.description=You are not signed up to <a href="www.google.com">report tax using software</a>.
+not-signed-up.description=You are not signed up to report tax using software.
 
 # Incorrect Invitation
 incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
