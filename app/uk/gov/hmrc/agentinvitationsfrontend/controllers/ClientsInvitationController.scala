@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.validation.{ Constraint, Invalid, Valid, ValidationError }
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{ Action, AnyContent }
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.Upstream4xxResponse
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -35,16 +37,17 @@ import scala.concurrent.Future
 case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
-class ClientsInvitationController @Inject() (
-  invitationsService: InvitationsService,
-  val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class ClientsInvitationController @Inject()(
+                                             invitationsService: InvitationsService,
+                                             auditService: AuditService,
+                                             val messagesApi: play.api.i18n.MessagesApi,
+                                             val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page()).withSession(request.session + ("invitationId", invitationId))
+    Future successful Ok(landing_page()).withSession(request.session + (("invitationId", invitationId)))
   }
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
@@ -80,9 +83,9 @@ class ClientsInvitationController @Inject() (
           Future.successful(Ok(confirm_invitation(formWithErrors)))
         }, data => {
           val result = if (data.value.getOrElse(false))
-            Redirect(routes.ClientsInvitationController.getConfirmTerms())
-          else
-            NotImplemented //TODO APB-1543
+                         Redirect(routes.ClientsInvitationController.getConfirmTerms())
+                       else
+                         NotImplemented //TODO APB-1543
 
           Future.successful(result)
         })
@@ -101,10 +104,15 @@ class ClientsInvitationController @Inject() (
         formWithErrors => {
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
-          if (data.value.getOrElse(false))
-            invitationsService.acceptInvitation(mtdItId, request.session.get("invitationId").getOrElse("")).map { _ =>
+          if (data.value.getOrElse(false)) {
+            val invitationId = request.session.get("invitationId").getOrElse("")
+            //TODO Add ARN and invitation status
+            auditService.sendAgentInvitationResponse(invitationId, Arn(""), "pending", mtdItId)
+
+            invitationsService.acceptInvitation(mtdItId,invitationId).map { _ =>
               Redirect(routes.ClientsInvitationController.getCompletePage())
             }
+          }
           else
             Future.successful(NotImplemented) //TODO APB-1543
         })

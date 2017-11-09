@@ -19,10 +19,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
-class ClientsInvitationControllerISpec extends BaseISpec {
+class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
@@ -139,6 +141,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms
 
     "redirect to complete page when the checkbox was checked" in {
+      givenAuditConnector()
       acceptInvitationStub(mtdItId, "someInvitationId")
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -147,9 +150,11 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
+      verifyAgentInvitationResponseEvent("someInvitationId", "", "pending", mtdItId.value)
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when the checkbox was checked" in {
+      givenAuditConnector()
       acceptInvitationStub(mtdItId, "someInvitationId")
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -157,15 +162,18 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       await(submitConfirmTerms(reqWithSession))
 
       verifyAcceptInvitationAttempt(mtdItId, "someInvitationId")
+      verifyAgentInvitationResponseEvent("someInvitationId", "", "pending", mtdItId.value)
     }
 
     "reshow the page when the checkbox was not checked with an error message" in {
+      givenAuditConnector()
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
       val result = submitConfirmTerms(req)
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmTerms.invalid"))
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
   }
@@ -218,4 +226,19 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
+  def verifyAgentInvitationResponseEvent(invitationId: String, arn: String, invitationStatus: String, mtdItId: String): Unit = {
+    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationResponse,
+      detail = Map(
+        "invitationId" -> invitationId,
+        "agentReferenceNumber" -> arn,
+        "regimeId" -> mtdItId,
+        "regime" -> "HMRC-MTD-IT",
+        "clientResponse" -> invitationStatus
+      ),
+      tags = Map(
+        "transactionName" -> "agent-client-invitation-response",
+        "path" -> "/"
+      )
+    )
+  }
 }
