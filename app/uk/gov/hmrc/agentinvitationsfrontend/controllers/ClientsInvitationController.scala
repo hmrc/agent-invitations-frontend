@@ -29,7 +29,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.Upstream4xxResponse
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
@@ -52,16 +51,21 @@ class ClientsInvitationController @Inject()(
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      val invitationId: String = request.session.get("invitationId").getOrElse("")
-      invitationsService.getClientInvitation(mtdItId, invitationId).map {
-        case Some(invitation) if !invitation.status.contains("Pending") =>
-          Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId) map {
+            case Some(invitation) =>
+              auditService.sendAgentInvitationResponse(invitationId, invitation.arn, invitation.status, mtdItId)
+              if (!invitation.status.contains("Pending"))
+                Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+              else Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+            case None =>
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          } recoverWith {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          }
         case None =>
-          Redirect(routes.ClientsInvitationController.notFoundInvitation())
-        case _ =>
-          Redirect(routes.ClientsInvitationController.getConfirmInvitation())
-      } recoverWith {
-        case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
       }
     }.recoverWith {
@@ -93,7 +97,7 @@ class ClientsInvitationController @Inject()(
   }
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
+    withAuthorisedAsClient { _ =>
       Future successful Ok(confirm_terms(confirmTermsForm))
     }
   }
@@ -106,9 +110,6 @@ class ClientsInvitationController @Inject()(
         }, data => {
           if (data.value.getOrElse(false)) {
             val invitationId = request.session.get("invitationId").getOrElse("")
-            //TODO Add ARN and invitation status
-            auditService.sendAgentInvitationResponse(invitationId, Arn(""), "pending", mtdItId)
-
             invitationsService.acceptInvitation(mtdItId,invitationId).map { _ =>
               Redirect(routes.ClientsInvitationController.getCompletePage())
             }
@@ -120,7 +121,7 @@ class ClientsInvitationController @Inject()(
   }
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
+    withAuthorisedAsClient { _ =>
       Future successful Ok(complete())
     }
   }
