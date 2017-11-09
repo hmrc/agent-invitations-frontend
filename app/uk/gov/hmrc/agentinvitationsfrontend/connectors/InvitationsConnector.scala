@@ -17,15 +17,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{ Inject, Named }
+import javax.inject.{Inject, Named}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import play.api.http.Status.NO_CONTENT
+import play.api.libs.json.Reads
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, Invitation }
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -38,10 +38,10 @@ class InvitationsConnector @Inject() (
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  private[connectors] def createInvitationUrl(arn: Arn) =
+  private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
-  private[connectors] def acceptInvitationUrl(mtdItId: MtdItId, invitationId: String) =
+  private[connectors] def acceptInvitationUrl(mtdItId: MtdItId, invitationId: String): URL =
     new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId/accept")
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
@@ -57,7 +57,7 @@ class InvitationsConnector @Inject() (
   def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
-      implicit val readsInvitation = Invitation.reads(url)
+      implicit val readsInvitation: Reads[Invitation] = Invitation.reads(url)
       http.GET[Option[Invitation]](url.toString)
     }
   }

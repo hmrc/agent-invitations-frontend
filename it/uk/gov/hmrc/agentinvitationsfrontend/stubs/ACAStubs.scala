@@ -78,6 +78,20 @@ trait ACAStubs {
           .withStatus(404)))
   }
 
+  def incorrectGetInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+          s"""
+             |{
+             |   "code":"NO_PERMISSION_ON_CLIENT",
+             |   "message":"The logged in client is not permitted to access invitations for the specified client."
+             |}
+           """.stripMargin
+        )))
+  }
+
   def acceptInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
     acceptInvitationStub(mtdItId, invitationId, responseStatus = 204)
   }

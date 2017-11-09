@@ -16,14 +16,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
 class ClientsInvitationControllerISpec extends BaseISpec {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
+  val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
 
   "GET /:invitationId (landing page)" should {
@@ -42,17 +44,47 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST / (clicking accept on the landing page)" should {
+
+    val submitStart: Action[AnyContent] = controller.submitStart
+
     "redirect to /accept-tax-agent-invitation/2" in {
-      val result = controller.submitStart(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+      getInvitationStub(arn, mtdItId, "1")
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
     }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      val result = submitStart(authorisedAsValidAgent(FakeRequest(), ""))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
+      notFoundGetInvitationStub(mtdItId, "1")
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+
+    "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
+      incorrectGetInvitationStub(mtdItId, "1")
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
+    }
   }
 
   "GET /accept-tax-agent-invitation/2 (confirm invitation page)" should {
+
+    val getConfirmInvitation: Action[AnyContent] = controller.getConfirmInvitation
+
     "show the confirm invitation page" in {
-      val result = controller.getConfirmInvitation().apply(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+      val result = getConfirmInvitation(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title"))
@@ -60,8 +92,10 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /accept-tax-agent-invitation/2 (clicking continue on the confirm invitation page)" should {
+    val submitConfirmInvitation: Action[AnyContent] = controller.submitConfirmInvitation
+
     "reshow the page when neither yes nor no choices were selected with an error message" in {
-      val result = controller.submitConfirmInvitation().apply(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+      val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title"))
@@ -85,9 +119,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "GET /accept-tax-agent-invitation/3 (confirm terms page)" should {
+
+    val getConfirmTerms: Action[AnyContent] = controller.getConfirmTerms
+
     "show the confirm terms page" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value)
-      val result = controller.getConfirmTerms().apply(req)
+      val result = getConfirmTerms(req)
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
@@ -99,12 +136,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       req.withSession((req.session + (key -> value)).data.toSeq: _*)
     }
 
+    val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms
+
     "redirect to complete page when the checkbox was checked" in {
       acceptInvitationStub(mtdItId, "someInvitationId")
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
       val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      val result = controller.submitConfirmTerms().apply(reqWithSession)
+      val result = submitConfirmTerms(reqWithSession)
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
@@ -115,14 +154,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
       val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      await(controller.submitConfirmTerms().apply(reqWithSession))
+      await(submitConfirmTerms(reqWithSession))
 
       verifyAcceptInvitationAttempt(mtdItId, "someInvitationId")
     }
 
     "reshow the page when the checkbox was not checked with an error message" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
-      val result = controller.submitConfirmTerms().apply(req)
+      val result = submitConfirmTerms(req)
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
@@ -132,11 +171,51 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "GET /accept-tax-agent-invitation/4 (complete page)" should {
+
+    val getCompletePage: Action[AnyContent] = controller.getCompletePage
+
     "show the complete page" in {
-      val result = controller.getCompletePage().apply(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+      val result = getCompletePage(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
     }
   }
+
+  "GET /not-sign-up/" should {
+    "show not sign up page if user does not have a valid enrolment" in {
+      val result = controller.notSignedUp(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
+    }
+  }
+
+  "GET /incorrect/" should {
+    "show incorrect page if user accidentally attempted to respond to another client's invitation" in {
+      val result = controller.incorrectInvitation(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-invitation.description"))
+    }
+  }
+
+  "GET /not-found/" should {
+    "show not found page if user responds to an invitation that does not exist" in {
+      val result = controller.notFoundInvitation(FakeRequest())
+      status(result) shouldBe NOT_FOUND
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
+    }
+  }
+
+  "GET /already-responded/" should {
+    "show already responded page if user responds to an invitation that does not have a status Pending" in {
+      val result = controller.invitationAlreadyResponded(FakeRequest())
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
+    }
+  }
+
 }
