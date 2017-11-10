@@ -19,10 +19,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
-class ClientsInvitationControllerISpec extends BaseISpec {
+class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
@@ -48,34 +50,42 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val submitStart: Action[AnyContent] = controller.submitStart
 
     "redirect to /accept-tax-agent-invitation/2" in {
+      givenAuditConnector()
       getInvitationStub(arn, mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
+      verifyAgentInvitationResponseEvent("1", arn.value, "Accepted", mtdItId.value)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenAuditConnector()
       val result = submitStart(authorisedAsValidAgent(FakeRequest(), ""))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
+      givenAuditConnector()
       notFoundGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
+      givenAuditConnector()
       incorrectGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
   }
 
@@ -247,4 +257,19 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
+  def verifyAgentInvitationResponseEvent(invitationId: String, arn: String, clientResponse: String, mtdItId: String): Unit = {
+    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationResponse,
+      detail = Map(
+        "invitationId" -> invitationId,
+        "agentReferenceNumber" -> arn,
+        "regimeId" -> mtdItId,
+        "regime" -> "HMRC-MTD-IT",
+        "clientResponse" -> clientResponse
+      ),
+      tags = Map(
+        "transactionName" -> "agent-client-invitation-response",
+        "path" -> "/"
+      )
+    )
+  }
 }

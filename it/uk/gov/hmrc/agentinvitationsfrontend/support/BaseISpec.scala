@@ -24,7 +24,11 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.agent-client-authorisation.port" -> wireMockPort,
         "microservice.services.company-auth.login-url" -> wireMockHost,
         "microservice.services.company-auth.port" -> wireMockPort,
-        "microservice.services.des.port" -> wireMockPort)
+        "microservice.services.des.port" -> wireMockPort,
+        "auditing.enabled" -> true,
+        "auditing.consumer.baseUri.host" -> wireMockHost,
+        "auditing.consumer.baseUri.port" -> wireMockPort
+      )
   }
 
   protected implicit val materializer = app.materializer

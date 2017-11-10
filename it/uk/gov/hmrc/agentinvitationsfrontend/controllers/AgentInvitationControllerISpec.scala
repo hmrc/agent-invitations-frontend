@@ -16,18 +16,21 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import play.api.mvc.{ AnyContentAsEmpty, _ }
+import play.api.mvc.{AnyContentAsEmpty, _}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{ agentInvitationNinoForm, agentInvitationPostCodeForm }
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationPostCodeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
-import uk.gov.hmrc.auth.core.{ AuthorisationException, InsufficientEnrolments }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.domain.Nino
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
+
 import scala.concurrent.duration._
 
-class AgentInvitationControllerISpec extends BaseISpec {
+class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   val arn = Arn("TARN0000001")
@@ -90,6 +93,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
+      givenAuditConnector()
       createInvitationStub(arn, mtdItId, "1")
       getInvitationStub(arn, mtdItId, "1")
       val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino("AB123456A"), "BN12 6BX"))
@@ -98,9 +102,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
       verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Success")
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
+      givenAuditConnector()
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "")
       val result = submitPostcode(authorisedAsValidAgent(request
@@ -110,9 +116,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.error-empty"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
       verifyAuthoriseAttempt()
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
     }
 
     "return 303 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
+      givenAuditConnector()
       failedCreateInvitationForNotEnrolled(arn)
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
@@ -123,9 +131,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
       verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Fail")
     }
 
     "return 303 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an non-associated but valid postcode" in {
+      givenAuditConnector()
       failedCreateInvitationFoInvalidPostcode(arn)
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
@@ -136,9 +146,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
       verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Fail")
     }
 
     "return exception when invitation could not be retrieved after creation" in {
+      givenAuditConnector()
       createInvitationStub(arn, mtdItId, "1")
       notFoundGetInvitationStub(mtdItId, "1")
       val postcodeForm = agentInvitationPostCodeForm
@@ -150,6 +162,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       an[Exception] shouldBe thrownBy {
         await(result)
       }
+      verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Fail")
     }
 
     behave like anAuthorisedEndpoint(request, submitPostcode)
@@ -212,5 +225,20 @@ class AgentInvitationControllerISpec extends BaseISpec {
       }
       verifyAuthoriseAttempt()
     }
+  }
+
+  def verifyAgentClientInvitationSubmittedEvent(arn: String, nino: String, result: String): Unit = {
+    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationSubmitted,
+      detail = Map(
+        "result" -> result,
+        "agentReferenceNumber" -> arn,
+        "regimeId" -> nino,
+        "regime" -> "HMRC-MTD-IT"
+      ),
+      tags = Map(
+        "transactionName" -> "agent-client-invitation-submitted",
+        "path" -> "/agents/invitation-sent"
+      )
+    )
   }
 }

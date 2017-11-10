@@ -25,6 +25,10 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.i18n.Messages.Message
 import play.api.mvc.{Action, AnyContent}
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
@@ -40,28 +44,34 @@ case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
 class ClientsInvitationController @Inject()(invitationsService: InvitationsService,
-                                            val messagesApi: play.api.i18n.MessagesApi,
-                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
+                                             auditService: AuditService,
+                                             val messagesApi: play.api.i18n.MessagesApi,
+                                             val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page()).withSession(request.session + ("invitationId", invitationId))
+    Future successful Ok(landing_page()).withSession(request.session + (("invitationId", invitationId)))
   }
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      val invitationId: String = request.session.get("invitationId").getOrElse("")
-      invitationsService.getClientInvitation(mtdItId, invitationId).map {
-        case Some(invitation) if !invitation.status.contains("Pending") =>
-          Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId) map {
+            case Some(invitation) =>
+              auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Accepted", mtdItId)
+              if (!invitation.status.contains("Pending"))
+                Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+              else Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+            case None =>
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          } recoverWith {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          }
         case None =>
-          Redirect(routes.ClientsInvitationController.notFoundInvitation())
-        case _ =>
-          Redirect(routes.ClientsInvitationController.getConfirmInvitation())
-      } recoverWith {
-        case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
       }
     }.recoverWith {
@@ -107,7 +117,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
+    withAuthorisedAsClient { _ =>
       Future successful Ok(confirm_terms(confirmTermsForm))
     }
   }
@@ -118,10 +128,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         formWithErrors => {
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
-          if (data.value.getOrElse(false))
-            invitationsService.acceptInvitation(mtdItId, request.session.get("invitationId").getOrElse("")).map { _ =>
+          if (data.value.getOrElse(false)) {
+            val invitationId = request.session.get("invitationId").getOrElse("")
+            invitationsService.acceptInvitation(mtdItId,invitationId).map { _ =>
               Redirect(routes.ClientsInvitationController.getCompletePage())
             }
+          }
           else
             Future.successful(NotImplemented) //TODO - should we ever actually get Some(false) ?
         })
@@ -129,7 +141,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
+    withAuthorisedAsClient { _ =>
       Future successful Ok(complete())
     }
   }
