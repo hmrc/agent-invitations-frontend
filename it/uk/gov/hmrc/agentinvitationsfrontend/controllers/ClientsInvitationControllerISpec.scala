@@ -56,7 +56,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
-      verifyAgentInvitationResponseEvent("1", arn.value, "Pending", mtdItId.value)
+      verifyAgentInvitationResponseEvent("1", arn.value, "Accepted", mtdItId.value)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
@@ -228,14 +228,14 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
   }
 
-  def verifyAgentInvitationResponseEvent(invitationId: String, arn: String, invitationStatus: String, mtdItId: String): Unit = {
+  def verifyAgentInvitationResponseEvent(invitationId: String, arn: String, clientResponse: String, mtdItId: String): Unit = {
     verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationResponse,
       detail = Map(
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn,
         "regimeId" -> mtdItId,
         "regime" -> "HMRC-MTD-IT",
-        "clientResponse" -> invitationStatus
+        "clientResponse" -> clientResponse
       ),
       tags = Map(
         "transactionName" -> "agent-client-invitation-response",

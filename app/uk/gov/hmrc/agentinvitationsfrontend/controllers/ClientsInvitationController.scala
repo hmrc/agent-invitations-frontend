@@ -55,7 +55,7 @@ class ClientsInvitationController @Inject()(
         case Some(invitationId) =>
           invitationsService.getClientInvitation(mtdItId, invitationId) map {
             case Some(invitation) =>
-              auditService.sendAgentInvitationResponse(invitationId, invitation.arn, invitation.status, mtdItId)
+              auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Accepted", mtdItId)
               if (!invitation.status.contains("Pending"))
                 Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
               else Redirect(routes.ClientsInvitationController.getConfirmInvitation())
