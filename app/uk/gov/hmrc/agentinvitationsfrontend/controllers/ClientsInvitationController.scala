@@ -87,9 +87,6 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       } recover {
         case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
           Redirect(routes.ClientsInvitationController.invitationAlreadyResponded)
-        case _ =>
-          val title = Messages("global.error.500.heading")
-          Ok(error_template(title, title, Messages("global.error.500.message")))
       }
     }
   }
@@ -128,15 +125,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         formWithErrors => {
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
-          if (data.value.getOrElse(false)) {
-            val invitationId = request.session.get("invitationId").getOrElse("")
-            invitationsService.acceptInvitation(mtdItId,invitationId).map { _ =>
-              Redirect(routes.ClientsInvitationController.getCompletePage())
-            }
+          val invitationId = request.session.get("invitationId").getOrElse("")
+          invitationsService.acceptInvitation(mtdItId, invitationId).map { _ =>
+            Redirect(routes.ClientsInvitationController.getCompletePage())
           }
-          else
-            Future.successful(NotImplemented) //TODO - should we ever actually get Some(false) ?
-        })
+        }
+      )
     }
   }
 

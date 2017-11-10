@@ -107,14 +107,6 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
     }
-
-    "show error page when declining an invitation that cannot be found" in {
-      notFoundRejectInvitationStub(mtdItId, "1")
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
-
-      status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("global.error.500.heading"))
-    }
   }
 
   "GET /accept-tax-agent-invitation/2 (confirm invitation page)" should {
