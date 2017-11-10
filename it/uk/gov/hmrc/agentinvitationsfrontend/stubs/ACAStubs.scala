@@ -109,9 +109,64 @@ trait ACAStubs {
           .withStatus(responseStatus)))
   }
 
-  def verifyAcceptInvitationAttempt(mtdItId: MtdItId, invitationId: String) = {
+  def alreadyActionedAcceptInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+          s"""
+             |{
+             |   "code":"INVALID_INVITATION_STATUS",
+             |   "message":"The invitation cannot be transitioned to Rejected because its current status is Rejected. Only Pending invitations may be transitioned to Rejected."
+             |}
+           """.stripMargin
+        )))
+  }
+
+  def verifyAcceptInvitationAttempt(mtdItId: MtdItId, invitationId: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(mtdItId.value)
     val invitationIdEncoded = encodePathSegment(invitationId)
     verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept")))
+  }
+
+  def rejectInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    rejectInvitationStub(mtdItId, invitationId, responseStatus = 204)
+  }
+
+  def notFoundRejectInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    rejectInvitationStub(mtdItId, invitationId, responseStatus = 404)
+  }
+
+  private def rejectInvitationStub(mtdItId: MtdItId, invitationId: String, responseStatus: Int): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
+      .willReturn(
+        aResponse()
+          .withStatus(responseStatus)))
+  }
+
+  def alreadyActionedRejectInvitationStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+          s"""
+             |{
+             |   "code":"INVALID_INVITATION_STATUS",
+             |   "message":"The invitation cannot be transitioned to Rejected because its current status is Rejected. Only Pending invitations may be transitioned to Rejected."
+             |}
+           """.stripMargin
+        )))
+  }
+
+  def verifyRejectInvitationAttempt(mtdItId: MtdItId, invitationId: String): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject")))
   }
 }

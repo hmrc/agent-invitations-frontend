@@ -44,6 +44,9 @@ class InvitationsConnector @Inject() (
   private[connectors] def acceptInvitationUrl(mtdItId: MtdItId, invitationId: String): URL =
     new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId/accept")
 
+  private[connectors] def rejectInvitationUrl(mtdItId: MtdItId, invitationId: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId/reject")
+
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
   def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
@@ -65,6 +68,12 @@ class InvitationsConnector @Inject() (
   def acceptInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
+    }
+  }
+
+  def rejectInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      http.PUT[Boolean, HttpResponse](rejectInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }
   }
 }

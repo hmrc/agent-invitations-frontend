@@ -18,6 +18,7 @@ POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsf
 GET         /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms
 POST        /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmTerms
 GET         /accept-tax-agent-invitation/4        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getCompletePage
+GET         /reject-tax-agent-invitation/1        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined
 
 # Error Client Endpoints
 GET         /not-signed-up/                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp

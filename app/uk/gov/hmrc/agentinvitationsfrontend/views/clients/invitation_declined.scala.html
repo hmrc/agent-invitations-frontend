@@ -20,27 +20,20 @@
 
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None) {
- <header class="page-header">
-  <h1>@Messages("landing-page.title")</h1>
- </header>
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-declined.title"), bodyClasses = None) {
+  <h1 class="heading-xlarge">@Messages("invitation-declined.title")</h1>
 
- @form(routes.ClientsInvitationController.submitStart) {
+    @form(routes.ClientsInvitationController.submitStart) {
+        <p>@Messages("invitation-declined.p1")</p>
 
-    <span class="lede">@Messages("landing-page.p1")</span>
+        <p>@Messages("invitation-declined.p2")</p>
 
-    <p>@Messages("landing-page.p2") <strong>@Messages("landing-page.p3")</strong> @Messages("landing-page.p4")</p>
+        <button class="button" type="submit" id="continue">@Messages("invitation-declined.button")</button>
 
-    <br />
+        <br /> <br />
 
-    <h2>@Messages("landing-page.sub-header")</h2>
+        <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
 
-    <p>@Messages("landing-page.p5")</p>
-
-    <button class="button" type="submit" id="continue">@Messages("landing-page.accept")</button>
- }
-
-    <br />
-
-    <a href="@routes.ClientsInvitationController.getInvitationDeclined" id="declineInvitation">@Messages("landing-page.decline")</a>
+        <p>@Messages("invitation-declined.p3")</p>
+    }
 }

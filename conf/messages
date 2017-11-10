@@ -44,6 +44,14 @@ landing-page.p5=HMRC will give this agent access to your information online. Som
 landing-page.accept=Accept invitation
 landing-page.decline=Decline invitation
 
+# Invitation Declined
+invitation-declined.title=You have declined this request
+invitation-declined.p1=YourFirm Accountants will not be able to represent you with HMRC for Self Assessment.
+invitation-declined.p2=You can manage your tax agent relationships from your business tax account (BTA).
+invitation-declined.button=Continue to your BTA
+invitation-declined.sub-header=Made a mistake?
+invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
+
 # Confirm Invitation
 confirm-invitation.title=YourFirm Accountants has requested to represent you to HMRC:
 confirm-invitation.sub-header=Would you like YourFirm Accountants to represent you for Online self assessment?
