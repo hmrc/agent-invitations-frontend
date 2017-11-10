@@ -50,34 +50,42 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     val submitStart: Action[AnyContent] = controller.submitStart
 
     "redirect to /accept-tax-agent-invitation/2" in {
+      givenAuditConnector()
       getInvitationStub(arn, mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
+      verifyAgentInvitationResponseEvent("1", arn.value, "Pending", mtdItId.value)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenAuditConnector()
       val result = submitStart(authorisedAsValidAgent(FakeRequest(), ""))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
+      givenAuditConnector()
       notFoundGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
+      givenAuditConnector()
       incorrectGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
   }
 
@@ -141,7 +149,6 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms
 
     "redirect to complete page when the checkbox was checked" in {
-      givenAuditConnector()
       acceptInvitationStub(mtdItId, "someInvitationId")
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -150,11 +157,9 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
-      verifyAgentInvitationResponseEvent("someInvitationId", "", "pending", mtdItId.value)
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when the checkbox was checked" in {
-      givenAuditConnector()
       acceptInvitationStub(mtdItId, "someInvitationId")
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -162,18 +167,15 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
       await(submitConfirmTerms(reqWithSession))
 
       verifyAcceptInvitationAttempt(mtdItId, "someInvitationId")
-      verifyAgentInvitationResponseEvent("someInvitationId", "", "pending", mtdItId.value)
     }
 
     "reshow the page when the checkbox was not checked with an error message" in {
-      givenAuditConnector()
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
       val result = submitConfirmTerms(req)
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmTerms.invalid"))
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
   }
