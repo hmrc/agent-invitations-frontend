@@ -101,6 +101,7 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
         .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"${routes.ClientsInvitationController.start("1").absoluteURL(secureUrlFlag)(request)}"))
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Success")
     }
