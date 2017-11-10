@@ -3,8 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
-import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, Upstream4xxResponse}
 
 class InvitationsConnectorISpec extends BaseISpec {
 
@@ -60,6 +60,16 @@ class InvitationsConnectorISpec extends BaseISpec {
       verifyAcceptInvitationAttempt(mtdItId, invitationId)
     }
 
+    "return an error if invitation is already actioned" in {
+      alreadyActionedAcceptInvitationStub(mtdItId, invitationId)
+
+      intercept[Upstream4xxResponse] {
+        await(connector.acceptInvitation(mtdItId, invitationId))
+      }
+
+      verifyAcceptInvitationAttempt(mtdItId, invitationId)
+    }
+
     "return an error if invitation not found" in {
       notFoundAcceptInvitationStub(mtdItId, invitationId)
 
@@ -68,6 +78,36 @@ class InvitationsConnectorISpec extends BaseISpec {
       }
 
       verifyAcceptInvitationAttempt(mtdItId, invitationId)
+    }
+  }
+
+  "Reject invitation" should {
+    "return status 204 if invitation was rejected" in {
+      rejectInvitationStub(mtdItId, invitationId)
+      val result = await(connector.rejectInvitation(mtdItId, invitationId))
+
+      result shouldBe 204
+      verifyRejectInvitationAttempt(mtdItId, invitationId)
+    }
+
+    "return an error if invitation is already actioned" in {
+      alreadyActionedRejectInvitationStub(mtdItId, invitationId)
+
+      intercept[Upstream4xxResponse] {
+        await(connector.rejectInvitation(mtdItId, invitationId))
+      }
+
+      verifyRejectInvitationAttempt(mtdItId, invitationId)
+    }
+
+    "return an error if invitation not found" in {
+      notFoundRejectInvitationStub(mtdItId, invitationId)
+
+      intercept[NotFoundException] {
+        await(connector.rejectInvitation(mtdItId, invitationId))
+      }
+
+      verifyRejectInvitationAttempt(mtdItId, invitationId)
     }
   }
 }

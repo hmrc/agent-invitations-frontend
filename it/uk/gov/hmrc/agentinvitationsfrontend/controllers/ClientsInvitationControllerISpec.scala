@@ -79,6 +79,34 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
+  "GET /reject-tax-agent-invitation/1" should {
+    val getInvitationDeclined = controller.getInvitationDeclined
+
+    "show invitation_declined page for an authenticated client with a valid invitation" in {
+      rejectInvitationStub(mtdItId, "1")
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
+    }
+
+    "redirect to invitationAlreadyResponded when declined a invitaiton that is already actioned" in {
+      alreadyActionedRejectInvitationStub(mtdItId, "1")
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
+    }
+
+    "show error page when declining an invitation that cannot be found" in {
+      notFoundRejectInvitationStub(mtdItId, "1")
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("global.error.500.heading"))
+    }
+  }
+
   "GET /accept-tax-agent-invitation/2 (confirm invitation page)" should {
 
     val getConfirmInvitation: Action[AnyContent] = controller.getConfirmInvitation
@@ -110,11 +138,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmTerms().url
     }
 
-    "show an error page when no was selected" in {
+    "redirect to invitation declined when no is selected" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "false")
       val result = controller.submitConfirmInvitation().apply(req)
 
-      status(result) shouldBe NOT_IMPLEMENTED // TODO APB-1543
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.getInvitationDeclined().url)
     }
   }
 

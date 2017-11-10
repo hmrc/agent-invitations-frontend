@@ -46,7 +46,7 @@ landing-page.decline=Decline invitation
 
 # Invitation Declined
 invitation-declined.title=You have declined this request
-invitation-declined.p1=[agent name] will not be able to represent you with HMRC for Self Assessment.
+invitation-declined.p1=YourFirm Accountants will not be able to represent you with HMRC for Self Assessment.
 invitation-declined.p2=You can manage your tax agent relationships from your business tax account (BTA).
 invitation-declined.button=Continue to your BTA
 invitation-declined.sub-header=Made a mistake?
