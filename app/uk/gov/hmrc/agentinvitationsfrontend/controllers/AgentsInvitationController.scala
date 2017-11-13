@@ -80,7 +80,7 @@ class AgentsInvitationController @Inject() (
             .map(invitation => {
               val id = extractInvitationId(invitation.selfUrl.toString)
               auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-              Ok(invitation_sent(s"${routes.ClientsInvitationController.start(id).absoluteURL()}"))
+              Ok(invitation_sent(s"${routes.ClientsInvitationController.start(id).absoluteURL(secureUrlFlag)}"))
             })
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {

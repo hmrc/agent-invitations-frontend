@@ -89,10 +89,10 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
 
   "POST /agents/invitation-sent" should {
 
-    val request = FakeRequest("POST", "/agents/invitation-sent")
+    val request = FakeRequest("POST", "/agents/invitation-sent").withHeaders("HOST" -> s"$wireMockHost:$wireMockPort")
     val submitPostcode = controller.submitPostcode()
 
-    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
+    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
       givenAuditConnector()
       createInvitationStub(arn, mtdItId, "1")
       getInvitationStub(arn, mtdItId, "1")
