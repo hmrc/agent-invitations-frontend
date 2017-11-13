@@ -80,9 +80,11 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
           invitationsService.getClientInvitation(mtdItId, invitationId) flatMap {
             case Some(invitation) =>
               auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Declined", mtdItId)
-              invitationsService.rejectInvitation(invitationId, mtdItId).map { _ =>
-                Ok(invitation_declined())
-              } recover {
+
+              (for {
+                name <- invitationsService.getAgencyName
+                _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
+              } yield Ok(invitation_declined(name))) recover {
                 case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
                   Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
               }
@@ -97,7 +99,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      Future successful Ok(confirm_invitation(confirmInvitationForm))
+      invitationsService.getAgencyName.map { name =>
+        Ok(confirm_invitation(confirmInvitationForm, name))
+      }
     }
   }
 
@@ -105,12 +109,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     withAuthorisedAsClient { mtdItId =>
       confirmInvitationForm.bindFromRequest().fold(
         formWithErrors => {
-          Future.successful(Ok(confirm_invitation(formWithErrors)))
+          invitationsService.getAgencyName.map(name => Ok(confirm_invitation(formWithErrors, name)))
         }, data => {
           val result = if (data.value.getOrElse(false))
-                         Redirect(routes.ClientsInvitationController.getConfirmTerms())
-                       else
-                         Redirect(routes.ClientsInvitationController.getInvitationDeclined())
+            Redirect(routes.ClientsInvitationController.getConfirmTerms())
+          else
+            Redirect(routes.ClientsInvitationController.getInvitationDeclined())
 
           Future.successful(result)
         })
@@ -119,7 +123,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { _ =>
-      Future successful Ok(confirm_terms(confirmTermsForm))
+      invitationsService.getAgencyName.map(name => Ok(confirm_terms(confirmTermsForm, name)))
     }
   }
 
@@ -127,7 +131,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     withAuthorisedAsClient { mtdItId =>
       confirmTermsForm.bindFromRequest().fold(
         formWithErrors => {
-          Future.successful(Ok(confirm_terms(formWithErrors)))
+          invitationsService.getAgencyName.map(name => Ok(confirm_terms(formWithErrors, name)))
         }, data => {
           request.session.get("invitationId") match {
             case Some(invitationId) =>
@@ -145,7 +149,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { _ =>
-      Future successful Ok(complete())
+      invitationsService.getAgencyName.map(name => Ok(complete(name)))
     }
   }
 
@@ -164,7 +168,6 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   def invitationAlreadyResponded: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(invitation_already_responded())
   }
-
 }
 
 object ClientsInvitationController {

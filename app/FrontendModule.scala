@@ -51,6 +51,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("authentication.login-callback.url")
+    bindBaseUrl("agent-services-account")
   }
 
   private def bindBaseUrl(serviceName: String) =
