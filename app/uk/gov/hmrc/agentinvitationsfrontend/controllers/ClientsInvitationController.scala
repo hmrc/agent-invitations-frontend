@@ -18,22 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
-import play.api.i18n.{I18nSupport, Messages}
-import play.api.i18n.Messages.Message
-import play.api.mvc.{Action, AnyContent}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.frontend.controller.FrontendController
@@ -44,9 +37,9 @@ case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
 class ClientsInvitationController @Inject()(invitationsService: InvitationsService,
-                                             auditService: AuditService,
-                                             val messagesApi: play.api.i18n.MessagesApi,
-                                             val authConnector: AuthConnector)(implicit val configuration: Configuration)
+                                            auditService: AuditService,
+                                            val messagesApi: play.api.i18n.MessagesApi,
+                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
@@ -82,11 +75,22 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getInvitationDeclined: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      invitationsService.rejectInvitation(request.session.get("invitationId").getOrElse(""), mtdItId).map { _ =>
-        Ok(invitation_declined())
-      } recover {
-        case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
-          Redirect(routes.ClientsInvitationController.invitationAlreadyResponded)
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId) flatMap {
+            case Some(invitation) =>
+              auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Declined", mtdItId)
+              invitationsService.rejectInvitation(invitationId, mtdItId).map { _ =>
+                Ok(invitation_declined())
+              } recover {
+                case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+                  Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+              }
+            case None =>
+              Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          }
+        case None =>
+          Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
       }
     }
   }
@@ -104,9 +108,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
           Future.successful(Ok(confirm_invitation(formWithErrors)))
         }, data => {
           val result = if (data.value.getOrElse(false))
-            Redirect(routes.ClientsInvitationController.getConfirmTerms())
-          else
-            Redirect(routes.ClientsInvitationController.getInvitationDeclined())
+                         Redirect(routes.ClientsInvitationController.getConfirmTerms())
+                       else
+                         Redirect(routes.ClientsInvitationController.getInvitationDeclined())
 
           Future.successful(result)
         })
@@ -125,10 +129,15 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         formWithErrors => {
           Future.successful(Ok(confirm_terms(formWithErrors)))
         }, data => {
-          val invitationId = request.session.get("invitationId").getOrElse("")
-          invitationsService.acceptInvitation(mtdItId, invitationId).map { _ =>
-            Redirect(routes.ClientsInvitationController.getCompletePage())
+          request.session.get("invitationId") match {
+            case Some(invitationId) =>
+              invitationsService.acceptInvitation(invitationId, mtdItId).map { _ =>
+                Redirect(routes.ClientsInvitationController.getCompletePage())
+              }
+            case None =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
           }
+
         }
       )
     }

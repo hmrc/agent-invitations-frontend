@@ -93,19 +93,44 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     val getInvitationDeclined = controller.getInvitationDeclined
 
     "show invitation_declined page for an authenticated client with a valid invitation" in {
+      givenAuditConnector()
+      getInvitationStub(arn, mtdItId, "1")
       rejectInvitationStub(mtdItId, "1")
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
+      verifyAgentInvitationResponseEvent("1", arn.value, "Declined", mtdItId.value)
     }
 
-    "redirect to invitationAlreadyResponded when declined a invitaiton that is already actioned" in {
+    "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
+      givenAuditConnector()
+      getInvitationStub(arn, mtdItId, "1")
       alreadyActionedRejectInvitationStub(mtdItId, "1")
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
+      verifyAgentInvitationResponseEvent("1", arn.value, "Declined", mtdItId.value)
+    }
+
+    "redirect to notFoundInvitation when invitation does not exist" in {
+      givenAuditConnector()
+      notFoundGetInvitationStub(mtdItId, "1")
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
+    }
+
+    "redirect to incorrectInvitation when invitationId missing from session" in {
+      givenAuditConnector()
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest(), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.incorrectInvitation().url)
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
   }
 
@@ -197,6 +222,16 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmTerms.invalid"))
+    }
+
+    "redirect to /incorrect/ if invitation id is not available in the session" in {
+      givenAuditConnector()
+      incorrectGetInvitationStub(mtdItId, "1")
+      val result = submitConfirmTerms(authorisedAsValidClient(FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true"), mtdItId.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
   }
