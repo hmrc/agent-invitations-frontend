@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
-class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
+class ClientsInvitationControllerISpec extends BaseISpec {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
@@ -50,7 +50,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     val submitStart: Action[AnyContent] = controller.submitStart
 
     "redirect to /accept-tax-agent-invitation/2" in {
-      givenAuditConnector()
+      
       getInvitationStub(arn, mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
@@ -60,7 +60,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
-      givenAuditConnector()
+      
       val result = submitStart(authorisedAsValidAgent(FakeRequest(), ""))
 
       status(result) shouldBe SEE_OTHER
@@ -69,7 +69,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
-      givenAuditConnector()
+      
       notFoundGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
@@ -79,7 +79,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
-      givenAuditConnector()
+      
       incorrectGetInvitationStub(mtdItId, "1")
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
@@ -93,7 +93,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     val getInvitationDeclined = controller.getInvitationDeclined
 
     "show invitation_declined page for an authenticated client with a valid invitation" in {
-      givenAuditConnector()
+      
       getInvitationStub(arn, mtdItId, "1")
       rejectInvitationStub(mtdItId, "1")
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
@@ -104,7 +104,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
-      givenAuditConnector()
+      
       getInvitationStub(arn, mtdItId, "1")
       alreadyActionedRejectInvitationStub(mtdItId, "1")
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
@@ -115,7 +115,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
-      givenAuditConnector()
+      
       notFoundGetInvitationStub(mtdItId, "1")
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
 
@@ -125,7 +125,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to incorrectInvitation when invitationId missing from session" in {
-      givenAuditConnector()
+      
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
@@ -225,7 +225,7 @@ class ClientsInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "redirect to /incorrect/ if invitation id is not available in the session" in {
-      givenAuditConnector()
+      
       incorrectGetInvitationStub(mtdItId, "1")
       val result = submitConfirmTerms(authorisedAsValidClient(FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true"), mtdItId.value))
 
