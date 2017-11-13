@@ -9,7 +9,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 
 
-class AgentConfirmationLinkFlagTrueISpec extends BaseISpec with DataStreamStubs {
+class AgentConfirmationLinkFlagTrueISpec extends BaseISpec {
 
   override def secureUrlFlag: Boolean = true
 
@@ -23,7 +23,6 @@ class AgentConfirmationLinkFlagTrueISpec extends BaseISpec with DataStreamStubs 
     val submitPostcode = controller.submitPostcode()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = true)" in {
-      givenAuditConnector()
       createInvitationStub(arn, mtdItId, "1")
       getInvitationStub(arn, mtdItId, "1")
       val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino("AB123456A"), "BN12 6BX"))
