@@ -52,8 +52,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, mtdItId))
   }
 
-  def getAgencyName(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    agentServicesAccountConnector.getAgencyname.map {
+  def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+    agentServicesAccountConnector.getAgencyname(arn.value).map {
       case Some(name) => name
       case None => throw new Exception("Agency name not found")
     }

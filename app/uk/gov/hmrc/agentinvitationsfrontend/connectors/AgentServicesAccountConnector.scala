@@ -21,6 +21,7 @@ import javax.inject.{Inject, Named}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -34,8 +35,10 @@ class AgentServicesAccountConnector @Inject() (
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAgencyname(implicit hc: HeaderCarrier): Future[Option[String]] =
+  def getAgencyname(arn: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
-      Future.successful(Some("My Agency"))
+      implicit val nameReads: Reads[Option[String]] = (JsPath \ "agencyName").readNullable[String]
+
+      http.GET[Option[String]](new URL(baseUrl, s"/client/agency-name/$arn").toString)
     }
 }
