@@ -97,6 +97,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.p1", "My Agency"))
       verifyAgentInvitationResponseEvent("1", arn.value, "Declined", mtdItId.value)
     }
 
@@ -128,6 +129,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.incorrectInvitation().url)
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
+    }
+
+    "return exception when agency name retrieval fails" in {
+      getInvitationStub(arn, mtdItId, "1")
+      givenAgencyNameNotFoundStub(arn)
+
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> "1"), mtdItId.value))
+
+      an[NotFoundException] should be thrownBy await(result)
     }
   }
 

@@ -52,7 +52,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
-    bindBoolProperty("client-invitations.secureUrlFlag")
+    bindServiceProperty("agent-invitations-frontend.base-url")
   }
 
   private def bindBaseUrl(serviceName: String) =
@@ -70,12 +70,11 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 
-  private def bindBoolProperty(propertyName: String) =
-    bind(classOf[Boolean]).annotatedWith(Names.named(propertyName)).toProvider(new PropertyBoolProvider(propertyName))
+  private def bindServiceProperty(propertyName: String) =
+    bind(classOf[String]).annotatedWith(Names.named(s"$propertyName")).toProvider(new ServicePropertyProvider(propertyName))
 
-  private class PropertyBoolProvider(confKey: String) extends Provider[Boolean] {
-    override lazy val get = configuration.getBoolean(confKey)
-      .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
+  private class ServicePropertyProvider(propertyName: String) extends Provider[String] {
+    override lazy val get = getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
   }
 }
 

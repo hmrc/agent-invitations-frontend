@@ -17,8 +17,6 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   override implicit lazy val app: Application = appBuilder.build()
 
-  def secureUrlFlag: Boolean = false
-
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
       .configure(
@@ -28,7 +26,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.company-auth.login-url" -> wireMockHost,
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,
-        "client-invitations.secureUrlFlag" -> secureUrlFlag,
+        "microservice.services.agent-invitations-frontend.base-url" -> wireMockBaseUrlAsString,
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort

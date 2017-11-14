@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 @Singleton
 class AgentsInvitationController @Inject() (
-  @Named("client-invitations.secureUrlFlag") secureUrlFlag: Boolean,
+  @Named("agent-invitations-frontend.base-url") externalUrl: String,
   invitationsService: InvitationsService,
   auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
@@ -80,7 +80,7 @@ class AgentsInvitationController @Inject() (
             .map(invitation => {
               val id = extractInvitationId(invitation.selfUrl.toString)
               auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-              Ok(invitation_sent(s"${routes.ClientsInvitationController.start(id).absoluteURL(secureUrlFlag)}"))
+              Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(id)}"))
             })
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
