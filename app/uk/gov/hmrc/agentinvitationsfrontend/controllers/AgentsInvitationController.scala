@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.{ mapping, text }
+import play.api.data.Forms.{mapping, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{ Action, AnyContent }
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
@@ -37,6 +37,7 @@ import scala.concurrent.Future
 
 @Singleton
 class AgentsInvitationController @Inject() (
+  @Named("client-invitations.secureUrlFlag") secureUrlFlag: Boolean,
   invitationsService: InvitationsService,
   auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
@@ -79,7 +80,7 @@ class AgentsInvitationController @Inject() (
             .map(invitation => {
               val id = extractInvitationId(invitation.selfUrl.toString)
               auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-              Ok(invitation_sent(invitation.selfUrl.toString))
+              Ok(invitation_sent(s"${routes.ClientsInvitationController.start(id).absoluteURL(secureUrlFlag)}"))
             })
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {

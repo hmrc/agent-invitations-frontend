@@ -28,6 +28,13 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
+case class AgencyName(name: Option[String])
+
+object AgencyName {
+  implicit val nameReads: Reads[AgencyName] =
+    (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
+}
+
 class AgentServicesAccountConnector @Inject() (
                                                 @Named("agent-services-account-baseUrl") baseUrl: URL,
                                                 http: HttpGet,
@@ -37,8 +44,6 @@ class AgentServicesAccountConnector @Inject() (
 
   def getAgencyname(arn: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
-      implicit val nameReads: Reads[Option[String]] = (JsPath \ "agencyName").readNullable[String]
-
-      http.GET[Option[String]](new URL(baseUrl, s"/client/agency-name/$arn").toString)
+      http.GET[AgencyName](new URL(baseUrl, s"/agent-services-account/client/agency-name/$arn").toString).map(_.name)
     }
 }

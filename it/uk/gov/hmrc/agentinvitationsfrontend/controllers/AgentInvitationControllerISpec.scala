@@ -30,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
 
 import scala.concurrent.duration._
 
-class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
+class AgentInvitationControllerISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   val arn = Arn("TARN0000001")
@@ -46,7 +46,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
   }
 
   "GET /agents/enter-nino" should {
-
     val request = FakeRequest("GET", "/agents/enter-nino")
     val enterNino = controller.enterNino()
 
@@ -60,7 +59,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
   }
 
   "POST /agents/enter-postcode" should {
-
     val request = FakeRequest("POST", "/agents/enter-postcode")
     val submitNino = controller.submitNino()
 
@@ -88,12 +86,11 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
   }
 
   "POST /agents/invitation-sent" should {
-
-    val request = FakeRequest("POST", "/agents/invitation-sent")
+    val request = FakeRequest("POST", "/agents/invitation-sent").withHeaders("HOST" -> s"$wireMockHost:$wireMockPort")
     val submitPostcode = controller.submitPostcode()
 
-    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page" in {
-      givenAuditConnector()
+    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
+      
       createInvitationStub(arn, mtdItId, "1")
       getInvitationStub(arn, mtdItId, "1")
       val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino("AB123456A"), "BN12 6BX"))
@@ -101,12 +98,12 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
         .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"${routes.ClientsInvitationController.start("1").absoluteURL(secureUrlFlag)(request)}"))
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Success")
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
-      givenAuditConnector()
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "")
       val result = submitPostcode(authorisedAsValidAgent(request
@@ -120,7 +117,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "return 303 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
-      givenAuditConnector()
       failedCreateInvitationForNotEnrolled(arn)
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
@@ -135,7 +131,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "return 303 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an non-associated but valid postcode" in {
-      givenAuditConnector()
       failedCreateInvitationFoInvalidPostcode(arn)
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> "AB123456A", "postcode" -> "AA11AA")
@@ -150,7 +145,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
     }
 
     "return exception when invitation could not be retrieved after creation" in {
-      givenAuditConnector()
       createInvitationStub(arn, mtdItId, "1")
       notFoundGetInvitationStub(mtdItId, "1")
       val postcodeForm = agentInvitationPostCodeForm
@@ -169,7 +163,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
   }
 
   "GET /agents/not-enrolled" should {
-
     val request = FakeRequest("GET", "/agents/not-enrolled")
     val notEnrolled = controller.notEnrolled()
 
@@ -186,7 +179,6 @@ class AgentInvitationControllerISpec extends BaseISpec with DataStreamStubs {
   }
 
   "GET /agents/not-matched" should {
-
     val request = FakeRequest("GET", "/agents/not-matched")
     val notMatched = controller.notMatched()
 

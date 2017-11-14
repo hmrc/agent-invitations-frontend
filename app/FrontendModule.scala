@@ -52,6 +52,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+    bindBoolProperty("client-invitations.secureUrlFlag")
   }
 
   private def bindBaseUrl(serviceName: String) =
@@ -66,6 +67,14 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
   private class PropertyProvider(confKey: String) extends Provider[String] {
     override lazy val get = configuration.getString(confKey)
+      .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
+  }
+
+  private def bindBoolProperty(propertyName: String) =
+    bind(classOf[Boolean]).annotatedWith(Names.named(propertyName)).toProvider(new PropertyBoolProvider(propertyName))
+
+  private class PropertyBoolProvider(confKey: String) extends Provider[Boolean] {
+    override lazy val get = configuration.getBoolean(confKey)
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 }
