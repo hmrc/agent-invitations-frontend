@@ -86,7 +86,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /agents/invitation-sent" should {
-    val request = FakeRequest("POST", "/agents/invitation-sent").withHeaders("HOST" -> s"$wireMockHost:$wireMockPort")
+    val request = FakeRequest("POST", "/agents/invitation-sent")
     val submitPostcode = controller.submitPostcode()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
@@ -98,7 +98,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"${routes.ClientsInvitationController.start("1").absoluteURL(secureUrlFlag)(request)}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,"AB123456A","Success")
     }
