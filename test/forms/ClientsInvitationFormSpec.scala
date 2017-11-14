@@ -17,8 +17,9 @@
 package forms
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+import uk.gov.hmrc.play.test.UnitSpec
 
 class ClientsInvitationFormSpec extends UnitSpec {
 
@@ -41,6 +42,11 @@ class ClientsInvitationFormSpec extends UnitSpec {
       result.errors.length shouldBe 1
       result.errors.map(_.message).contains("error.confirmInvite.invalid") shouldBe true
     }
+
+    "return no errors when unbinding the form" in {
+      val unboundForm = confirmInvitationForm.mapping.unbind(ConfirmForm(Some(true)))
+      unboundForm("confirmInvite") shouldBe "true"
+    }
   }
 
   "ConfirmTerms form" should {
@@ -62,6 +68,11 @@ class ClientsInvitationFormSpec extends UnitSpec {
 
       result.errors.length shouldBe 1
       result.errors.map(_.message).contains("error.confirmTerms.invalid") shouldBe true
+    }
+
+    "return no errors when unbinding the form" in {
+      val unboundForm = confirmTermsForm.mapping.unbind(ConfirmForm(Some(true)))
+      unboundForm("confirmInvite") shouldBe "true"
     }
   }
 

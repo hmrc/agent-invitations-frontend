@@ -1,9 +1,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock.{ put, _ }
+import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 
 trait ACAStubs {
   me: WireMockSupport =>
@@ -28,7 +28,7 @@ trait ACAStubs {
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
-            s"""
+          s"""
              |{
              |   "code":"CLIENT_REGISTRATION_NOT_FOUND",
              |   "message":"The Client's MTDfB registration was not found."
@@ -41,7 +41,7 @@ trait ACAStubs {
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
-            s"""
+          s"""
              |{
              |   "code":"POSTCODE_DOES_NOT_MATCH",
              |   "message":"The submitted postcode did not match the client's postcode as held by HMRC."
@@ -61,6 +61,28 @@ trait ACAStubs {
                |  "service" : "HMRC-MTD-IT",
                |  "clientId" : "${mtdItId.value}",
                |  "status" : "Pending",
+               |  "created" : "2017-10-31T23:22:50.971Z",
+               |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+               |  "_links": {
+               |    	"self" : {
+               |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"
+               |		  }
+               |  }
+               |}""".stripMargin)))
+  }
+
+  def getAlreadyAcceptedInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
+      .willReturn(
+        aResponse()
+          .withStatus(200)
+          .withBody(
+            s"""
+               |{
+               |  "arn" : "${arn.value}",
+               |  "service" : "HMRC-MTD-IT",
+               |  "clientId" : "${mtdItId.value}",
+               |  "status" : "Accepted",
                |  "created" : "2017-10-31T23:22:50.971Z",
                |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                |  "_links": {
@@ -120,6 +142,22 @@ trait ACAStubs {
              |{
              |   "code":"INVALID_INVITATION_STATUS",
              |   "message":"The invitation cannot be transitioned to Rejected because its current status is Rejected. Only Pending invitations may be transitioned to Rejected."
+             |}
+           """.stripMargin
+        )))
+  }
+
+  def acceptInvitationNoPermissionStub(mtdItId: MtdItId, invitationId: String): Unit = {
+    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+    val invitationIdEncoded = encodePathSegment(invitationId)
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+      .willReturn(
+        aResponse()
+          .withStatus(403).withBody(
+          s"""
+             |{
+             |   "code":"NO_PERMISSION_ON_CLIENT",
+             |   "message":"The logged in client is not permitted to access invitations for the specified client."
              |}
            """.stripMargin
         )))

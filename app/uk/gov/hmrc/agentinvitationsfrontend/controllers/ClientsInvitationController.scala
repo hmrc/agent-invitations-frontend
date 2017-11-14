@@ -65,7 +65,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
               Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
           }
         case None =>
-          Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }.recoverWith {
       case _: InsufficientEnrolments =>
@@ -88,9 +88,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
               }
             case None =>
               Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          } recoverWith {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
           }
         case None =>
-          Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }
   }
@@ -108,9 +111,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
           Future.successful(Ok(confirm_invitation(formWithErrors)))
         }, data => {
           val result = if (data.value.getOrElse(false))
-                         Redirect(routes.ClientsInvitationController.getConfirmTerms())
-                       else
-                         Redirect(routes.ClientsInvitationController.getInvitationDeclined())
+            Redirect(routes.ClientsInvitationController.getConfirmTerms())
+          else
+            Redirect(routes.ClientsInvitationController.getInvitationDeclined())
 
           Future.successful(result)
         })
@@ -133,9 +136,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
             case Some(invitationId) =>
               invitationsService.acceptInvitation(invitationId, mtdItId).map { _ =>
                 Redirect(routes.ClientsInvitationController.getCompletePage())
+              } recoverWith {
+                case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+                  Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+                case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+                  Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
               }
             case None =>
-              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+              Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
           }
 
         }
