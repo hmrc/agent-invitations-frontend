@@ -8,12 +8,12 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.{ACAStubs, AuthStubs, DataStreamStubs}
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.{ACAStubs, ASAStubs, AuthStubs, DataStreamStubs}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with DataStreamStubs {
+abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with DataStreamStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -22,6 +22,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
       .configure(
         "microservice.services.auth.port" -> wireMockPort,
         "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+        "microservice.services.agent-services-account.port" -> wireMockPort,
         "microservice.services.company-auth.login-url" -> wireMockHost,
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,

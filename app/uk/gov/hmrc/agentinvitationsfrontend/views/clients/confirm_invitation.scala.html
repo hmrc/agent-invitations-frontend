@@ -19,18 +19,18 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 
-@(confirmForm : Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmForm : Form[ConfirmForm], agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation.title", agencyName), bodyClasses = None) {
     <header class="page-header">
-        <h1>@Messages("confirm-invitation.title")</h1>
+        <h1>@Messages("confirm-invitation.title", agencyName)</h1>
     </header>
 
     @form(routes.ClientsInvitationController.submitConfirmInvitation){
 
         <fieldset class="form-group inline">
             <legend class="bold-medium">
-                @Messages("confirm-invitation.sub-header")
+                @Messages("confirm-invitation.sub-header", agencyName)
             </legend>
             <span style="display: block" class="error-notification" role="tooltip" data-journey="search-page:error:confirmInvite">
                 @Messages(confirmForm("confirmInvite").error.map(_.message).getOrElse(""))

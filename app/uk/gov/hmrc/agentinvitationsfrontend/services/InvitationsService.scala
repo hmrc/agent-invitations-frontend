@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ AgentInvitation, AgentInvitationUserInput, Invitation }
-import uk.gov.hmrc.agentmtdidentifiers.model.{ Arn, MtdItId }
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) {
+class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
+                                    agentServicesAccountConnector: AgentServicesAccountConnector) {
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
 
@@ -50,6 +51,12 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector) 
   def getClientInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, mtdItId))
   }
+
+  def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+    agentServicesAccountConnector.getAgencyname(arn.value).map {
+      case Some(name) => name
+      case None => throw new Exception("Agency name not found")
+    }
 
   private def clientInvitationUrl(invitationId: String, mtdItId: MtdItId): String =
     s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"

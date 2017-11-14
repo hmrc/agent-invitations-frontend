@@ -15,14 +15,9 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.play.views.html.helpers.form
-@import uk.gov.hmrc.play.views.html.helpers.input
-
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
-
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(confirmTermsForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmTermsForm: Form[ConfirmForm], agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-terms.title"), bodyClasses = None) {
     <header class="page-header">
@@ -31,7 +26,7 @@
 
     <div class="form-group">
         <p class="important-notice">
-        <strong>@Messages("confirm-terms.alert")</strong>
+            <strong>@Messages("confirm-terms.alert", agencyName)</strong>
         </p>
     </div>
 
@@ -60,7 +55,7 @@
                 @Messages(confirmTermsForm("confirmTerms").error.map(_.message).getOrElse(""))
                 </span>
                 <input id="confirm-terms" type="checkbox" name="confirmTerms" value="true">
-                @Messages("confirm-terms.checkbox")
+                @Messages("confirm-terms.checkbox", agencyName)
             </label>
         </div>
 

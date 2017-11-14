@@ -46,22 +46,22 @@ landing-page.decline=Decline invitation
 
 # Invitation Declined
 invitation-declined.title=You have declined this request
-invitation-declined.p1=YourFirm Accountants will not be able to represent you with HMRC for Self Assessment.
+invitation-declined.p1={0} will not be able to represent you with HMRC for Self Assessment.
 invitation-declined.p2=You can manage your tax agent relationships from your business tax account (BTA).
 invitation-declined.button=Continue to your BTA
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
 
 # Confirm Invitation
-confirm-invitation.title=YourFirm Accountants has requested to represent you to HMRC:
-confirm-invitation.sub-header=Would you like YourFirm Accountants to represent you for Online self assessment?
+confirm-invitation.title={0} has requested to represent you to HMRC:
+confirm-invitation.sub-header=Would you like {0} to represent you for Online self assessment?
 confirm-invitation.radio1=Yes
 confirm-invitation.radio2=No
 confirm-invitation.button=Continue
 
 # Confirm Terms
 confirm-terms.title=Terms of participation
-confirm-terms.alert=By continuing you will be confirming your wish to allow YourFirm Accountants to access your Online self assessment data
+confirm-terms.alert=By continuing you will be confirming your wish to allow {0} to access your Online self assessment data
 confirm-terms.sub-header=Your obligations
 confirm-terms.p1=By taking part in this trial, you agree to:
 confirm-terms.bullet1=use accounting software to record your income and expenses, then submit a report once every 3 months from the start of your accounting period
@@ -73,13 +73,13 @@ confirm-terms.bullet6=have responsibility for any information a third party give
 confirm-terms.bullet7=let HMRC know if you start a new business or your current business stops trading
 confirm-terms.bullet8=contact HMRC if you can''t continue to take part in this trial
 confirm-terms.p2=These terms aren''t contractual and you can stop taking part in the trial at any time.
-confirm-terms.checkbox=I understand that YourFirm Accountants will be granted access to my Online self assessment data
+confirm-terms.checkbox=I understand that {0} will be granted access to my Online self assessment data
 confirm-terms.continue=Confirm access
 confirm-terms.back=Back
 
 # Complete
 client-complete.title1=You have confirmed
-client-complete.title2=YourFirm Accountants
+client-complete.title2={0}
 client-complete.title3=as your agent for
 client-complete.title4=Online self assessment
 client-complete.sub-header=What happens next
