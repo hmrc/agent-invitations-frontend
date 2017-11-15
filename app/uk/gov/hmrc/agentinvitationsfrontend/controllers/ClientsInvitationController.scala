@@ -77,7 +77,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getInvitationDeclined: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (invitationId, arn) =>
+      withValidInvitation(mtdItId) { (invitationId, arn) =>
         auditService.sendAgentInvitationResponse(invitationId, arn, "Declined", mtdItId)
 
         for {
@@ -90,7 +90,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId) { (_, arn) =>
         invitationsService.getAgencyName(arn).map { name =>
           Ok(confirm_invitation(confirmInvitationForm, name))
         }
@@ -100,7 +100,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId) { (_, arn) =>
         confirmInvitationForm.bindFromRequest().fold(
           formWithErrors => {
             invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name)))
@@ -118,7 +118,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId) { (_, arn) =>
         invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name)))
       }
     }
@@ -126,7 +126,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (invitationId, arn) =>
+      withValidInvitation(mtdItId) { (invitationId, arn) =>
         confirmTermsForm.bindFromRequest().fold(
           formWithErrors => {
             invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name)))
@@ -141,7 +141,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId) { (_, arn) =>
         invitationsService.getAgencyName(arn).map(name => Ok(complete(name)))
       }
     }
@@ -163,7 +163,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Forbidden(invitation_already_responded())
   }
 
-  private def withInvitation[A](mtdItId: MtdItId)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+  private def withValidInvitation[A](mtdItId: MtdItId)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     request.session.get("invitationId") match {
       case Some(invitationId) =>
         invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
