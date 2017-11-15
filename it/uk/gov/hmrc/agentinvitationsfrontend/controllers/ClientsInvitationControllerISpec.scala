@@ -85,7 +85,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
-      verifyAgentInvitationResponseEvent("1", arn.value, "Accepted", mtdItId.value)
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
@@ -158,7 +158,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationResponse)
     }
 
-    "redirect to incorrectInvitation when invitationId missing from session" in {
+    "redirect to notFound when invitationId missing from session" in {
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest(), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
