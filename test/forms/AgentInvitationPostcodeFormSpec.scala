@@ -18,7 +18,9 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationPostCodeForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationPostCodeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationPostcodeFormSpec extends UnitSpec {
@@ -47,6 +49,11 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeEmptyFormError) shouldBe true
       postcodeForm.errors.length shouldBe 2
+    }
+
+    "return no errors when unbinding the form" in {
+      val unboundForm = agentInvitationNinoForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), "AA1 1AA"))
+      unboundForm("postcode") shouldBe "AA1 1AA"
     }
   }
 }
