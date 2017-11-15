@@ -72,7 +72,7 @@ class ClientsInvitationFormSpec extends UnitSpec {
 
     "return no errors when unbinding the form" in {
       val unboundForm = confirmTermsForm.mapping.unbind(ConfirmForm(Some(true)))
-      unboundForm("confirmInvite") shouldBe "true"
+      unboundForm("confirmTerms") shouldBe "true"
     }
   }
 
