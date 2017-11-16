@@ -127,8 +127,21 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (_, arn) =>
-        invitationsService.getAgencyName(arn).map(name => Ok(complete(name)))
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+            case Some(invitation) =>
+              invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name)))
+            case None =>
+              Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
+          } recover {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Redirect(routes.ClientsInvitationController.incorrectInvitation())
+            case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+              Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+          }
+        case None =>
+          Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
       }
     }
   }
