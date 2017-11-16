@@ -25,7 +25,6 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
@@ -33,7 +32,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -47,14 +46,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page()).withSession(request.session + (("invitationId", invitationId)))
+    Future successful Ok(landing_page(invitationId))
   }
 
-  def submitStart: Action[AnyContent] = Action.async { implicit request =>
+  def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId) { (invitationId, arn) =>
         auditService.sendAgentInvitationResponse(invitationId, arn, "Accepted", mtdItId)
-        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation()).withSession(request.session + (("invitationId", invitationId)))
       }
     }.recoverWith {
       case _: InsufficientEnrolments =>
@@ -70,7 +69,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         for {
           name <- invitationsService.getAgencyName(arn)
           _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
-        } yield Ok(invitation_declined(name))
+        } yield Ok(invitation_declined(name, invitationId))
       }
     }
   }
