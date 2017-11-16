@@ -12,7 +12,7 @@ GET         /agents/not-matched                   @uk.gov.hmrc.agentinvitationsf
 
 # Client Endpoints
 GET         /:invitationId                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: String)
-POST        /                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart
+POST        /:invitationId                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart(invitationId: String)
 GET         /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation
 POST        /accept-tax-agent-invitation/2        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation
 GET         /accept-tax-agent-invitation/3        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms

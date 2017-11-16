@@ -18,14 +18,14 @@
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None) {
  <header class="page-header">
   <h1>@Messages("landing-page.title")</h1>
  </header>
 
- @form(routes.ClientsInvitationController.submitStart) {
+ @form(routes.ClientsInvitationController.submitStart(invitationId)) {
 
     <span class="lede">@Messages("landing-page.p1")</span>
 

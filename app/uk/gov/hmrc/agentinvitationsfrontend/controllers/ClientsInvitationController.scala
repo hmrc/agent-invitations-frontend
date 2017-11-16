@@ -46,10 +46,10 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   import ClientsInvitationController._
 
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page()).withSession(request.session + (("invitationId", invitationId)))
+    Future successful Ok(landing_page(invitationId))
   }
 
-  def submitStart: Action[AnyContent] = Action.async { implicit request =>
+  def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       request.session.get("invitationId") match {
         case Some(invitationId) =>
@@ -82,7 +82,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         for {
           name <- invitationsService.getAgencyName(arn)
           _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
-        } yield Ok(invitation_declined(name))
+        } yield Ok(invitation_declined(name, invitationId))
       }
     }
   }

@@ -18,12 +18,12 @@
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-declined.title"), bodyClasses = None) {
   <h1 class="heading-xlarge">@Messages("invitation-declined.title")</h1>
 
-    @form(routes.ClientsInvitationController.submitStart) {
+    @form(routes.ClientsInvitationController.submitStart(invitationId)) {
         <p>@Messages("invitation-declined.p1", agencyName)</p>
 
         <p>@Messages("invitation-declined.p2")</p>
