@@ -124,8 +124,10 @@ object AgentsInvitationController {
     Form(mapping(
       "nino" -> text
         .verifying("enter-nino.error-empty", _.nonEmpty)
-        .verifying("enter-nino.invalid-format", nino => isValid(nino)),
-      "postcode" -> text)({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
+        .verifying("enter-nino.invalid-format", nino => isValid(nino.trim.toUpperCase())),
+      "postcode" -> text)
+    ({ (nino, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), postcode) })
+    ({ user => Some((user.nino.value, user.postcode)) }))
   }
 
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {

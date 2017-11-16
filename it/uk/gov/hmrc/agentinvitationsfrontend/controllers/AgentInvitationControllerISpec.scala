@@ -18,15 +18,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.mvc.{AnyContentAsEmpty, _}
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationPostCodeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.domain.Nino
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.DataStreamStubs
 
 import scala.concurrent.duration._
 
@@ -67,6 +66,16 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("""AB123456A"""))
+      verifyAuthoriseAttempt()
+    }
+
+    "return 200 for authorised Agent with lowercase nino with spaces and redirected to Postcode Page with corrected Nino" in {
+      val result = submitNino(authorisedAsValidAgent(
+        request.withFormUrlEncodedBody(("nino", "  aB123456a  "), ("postcode" , "")), arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("""AB123456A"""))
       verifyAuthoriseAttempt()
     }
 
