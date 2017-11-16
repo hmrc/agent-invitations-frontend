@@ -51,9 +51,22 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (invitationId, arn) =>
-        auditService.sendAgentInvitationResponse(invitationId, arn, "Accepted", mtdItId)
-        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation()).withSession(request.session + (("invitationId", invitationId)))
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId) map {
+            case Some(invitation) if !invitation.status.contains("Pending") =>
+                Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+            case Some(invitation) =>
+                auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Accepted", mtdItId)
+                Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+            case None =>
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          } recoverWith {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          }
+        case None =>
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }.recoverWith {
       case _: InsufficientEnrolments =>
@@ -153,8 +166,6 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     request.session.get("invitationId") match {
       case Some(invitationId) =>
         invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
-          case Some(invitation) if !invitation.status.contains("Pending") =>
-            Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
           case Some(invitation) =>
             f(invitationId, invitation.arn)
           case None =>
