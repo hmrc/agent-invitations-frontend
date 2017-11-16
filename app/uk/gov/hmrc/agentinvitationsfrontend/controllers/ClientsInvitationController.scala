@@ -25,7 +25,6 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
@@ -33,7 +32,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -52,9 +51,22 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitStart: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (invitationId, arn) =>
-        auditService.sendAgentInvitationResponse(invitationId, arn, "Accepted", mtdItId)
-        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          invitationsService.getClientInvitation(mtdItId, invitationId) map {
+            case Some(invitation) if !invitation.status.contains("Pending") =>
+                Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+            case Some(invitation) =>
+                auditService.sendAgentInvitationResponse(invitationId, invitation.arn, "Accepted", mtdItId)
+                Redirect(routes.ClientsInvitationController.getConfirmInvitation())
+            case None =>
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          } recoverWith {
+            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+              Future successful Redirect(routes.ClientsInvitationController.incorrectInvitation())
+          }
+        case None =>
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }.recoverWith {
       case _: InsufficientEnrolments =>
@@ -154,8 +166,6 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     request.session.get("invitationId") match {
       case Some(invitationId) =>
         invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
-          case Some(invitation) if !invitation.status.contains("Pending") =>
-            Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
           case Some(invitation) =>
             f(invitationId, invitation.arn)
           case None =>
