@@ -51,7 +51,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (invitationId, arn) =>
+      redirectAccordingToInvitationState(mtdItId, invitationId) { (invitationId, arn) =>
         auditService.sendAgentInvitationResponse(invitationId, arn, "Accepted", mtdItId)
         Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation()).withSession(request.session + (("invitationId", invitationId)))
       }
@@ -152,21 +152,25 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   private def withValidInvitation[A](mtdItId: MtdItId)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     request.session.get("invitationId") match {
       case Some(invitationId) =>
-        invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
-          case Some(invitation) if !invitation.status.contains("Pending") =>
-            Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-          case Some(invitation) =>
-            f(invitationId, invitation.arn)
-          case None =>
-            Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
-        } recover {
-          case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
-            Redirect(routes.ClientsInvitationController.incorrectInvitation())
-          case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
-            Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-        }
+        redirectAccordingToInvitationState(mtdItId, invitationId)(f)
       case None =>
         Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+    }
+  }
+
+  private def redirectAccordingToInvitationState[A](mtdItId: MtdItId, invitationId: String)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) = {
+    invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+      case Some(invitation) if !invitation.status.contains("Pending") =>
+        Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+      case Some(invitation) =>
+        f(invitationId, invitation.arn)
+      case None =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+    } recover {
+      case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+        Redirect(routes.ClientsInvitationController.incorrectInvitation())
+      case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+        Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
     }
   }
 }
