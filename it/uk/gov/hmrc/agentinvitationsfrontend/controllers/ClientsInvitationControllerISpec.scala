@@ -50,7 +50,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation(invitationId).url
       verifyAgentInvitationResponseEvent(invitationId, arn.value, "Accepted", mtdItId.value)
     }
 
@@ -104,7 +104,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "GET /reject-tax-agent-invitation/1" should {
-    val getInvitationDeclined = controller.getInvitationDeclined
+    val getInvitationDeclined = controller.getInvitationDeclined(invitationId)
 
     "show invitation_declined page for an authenticated client with a valid invitation" in {
 
@@ -173,7 +173,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/2 (confirm invitation page)" should {
 
-    val getConfirmInvitation: Action[AnyContent] = controller.getConfirmInvitation
+    val getConfirmInvitation: Action[AnyContent] = controller.getConfirmInvitation(invitationId)
 
     "show the confirm invitation page" in {
       getInvitationStub(arn, mtdItId, invitationId)
@@ -186,7 +186,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /accept-tax-agent-invitation/2 (clicking continue on the confirm invitation page)" should {
-    val submitConfirmInvitation: Action[AnyContent] = controller.submitConfirmInvitation
+    val submitConfirmInvitation: Action[AnyContent] = controller.submitConfirmInvitation(invitationId)
 
     "reshow the page when neither yes nor no choices were selected with an error message" in {
       getInvitationStub(arn, mtdItId, invitationId)
@@ -203,10 +203,10 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "true")
-      val result = controller.submitConfirmInvitation().apply(req)
+      val result = controller.submitConfirmInvitation(invitationId).apply(req)
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmTerms().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmTerms(invitationId).url
     }
 
     "redirect to invitation declined when no is selected" in {
@@ -214,10 +214,10 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "false")
-      val result = controller.submitConfirmInvitation().apply(req)
+      val result = controller.submitConfirmInvitation(invitationId).apply(req)
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.getInvitationDeclined().url)
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.getInvitationDeclined(invitationId).url)
     }
 
     "return exception when agency name retrieval fails" in {
@@ -232,7 +232,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/3 (confirm terms page)" should {
 
-    val getConfirmTerms: Action[AnyContent] = controller.getConfirmTerms
+    val getConfirmTerms: Action[AnyContent] = controller.getConfirmTerms(invitationId)
 
     "show the confirm terms page" in {
       getInvitationStub(arn, mtdItId, invitationId)
@@ -256,35 +256,29 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "POST /accept-tax-agent-invitation/3 (clicking confirm on the confirm terms page)" should {
-    def withSessionData[A](req: FakeRequest[A], key: String, value: String): FakeRequest[A] = {
-      req.withSession((req.session + (key -> value)).data.toSeq: _*)
-    }
-
-    val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms
+    val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms(invitationId)
 
     "redirect to complete page when the checkbox was checked" in {
-      getInvitationStub(arn, mtdItId, "someInvitationId")
-      acceptInvitationStub(mtdItId, "someInvitationId")
+      getInvitationStub(arn, mtdItId, invitationId)
+      acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      val result = submitConfirmTerms(reqWithSession)
+      val result = submitConfirmTerms(req)
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.getCompletePage(invitationId).url
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when the checkbox was checked" in {
-      getInvitationStub(arn, mtdItId, "someInvitationId")
-      acceptInvitationStub(mtdItId, "someInvitationId")
+      getInvitationStub(arn, mtdItId, invitationId)
+      acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      await(submitConfirmTerms(reqWithSession))
+      await(submitConfirmTerms(req))
 
-      verifyAcceptInvitationAttempt(mtdItId, "someInvitationId")
+      verifyAcceptInvitationAttempt(mtdItId, invitationId)
     }
 
     "reshow the page when the checkbox was not checked with an error message" in {
@@ -303,10 +297,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      getInvitationStub(arn, mtdItId, "someInvitationId")
-      acceptInvitationNoPermissionStub(mtdItId, "someInvitationId")
-      val result = submitConfirmTerms(reqWithSession)
+      getInvitationStub(arn, mtdItId, invitationId)
+      acceptInvitationNoPermissionStub(mtdItId, invitationId)
+      val result = submitConfirmTerms(req)
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
@@ -314,16 +307,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      val reqWithSession = withSessionData(req, "invitationId", "someInvitationId")
-      getInvitationStub(arn, mtdItId, "someInvitationId")
-      alreadyActionedAcceptInvitationStub(mtdItId, "someInvitationId")
-      val result = submitConfirmTerms(reqWithSession)
+      getInvitationStub(arn, mtdItId, invitationId)
+      alreadyActionedAcceptInvitationStub(mtdItId, invitationId)
+      val result = submitConfirmTerms(req)
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
     }
 
-    "redirect to notFoundInvitation if invitation id is not available in the session" in {
+    "redirect to notFoundInvitation where no such invitation" in {
 
       val result = submitConfirmTerms(authorisedAsValidClient(FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true"), mtdItId.value))
 
@@ -336,7 +328,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/4 (complete page)" should {
 
-    val getCompletePage: Action[AnyContent] = controller.getCompletePage
+    val getCompletePage: Action[AnyContent] = controller.getCompletePage(invitationId)
 
     "show the complete page" in {
       getInvitationStub(arn, mtdItId, invitationId)
