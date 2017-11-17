@@ -17,7 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.play.views.html.helpers.form
-@(confirmTermsForm: Form[ConfirmForm], agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-terms.title"), bodyClasses = None) {
     <header class="page-header">
@@ -47,7 +47,7 @@
 
     <p>@Messages("confirm-terms.p2")</p>
 
-    @form(routes.ClientsInvitationController.submitConfirmTerms()) {
+    @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId)) {
 
         <div class="form-group">
             <label class="block-label form-checkbox" for="confirm-terms">

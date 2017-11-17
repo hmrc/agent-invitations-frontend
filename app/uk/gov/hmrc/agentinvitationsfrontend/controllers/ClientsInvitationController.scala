@@ -51,9 +51,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      redirectAccordingToInvitationState(mtdItId, invitationId) { (invitationId, arn) =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
         auditService.sendAgentInvitationResponse(invitationId, arn, "Accepted", mtdItId)
-        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation()).withSession(request.session + (("invitationId", invitationId)))
+        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
       }
     }.recoverWith {
       case _: InsufficientEnrolments =>
@@ -61,9 +61,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
-  def getInvitationDeclined: Action[AnyContent] = Action.async { implicit request =>
+  def getInvitationDeclined(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (invitationId, arn) =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
         auditService.sendAgentInvitationResponse(invitationId, arn, "Declined", mtdItId)
 
         for {
@@ -74,27 +74,27 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
-  def getConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
+  def getConfirmInvitation(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
         invitationsService.getAgencyName(arn).map { name =>
-          Ok(confirm_invitation(confirmInvitationForm, name))
+          Ok(confirm_invitation(confirmInvitationForm, name, invitationId))
         }
       }
     }
   }
 
-  def submitConfirmInvitation: Action[AnyContent] = Action.async { implicit request =>
+  def submitConfirmInvitation(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (_, arn) =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
         confirmInvitationForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name)))
+            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId)))
           }, data => {
             val result = if (data.value.getOrElse(false))
-              Redirect(routes.ClientsInvitationController.getConfirmTerms())
+              Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
             else
-              Redirect(routes.ClientsInvitationController.getInvitationDeclined())
+              Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
             Future.successful(result)
           })
@@ -102,46 +102,41 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
-  def getConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
+  def getConfirmTerms(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (_, arn) =>
-        invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name)))
+      withValidInvitation(mtdItId, invitationId) { arn =>
+        invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId)))
       }
     }
   }
 
-  def submitConfirmTerms: Action[AnyContent] = Action.async { implicit request =>
+  def submitConfirmTerms(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId) { (invitationId, arn) =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
         confirmTermsForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name)))
+            invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId)))
           }, _ => {
             invitationsService.acceptInvitation(invitationId, mtdItId).map { _ =>
-              Redirect(routes.ClientsInvitationController.getCompletePage())
+              Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
             }
           })
       }
     }
   }
 
-  def getCompletePage: Action[AnyContent] = Action.async { implicit request =>
+  def getCompletePage(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
-      request.session.get("invitationId") match {
-        case Some(invitationId) =>
-          invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
-            case Some(invitation) =>
-              invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name)))
-            case None =>
-              Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
-          } recover {
-            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
-              Redirect(routes.ClientsInvitationController.incorrectInvitation())
-            case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
-              Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-          }
-        case None =>
-          Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
+      invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+        case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name)))
+        case None => Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
+      } recover {
+        case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+          Redirect(routes.ClientsInvitationController.incorrectInvitation())
+        case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+          Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+        case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
+          Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }
   }
@@ -162,21 +157,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Forbidden(invitation_already_responded())
   }
 
-  private def withValidInvitation[A](mtdItId: MtdItId)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
-    request.session.get("invitationId") match {
-      case Some(invitationId) =>
-        redirectAccordingToInvitationState(mtdItId, invitationId)(f)
-      case None =>
-        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
-    }
-  }
-
-  private def redirectAccordingToInvitationState[A](mtdItId: MtdItId, invitationId: String)(f: (String, Arn) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) = {
+  private def withValidInvitation[A](mtdItId: MtdItId, invitationId: String)(f: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
       case Some(invitation) if !invitation.status.contains("Pending") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
       case Some(invitation) =>
-        f(invitationId, invitation.arn)
+        f(invitation.arn)
       case None =>
         Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     } recover {
@@ -184,6 +170,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         Redirect(routes.ClientsInvitationController.incorrectInvitation())
       case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
         Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+      case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
+        Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
 }
