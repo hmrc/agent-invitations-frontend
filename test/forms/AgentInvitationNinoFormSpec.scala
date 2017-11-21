@@ -37,6 +37,18 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
       ninoForm.errors.isEmpty shouldBe true
     }
 
+    "return no error message for valid Nino with spaces" in {
+      val data = Json.obj("nino" -> "  WM123456C  ", "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm.bind(data)
+      ninoForm.errors.isEmpty shouldBe true
+    }
+
+    "return no error message for valid lower case Nino" in {
+      val data = Json.obj("nino" -> "wn123456c", "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm.bind(data)
+      ninoForm.errors.isEmpty shouldBe true
+    }
+
     "return an error message for invalid Nino" in {
       val data = Json.obj("nino" -> "12345", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)

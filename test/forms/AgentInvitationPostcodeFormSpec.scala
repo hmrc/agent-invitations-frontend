@@ -37,6 +37,18 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
       postcodeForm.errors.isEmpty shouldBe true
     }
 
+    "return no error message for valid postcode with spaces" in {
+      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "  W12 7TQ  ")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
+    "return no error message for valid lower case postcode" in {
+      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "w12 7tq")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
     "return an error message for invalid postcode" in {
       val data = Json.obj("nino" -> "WM123456C", "postcode" -> "W12")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)

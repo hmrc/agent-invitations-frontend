@@ -19,7 +19,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", "W12 7TQ")
 
     "return a link of a specific created invitation" in {
-      createInvitationStub(arn, MtdItId("mtdItId"), "1")
+      createInvitationStub(arn, MtdItId("mtdItId"), "1", "AB123456B", "W12 7TQ")
       val result: Option[String] = await(connector.createInvitation(arn, agentInvitation))
       result.isDefined shouldBe true
       result.get should include("agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/1")

@@ -135,7 +135,9 @@ object AgentsInvitationController {
       "nino" -> text,
       "postcode" -> text
         .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode)))({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode) })({ user => Some((user.nino.value, user.postcode)) }))
+        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode.trim.toUpperCase())))
+    ({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode.trim.toUpperCase()) })
+    ({ user => Some((user.nino.value, user.postcode)) }))
   }
 
 }

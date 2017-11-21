@@ -8,9 +8,17 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
-    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
-      .willReturn(
+  def createInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String, clientId: String, postcode: String ): Unit = {
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
+      equalToJson(s"""
+         |{
+         |   "service": "HMRC-MTD-IT",
+         |   "clientIdType": "ni",
+         |   "clientId":"$clientId",
+         |   "clientPostcode":"$postcode"
+         |}
+           """.stripMargin)
+    ).willReturn(
         aResponse()
           .withStatus(201)
           .withHeader("location", s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId")))
