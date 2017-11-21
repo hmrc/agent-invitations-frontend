@@ -19,8 +19,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
-import play.api.data.Form
-import play.api.data.Forms.{mapping, text}
+import play.api.data.{Form, Forms, Mapping}
+import play.api.data.Forms.{mapping, nonEmptyText, text}
+import play.api.data.validation._
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -117,14 +118,28 @@ class AgentsInvitationController @Inject() (
 
 object AgentsInvitationController {
 
-  private def postcodeCheck(postcode: String) =
-    postcode.matches("^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$")
+  private def postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
+
+  private def validateField(failure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    Constraints.nonEmpty(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if (condition(fieldValue.trim.toUpperCase))
+          Valid
+        else
+          Invalid(ValidationError(failure))
+    }
+  }
+
+  private val invalidNino =
+    validateField("enter-nino.invalid-format")(nino => isValid(nino))
+  private val invalidPostcode =
+    validateField("enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
-      "nino" -> text
-        .verifying("enter-nino.error-empty", _.nonEmpty)
-        .verifying("enter-nino.invalid-format", nino => isValid(nino.trim.toUpperCase())),
+      "nino" -> text.verifying(invalidNino),
       "postcode" -> text)
     ({ (nino, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), postcode) })
     ({ user => Some((user.nino.value, user.postcode)) }))
@@ -133,11 +148,8 @@ object AgentsInvitationController {
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "nino" -> text,
-      "postcode" -> text
-        .verifying("enter-postcode.error-empty", _.nonEmpty)
-        .verifying("enter-postcode.invalid-format", postcode => postcodeCheck(postcode.trim.toUpperCase())))
+      "postcode" -> text.verifying(invalidPostcode))
     ({ (nino, postcode) => AgentInvitationUserInput(Nino(nino), postcode.trim.toUpperCase()) })
     ({ user => Some((user.nino.value, user.postcode)) }))
   }
-
 }

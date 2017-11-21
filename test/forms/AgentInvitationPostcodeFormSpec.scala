@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
-  val postcodeEmptyMessage: String = "enter-postcode.error-empty"
+  val postcodeEmptyMessage: String = "error.required"
   val postcodeFormatMessage: String = "enter-postcode.invalid-format"
   val postcodeEmptyFormError: FormError = FormError("postcode", List(postcodeEmptyMessage))
   val postcodeFormatFormError: FormError = FormError("postcode", List(postcodeFormatMessage))
@@ -60,7 +60,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
       val data = Json.obj("nino" -> "WM123456C", "postcode" -> "")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeEmptyFormError) shouldBe true
-      postcodeForm.errors.length shouldBe 2
+      postcodeForm.errors.length shouldBe 1
     }
 
     "return no errors when unbinding the form" in {
