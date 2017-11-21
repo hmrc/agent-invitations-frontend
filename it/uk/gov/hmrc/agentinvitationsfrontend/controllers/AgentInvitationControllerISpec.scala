@@ -80,14 +80,24 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
+    "return 200 for authorised Agent with empty nino and redisplay form with error message" in {
       val ninoForm = agentInvitationNinoForm
       val ninoData = Map("nino" -> "", "postcode" -> "")
       val result = submitNino(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.error-empty"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
+      val ninoForm = agentInvitationNinoForm
+      val ninoData = Map("nino" -> "AB", "postcode" -> "")
+      val result = submitNino(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.invalid-format"))
       verifyAuthoriseAttempt()
     }
@@ -128,14 +138,25 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
     }
 
-    "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
+    "return 200 for authorised Agent with empty postcode and redisplay form with error message" in {
       val postcodeForm = agentInvitationPostCodeForm
       val postcodeData = Map("nino" -> validNino.value, "postcode" -> "")
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.error-empty"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      verifyAuthoriseAttempt()
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
+    }
+
+    "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
+      val postcodeForm = agentInvitationPostCodeForm
+      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "AB")
+      val result = submitPostcode(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)

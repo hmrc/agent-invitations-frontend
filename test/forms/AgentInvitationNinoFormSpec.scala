@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationNinoFormSpec extends UnitSpec {
 
-  val ninoEmptyMessage: String = "enter-nino.error-empty"
+  val ninoEmptyMessage: String = "error.required"
   val ninoFormatMessage: String = "enter-nino.invalid-format"
   val ninoEmptyFormError: FormError = FormError("nino", List(ninoEmptyMessage))
   val ninoFormatFormError: FormError = FormError("nino", List(ninoFormatMessage))
@@ -59,8 +59,9 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
     "return an error message for empty form" in {
       val data = Json.obj("nino" -> "", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
+      println(ninoForm.errors)
       ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
-      ninoForm.errors.length shouldBe 2
+      ninoForm.errors.length shouldBe 1
     }
 
     "return no errors when unbinding the form" in {
