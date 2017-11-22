@@ -16,13 +16,16 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
-@import uk.gov.hmrc.play.views.html.helpers.form
+@import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary, singleCheckbox}
+
+
 @(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-terms.title"), bodyClasses = None) {
-    <header class="page-header">
-        <h1>@Messages("confirm-terms.title")</h1>
-    </header>
+
+    @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
+
+    <h1 class="heading-xlarge">@Messages("confirm-terms.title")</h1>
 
     <div class="form-group">
         <p class="important-notice">
@@ -49,15 +52,10 @@
 
     @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId)) {
 
-        <div class="form-group">
-            <label class="block-label form-checkbox" for="confirm-terms">
-                <span style="display: block" class="error-notification" role="tooltip" data-journey="search-page:error:confirmTerms">
-                @Messages(confirmTermsForm("confirmTerms").error.map(_.message).getOrElse(""))
-                </span>
-                <input id="confirm-terms" type="checkbox" name="confirmTerms" value="true">
-                @Messages("confirm-terms.checkbox", agencyName)
-            </label>
-        </div>
+        @singleCheckbox(
+            confirmTermsForm("confirmTerms"),
+            '_label -> Messages("confirm-terms.checkbox", agencyName)
+        )
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("confirm-terms.continue")</button>

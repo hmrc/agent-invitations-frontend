@@ -18,8 +18,8 @@
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-problem.title"), bodyClasses = None) {
-  <header class="page-header">
-    <h1>@Messages("client-problem.title")</h1>
-  </header>
+
+  <h1 class="heading-xlarge">@Messages("client-problem.title")</h1>
+
   <p>@Messages("invitation-already-responded.description")</p>
 }

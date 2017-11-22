@@ -25,3 +25,5 @@ GET         /not-signed-up/                                     @uk.gov.hmrc.age
 GET         /incorrect/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.incorrectInvitation
 GET         /not-found/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
 GET         /already-responded/                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
+
+GET         /assets/*file        controllers.Assets.at(path="/public", file)

@@ -87,6 +87,8 @@ client-complete.button=Continue to your Business Tax account
 # Form Errors
 error.confirmInvite.invalid=Please choose an option from below
 error.confirmTerms.invalid=Please accept the terms
+error.summary.heading=There is a problem
+error.prefix=Error:
 
 # Generic Issue Title
 client-problem.title=There is a problem

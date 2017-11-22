@@ -15,32 +15,35 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.form
-@import uk.gov.hmrc.play.views.html.helpers.input
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("enter-nino.title"), bodyClasses = None) {
- <header class="page-header">
-  <h1>@Messages("enter-nino.title")</h1>
- </header>
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-nino.title"), bodyClasses = None) {
+
+@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-nino"))
+
+
+  <h1 class="heading-xlarge">@Messages("enter-nino.title")</h1>
+
 
  @form(
   action = routes.AgentsInvitationController.submitNino,
   'class -> "form js-form") {
 
-  <div class="form-group">
-  @input(
-   agentInvitationsForm("nino"),
-   '_label -> Messages("enter-nino.label"),
-   '_inputClass -> "input--medium input--cleared",
-   '_labelTextClass -> "h2-heading",
-   '_inputHint -> Messages("nino-example.hint")
-  )
-  </div>
+    <div class="form-group">
+        @input(
+        agentInvitationsForm("nino"),
+        '_label -> Messages("enter-nino.label"),
+        '_inputClass -> "input--medium input--cleared",
+        '_labelTextClass -> "h2-heading",
+        '_inputHint -> Messages("nino-example.hint")
+        )
+    </div>
 
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
