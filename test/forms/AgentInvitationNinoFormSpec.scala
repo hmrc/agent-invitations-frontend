@@ -59,7 +59,6 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
     "return an error message for empty form" in {
       val data = Json.obj("nino" -> "", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
-      println(ninoForm.errors)
       ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }

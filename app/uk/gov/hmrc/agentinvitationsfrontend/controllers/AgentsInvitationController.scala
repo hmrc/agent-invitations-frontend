@@ -64,20 +64,19 @@ class AgentsInvitationController @Inject() (
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm)
+          Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm).withSession(request.session + ("nino" -> userInput.nino.value))
         })
     }
   }
 
   def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      agentInvitationNinoForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future successful Ok(enter_nino(formWithErrors))
-        },
-        userInput => {
-          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(userInput)))
-        })
+      request.session.get("nino") match {
+        case Some(nino) =>
+          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(AgentInvitationUserInput(Nino(nino), ""))))
+        case None =>
+          Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+      }
     }
   }
 
