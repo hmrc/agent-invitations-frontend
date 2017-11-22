@@ -19,8 +19,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
-import play.api.data.{Form, Forms, Mapping}
-import play.api.data.Forms.{mapping, nonEmptyText, text}
+import play.api.data.Form
+import play.api.data.Forms.{mapping, text}
 import play.api.data.validation._
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -48,16 +48,28 @@ class AgentsInvitationController @Inject() (
   import AgentsInvitationController._
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.enterNino().url)
+    Redirect(routes.AgentsInvitationController.showNinoForm().url)
   }
 
-  def enterNino: Action[AnyContent] = Action.async { implicit request =>
+  def showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
   def submitNino: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { arn =>
+      agentInvitationNinoForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(enter_nino(formWithErrors))
+        },
+        userInput => {
+          Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm)
+        })
+    }
+  }
+
+  def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
@@ -81,7 +93,7 @@ class AgentsInvitationController @Inject() (
             .map(invitation => {
               val id = extractInvitationId(invitation.selfUrl.toString)
               auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-              Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(id)}"))
+              Redirect(routes.AgentsInvitationController.invitationSent).withSession(request.session + ("invitationId" -> id))
             })
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
@@ -97,6 +109,16 @@ class AgentsInvitationController @Inject() (
                 Future.failed(e)
             }
         })
+    }
+  }
+
+  def invitationSent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { arn =>
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          Future successful Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(invitationId)}"))
+        case None => throw new RuntimeException("User attempted to browse to invitationSent")
+      }
     }
   }
 

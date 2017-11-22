@@ -47,34 +47,34 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   "GET /agents/enter-nino" should {
     val request = FakeRequest("GET", "/agents/enter-nino")
-    val enterNino = controller.enterNino()
+    val showNinoForm = controller.showNinoForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = enterNino(authorisedAsValidAgent(request, arn.value))
+      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       verifyAuthoriseAttempt()
     }
-    behave like anAuthorisedEndpoint(request, enterNino)
+    behave like anAuthorisedEndpoint(request, showNinoForm)
   }
 
   "POST /agents/enter-postcode" should {
     val request = FakeRequest("POST", "/agents/enter-postcode")
     val submitNino = controller.submitNino()
 
-    "return 200 for authorised Agent with valid nino and redirected to Postcode Page" in {
+    "return 303 for authorised Agent with valid nino and redirected to Postcode Page" in {
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, ""))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
+      status(result) shouldBe 303
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"""${validNino.value}"""))
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for authorised Agent with lowercase nino with spaces and redirected to Postcode Page with corrected Nino" in {
+    "return 303 for authorised Agent with lowercase nino with spaces and redirected to Postcode Page with corrected Nino" in {
       val result = submitNino(authorisedAsValidAgent(
         request.withFormUrlEncodedBody(("nino", s"  ${validNino.value.toLowerCase}  "), ("postcode" , "")), arn.value))
-      status(result) shouldBe 200
+      status(result) shouldBe 303
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"""${validNino.value}"""))
       verifyAuthoriseAttempt()
@@ -110,28 +110,28 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
     val validPostcode = "BN12 6BX"
 
-    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
+    "return 303 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
       
       createInvitationStub(arn, mtdItId, "1", validNino.value, validPostcode)
       getInvitationStub(arn, mtdItId, "1")
       val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, validPostcode))
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
+      status(result) shouldBe 303
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
     }
 
-    "return 200 for authorised Agent with valid postcode with spaces and lower case character and redirected to Confirm Invitation Page (secureFlag = false)" in {
+    "return 303 for authorised Agent with valid postcode with spaces and lower case character and redirected to Confirm Invitation Page (secureFlag = false)" in {
 
       createInvitationStub(arn, mtdItId, "1", validNino.value, validPostcode)
       getInvitationStub(arn, mtdItId, "1")
       val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, s"  ${validPostcode.toLowerCase}  "))
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
+      status(result) shouldBe 303
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
       verifyAuthoriseAttempt()
