@@ -18,8 +18,8 @@
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("not-matched.title"), bodyClasses = None) {
-  <header class="page-header">
-    <h1>@Messages("not-matched.title")</h1>
-  </header>
+
+  <h1 class="heading-xlarge">@Messages("not-matched.title")</h1>
+
   <p id="notMatched">@Messages("not-matched.description")</p>
 }

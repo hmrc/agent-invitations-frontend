@@ -14,12 +14,7 @@
  * limitations under the License.
  *@
 
-@import play.api.Configuration
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
-
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-problem.title"), bodyClasses = None) {
-
-  <h1 class="heading-xlarge">@Messages("client-problem.title")</h1>
-
-  <p>@Html(Messages("not-signed-up.description"))</p>
+@(form: Form[_])(implicit messages: Messages)
+@if(form.hasErrors){
+    @Messages("error.prefix")
 }

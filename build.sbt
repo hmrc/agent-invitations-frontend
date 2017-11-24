@@ -17,7 +17,7 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "frontend-bootstrap" % "8.10.0",
+  "uk.gov.hmrc" %% "frontend-bootstrap" % "8.11.0",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.5.0",
   "uk.gov.hmrc" %% "auth-client" % "2.3.0",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "2.4.0",
@@ -49,6 +49,7 @@ lazy val root = (project in file("."))
       Resolver.jcenterRepo
     ),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    dependencyOverrides += "uk.gov.hmrc" %% "play-ui" % "7.9.0",
     publishingSettings,
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources"

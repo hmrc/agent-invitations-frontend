@@ -21,6 +21,7 @@
 @(agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-declined.title"), bodyClasses = None) {
+
   <h1 class="heading-xlarge">@Messages("invitation-declined.title")</h1>
 
     @form(routes.ClientsInvitationController.submitStart(invitationId)) {
@@ -28,9 +29,9 @@
 
         <p>@Messages("invitation-declined.p2")</p>
 
-        <a class="button" href="/account" id="continue">@Messages("invitation-declined.button")</a>
-
-        <br /> <br />
+        <div class="form-group">
+            <a class="button" href="/account" id="continue" role="button">@Messages("invitation-declined.button")</a>
+        </div>
 
         <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
 
