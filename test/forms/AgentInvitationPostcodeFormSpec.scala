@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
-  val postcodeEmptyMessage: String = "error.required"
+  val postcodeEmptyMessage: String = "error.postcode.required"
   val postcodeFormatMessage: String = "enter-postcode.invalid-format"
   val postcodeEmptyFormError: FormError = FormError("postcode", List(postcodeEmptyMessage))
   val postcodeFormatFormError: FormError = FormError("postcode", List(postcodeFormatMessage))

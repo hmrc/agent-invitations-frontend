@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationNinoFormSpec extends UnitSpec {
 
-  val ninoEmptyMessage: String = "error.required"
+  val ninoEmptyMessage: String = "error.nino.required"
   val ninoFormatMessage: String = "enter-nino.invalid-format"
   val ninoEmptyFormError: FormError = FormError("nino", List(ninoEmptyMessage))
   val ninoFormatFormError: FormError = FormError("nino", List(ninoFormatMessage))
