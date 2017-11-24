@@ -22,21 +22,21 @@
 
 @(confirmForm : Form[ConfirmForm], agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("confirm-invitation.title", agencyName), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("confirm-invitation.title"), bodyClasses = None) {
 
     @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("confirmInvite"))
 
-    <h1 class="heading-xlarge">@Messages("confirm-invitation.title", agencyName)</h1>
+    <h1 class="heading-xlarge">@Messages("confirm-invitation.heading", agencyName)</h1>
 
 
     @form(routes.ClientsInvitationController.submitConfirmInvitation(invitationId)){
 
-        @inputRadioGroup2(
+        @inputRadioGroup(
         confirmForm("confirmInvite"),
         Seq(("true", Messages("confirm-invitation.radio1")),("false",Messages("confirm-invitation.radio2"))),
         '_legend -> Messages("confirm-invitation.sub-header", agencyName),
         '_legendClass -> "h2-heading",
-        '_groupDivClass -> "form-group soft--top",
+        '_groupDivClass -> "form-group soft--ends",
         '_groupClass -> "inline",
         '_fieldsetAttributes -> Html("""id='confirmInvite'""")
     )

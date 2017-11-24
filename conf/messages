@@ -51,7 +51,8 @@ invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
 
 # Confirm Invitation
-confirm-invitation.title={0} has requested to represent you to HMRC:
+confirm-invitation.title=Confirm Invitation
+confirm-invitation.heading={0} has requested to represent you to HMRC:
 confirm-invitation.sub-header=Would you like {0} to represent you for Online self assessment?
 confirm-invitation.radio1=Yes
 confirm-invitation.radio2=No
@@ -85,8 +86,8 @@ client-complete.p1=You can manage your relationships with your agent(s) from wit
 client-complete.button=Continue to your Business Tax account
 
 # Form Errors
-error.confirmInvite.invalid=Please choose an option from below
-error.confirmTerms.invalid=Please accept the terms
+error.confirmInvite.invalid=You must choose an option
+error.confirmTerms.invalid=You must accept the terms to continue
 error.summary.heading=There is a problem
 error.prefix=Error:
 

@@ -21,4 +21,6 @@ $(function() {
             }
         });
     });
+    //Add aria-hidden to hidden inputs
+    $('[type="hidden"]').attr("aria-hidden", true)
 });

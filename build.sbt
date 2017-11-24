@@ -17,12 +17,13 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "frontend-bootstrap" % "8.10.0",
+  "uk.gov.hmrc" %% "frontend-bootstrap" % "8.11.0",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.5.0",
   "uk.gov.hmrc" %% "auth-client" % "2.3.0",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "2.4.0",
   "uk.gov.hmrc" %% "play-partials" % "6.1.0",
-  "de.threedimensions" %% "metrics-play" % "2.5.13"
+  "de.threedimensions" %% "metrics-play" % "2.5.13",
+  "uk.gov.hmrc" %% "play-ui" % "7.9.0"
 )
 
 def testDeps(scope: String) = Seq(
