@@ -19,8 +19,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
-import play.api.data.{Form, Forms, Mapping}
-import play.api.data.Forms.{mapping, nonEmptyText, text}
+import play.api.data.Form
+import play.api.data.Forms.{mapping, text}
 import play.api.data.validation._
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -48,10 +48,10 @@ class AgentsInvitationController @Inject() (
   import AgentsInvitationController._
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.enterNino().url)
+    Redirect(routes.AgentsInvitationController.showNinoForm().url)
   }
 
-  def enterNino: Action[AnyContent] = Action.async { implicit request =>
+  def showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
@@ -64,8 +64,19 @@ class AgentsInvitationController @Inject() (
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(userInput)))
+          Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm).withSession(request.session + ("nino" -> userInput.nino.value))
         })
+    }
+  }
+
+  def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { arn =>
+      request.session.get("nino") match {
+        case Some(nino) =>
+          Future successful Ok(enter_postcode(agentInvitationNinoForm.fill(AgentInvitationUserInput(Nino(nino), ""))))
+        case None =>
+          Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+      }
     }
   }
 
@@ -81,7 +92,7 @@ class AgentsInvitationController @Inject() (
             .map(invitation => {
               val id = extractInvitationId(invitation.selfUrl.toString)
               auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-              Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(id)}"))
+              Redirect(routes.AgentsInvitationController.invitationSent).withSession(request.session + ("invitationId" -> id))
             })
             .recoverWith {
               case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
@@ -97,6 +108,16 @@ class AgentsInvitationController @Inject() (
                 Future.failed(e)
             }
         })
+    }
+  }
+
+  def invitationSent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { arn =>
+      request.session.get("invitationId") match {
+        case Some(invitationId) =>
+          Future successful Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(invitationId)}"))
+        case None => throw new RuntimeException("User attempted to browse to invitationSent")
+      }
     }
   }
 
@@ -120,22 +141,26 @@ object AgentsInvitationController {
 
   private def postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
-  private def validateField(failure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
-    Constraints.nonEmpty(fieldValue) match {
+  private def nonEmpty(failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
+  }
+
+  private def validateField(nonEmptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
       case i: Invalid =>
         i
       case Valid =>
         if (condition(fieldValue.trim.toUpperCase))
           Valid
         else
-          Invalid(ValidationError(failure))
+          Invalid(ValidationError(invalidFailure))
     }
   }
 
   private val invalidNino =
-    validateField("enter-nino.invalid-format")(nino => isValid(nino))
+    validateField("error.nino.required", "enter-nino.invalid-format")(nino => isValid(nino))
   private val invalidPostcode =
-    validateField("enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
+    validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(

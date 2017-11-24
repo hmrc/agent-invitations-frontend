@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.BadRequestException
 
 import scala.concurrent.duration._
 
@@ -35,6 +36,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
+  val validPostcode = "BN12 6BX"
 
   "GET /agents/" should {
     "redirect to /agent/enter-nino" in {
@@ -47,114 +49,106 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   "GET /agents/enter-nino" should {
     val request = FakeRequest("GET", "/agents/enter-nino")
-    val enterNino = controller.enterNino()
+    val showNinoForm = controller.showNinoForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = enterNino(authorisedAsValidAgent(request, arn.value))
+      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       verifyAuthoriseAttempt()
     }
-    behave like anAuthorisedEndpoint(request, enterNino)
+    behave like anAuthorisedEndpoint(request, showNinoForm)
   }
 
-  "POST /agents/enter-postcode" should {
-    val request = FakeRequest("POST", "/agents/enter-postcode")
+  "POST /agents/enter-nino" should {
+    val request = FakeRequest("POST", "/agents/enter-nino")
     val submitNino = controller.submitNino()
 
-    "return 200 for authorised Agent with valid nino and redirected to Postcode Page" in {
+    "return 303 for authorised Agent with valid nino and redirected to Postcode Page" in {
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, ""))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"""${validNino.value}"""))
-      verifyAuthoriseAttempt()
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/enter-postcode")
+      header("Set-Cookie", result) shouldBe defined
+      header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
     }
 
-    "return 200 for authorised Agent with lowercase nino with spaces and redirected to Postcode Page with corrected Nino" in {
-      val result = submitNino(authorisedAsValidAgent(
-        request.withFormUrlEncodedBody(("nino", s"  ${validNino.value.toLowerCase}  "), ("postcode" , "")), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"""${validNino.value}"""))
-      verifyAuthoriseAttempt()
-    }
+    "return 200 for authorised Agent with an empty nino and show errors on the page" in {
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("nino" -> "", "postcode" -> ""), arn.value))
 
-    "return 200 for authorised Agent with empty nino and redisplay form with error message" in {
-      val ninoForm = agentInvitationNinoForm
-      val ninoData = Map("nino" -> "", "postcode" -> "")
-      val result = submitNino(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.nino.required"))
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for authorised Agent with invalid nino and redisplay form with error message" in {
-      val ninoForm = agentInvitationNinoForm
-      val ninoData = Map("nino" -> "AB", "postcode" -> "")
-      val result = submitNino(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
+    "return 200 for authorised Agent with an invalid nino and show errors on the page" in {
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("nino" -> "AB", "postcode" -> ""), arn.value))
+
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.invalid-format"))
       verifyAuthoriseAttempt()
     }
-
-    behave like anAuthorisedEndpoint(request, submitNino)
   }
 
-  "POST /agents/invitation-sent" should {
-    val request = FakeRequest("POST", "/agents/invitation-sent")
-    val submitPostcode = controller.submitPostcode()
-    val validPostcode = "BN12 6BX"
+  "GET /agents/enter-postcode" should {
+    val request = FakeRequest("GET", "/agents/enter-postcode")
+    val showPostcodeForm = controller.showPostcodeForm()
 
-    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
-      
-      createInvitationStub(arn, mtdItId, "1", validNino.value, validPostcode)
-      getInvitationStub(arn, mtdItId, "1")
-      val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, validPostcode))
-      val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
+      val result = showPostcodeForm(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
     }
 
-    "return 200 for authorised Agent with valid postcode with spaces and lower case character and redirected to Confirm Invitation Page (secureFlag = false)" in {
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when nino is not available in session" in {
+      val result = showPostcodeForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/enter-nino")
+    }
+    behave like anAuthorisedEndpoint(request, showPostcodeForm)
+  }
 
+  "POST /agents/enter-postcode" should {
+    val request = FakeRequest("POST", "/agents/enter-postcode")
+    val submitPostcode = controller.submitPostcode()
+
+    "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
       createInvitationStub(arn, mtdItId, "1", validNino.value, validPostcode)
       getInvitationStub(arn, mtdItId, "1")
-      val postcode = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, s"  ${validPostcode.toLowerCase}  "))
-      val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcode.data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
+
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, validPostcode))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      header("Set-Cookie", result) shouldBe defined
+      header("Set-Cookie", result).get should include("invitationId=1")
+
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
     }
 
     "return 200 for authorised Agent with empty postcode and redisplay form with error message" in {
-      val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "")
+      val ninoForm = agentInvitationNinoForm
+      val ninoData = Map("nino" -> validNino.value, "postcode" -> "")
       val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
-      val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "AB")
+      val ninoForm = agentInvitationNinoForm
+      val ninoData = Map("nino" -> validNino.value, "postcode" -> "AB")
       val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
@@ -162,50 +156,65 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
     }
 
-    "return 303 for authorised Agent with valid NINO without HMRC_MTD-IT enrolment and a valid postcode" in {
+    "return 303 for authorised Agent when client registration not found " in {
       failedCreateInvitationForNotEnrolled(arn)
-      val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "AA11AA")
 
-      val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
     }
 
-    "return 303 for authorised Agent with valid NINO with HMRC_MTD-IT enrolment and an non-associated but valid postcode" in {
+    "return 303 for authorised Agent when postcode does not match " in {
       failedCreateInvitationFoInvalidPostcode(arn)
-      val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "AA11AA")
 
-      val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
     }
 
-    "return exception when invitation could not be retrieved after creation" in {
-      createInvitationStub(arn, mtdItId, "1", validNino.value, "AA11AA")
-      notFoundGetInvitationStub(mtdItId, "1")
-      val postcodeForm = agentInvitationPostCodeForm
-      val postcodeData = Map("nino" -> validNino.value, "postcode" -> "AA11AA")
+    "return exception when create invitation fails" in {
+      failedCreateInvitation(arn)
 
-      val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(postcodeForm.bind(postcodeData).data.toSeq: _*), arn.value))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
-      an[Exception] shouldBe thrownBy {
-        await(result)
-      }
+      an[BadRequestException] should be thrownBy await(result)
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
     }
 
     behave like anAuthorisedEndpoint(request, submitPostcode)
+  }
+
+  "GET /agents/invitation-sent" should {
+    val request = FakeRequest("GET", "/agents/invitation-sent")
+    val invitationSent = controller.invitationSent()
+
+    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "1"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return exception when no invitation id found in session" in {
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+
+      an[RuntimeException] should be thrownBy await(result)
+    }
+
+    behave like anAuthorisedEndpoint(request, invitationSent)
   }
 
   "GET /agents/not-enrolled" should {
@@ -275,7 +284,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       ),
       tags = Map(
         "transactionName" -> "agent-client-invitation-submitted",
-        "path" -> "/agents/invitation-sent"
+        "path" -> "/agents/enter-postcode"
       )
     )
   }
