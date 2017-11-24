@@ -79,7 +79,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.nino.required"))
       verifyAuthoriseAttempt()
     }
 
@@ -139,7 +139,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
     }

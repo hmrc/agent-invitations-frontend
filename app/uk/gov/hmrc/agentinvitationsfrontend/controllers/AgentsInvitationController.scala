@@ -141,22 +141,26 @@ object AgentsInvitationController {
 
   private def postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
-  private def validateField(failure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
-    Constraints.nonEmpty(fieldValue) match {
+  private def nonEmpty(failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
+  }
+
+  private def validateField(nonEmptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
       case i: Invalid =>
         i
       case Valid =>
         if (condition(fieldValue.trim.toUpperCase))
           Valid
         else
-          Invalid(ValidationError(failure))
+          Invalid(ValidationError(invalidFailure))
     }
   }
 
   private val invalidNino =
-    validateField("enter-nino.invalid-format")(nino => isValid(nino))
+    validateField("error.nino.required", "enter-nino.invalid-format")(nino => isValid(nino))
   private val invalidPostcode =
-    validateField("enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
+    validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
