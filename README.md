@@ -25,7 +25,7 @@ Note: Currently this service supports ITSA.
     sm --start AGENT_MTD -f
 ```
 
-or
+or to run by itself
 ```
     sbt run
 ```
