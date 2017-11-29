@@ -2,13 +2,13 @@
 
 [![Build Status](https://travis-ci.org/hmrc/agent-invitations-frontend.svg)](https://travis-ci.org/hmrc/agent-invitations-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/agent-invitations-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/agent-invitations-frontend/_latestVersion)
 
-This is a frontend microservice for Agent Client Authorisation and the replacement for Agent Client Authorisation Frontend.
+This is a frontend microservice for Agent Client Authorisation.
  
 Invitations service currently provides these functions:
- - Allow agents to act on behalf of clients.
- - Allow clients to accept or decline agents.
+ - Agent can create an invitation to represent a client for specific tax regime.
+ - Client can accept or decline agent's invitation.
 
-Note: Currently this service supports ITSA.
+Note: Currently this service supports ITSA invitations only.
 
 ## Features
 
