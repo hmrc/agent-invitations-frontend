@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.agentinvitationsfrontend.util.CRC5
 
 import scala.concurrent.Future
 
@@ -45,8 +46,24 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   import ClientsInvitationController._
 
+  def to5BitChar(fiveBitNum: Int) = "ABCDEFGHJKLMNOPRSTUWXYZ123456789"(fiveBitNum)
+
+  def checkInvitationId(invitationId: String): Boolean = {
+    val crc5 = new CRC5
+    val regex = """(A[A-Z0-9]{8}[A-Z0-9]{1})""".r
+    val formatValidity = invitationId match {
+      case regex(id) => true
+      case _ => false
+    }
+    if (formatValidity & invitationId.last ==
+      to5BitChar(crc5.CRC5.calculate(invitationId.dropRight(1)))) true else false
+  }
+
   def start(invitationId: String): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(landing_page(invitationId))
+    checkInvitationId(invitationId) match {
+      case true => Future successful Ok(landing_page(invitationId))
+      case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation)
+    }
   }
 
   def submitStart(invitationId: String): Action[AnyContent] = Action.async { implicit request =>

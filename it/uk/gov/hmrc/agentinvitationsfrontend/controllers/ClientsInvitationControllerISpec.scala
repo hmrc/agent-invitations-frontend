@@ -30,18 +30,30 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   val invitationId = "1"
+  val validInvitationId = "A123456792"
+  val invalidInvitationIdCRC5 = "A123456795"
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
-      val result = controller.start("someInvitationID")(FakeRequest())
+      val result = controller.start(validInvitationId)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
     }
 
+    "redirect to notFoundInvitation when invitationId fails regex" in {
+      val result = controller.start("someInvitationID")(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
+    }
+
+    "redirect to notFoundInvitation when CRC5 does not match invitationID CRC5" in {
+      val result = controller.start(invalidInvitationIdCRC5)(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
+    }
   }
 
   "POST / (clicking accept on the landing page)" should {
-
     val submitStart: Action[AnyContent] = controller.submitStart(invitationId)
 
     "redirect to /accept-tax-agent-invitation/2" in {
