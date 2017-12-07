@@ -157,8 +157,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Forbidden(invitation_already_responded())
   }
 
+  def invitationExpired: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Ok(invitation_expired())
+  }
+
   private def withValidInvitation[A](mtdItId: MtdItId, invitationId: String)(f: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+      case Some(invitation) if invitation.status.contains("Expired") =>
+        Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
       case Some(invitation) if !invitation.status.contains("Pending") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
       case Some(invitation) =>

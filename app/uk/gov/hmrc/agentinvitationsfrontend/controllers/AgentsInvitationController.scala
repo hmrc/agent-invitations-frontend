@@ -48,7 +48,7 @@ class AgentsInvitationController @Inject() (
   import AgentsInvitationController._
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.showNinoForm().url)
+    Redirect(routes.AgentsInvitationController.showNinoForm())
   }
 
   def showNinoForm: Action[AnyContent] = Action.async { implicit request =>

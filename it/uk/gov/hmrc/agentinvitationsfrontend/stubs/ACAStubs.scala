@@ -79,6 +79,28 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
+  def getExpiredInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
+      .willReturn(
+        aResponse()
+          .withStatus(200)
+          .withBody(
+            s"""
+               |{
+               |  "arn" : "${arn.value}",
+               |  "service" : "HMRC-MTD-IT",
+               |  "clientId" : "${mtdItId.value}",
+               |  "status" : "Expired",
+               |  "created" : "2017-7-31T23:22:50.971Z",
+               |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+               |  "_links": {
+               |    	"self" : {
+               |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"
+               |		  }
+               |  }
+               |}""".stripMargin)))
+  }
+
   def getAlreadyAcceptedInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: String): Unit = {
     stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/$invitationId"))
       .willReturn(
