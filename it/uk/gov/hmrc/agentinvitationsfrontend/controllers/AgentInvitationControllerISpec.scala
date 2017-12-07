@@ -55,6 +55,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       verifyAuthoriseAttempt()
     }
     behave like anAuthorisedEndpoint(request, showNinoForm)
@@ -79,6 +80,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.nino.required"))
       verifyAuthoriseAttempt()
     }
@@ -88,6 +90,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.invalid-format"))
       verifyAuthoriseAttempt()
     }
