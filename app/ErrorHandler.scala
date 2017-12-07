@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import com.google.inject.name.Named
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.http.HttpErrorHandler
-import play.api.i18n.{ I18nSupport, Messages, MessagesApi }
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results._
-import play.api.mvc.{ RequestHeader, Result }
-import play.api.{ Configuration, Environment, Mode }
-import uk.gov.hmrc.auth.core.{ InsufficientEnrolments, NoActiveSession }
-import uk.gov.hmrc.http.{ JsValidationException, NotFoundException }
+import play.api.mvc.{RequestHeader, Result}
+import play.api.{Configuration, Environment, Mode}
+import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.frontend.config.EventTypes.{ ResourceNotFound, ServerInternalError, ServerValidationError, TransactionFailureReason }
-import uk.gov.hmrc.play.frontend.config.{ AuthRedirects, HttpAuditEvent }
+import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
+import uk.gov.hmrc.play.bootstrap.config.{AuthRedirects, HttpAuditEvent}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ErrorHandler @Inject() ( val env: Environment,
@@ -69,7 +69,18 @@ class ErrorHandler @Inject() ( val env: Environment,
   }
 }
 
+object EventTypes {
+
+  val RequestReceived: String = "RequestReceived"
+  val TransactionFailureReason: String = "transactionFailureReason"
+  val ServerInternalError: String = "ServerInternalError"
+  val ResourceNotFound: String = "ResourceNotFound"
+  val ServerValidationError: String = "ServerValidationError"
+}
+
 trait ErrorAuditing extends HttpAuditEvent {
+
+  import EventTypes._
 
   def auditConnector: AuditConnector
 
