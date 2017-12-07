@@ -17,8 +17,9 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(invitationId: InvitationId)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None) {
 

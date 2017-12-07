@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationPostCodeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.BadRequestException
@@ -37,6 +37,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
   val validPostcode = "BN12 6BX"
+  val invitationId = InvitationId("ABERULMHCKKW3")
 
   "GET /agents/" should {
     "redirect to /agent/enter-nino" in {
@@ -120,8 +121,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
-      createInvitationStub(arn, mtdItId, "1", validNino.value, validPostcode)
-      getInvitationStub(arn, mtdItId, "1")
+      createInvitationStub(arn, mtdItId, invitationId, validNino.value, validPostcode)
+      getInvitationStub(arn, mtdItId, invitationId)
 
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, validPostcode))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
@@ -129,7 +130,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include("invitationId=1")
+      header("Set-Cookie", result).get should include("invitationId=ABERULMHCKKW3")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
@@ -203,11 +204,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val invitationSent = controller.invitationSent()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "1"), arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start("1")}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationId)}"))
       verifyAuthoriseAttempt()
     }
 

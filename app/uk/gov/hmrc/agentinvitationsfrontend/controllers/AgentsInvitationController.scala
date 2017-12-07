@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
@@ -118,8 +119,8 @@ class AgentsInvitationController @Inject()(
   def invitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       request.session.get("invitationId") match {
-        case Some(invitationId) =>
-          Future successful Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(invitationId)}"))
+        case Some(id) =>
+          Future successful Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"))
         case None => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
