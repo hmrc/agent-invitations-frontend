@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,13 +42,13 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
     } yield invitation
   }
 
-  def acceptInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def acceptInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.acceptInvitation(mtdItId, invitationId)
 
-  def rejectInvitation(invitationId: String, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def rejectInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectInvitation(mtdItId, invitationId)
 
-  def getClientInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+  def getClientInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, mtdItId))
   }
 
@@ -58,7 +58,7 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
       case None => throw new Exception("Agency name not found")
     }
 
-  private def clientInvitationUrl(invitationId: String, mtdItId: MtdItId): String =
-    s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId"
+  private def clientInvitationUrl(invitationId: InvitationId, mtdItId: MtdItId): String =
+    s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}"
 
 }

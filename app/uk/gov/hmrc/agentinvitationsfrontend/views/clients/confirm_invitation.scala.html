@@ -19,8 +19,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(confirmForm : Form[ConfirmForm], agencyName: String, invitationId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("confirm-invitation.title"), bodyClasses = None) {
 

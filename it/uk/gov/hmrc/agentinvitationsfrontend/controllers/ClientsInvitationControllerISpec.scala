@@ -21,7 +21,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.http.NotFoundException
 
 class ClientsInvitationControllerISpec extends BaseISpec {
@@ -29,28 +29,31 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
-  val invitationId = "1"
-  val validInvitationId = "ABERULMHCKKW3"
-  val invalidInvitationIdCRC5 = "ABERULMHCKKW1"
+  val invitationId = InvitationId("ABERULMHCKKW3")
+  val invalidInvitationIdCRC5 = InvitationId("ABERULMHCKKW1")
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
-      val result = controller.start(validInvitationId)(FakeRequest())
+      val result = controller.start(invitationId)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
     }
 
-    "redirect to notFoundInvitation when invitationId fails regex" in {
-      val result = controller.start("someInvitationID")(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
+    /*"redirect to notFoundInvitation when invitationId fails regex" in {
+     /* val result = controller.start(InvitationId("someInvitationID"))(FakeRequest())
+     // status(result) shouldBe BAD_REQUEST
+      //global.error.400.message
+     // redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("global.error.400.message"))*/
+
+
     }
 
     "redirect to notFoundInvitation when CRC5 does not match invitationID CRC5" in {
       val result = controller.start(invalidInvitationIdCRC5)(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
-    }
+    }*/
   }
 
   "POST / (clicking accept on the landing page)" should {
@@ -59,7 +62,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to /accept-tax-agent-invitation/2" in {
 
       getInvitationStub(arn, mtdItId, invitationId)
-      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.getConfirmInvitation(invitationId).url
@@ -78,7 +81,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
 
       notFoundGetInvitationStub(mtdItId, invitationId)
-      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
@@ -88,7 +91,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
 
       getAlreadyAcceptedInvitationStub(arn, mtdItId, invitationId)
-      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
@@ -98,7 +101,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
 
       incorrectGetInvitationStub(mtdItId, invitationId)
-      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
@@ -124,7 +127,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       rejectInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
@@ -138,7 +141,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       alreadyActionedRejectInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
@@ -148,7 +151,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to notFoundInvitation when invitation does not exist" in {
 
       notFoundGetInvitationStub(mtdItId, invitationId)
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
@@ -158,7 +161,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
 
       incorrectGetInvitationStub(mtdItId, invitationId)
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.incorrectInvitation().url
@@ -177,7 +180,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenAgencyNameNotFoundStub(arn)
 
-      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       an[NotFoundException] should be thrownBy await(result)
     }
@@ -190,7 +193,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the confirm invitation page" in {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
-      val result = getConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
@@ -203,7 +206,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "reshow the page when neither yes nor no choices were selected with an error message" in {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
-      val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
@@ -214,7 +217,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "true")
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "true")
       val result = controller.submitConfirmInvitation(invitationId).apply(req)
 
       status(result) shouldBe SEE_OTHER
@@ -225,7 +228,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "false")
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "false")
       val result = controller.submitConfirmInvitation(invitationId).apply(req)
 
       status(result) shouldBe SEE_OTHER
@@ -236,7 +239,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenAgencyNameNotFoundStub(arn)
 
-      val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       an[NotFoundException] should be thrownBy await(result)
     }
@@ -249,7 +252,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the confirm terms page" in {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
-      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value)
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value)
       val result = getConfirmTerms(req)
 
       status(result) shouldBe OK
@@ -260,7 +263,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the invitation expired page when invitation has expired" in {
       getExpiredInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
-      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value)
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value)
       val result = getConfirmTerms(req)
 
       status(result) shouldBe SEE_OTHER
@@ -272,7 +275,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenAgencyNameNotFoundStub(arn)
 
-      val result = getConfirmTerms(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getConfirmTerms(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       an[NotFoundException] should be thrownBy await(result)
     }
@@ -309,7 +312,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "")
       val result = submitConfirmTerms(req)
 
       status(result) shouldBe OK
@@ -357,7 +360,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
-      val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
@@ -368,7 +371,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId, invitationId)
       givenAgencyNameNotFoundStub(arn)
 
-      val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value))
+      val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       an[NotFoundException] should be thrownBy await(result)
     }
@@ -410,10 +413,10 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentInvitationResponseEvent(invitationId: String, arn: String, clientResponse: String, mtdItId: String): Unit = {
+  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, mtdItId: String): Unit = {
     verifyAuditRequestSent(1, AgentClientInvitationResponse,
       detail = Map(
-        "invitationId" -> invitationId,
+        "invitationId" -> invitationId.value,
         "agentReferenceNumber" -> arn,
         "regimeId" -> mtdItId,
         "regime" -> "HMRC-MTD-IT",

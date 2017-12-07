@@ -25,7 +25,7 @@ import play.api.libs.json.Reads
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -41,11 +41,11 @@ class InvitationsConnector @Inject() (
   private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
-  private[connectors] def acceptInvitationUrl(mtdItId: MtdItId, invitationId: String): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId/accept")
+  private[connectors] def acceptInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
 
-  private[connectors] def rejectInvitationUrl(mtdItId: MtdItId, invitationId: String) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/$invitationId/reject")
+  private[connectors] def rejectInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
@@ -65,13 +65,13 @@ class InvitationsConnector @Inject() (
     }
   }
 
-  def acceptInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def acceptInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }
   }
 
-  def rejectInvitation(mtdItId: MtdItId, invitationId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def rejectInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }

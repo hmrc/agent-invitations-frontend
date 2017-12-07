@@ -51,6 +51,7 @@ lazy val root = (project in file("."))
       Resolver.jcenterRepo
     ),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     dependencyOverrides += "uk.gov.hmrc" %% "play-ui" % "7.9.0",
     publishingSettings,
     scoverageSettings,
