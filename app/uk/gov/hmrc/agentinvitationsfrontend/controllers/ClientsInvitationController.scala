@@ -30,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
@@ -92,9 +92,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
             invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId)))
           }, data => {
             val result = if (data.value.getOrElse(false))
-              Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
-            else
-              Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+                           Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+                         else
+                           Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
             Future.successful(result)
           })
