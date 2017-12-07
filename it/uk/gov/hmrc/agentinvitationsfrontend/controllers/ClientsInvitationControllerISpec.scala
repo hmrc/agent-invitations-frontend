@@ -30,8 +30,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   val invitationId = "1"
-  val validInvitationId = "A123456792"
-  val invalidInvitationIdCRC5 = "A123456795"
+  val validInvitationId = "ABERULMHCKKW3"
+  val invalidInvitationIdCRC5 = "ABERULMHCKKW1"
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
