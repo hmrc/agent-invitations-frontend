@@ -245,6 +245,17 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.checkbox", "My Agency"))
     }
 
+    "show the invitation expired page when invitation has expired" in {
+      getExpiredInvitationStub(arn, mtdItId, invitationId)
+      givenGetAgencyNameStub(arn)
+      val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId), mtdItId.value)
+      val result = getConfirmTerms(req)
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationExpired.url)
+    }
+
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, mtdItId, invitationId)
       givenAgencyNameNotFoundStub(arn)
