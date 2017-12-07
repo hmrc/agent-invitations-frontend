@@ -30,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
@@ -98,9 +98,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
             invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId)))
           }, data => {
             val result = if (data.value.getOrElse(false))
-              Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
-            else
-              Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+                           Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+                         else
+                           Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
             Future.successful(result)
           })
@@ -163,8 +163,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Forbidden(invitation_already_responded())
   }
 
+  def invitationExpired: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Ok(invitation_expired())
+  }
+
   private def withValidInvitation[A](mtdItId: MtdItId, invitationId: String)(f: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+      case Some(invitation) if invitation.status.contains("Expired") =>
+        Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
       case Some(invitation) if !invitation.status.contains("Pending") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
       case Some(invitation) =>

@@ -78,6 +78,11 @@ confirm-terms.checkbox=I understand that {0} will be granted access to my Online
 confirm-terms.continue=Confirm access
 confirm-terms.back=Back
 
+#Invitation Expired
+invitation-expired.title=Invitation Expired
+invitation-expired.heading=There is a problem
+invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
+
 # Complete
 client-complete.title1=You have confirmed
 client-complete.title2={0}

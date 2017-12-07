@@ -21,20 +21,21 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.{ Named, Names }
 import org.slf4j.MDC
 import play.api.{ Configuration, Environment, Logger }
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{ FrontendAuditConnector, FrontendAuthConnector }
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.FrontendAuthConnector
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.config.inject.ServicesConfig
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.ws.WSHttp
 
 class FrontendModule(val environment: Environment, val configuration: Configuration) extends AbstractModule with ServicesConfig {
 
   override val runModeConfiguration: Configuration = configuration
+  override protected def mode = environment.mode
 
   def configure(): Unit = {
-    val appName = configuration.getString("appName").getOrElse(throw new Exception("Missing 'appName' config property"))
+    val appName = "agent-invitations-frontend"
 
     val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
     Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
@@ -46,7 +47,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[HttpGet]).to(classOf[HttpVerbs])
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
-    bind(classOf[AuditConnector]).to(classOf[FrontendAuditConnector])
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")

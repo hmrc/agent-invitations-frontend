@@ -17,9 +17,11 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "frontend-bootstrap" % "8.11.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.1.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.16.0",
+  "uk.gov.hmrc" %% "play-ui" % "7.10.0",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.7.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.3.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.4.0",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "2.4.0",
   "uk.gov.hmrc" %% "play-partials" % "6.1.0",
   "de.threedimensions" %% "metrics-play" % "2.5.13"
@@ -27,13 +29,13 @@ lazy val compileDeps = Seq(
 
 def testDeps(scope: String) = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
-  "com.github.tomakehurst" % "wiremock" % "2.3.1" % scope,
-  "org.scalatest" %% "scalatest" % "2.2.6" % scope,
+  "com.github.tomakehurst" % "wiremock" % "2.12.0" % scope,
+  "org.scalatest" %% "scalatest" % "3.0.4" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "org.jsoup" % "jsoup" % "1.8.1" % scope,
+  "org.jsoup" % "jsoup" % "1.11.2" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % scope,
-  "org.mockito" % "mockito-core" % "2.7.4" % scope
+  "org.mockito" % "mockito-core" % "2.13.0" % scope
 )
 
 lazy val root = (project in file("."))

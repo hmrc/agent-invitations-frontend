@@ -32,23 +32,23 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.http.Upstream4xxResponse
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
 @Singleton
-class AgentsInvitationController @Inject() (
-  @Named("agent-invitations-frontend.base-url") externalUrl: String,
-  invitationsService: InvitationsService,
-  auditService: AuditService,
-  val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class AgentsInvitationController @Inject()(
+                                            @Named("agent-invitations-frontend.base-url") externalUrl: String,
+                                            invitationsService: InvitationsService,
+                                            auditService: AuditService,
+                                            val messagesApi: play.api.i18n.MessagesApi,
+                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.showNinoForm().url)
+    Redirect(routes.AgentsInvitationController.showNinoForm())
   }
 
   def showNinoForm: Action[AnyContent] = Action.async { implicit request =>
