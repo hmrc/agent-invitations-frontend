@@ -2,7 +2,7 @@ app.name=Manage your agent invitations
 
 # Agent Pages
 # Enter Nino
-enter-nino.title=Select client
+enter-nino.title=Enter NINO
 enter-nino.header=Enter a client''s National Insurance number
 enter-nino.label=National Insurance number
 enter-nino.invalid-format=Enter a valid National Insurance number
