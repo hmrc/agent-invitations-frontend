@@ -7,6 +7,7 @@ POST        /agents/enter-nino                                  @uk.gov.hmrc.age
 GET         /agents/enter-postcode                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showPostcodeForm
 POST        /agents/enter-postcode                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
+GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
 
 # Error Agent Endpoints
 GET         /agents/not-enrolled                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
