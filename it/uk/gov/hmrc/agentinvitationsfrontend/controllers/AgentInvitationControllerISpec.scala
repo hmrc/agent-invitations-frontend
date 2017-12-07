@@ -65,12 +65,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/enter-nino")
     val submitNino = controller.submitNino()
 
-    "return 303 for authorised Agent with valid nino and redirected to Postcode Page" in {
+    "return 303 for authorised Agent with valid nino and redirected to Select service page" in {
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, ""))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/enter-postcode")
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
     }

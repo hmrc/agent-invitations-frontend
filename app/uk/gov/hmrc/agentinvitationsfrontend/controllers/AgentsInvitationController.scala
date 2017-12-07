@@ -64,9 +64,13 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm).withSession(request.session + ("nino" -> userInput.nino.value))
+          Future successful Redirect(routes.AgentsInvitationController.selectService).withSession(request.session + ("nino" -> userInput.nino.value))
         })
     }
+  }
+
+  def selectService: Action[AnyContent] = Action { implicit request =>
+    Ok //TODO: APB-1150
   }
 
   def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
