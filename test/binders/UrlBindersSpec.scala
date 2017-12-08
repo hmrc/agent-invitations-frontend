@@ -17,11 +17,13 @@
 package binders
 
 import org.scalatestplus.play.OneAppPerSuite
-import uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentinvitationsfrontend.binders.{ErrorConstants, UrlBinders}
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.play.test.UnitSpec
 
-class UrlBindersSpec extends UnitSpec with OneAppPerSuite{
+class UrlBindersSpec extends UnitSpec with OneAppPerSuite {
+
+  private val error = Left(ErrorConstants.InvitationIdNotFound)
 
   "InvitationId binder" should {
     "bind an invitation id from a valid string" in {
@@ -29,17 +31,16 @@ class UrlBindersSpec extends UnitSpec with OneAppPerSuite{
     }
 
     "return error if the input has an invalid format" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCBBBBBKKW3") shouldBe Left("The invitationId: ABERULMHCBBBBBKKW3 is invalid")
-      UrlBinders.invitationIdBinder.bind("invitationId", "123") shouldBe Left("The invitationId: 123 is invalid")
-
+      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCBBBBBKKW3") shouldBe error
+      UrlBinders.invitationIdBinder.bind("invitationId", "123") shouldBe error
     }
 
     "return error if the input has an invalid CRC" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCKKXX") shouldBe Left("The invitationId: ABERULMHCKKXX is invalid")
+      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCKKXX") shouldBe error
     }
 
     "return error if the input has an invalid prefix" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "XG3HFG43HW2PF") shouldBe Left("The invitationId: XG3HFG43HW2PF is invalid")
+      UrlBinders.invitationIdBinder.bind("invitationId", "XG3HFG43HW2PF") shouldBe error
     }
   }
 
