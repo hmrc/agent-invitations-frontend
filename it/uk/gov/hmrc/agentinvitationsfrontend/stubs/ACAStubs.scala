@@ -8,11 +8,11 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId, clientId: String, postcode: String ): Unit = {
+  def createInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId, clientId: String, postcode: String, service: String): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
       equalToJson(s"""
          |{
-         |   "service": "HMRC-MTD-IT",
+         |   "service": "$service",
          |   "clientIdType": "ni",
          |   "clientId":"$clientId",
          |   "clientPostcode":"$postcode"
@@ -57,7 +57,7 @@ trait ACAStubs {
            """.stripMargin)))
   }
 
-  def getInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId): Unit = {
+  def getInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId, service: String): Unit = {
     stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
@@ -66,7 +66,7 @@ trait ACAStubs {
             s"""
                |{
                |  "arn" : "${arn.value}",
-               |  "service" : "HMRC-MTD-IT",
+               |  "service" : "$service",
                |  "clientId" : "${mtdItId.value}",
                |  "status" : "Pending",
                |  "created" : "2017-10-31T23:22:50.971Z",

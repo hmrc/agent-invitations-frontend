@@ -48,7 +48,9 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val agentInvitaitonUserInput: AgentInvitationUserInput = AgentInvitationUserInput(Nino("WM123456C"), "AA1 1AA")
+      val serviceITSA = "HMRC-MTD-IT"
+      val servicePIR = "personal-income-record"
+      val agentInvitaitonUserInput: AgentInvitationUserInput = AgentInvitationUserInput(Nino("WM123456C"), Some(serviceITSA), "AA1 1AA")
       val invitationId: String = "1"
       val result: String = "Success"
 

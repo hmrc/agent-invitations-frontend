@@ -16,6 +16,11 @@ enter-postcode.invalid-format=You can only enter these characters: a-z A-Z 0-9
 postcode.hint=This must match our records
 error.postcode.required = You must enter an individual''s postcode
 
+# Select Service
+select-service.title=Select Service
+select-service.header=Which tax service do you want to access for this individual?
+error.service.required=You must select a service
+
 continue.button=Continue
 
 # Invitation Sent

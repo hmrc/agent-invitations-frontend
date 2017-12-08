@@ -31,7 +31,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
 
-    val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", userInput.nino.value, userInput.postcode)
+    //TODO Handle No Postcode for AFI Journey
+    val agentInvitation = AgentInvitation(userInput.service.getOrElse(throw new Exception("Service is missing")), "ni", userInput.nino.value, userInput.postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

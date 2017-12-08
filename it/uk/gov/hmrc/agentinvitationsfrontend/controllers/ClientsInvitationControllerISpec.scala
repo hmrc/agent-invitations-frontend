@@ -31,6 +31,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
   val invitationId = InvitationId("ABERULMHCKKW3")
   val invalidInvitationIdCRC5 = InvitationId("ABERULMHCKKW1")
+  val serviceITSA = "HMRC-MTD-IT"
+  val servicePIR = "personal-income-record"
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
@@ -61,7 +63,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to /accept-tax-agent-invitation/2" in {
 
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       val result = submitStart(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
       status(result) shouldBe SEE_OTHER
@@ -123,7 +125,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "show invitation_declined page for an authenticated client with a valid invitation" in {
 
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       rejectInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
@@ -137,7 +139,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
 
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       alreadyActionedRejectInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
@@ -177,7 +179,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenAgencyNameNotFoundStub(arn)
 
       val result = getInvitationDeclined(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
@@ -191,7 +193,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val getConfirmInvitation: Action[AnyContent] = controller.getConfirmInvitation(invitationId)
 
     "show the confirm invitation page" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
@@ -204,7 +206,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val submitConfirmInvitation: Action[AnyContent] = controller.submitConfirmInvitation(invitationId)
 
     "reshow the page when neither yes nor no choices were selected with an error message" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
       val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
 
@@ -214,7 +216,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to confirm terms page when yes was selected" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "true")
@@ -225,7 +227,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to invitation declined when no is selected" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
 
       val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value).withFormUrlEncodedBody("confirmInvite" -> "false")
@@ -236,7 +238,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenAgencyNameNotFoundStub(arn)
 
       val result = submitConfirmInvitation(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
@@ -250,7 +252,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val getConfirmTerms: Action[AnyContent] = controller.getConfirmTerms(invitationId)
 
     "show the confirm terms page" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
       val req = authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value)
       val result = getConfirmTerms(req)
@@ -272,7 +274,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenAgencyNameNotFoundStub(arn)
 
       val result = getConfirmTerms(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
@@ -285,7 +287,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val submitConfirmTerms: Action[AnyContent] = controller.submitConfirmTerms(invitationId)
 
     "redirect to complete page when the checkbox was checked" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
@@ -297,7 +299,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when the checkbox was checked" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
@@ -308,7 +310,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "reshow the page when the checkbox was not checked with an error message" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       acceptInvitationStub(mtdItId, invitationId)
       givenGetAgencyNameStub(arn)
 
@@ -323,7 +325,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different MTDITID" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       acceptInvitationNoPermissionStub(mtdItId, invitationId)
       val result = submitConfirmTerms(req)
 
@@ -333,7 +335,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
       val req = authorisedAsValidClient(FakeRequest(), mtdItId.value).withFormUrlEncodedBody("confirmTerms" -> "true")
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       alreadyActionedAcceptInvitationStub(mtdItId, invitationId)
       val result = submitConfirmTerms(req)
 
@@ -357,7 +359,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     val getCompletePage: Action[AnyContent] = controller.getCompletePage(invitationId)
 
     "show the complete page" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenGetAgencyNameStub(arn)
 
       val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
@@ -368,7 +370,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId, invitationId)
+      getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
       givenAgencyNameNotFoundStub(arn)
 
       val result = getCompletePage(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationId.value), mtdItId.value))
