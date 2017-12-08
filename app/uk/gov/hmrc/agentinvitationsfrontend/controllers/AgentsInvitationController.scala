@@ -54,7 +54,7 @@ class AgentsInvitationController @Inject()(
 
   def showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      Future successful Ok(enter_nino(agentInvitationServiceForm))
+      Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
@@ -86,7 +86,6 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(select_service(formWithErrors))
         },
         userInput => {
-          Logger.info(s"User $arn enter its input $userInput")
           userInput.service match {
             case Some("HMRC-MTD-IT") => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               .withSession(request.session + ("service" -> "HMRC-MTD-IT"))
@@ -101,9 +100,12 @@ class AgentsInvitationController @Inject()(
 
   def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      (request.session.get("nino"), request.session.get("service")) match {
+      val maybeNino = request.session.get("nino")
+      val maybeService = request.session.get("service")
+
+      (maybeNino, maybeService) match {
         case (Some(nino), Some(service)) =>
-          Future successful Ok(enter_postcode(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), ""))))
+          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), ""))))
         case (Some(nino), None) =>
           Future successful Redirect(routes.AgentsInvitationController.selectService())
         case _ =>

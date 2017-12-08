@@ -33,7 +33,7 @@
   <div class="form-group">
   @inputRadioGroup(
    agentInvitationsForm("service"),
-   Seq("HMRC-MTD-IT" -> "ITSA - Online Reporting", "personal-income-record" -> "Personal Income Record"),
+   Seq("personal-income-record" -> Messages("select-service.personal-income-viewer"), "HMRC-MTD-IT" -> Messages("select-service.itsa")),
    '_label -> Messages("select-service.label"),
    '_legendClass -> "h2-heading",
    '_groupDivClass -> "form-group soft--ends",

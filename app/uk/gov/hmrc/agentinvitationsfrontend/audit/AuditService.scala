@@ -46,7 +46,7 @@ class AuditService @Inject() (val auditConnector: AuditConnector) {
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "regimeId" -> agentInvitationUserInput.nino.value,
-        "regime" -> "HMRC-MTD-IT"
+        "regime" -> agentInvitationUserInput.service.getOrElse(throw new IllegalStateException("No regime present"))
       ) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }
