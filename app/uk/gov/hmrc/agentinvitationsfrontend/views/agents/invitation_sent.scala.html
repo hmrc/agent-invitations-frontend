@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@(invitationUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(invitationUrl: String, agentServicesAcUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-sent-link.title"), bodyClasses = None) {
 
@@ -28,7 +28,7 @@
 
   <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
   <p>@Html(Messages("invitation-sent.description.advice.pt1"))</p>
-  <p>@Messages("invitation-sent.description.advice.pt2")</p>
+  <p>@Html(Messages("invitation-sent.description.advice.pt2"))</p>
 
-  <a href="#" class="button" id="continue" role="button">@Messages("invitation-sent.button")</a>
+  <a href="@agentServicesAcUrl/agent-services-account" class="button" id="continue" role="button">@Messages("invitation-sent.button")</a>
 }

@@ -52,6 +52,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+    bindBaseUrl("agent-services-account-frontend")
     bindServiceProperty("agent-invitations-frontend.base-url")
   }
 
