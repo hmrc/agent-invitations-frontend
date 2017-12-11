@@ -48,8 +48,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "show the landing page with AFI content variant if the invitation ID prefix is 'B'" in {
-      val itsaPrefixInvId = InvitationId("BTSF4OW9CCRBO")
-      val result = controller.start(itsaPrefixInvId)(FakeRequest())
+      val afiPrefixInvId = InvitationId("BTSF4OW9CCRBO")
+      val result = controller.start(afiPrefixInvId)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.afi.p1"))
