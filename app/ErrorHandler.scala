@@ -23,12 +23,13 @@ import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Configuration, Environment, Mode}
+import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 import uk.gov.hmrc.play.bootstrap.config.{AuthRedirects, HttpAuditEvent}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,11 +47,18 @@ class ErrorHandler @Inject() ( val env: Environment,
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
-    Future successful
-      Status(statusCode)(error_template(
-        Messages(s"global.error.$statusCode.title"),
-        Messages(s"global.error.$statusCode.heading"),
-        Messages(s"global.error.$statusCode.message")))
+
+    val response = statusCode match {
+      case 400 if message.equals(ErrorConstants.InvitationIdNotFound) =>
+        Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case _ =>
+        Status(statusCode)(error_template(
+          Messages(s"global.error.$statusCode.title"),
+          Messages(s"global.error.$statusCode.heading"),
+          Messages(s"global.error.$statusCode.message")))
+    }
+
+    Future.successful(response)
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {

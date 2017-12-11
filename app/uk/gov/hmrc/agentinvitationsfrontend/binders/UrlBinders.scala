@@ -29,9 +29,13 @@ object UrlBinders {
       if (isValidPrefix && InvitationId.isValid(value))
         Right(InvitationId(value))
       else
-        Left(s"The invitationId: $value is invalid")
+        Left(ErrorConstants.InvitationIdNotFound)
     }
 
     override def unbind(key: String, id: InvitationId): String = stringBinder.unbind(key, id.value)
   }
+}
+
+object ErrorConstants {
+  val InvitationIdNotFound = "INVITATION_ID_NOTFOUND"
 }
