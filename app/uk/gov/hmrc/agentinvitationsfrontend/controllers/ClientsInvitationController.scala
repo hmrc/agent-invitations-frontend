@@ -55,15 +55,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   def submitStart(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient { mtdItId =>
-      withValidInvitation(mtdItId, invitationId) { arn =>
-        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
-        Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
-      }
-    }.recoverWith {
-      case _: InsufficientEnrolments =>
-        Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
-    }
+    Future.successful(Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId)))
   }
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
@@ -82,10 +74,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   def getConfirmInvitation(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId, invitationId) { arn =>
+        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
         invitationsService.getAgencyName(arn).map { name =>
           Ok(confirm_invitation(confirmInvitationForm, name, invitationId))
         }
       }
+    }.recoverWith {
+      case _: InsufficientEnrolments =>
+        Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
     }
   }
 
