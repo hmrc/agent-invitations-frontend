@@ -48,14 +48,14 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     val prefix: Char = invitationId.value.head
     prefix match {
-      case 'A' => Future.successful(Ok(landing_page(invitationId, "itsa")))
-      case 'B' => Future.successful(Ok(landing_page(invitationId, "afi")))
+      case 'A' => Future successful Ok(landing_page(invitationId, "itsa"))
+      case 'B' => Future successful Ok(landing_page(invitationId, "afi"))
       case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
 
   def submitStart(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId)))
+    Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
   }
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
@@ -97,7 +97,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
                          else
                            Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
-            Future.successful(result)
+            Future successful result
           })
       }
     }
@@ -130,7 +130,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     withAuthorisedAsClient { mtdItId =>
       invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
         case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name)))
-        case None => Future.successful(Redirect(routes.ClientsInvitationController.notFoundInvitation()))
+        case None => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       } recover {
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Redirect(routes.ClientsInvitationController.incorrectInvitation())
