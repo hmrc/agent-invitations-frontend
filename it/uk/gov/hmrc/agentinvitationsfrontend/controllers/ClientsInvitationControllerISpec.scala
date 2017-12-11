@@ -39,6 +39,29 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
     }
 
+    "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
+      val itsaInvId = InvitationId("ATSF4OW9CCRD2")
+      val result = controller.start(itsaInvId)(FakeRequest())
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.itsa.p1"))
+    }
+
+    "show the landing page with AFI content variant if the invitation ID prefix is 'B'" in {
+      val itsaPrefixInvId = InvitationId("BTSF4OW9CCRBO")
+      val result = controller.start(itsaPrefixInvId)(FakeRequest())
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.afi.p1"))
+    }
+
+    "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
+      val strangePrefixInvId = InvitationId("CTSF4OW9CCRPT")
+      val result = controller.start(strangePrefixInvId)(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+
     /*"redirect to notFoundInvitation when invitationId fails regex" in {
      /* val result = controller.start(InvitationId("someInvitationID"))(FakeRequest())
      // status(result) shouldBe BAD_REQUEST
