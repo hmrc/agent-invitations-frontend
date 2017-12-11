@@ -46,7 +46,12 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   import ClientsInvitationController._
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful( Ok(landing_page(invitationId)))
+    val prefix: Char = invitationId.value.head
+    prefix match {
+      case 'A' => Future.successful(Ok(landing_page(invitationId, "itsa")))
+      case 'B' => Future.successful(Ok(landing_page(invitationId, "afi")))
+      case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+    }
   }
 
   def submitStart(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>

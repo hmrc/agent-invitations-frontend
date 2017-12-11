@@ -36,7 +36,8 @@ not-matched.description = The details provided do not match our records.
 # Client Pages
 # Landing Page
 landing-page.title=Accept or decline an agent''s invitation
-landing-page.p1=You need to authorise your tax agent to act on your behalf with HMRC for online self assessment.
+landing-page.service.itsa.p1=You need to authorise your tax agent to act on your behalf with HMRC for online self assessment.
+landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.p2=You will need to create or use a Government Gateway account for an
 landing-page.p3=individual
 landing-page.p4=to continue.
