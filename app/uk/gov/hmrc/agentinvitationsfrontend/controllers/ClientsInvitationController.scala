@@ -77,7 +77,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         invitationsService.getAgencyName(arn).map { name =>
           determineService(invitationId) match {
             case ValidService(serviceId) => Ok(confirm_invitation(confirmInvitationForm, name, invitationId, serviceId))
-            case InvalidService => throw new IllegalArgumentException("Service is Missing")
+            case InvalidService => Redirect(routes.ClientsInvitationController.notFoundInvitation())
           }
 
         }
@@ -96,7 +96,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
             determineService(invitationId) match {
               case ValidService(serviceId) =>
                 invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, serviceId)))
-              case InvalidService => throw new IllegalArgumentException("Service is missing")
+              case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
             }
           }, data => {
             val result = if (data.value.getOrElse(false))
@@ -115,7 +115,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         determineService(invitationId) match {
           case ValidService(serviceId) =>  invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, serviceId)))
-          case InvalidService => throw new IllegalArgumentException("Service is missing")
+          case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
         }
       }
     }
@@ -128,7 +128,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
           formWithErrors => {
             determineService(invitationId) match {
               case ValidService(serviceId) => invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, serviceId)))
-              case InvalidService => throw new IllegalArgumentException("Service is missing")
+              case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
             }
           }, _ => {
             invitationsService.acceptInvitation(invitationId, mtdItId).map { _ =>
