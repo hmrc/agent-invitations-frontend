@@ -101,21 +101,25 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   "GET /agents/select-service" should {
     val request = FakeRequest("GET", "/agents/select-service")
-    val selectServiceForm = controller.selectService()
+    val selectService = controller.selectService()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = selectServiceForm(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
+      val result = selectService(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("select-service.title"),
+        htmlEscapedMessage("select-service.header"),
+        htmlEscapedMessage("select-service.itsa"),
+        htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }
 
     "return 303 for an Agent with HMRC-AS-AGENT enrolment when nino is not available in session" in {
-      val result = selectServiceForm(authorisedAsValidAgent(request, arn.value))
+      val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/enter-nino")
     }
-    behave like anAuthorisedEndpoint(request, selectServiceForm)
+    behave like anAuthorisedEndpoint(request, selectService)
   }
 
   "POST /agents/select-service" should {
@@ -132,6 +136,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
       header("Set-Cookie", result).get should include(s"service=$serviceITSA")
+      verifyAuthoriseAttempt()
     }
 
     "return 303 for authorised Agent with valid nino and Personal Income Record service, redirect to invitation sent page" in {
@@ -146,6 +151,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
+      verifyAuthoriseAttempt()
     }
 
     "return 200 for authorised Agent with no selected service and show error on the page" in {
@@ -157,6 +163,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       verifyAuthoriseAttempt()
     }
+    behave like anAuthorisedEndpoint(request, submitService)
   }
 
   "GET /agents/enter-postcode" should {
@@ -186,8 +193,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       createInvitationStub(arn, mtdItId, invitationId, validNino.value, validPostcode, serviceITSA)
       getInvitationStub(arn, mtdItId, invitationId, serviceITSA)
 
-      val ninoForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), validPostcode))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+      val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), validPostcode))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -199,10 +206,10 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 200 for authorised Agent with empty postcode and redisplay form with error message" in {
-      val ninoForm = agentInvitationServiceForm
+      val form = agentInvitationPostCodeForm
       val ninoData = Map("nino" -> validNino.value, "postcode" -> "")
       val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
+        .withFormUrlEncodedBody(form.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
@@ -211,10 +218,10 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
-      val ninoForm = agentInvitationServiceForm
+      val form = agentInvitationPostCodeForm
       val ninoData = Map("nino" -> validNino.value, "postcode" -> "AB")
       val result = submitPostcode(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(ninoForm.bind(ninoData).data.toSeq: _*), arn.value))
+        .withFormUrlEncodedBody(form.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
@@ -225,8 +232,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent when client registration not found " in {
       failedCreateInvitationForNotEnrolled(arn)
 
-      val ninoForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+      val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
@@ -238,8 +245,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent when postcode does not match " in {
       failedCreateInvitationFoInvalidPostcode(arn)
 
-      val ninoForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+      val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
@@ -251,8 +258,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return exception when create invitation fails" in {
       failedCreateInvitation(arn)
 
-      val ninoForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+      val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), "AB101AB"))
+      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       an[BadRequestException] should be thrownBy await(result)
       verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")

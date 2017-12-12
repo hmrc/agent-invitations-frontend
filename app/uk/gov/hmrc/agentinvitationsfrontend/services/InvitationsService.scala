@@ -32,7 +32,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
 
     //TODO Handle No Postcode for AFI Journey
-    val agentInvitation = AgentInvitation(userInput.service.getOrElse(throw new Exception("Service is missing")), "ni", userInput.nino.value, userInput.postcode)
+    val service = userInput.service.getOrElse(throw new Exception("Service is missing"))
+    val agentInvitation = AgentInvitation(service, "ni", userInput.nino.value, userInput.postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
