@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(confirmForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("confirm-invitation.title"), bodyClasses = None) {
 
@@ -35,7 +35,7 @@
         @inputRadioGroup(
         confirmForm("confirmInvite"),
         Seq(("true", Messages("confirm-invitation.radio1")),("false",Messages("confirm-invitation.radio2"))),
-        '_legend -> Messages("confirm-invitation.sub-header", agencyName),
+        '_legend -> Messages(s"confirm-invitation.$service.sub-header", agencyName),
         '_legendClass -> "h2-heading",
         '_groupDivClass -> "form-group soft--ends",
         '_groupClass -> "inline",

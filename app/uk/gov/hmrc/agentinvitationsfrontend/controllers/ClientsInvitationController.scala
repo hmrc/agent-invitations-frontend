@@ -25,6 +25,7 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
@@ -46,10 +47,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   import ClientsInvitationController._
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    val prefix: Char = invitationId.value.head
-    prefix match {
-      case 'A' => Future successful Ok(landing_page(invitationId, "itsa"))
-      case 'B' => Future successful Ok(landing_page(invitationId, "afi"))
+    services(invitationId) match {
+      case Service(value) if value.nonEmpty => Future successful Ok(landing_page(invitationId, value))
       case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -76,7 +75,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
         invitationsService.getAgencyName(arn).map { name =>
-          Ok(confirm_invitation(confirmInvitationForm, name, invitationId))
+          Ok(confirm_invitation(confirmInvitationForm, name, invitationId, services(invitationId).value))
         }
       }
     }.recoverWith {
@@ -90,7 +89,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         confirmInvitationForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId)))
+            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, services(invitationId).value)))
           }, data => {
             val result = if (data.value.getOrElse(false))
                            Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))

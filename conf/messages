@@ -57,7 +57,8 @@ invitation-declined.p3=If you meant to accept this request, contact the tax agen
 # Confirm Invitation
 confirm-invitation.title=Confirm Invitation
 confirm-invitation.heading={0} has requested to represent you to HMRC:
-confirm-invitation.sub-header=Would you like {0} to represent you for Online self assessment?
+confirm-invitation.itsa.sub-header=Would you like {0} to represent you for Online self assessment?
+confirm-invitation.afi.sub-header=Would you like {0} to represent you?
 confirm-invitation.radio1=Yes
 confirm-invitation.radio2=No
 confirm-invitation.button=Continue
