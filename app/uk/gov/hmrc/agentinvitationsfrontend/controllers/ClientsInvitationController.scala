@@ -48,7 +48,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     services(invitationId) match {
-      case Service(value) => Future successful Ok(landing_page(invitationId, value))
+      case Service(value) if value.nonEmpty => Future successful Ok(landing_page(invitationId, value))
       case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }

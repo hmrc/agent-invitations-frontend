@@ -19,13 +19,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 sealed case class Service(value: String)
+sealed class InvalidService
 
 object Services {
   def services(invitationId: InvitationId): Service = {
     invitationId.value.head match {
       case 'A' => Service("itsa")
       case 'B' => Service("afi")
-      case _ => throw new Exception("Invalid InvitationId")
+      case _ => Service("")
     }
   }
 }

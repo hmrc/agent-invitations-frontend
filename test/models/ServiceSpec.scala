@@ -32,10 +32,8 @@ class ServiceSpec extends UnitSpec {
     }
 
     "return Exception when given invalid invitationId" in {
-      intercept[Exception] {
-        services(InvitationId("CBERULMHCKK"))
-      }.getMessage shouldBe "Invalid InvitationId"
+      services(InvitationId("CBERULMHCKK")).value.isEmpty shouldBe true
     }
-  }
 
+  }
 }
