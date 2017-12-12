@@ -47,8 +47,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   import ClientsInvitationController._
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    services(invitationId) match {
-      case Service(value) if value.nonEmpty => Future successful Ok(landing_page(invitationId, value))
+    determineService(invitationId) match {
+      case ValidService(value) if value.nonEmpty => Future successful Ok(landing_page(invitationId, value))
       case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -75,7 +75,11 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
         invitationsService.getAgencyName(arn).map { name =>
-          Ok(confirm_invitation(confirmInvitationForm, name, invitationId, services(invitationId).value))
+          determineService(invitationId) match {
+            case ValidService(serviceId) => Ok(confirm_invitation(confirmInvitationForm, name, invitationId, serviceId))
+            case InvalidService => throw new IllegalArgumentException("Service is Missing")
+          }
+
         }
       }
     }.recoverWith {
@@ -89,7 +93,11 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         confirmInvitationForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, services(invitationId).value)))
+            determineService(invitationId) match {
+              case ValidService(serviceId) =>
+                invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, serviceId)))
+              case InvalidService => throw new IllegalArgumentException("Service is missing")
+            }
           }, data => {
             val result = if (data.value.getOrElse(false))
                            Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
