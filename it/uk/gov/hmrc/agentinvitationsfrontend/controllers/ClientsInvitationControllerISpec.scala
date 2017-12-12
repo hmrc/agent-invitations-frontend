@@ -58,9 +58,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
       val strangePrefixInvId = InvitationId("CTSF4OW9CCRPT")
-      val result = controller.start(strangePrefixInvId)(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+      intercept[Exception] {
+        controller.start(strangePrefixInvId)(FakeRequest())
+      }.getMessage() shouldBe "Invalid InvitationId"
     }
 
     /*"redirect to notFoundInvitation when invitationId fails regex" in {
