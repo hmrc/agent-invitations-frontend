@@ -121,8 +121,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
-      createInvitationStub(arn, mtdItId, invitationId, validNino.value, validPostcode)
-      getInvitationStub(arn, mtdItId, invitationId)
+      createInvitationStub(arn, mtdItId.value, invitationId, validNino.value, validPostcode)
+      getInvitationStub(arn, mtdItId.value, invitationId)
 
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(validNino, validPostcode))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))

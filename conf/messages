@@ -65,8 +65,9 @@ confirm-invitation.button=Continue
 
 # Confirm Terms
 confirm-terms.title=Terms of participation
-confirm-terms.alert=By continuing you will be confirming your wish to allow {0} to access your Online self assessment data
-confirm-terms.sub-header=Your obligations
+confirm-itsa-terms.alert=By continuing you will be confirming your wish to allow {0} to access your Online self assessment data
+confirm-afi-terms.alert = By continuing you will be confirming your wish to allow {0} to access your personal income records
+confirm-itsa-terms.sub-header=Your obligations
 confirm-terms.p1=By taking part in this trial, you agree to:
 confirm-terms.bullet1=use accounting software to record your income and expenses, then submit a report once every 3 months from the start of your accounting period
 confirm-terms.bullet2=allow HMRC to calculate your Income Tax estimate using the information from your records
@@ -77,7 +78,15 @@ confirm-terms.bullet6=have responsibility for any information a third party give
 confirm-terms.bullet7=let HMRC know if you start a new business or your current business stops trading
 confirm-terms.bullet8=contact HMRC if you can''t continue to take part in this trial
 confirm-terms.p2=These terms aren''t contractual and you can stop taking part in the trial at any time.
-confirm-terms.checkbox=I understand that {0} will be granted access to my Online self assessment data
+
+confirm-terms-afi.p1=By accepting this invitation you are authorising your agent to view your personal income records.
+confirm-terms-afi.p2=This includes information about:
+confirm-terms-afi.bullet1=who you have worked for in the past
+confirm-terms-afi.bullet2=taxable company benefits like medical insurance and company car
+confirm-terms-afi.bullet3=your PAYE employment start date and end dates
+
+confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my self assessment data
+confirm-terms-afi.checkbox=	I understand that {0} will be granted access to my personal income records
 confirm-terms.continue=Confirm access
 confirm-terms.back=Back
 
