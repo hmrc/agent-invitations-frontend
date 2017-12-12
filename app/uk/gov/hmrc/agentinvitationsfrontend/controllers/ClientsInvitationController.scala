@@ -75,7 +75,11 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
         invitationsService.getAgencyName(arn).map { name =>
-          Ok(confirm_invitation(confirmInvitationForm, name, invitationId, determineServices(invitationId).value))
+          determineServices(invitationId) match {
+            case ValidService(serviceId) => Ok(confirm_invitation(confirmInvitationForm, name, invitationId, serviceId))
+            case InvalidService => throw new IllegalArgumentException("Service is Missing")
+          }
+
         }
       }
     }.recoverWith {
@@ -89,7 +93,11 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         confirmInvitationForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, determineServices(invitationId).value)))
+            determineServices(invitationId) match {
+              case ValidService(serviceId) =>
+                invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, serviceId)))
+              case InvalidService => throw new IllegalArgumentException("Service is missing")
+            }
           }, data => {
             val result = if (data.value.getOrElse(false))
                            Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
