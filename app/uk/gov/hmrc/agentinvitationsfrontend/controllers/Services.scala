@@ -23,7 +23,7 @@ case class ValidService(value: String) extends Service
 case object InvalidService extends Service
 
 object Services {
-  def determineServices(invitationId: InvitationId): Service = {
+  def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
       case 'A' => ValidService("itsa")
       case 'B' => ValidService("afi")

@@ -25,15 +25,15 @@ class ServiceSpec extends UnitSpec {
 
   "Services" should {
     "return ITSA if given prefix of invitationId is A" in {
-      determineServices(InvitationId("A6WTS5241C99B")) shouldBe ValidService("itsa")
+      determineService(InvitationId("A6WTS5241C99B")) shouldBe ValidService("itsa")
     }
 
     "return AFI if given prefix of invitationId is B" in {
-      determineServices(InvitationId("BBERULMHCKK")) shouldBe ValidService("afi")
+      determineService(InvitationId("BBERULMHCKK")) shouldBe ValidService("afi")
     }
 
     "return Exception when given invalid invitationId" in {
-      determineServices(InvitationId("CBERULMHCKK")) shouldBe InvalidService
+      determineService(InvitationId("CBERULMHCKK")) shouldBe InvalidService
     }
 
   }
