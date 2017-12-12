@@ -113,7 +113,10 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   def getConfirmTerms(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId, invitationId) { arn =>
-        invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId)))
+        determineService(invitationId) match {
+          case ValidService(serviceId) =>  invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, serviceId)))
+          case InvalidService => throw new IllegalArgumentException("Service is missing")
+        }
       }
     }
   }
@@ -123,7 +126,10 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       withValidInvitation(mtdItId, invitationId) { arn =>
         confirmTermsForm.bindFromRequest().fold(
           formWithErrors => {
-            invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId)))
+            determineService(invitationId) match {
+              case ValidService(serviceId) => invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, serviceId)))
+              case InvalidService => throw new IllegalArgumentException("Service is missing")
+            }
           }, _ => {
             invitationsService.acceptInvitation(invitationId, mtdItId).map { _ =>
               Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
