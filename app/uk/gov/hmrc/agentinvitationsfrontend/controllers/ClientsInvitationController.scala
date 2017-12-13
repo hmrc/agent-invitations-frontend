@@ -59,13 +59,17 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
+      determineService(invitationId) match {
+        case ValidService(serviceId) =>
       withValidInvitation(mtdItId, invitationId) { arn =>
-        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", mtdItId)
+      auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", mtdItId)
 
-        for {
-          name <- invitationsService.getAgencyName(arn)
-          _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
-        } yield Ok(invitation_declined(name, invitationId))
+      for {
+      name <- invitationsService.getAgencyName(arn)
+      _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
+      } yield Ok(invitation_declined(name, invitationId, serviceId))
+      }
+        case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
     }
   }

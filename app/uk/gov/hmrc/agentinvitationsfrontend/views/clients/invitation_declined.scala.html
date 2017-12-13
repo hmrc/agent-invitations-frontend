@@ -19,16 +19,19 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(agencyName: String, invitationId: InvitationId)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-declined.title"), bodyClasses = None) {
 
   <h1 class="heading-xlarge">@Messages("invitation-declined.title")</h1>
 
     @form(routes.ClientsInvitationController.submitStart(invitationId)) {
-        <p>@Messages("invitation-declined.p1", agencyName)</p>
 
-        <p>@Messages("invitation-declined.p2")</p>
+        <p>@Messages(s"invitation-declined-$service.p1", agencyName)</p>
+
+        @if(service == "itsa") {
+            <p>@Messages("invitation-declined-itsa.p2")</p>
+        }
 
         <div class="form-group">
             <a class="button" href="/account" id="continue" role="button">@Messages("invitation-declined.button")</a>
