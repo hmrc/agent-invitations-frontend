@@ -37,7 +37,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
   val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "personal-income-record"
+  val servicePIR = "PERSONAL-INCOME-RECORD"
   val validPostcode = "BN12 6BX"
   val invitationId = InvitationId("ABERULMHCKKW3")
 
@@ -152,6 +152,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
       verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success", servicePIR)
     }
 
     "return 200 for authorised Agent with no selected service and show error on the page" in {
@@ -202,7 +203,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       header("Set-Cookie", result).get should include("invitationId=ABERULMHCKKW3")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success")
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success", serviceITSA)
     }
 
     "return 200 for authorised Agent with empty postcode and redisplay form with error message" in {
@@ -239,7 +240,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail", serviceITSA)
     }
 
     "return 303 for authorised Agent when postcode does not match " in {
@@ -252,7 +253,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail", serviceITSA)
     }
 
     "return exception when create invitation fails" in {
@@ -262,7 +263,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       an[BadRequestException] should be thrownBy await(result)
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail")
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Fail", serviceITSA)
     }
 
     behave like anAuthorisedEndpoint(request, submitPostcode)
@@ -347,13 +348,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentClientInvitationSubmittedEvent(arn: String, nino: String, result: String): Unit = {
+  def verifyAgentClientInvitationSubmittedEvent(arn: String, nino: String, result: String, service: String): Unit = {
     verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationSubmitted,
       detail = Map(
         "result" -> result,
         "agentReferenceNumber" -> arn,
         "regimeId" -> nino,
-        "regime" -> "HMRC-MTD-IT"
+        "regime" -> s"$service"
       ),
       tags = Map(
         "transactionName" -> "agent-client-invitation-submitted",

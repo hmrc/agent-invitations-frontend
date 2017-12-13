@@ -34,7 +34,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val invitationIdAFI = InvitationId("BT5YMLY6GG2L6")
   val invalidInvitationIdCRC5 = InvitationId("ABERULMHCKKW1")
   val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "personal-income-record"
+  val servicePIR = "PERSONAL-INCOME-RECORD"
   val nino = "AB123456A"
 
   "GET /:invitationId (landing page)" should {

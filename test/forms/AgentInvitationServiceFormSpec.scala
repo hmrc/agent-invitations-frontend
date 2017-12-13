@@ -28,7 +28,7 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
   val serviceEmptyMessage: String = "error.service.required"
   val serviceEmptyFormError: FormError = FormError("service", List(serviceEmptyMessage))
   val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "personal-income-record"
+  val servicePIR = "PERSONAL-INCOME-RECORD"
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
@@ -58,8 +58,11 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
     }
 
     "return no errors when unbinding the form" in {
-      val unboundForm = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), Some(serviceITSA), ""))
-      unboundForm("service") shouldBe serviceITSA
+      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), Some(serviceITSA), ""))
+      unboundFormITSA("service") shouldBe serviceITSA
+
+      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), Some(servicePIR), ""))
+      unboundFormAFI("service") shouldBe servicePIR
     }
   }
 

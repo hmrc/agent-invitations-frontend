@@ -30,7 +30,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
   val postcodeEmptyFormError: FormError = FormError("postcode", List(postcodeEmptyMessage))
   val postcodeFormatFormError: FormError = FormError("postcode", List(postcodeFormatMessage))
   val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "personal-income-record"
+  val servicePIR = "PERSONAL-INCOME-RECORD"
 
   "PostCodeForm" should {
     "return no error message for valid postcode" in {

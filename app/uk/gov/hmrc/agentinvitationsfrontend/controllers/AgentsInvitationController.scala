@@ -89,7 +89,7 @@ class AgentsInvitationController @Inject()(
           userInput.service match {
             case Some("HMRC-MTD-IT") => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               .withSession(request.session + ("service" -> "HMRC-MTD-IT"))
-            case Some("personal-income-record") => createInvitation(arn, userInput)
+            case Some("PERSONAL-INCOME-RECORD") => createInvitation(arn, userInput)
             case _ => Future successful Ok(select_service(agentInvitationServiceForm))
           }
         }

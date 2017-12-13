@@ -15,7 +15,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
 
   val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "personal-income-record"
+  val servicePIR = "PERSONAL-INCOME-RECORD"
 
   "Create Invitation" should {
 
