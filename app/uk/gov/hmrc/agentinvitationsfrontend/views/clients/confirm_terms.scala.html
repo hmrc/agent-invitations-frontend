@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) + Messages("confirm-terms.title"), bodyClasses = None) {
 
@@ -30,26 +30,40 @@
 
     <div class="form-group">
         <p class="important-notice">
-            <strong>@Messages("confirm-terms.alert", agencyName)</strong>
+            <strong>@Messages(s"confirm-$service-terms.alert", agencyName)</strong>
         </p>
     </div>
 
-    <h2>@Messages("confirm-terms.sub-header")</h2>
+    @if(service == "itsa") {
 
-    <p>@Messages("confirm-terms.p1")</p>
+    <h2>@Messages(s"confirm-itsa-terms.sub-header")</h2>
 
-    <ul class="list list-bullet">
-        <li>@Messages("confirm-terms.bullet1")</li>
-        <li>@Messages("confirm-terms.bullet2")</li>
-        <li>@Messages("confirm-terms.bullet3")</li>
-        <li>@Messages("confirm-terms.bullet4")</li>
-        <li>@Messages("confirm-terms.bullet5")</li>
-        <li>@Messages("confirm-terms.bullet6")</li>
-        <li>@Messages("confirm-terms.bullet7")</li>
-        <li>@Messages("confirm-terms.bullet8")</li>
-    </ul>
+        <p>@Messages("confirm-terms.p1")</p>
 
-    <p>@Messages("confirm-terms.p2")</p>
+        <ul class="list list-bullet">
+            <li>@Messages("confirm-terms.bullet1")</li>
+            <li>@Messages("confirm-terms.bullet2")</li>
+            <li>@Messages("confirm-terms.bullet3")</li>
+            <li>@Messages("confirm-terms.bullet4")</li>
+            <li>@Messages("confirm-terms.bullet5")</li>
+            <li>@Messages("confirm-terms.bullet6")</li>
+            <li>@Messages("confirm-terms.bullet7")</li>
+            <li>@Messages("confirm-terms.bullet8")</li>
+        </ul>
+
+        <p>@Messages("confirm-terms.p2")</p>
+
+    } @if(service == "afi") {
+        <p>@Messages("confirm-terms-afi.p1")</p>
+        <p>@Messages("confirm-terms-afi.p2")</p>
+
+        <ul class="list list-bullet">
+            <li>@Messages("confirm-terms-afi.bullet1")</li>
+            <li>@Messages("confirm-terms-afi.bullet2")</li>
+            <li>@Messages("confirm-terms-afi.bullet3")</li>
+        </ul>
+    }
+
 
 
 
@@ -57,7 +71,7 @@
 
         @singleCheckbox(
             confirmTermsForm("confirmTerms"),
-            '_label -> Messages("confirm-terms.checkbox", agencyName),
+            '_label -> Messages(s"confirm-terms-$service.checkbox", agencyName),
             '_labelClass -> "flush--ends soft--ends",
             '_groupDivClass -> "soft-half--ends"
         )

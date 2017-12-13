@@ -3,25 +3,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId, clientId: String, postcode: String, service: String): Unit = {
+  def createInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, postcode: String, service: String): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
       equalToJson(s"""
          |{
          |   "service": "$service",
          |   "clientIdType": "ni",
-         |   "clientId":"$clientId",
+         |   "clientId":"$suppliedClientId",
          |   "clientPostcode":"$postcode"
          |}
            """.stripMargin)
     ).willReturn(
         aResponse()
           .withStatus(201)
-          .withHeader("location", s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}")))
+          .withHeader("location", s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}")))
   }
 
   def failedCreateInvitation(arn: Arn): Unit = {
@@ -57,8 +57,8 @@ trait ACAStubs {
            """.stripMargin)))
   }
 
-  def getInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId, service: String): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
+  def getInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, service: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(200)
@@ -67,7 +67,7 @@ trait ACAStubs {
                |{
                |  "arn" : "${arn.value}",
                |  "service" : "$service",
-               |  "clientId" : "${mtdItId.value}",
+               |  "clientId" : "$clientId",
                |  "status" : "Pending",
                |  "created" : "2017-10-31T23:22:50.971Z",
                |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -79,8 +79,8 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
-  def getExpiredInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
+  def getExpiredInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(200)
@@ -89,7 +89,7 @@ trait ACAStubs {
                |{
                |  "arn" : "${arn.value}",
                |  "service" : "HMRC-MTD-IT",
-               |  "clientId" : "${mtdItId.value}",
+               |  "clientId" : "${clientId}",
                |  "status" : "Expired",
                |  "created" : "2017-7-31T23:22:50.971Z",
                |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -101,8 +101,8 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
-  def getAlreadyAcceptedInvitationStub(arn: Arn, mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
+  def getAlreadyAcceptedInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(200)
@@ -111,7 +111,7 @@ trait ACAStubs {
                |{
                |  "arn" : "${arn.value}",
                |  "service" : "HMRC-MTD-IT",
-               |  "clientId" : "${mtdItId.value}",
+               |  "clientId" : "${clientId}",
                |  "status" : "Accepted",
                |  "created" : "2017-10-31T23:22:50.971Z",
                |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -123,15 +123,15 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
-  def notFoundGetInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
+  def notFoundGetInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(404)))
   }
 
-  def incorrectGetInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationId.value}"))
+  def incorrectGetInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
@@ -144,16 +144,16 @@ trait ACAStubs {
         )))
   }
 
-  def acceptInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    acceptInvitationStub(mtdItId, invitationId, responseStatus = 204)
+  def acceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    acceptInvitationStub(clientId, invitationId, responseStatus = 204)
   }
 
-  def notFoundAcceptInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    acceptInvitationStub(mtdItId, invitationId, responseStatus = 404)
+  def notFoundAcceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    acceptInvitationStub(clientId, invitationId, responseStatus = 404)
   }
 
-  private def acceptInvitationStub(mtdItId: MtdItId, invitationId: InvitationId, responseStatus: Int): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  private def acceptInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
@@ -161,8 +161,8 @@ trait ACAStubs {
           .withStatus(responseStatus)))
   }
 
-  def alreadyActionedAcceptInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  def alreadyActionedAcceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
@@ -177,8 +177,8 @@ trait ACAStubs {
         )))
   }
 
-  def acceptInvitationNoPermissionStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  def acceptInvitationNoPermissionStub(clientId: String, invitationId: InvitationId): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
@@ -193,22 +193,22 @@ trait ACAStubs {
         )))
   }
 
-  def verifyAcceptInvitationAttempt(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  def verifyAcceptInvitationAttempt(clientId: String, invitationId: InvitationId): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept")))
   }
 
-  def rejectInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    rejectInvitationStub(mtdItId, invitationId, responseStatus = 204)
+  def rejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    rejectInvitationStub(clientId, invitationId, responseStatus = 204)
   }
 
-  def notFoundRejectInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    rejectInvitationStub(mtdItId, invitationId, responseStatus = 404)
+  def notFoundRejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    rejectInvitationStub(clientId, invitationId, responseStatus = 404)
   }
 
-  private def rejectInvitationStub(mtdItId: MtdItId, invitationId: InvitationId, responseStatus: Int): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  private def rejectInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
       .willReturn(
@@ -216,8 +216,8 @@ trait ACAStubs {
           .withStatus(responseStatus)))
   }
 
-  def alreadyActionedRejectInvitationStub(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  def alreadyActionedRejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
       .willReturn(
@@ -232,8 +232,8 @@ trait ACAStubs {
         )))
   }
 
-  def verifyRejectInvitationAttempt(mtdItId: MtdItId, invitationId: InvitationId): Unit = {
-    val mtdItIdEncoded = encodePathSegment(mtdItId.value)
+  def verifyRejectInvitationAttempt(clientId: String, invitationId: InvitationId): Unit = {
+    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject")))
   }
