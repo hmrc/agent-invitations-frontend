@@ -21,6 +21,7 @@ import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,14 +43,20 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
     } yield invitation
   }
 
-  def acceptInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
-    invitationsConnector.acceptInvitation(mtdItId, invitationId)
+  def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.acceptITSAInvitation(mtdItId, invitationId)
 
-  def rejectInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
-    invitationsConnector.rejectInvitation(mtdItId, invitationId)
+  def rejectITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.rejectITSAInvitation(mtdItId, invitationId)
 
-  def getClientInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
-    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, mtdItId))
+  def acceptAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.acceptAFIInvitation(nino, invitationId)
+
+  def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.rejectAFIInvitation(nino, invitationId)
+
+  def getClientInvitation(clientId: String, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId))
   }
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
@@ -58,7 +65,12 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
       case None => throw new Exception("Agency name not found")
     }
 
-  private def clientInvitationUrl(invitationId: InvitationId, mtdItId: MtdItId): String =
-    s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}"
+  private def clientInvitationUrl(invitationId: InvitationId, clientId: String): String = {
+    if(Nino.isValid(clientId)) {
+      s"/agent-client-authorisation/clients/NI/$clientId/invitations/received/${invitationId.value}"
+    } else {
+      s"/agent-client-authorisation/clients/MTDITID/$clientId/invitations/received/${invitationId.value}"
+    }
+  }
 
 }

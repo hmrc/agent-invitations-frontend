@@ -54,7 +54,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Accept invitation" should {
     "return status 204 if invitation was accepted" in {
       acceptInvitationStub(mtdItId.value, invitationId)
-      val result = await(connector.acceptInvitation(mtdItId, invitationId))
+      val result = await(connector.acceptITSAInvitation(mtdItId, invitationId))
 
       result shouldBe 204
       verifyAcceptInvitationAttempt(mtdItId.value, invitationId)
@@ -64,7 +64,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       alreadyActionedAcceptInvitationStub(mtdItId.value, invitationId)
 
       intercept[Upstream4xxResponse] {
-        await(connector.acceptInvitation(mtdItId, invitationId))
+        await(connector.acceptITSAInvitation(mtdItId, invitationId))
       }
 
       verifyAcceptInvitationAttempt(mtdItId.value, invitationId)
@@ -74,7 +74,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       notFoundAcceptInvitationStub(mtdItId.value, invitationId)
 
       intercept[NotFoundException] {
-        await(connector.acceptInvitation(mtdItId, invitationId))
+        await(connector.acceptITSAInvitation(mtdItId, invitationId))
       }
 
       verifyAcceptInvitationAttempt(mtdItId.value, invitationId)
@@ -84,7 +84,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Reject invitation" should {
     "return status 204 if invitation was rejected" in {
       rejectInvitationStub(mtdItId.value, invitationId)
-      val result = await(connector.rejectInvitation(mtdItId, invitationId))
+      val result = await(connector.rejectITSAInvitation(mtdItId, invitationId))
 
       result shouldBe 204
       verifyRejectInvitationAttempt(mtdItId.value, invitationId)
@@ -94,7 +94,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       alreadyActionedRejectInvitationStub(mtdItId.value, invitationId)
 
       intercept[Upstream4xxResponse] {
-        await(connector.rejectInvitation(mtdItId, invitationId))
+        await(connector.rejectITSAInvitation(mtdItId, invitationId))
       }
 
       verifyRejectInvitationAttempt(mtdItId.value, invitationId)
@@ -104,7 +104,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       notFoundRejectInvitationStub(mtdItId.value, invitationId)
 
       intercept[NotFoundException] {
-        await(connector.rejectInvitation(mtdItId, invitationId))
+        await(connector.rejectITSAInvitation(mtdItId, invitationId))
       }
 
       verifyRejectInvitationAttempt(mtdItId.value, invitationId)

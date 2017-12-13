@@ -25,7 +25,7 @@ class AuthActionsISpec extends BaseISpec {
     }
 
     def withAuthorisedAsClient[A]: Result = {
-      await(super.withAuthorisedAsClient { mtdItTd => Future.successful(Ok(mtdItTd.value)) })
+      await(super.withAuthorisedAsClient(serviceName = "HMRC-MTD-IT", identifierKey = "MTDITID") { clientId => Future.successful(Ok(clientId)) })
     }
 
   }
