@@ -22,7 +22,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", "W12 7TQ")
 
     "return a link of a specific created invitation" in {
-      createInvitationStub(arn, "mtdItId", invitationIdITSA, "AB123456B", "W12 7TQ", serviceITSA)
+      createInvitationStub(arn, "mtdItId", invitationIdITSA, "AB123456B", "W12 7TQ", serviceITSA, "MTDITID")
       val result: Option[String] = await(connector.createInvitation(arn, agentInvitation))
       result.isDefined shouldBe true
       result.get should include("agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
@@ -38,7 +38,7 @@ class InvitationsConnectorISpec extends BaseISpec {
 
   "Get Invitation" should {
     "return an invitation" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA)
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID")
       val result = await(connector
         .getInvitation(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"))
       result.isDefined shouldBe true
@@ -57,7 +57,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Accept invitation" should {
     "return status 204 if invitation was accepted" in {
       acceptInvitationStub(mtdItId.value, invitationIdITSA)
-      val result = await(connector.acceptInvitation(mtdItId, invitationIdITSA))
+      val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
 
       result shouldBe 204
       verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA)
@@ -67,7 +67,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       alreadyActionedAcceptInvitationStub(mtdItId.value, invitationIdITSA)
 
       intercept[Upstream4xxResponse] {
-        await(connector.acceptInvitation(mtdItId, invitationIdITSA))
+        await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
       }
 
       verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA)
@@ -77,7 +77,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       notFoundAcceptInvitationStub(mtdItId.value, invitationIdITSA)
 
       intercept[NotFoundException] {
-        await(connector.acceptInvitation(mtdItId, invitationIdITSA))
+        await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
       }
 
       verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA)
@@ -87,7 +87,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Reject invitation" should {
     "return status 204 if invitation was rejected" in {
       rejectInvitationStub(mtdItId.value, invitationIdITSA)
-      val result = await(connector.rejectInvitation(mtdItId, invitationIdITSA))
+      val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
 
       result shouldBe 204
       verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA)
@@ -97,7 +97,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       alreadyActionedRejectInvitationStub(mtdItId.value, invitationIdITSA)
 
       intercept[Upstream4xxResponse] {
-        await(connector.rejectInvitation(mtdItId, invitationIdITSA))
+        await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
       }
 
       verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA)
@@ -107,7 +107,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       notFoundRejectInvitationStub(mtdItId.value, invitationIdITSA)
 
       intercept[NotFoundException] {
-        await(connector.rejectInvitation(mtdItId, invitationIdITSA))
+        await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
       }
 
       verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA)

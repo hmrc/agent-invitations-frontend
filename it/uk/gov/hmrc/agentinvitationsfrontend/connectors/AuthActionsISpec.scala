@@ -5,8 +5,8 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.auth.core.{ AuthConnector, AuthorisationException, InsufficientEnrolments }
-import uk.gov.hmrc.http.{ HeaderCarrier, SessionKeys }
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.Future
 
@@ -24,8 +24,8 @@ class AuthActionsISpec extends BaseISpec {
       await(super.withAuthorisedAsAgent { arn => Future.successful(Ok(arn.value)) })
     }
 
-    def withAuthorisedAsClient[A]: Result = {
-      await(super.withAuthorisedAsClient { mtdItTd => Future.successful(Ok(mtdItTd.value)) })
+    def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result = {
+      await(super.withAuthorisedAsClient(serviceName, identifierKey) { clientId => Future.successful(Ok(clientId)) })
     }
 
   }
@@ -94,9 +94,24 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin)
 
-      val result = TestController.withAuthorisedAsClient
+      val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 200
       bodyOf(result) shouldBe "fooMtdItId"
+    }
+
+    "call body with nino when valid afi client" in {
+      givenAuthorisedFor(
+        "{}",
+        s"""{
+           |"authorisedEnrolments": [
+           |  { "key":"HMRC-NI", "identifiers": [
+           |    { "key":"NINO", "value": "fooNINO" }
+           |  ]}
+           |]}""".stripMargin)
+
+      val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
+      status(result) shouldBe 200
+      bodyOf(result) shouldBe "fooNINO"
     }
 
     "throw InsufficientEnrolments when client not enrolled for service" in {
@@ -109,7 +124,21 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin)
       an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient
+        TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
+      }
+    }
+
+    "throw InsufficientEnrolments when client not enrolled for service for AFI" in {
+      givenAuthorisedFor(
+        "{}",
+        s"""{
+           |"authorisedEnrolments": [
+           |  { "key":"HMRC-AS-AGENT", "identifiers": [
+           |    { "key":"AgentReferenceNumber", "value": "fooArn" }
+           |  ]}
+           |]}""".stripMargin)
+      an[InsufficientEnrolments] shouldBe thrownBy {
+        TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       }
     }
 
@@ -123,9 +152,24 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin)
       an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient
+        TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
+      }
+    }
+
+    "throw InsufficientEnrolments when expected client's identifier missing for AFI" in {
+      givenAuthorisedFor(
+        "{}",
+        s"""{
+           |"authorisedEnrolments": [
+           |  { "key":"HMRC-NI", "identifiers": [
+           |    { "key":"BAR", "value": "fooMtdItId" }
+           |  ]}
+           |]}""".stripMargin)
+      an[InsufficientEnrolments] shouldBe thrownBy {
+        TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       }
     }
   }
-
 }
+
+

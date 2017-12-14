@@ -19,14 +19,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 trait Service
-case class ValidService(value: String) extends Service
+case class ValidService(serviceName: String, serviceIdentifier:String, messageKey: String) extends Service
 case object InvalidService extends Service
 
 object Services {
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
-      case 'A' => ValidService("itsa")
-      case 'B' => ValidService("afi")
+      case 'A' => ValidService("HMRC-MTD-IT", "MTDITID", "itsa")
+      case 'B' => ValidService("HMRC-NI", "NINO", "afi")
       case _ => InvalidService
     }
   }
