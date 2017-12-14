@@ -63,11 +63,13 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       case ValidService((serviceName), (serviceIdentifier), (messageKey)) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId) { arn =>
-            auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", clientId, serviceName)
-            for {
-              name <- invitationsService.getAgencyName(arn)
-              _ <- determineRejectService(serviceName, invitationId, clientId)
-            } yield Ok(invitation_declined(name, invitationId))
+            invitationsService.getAgencyName(arn).flatMap { agencyName =>
+              auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", clientId, serviceName, agencyName)
+              for {
+                name <- invitationsService.getAgencyName(arn)
+                _ <- determineRejectService(serviceName, invitationId, clientId)
+              } yield Ok(invitation_declined(name, invitationId))
+            }
           }
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -80,10 +82,10 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId) {
             arn =>
-              auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", clientId, serviceName)
               invitationsService.getAgencyName(arn).map {
-                name =>
-                  Ok(confirm_invitation(confirmInvitationForm, name, invitationId, messageKey))
+                agencyName =>
+                auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", clientId, serviceName, agencyName)
+                  Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey))
               }
           }
         }.recoverWith {

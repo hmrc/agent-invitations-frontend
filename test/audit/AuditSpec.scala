@@ -93,7 +93,8 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val inviteStatus = "accepted"
+      val agencyName: String = "someAgency"
+      val clientResponse = "accepted"
       val invitationId: String = "1"
       val mtdItId: MtdItId = MtdItId("mtdItId")
       val serviceName: String = "HMRC-MTD-IT"
@@ -101,10 +102,10 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       await(service.sendAgentInvitationResponse(
         invitationId,
         arn,
-        inviteStatus,
+        clientResponse,
         mtdItId.value,
-        serviceName
-      )(
+        serviceName,
+        agencyName)(
         hc,
         FakeRequest("GET", "/path")))
 
@@ -118,6 +119,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientResponse") shouldBe "accepted"
         sentEvent.detail("invitationId") shouldBe "1"
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
+        sentEvent.detail("agencyName") shouldBe "someAgency"
         sentEvent.detail("regimeId") shouldBe "mtdItId"
         sentEvent.detail("regime") shouldBe "HMRC-MTD-IT"
 

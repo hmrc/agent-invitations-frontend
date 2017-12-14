@@ -68,22 +68,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
-
-    /*"redirect to notFoundInvitation when invitationId fails regex" in {
-     /* val result = controller.start(InvitationId("someInvitationID"))(FakeRequest())
-     // status(result) shouldBe BAD_REQUEST
-      //global.error.400.message
-     // redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("global.error.400.message"))*/
-
-
-    }
-
-    "redirect to notFoundInvitation when CRC5 does not match invitationID CRC5" in {
-      val result = controller.start(invalidInvitationIdCRC5)(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
-    }*/
   }
 
   "POST / (clicking accept on the landing page)" should {
@@ -110,7 +94,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.p1", "My Agency"))
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA)
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA, "My Agency")
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
@@ -122,7 +106,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA)
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA, "My Agency")
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
@@ -172,8 +156,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID")
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value, serviceITSA)
-
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value, serviceITSA, "My Agency")
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.itsa.sub-header", "My Agency"))
@@ -183,7 +166,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, nino, invitationIdAFI, serviceNI, "NI")
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", nino, serviceNI)
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", nino, serviceNI, "My Agency")
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
@@ -497,11 +480,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientId: String, service: String): Unit = {
+  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientId: String, service: String,  agencyName: String): Unit = {
     verifyAuditRequestSent(1, AgentClientInvitationResponse,
       detail = Map(
         "invitationId" -> invitationId.value,
         "agentReferenceNumber" -> arn,
+        "agencyName" -> agencyName,
         "regimeId" -> clientId,
         "regime" -> service,
         "clientResponse" -> clientResponse
