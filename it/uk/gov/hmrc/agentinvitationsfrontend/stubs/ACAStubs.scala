@@ -144,27 +144,27 @@ trait ACAStubs {
         )))
   }
 
-  def acceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    acceptInvitationStub(clientId, invitationId, responseStatus = 204)
+  def acceptInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    acceptInvitationStub(clientId, invitationId, responseStatus = 204, serviceIdentifier)
   }
 
-  def notFoundAcceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    acceptInvitationStub(clientId, invitationId, responseStatus = 404)
+  def notFoundAcceptInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    acceptInvitationStub(clientId, invitationId, responseStatus = 404, serviceIdentifier)
   }
 
-  private def acceptInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int): Unit = {
+  private def acceptInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
         aResponse()
           .withStatus(responseStatus)))
   }
 
-  def alreadyActionedAcceptInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+  def alreadyActionedAcceptInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
@@ -193,33 +193,33 @@ trait ACAStubs {
         )))
   }
 
-  def verifyAcceptInvitationAttempt(clientId: String, invitationId: InvitationId): Unit = {
+  def verifyAcceptInvitationAttempt(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept")))
+    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept")))
   }
 
-  def rejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    rejectInvitationStub(clientId, invitationId, responseStatus = 204)
+  def rejectInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    rejectInvitationStub(clientId, invitationId, responseStatus = 204, serviceIdentifier)
   }
 
-  def notFoundRejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    rejectInvitationStub(clientId, invitationId, responseStatus = 404)
+  def notFoundRejectInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    rejectInvitationStub(clientId, invitationId, responseStatus = 404, serviceIdentifier)
   }
 
-  private def rejectInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int): Unit = {
+  private def rejectInvitationStub(clientId: String, invitationId: InvitationId, responseStatus: Int, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
       .willReturn(
         aResponse()
           .withStatus(responseStatus)))
   }
 
-  def alreadyActionedRejectInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
+  def alreadyActionedRejectInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject"))
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
@@ -232,9 +232,9 @@ trait ACAStubs {
         )))
   }
 
-  def verifyRejectInvitationAttempt(clientId: String, invitationId: InvitationId): Unit = {
+  def verifyRejectInvitationAttempt(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject")))
+    verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/reject")))
   }
 }

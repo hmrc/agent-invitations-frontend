@@ -57,8 +57,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
   def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectAFIInvitation(nino, invitationId)
 
-  def getClientInvitation(clientId: String, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
-    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId))
+  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
   }
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
@@ -67,12 +67,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
       case None => throw new Exception("Agency name not found")
     }
 
-  private def clientInvitationUrl(invitationId: InvitationId, clientId: String): String = {
-    if(Nino.isValid(clientId)) {
-      s"/agent-client-authorisation/clients/NI/$clientId/invitations/received/${invitationId.value}"
-    } else {
-      s"/agent-client-authorisation/clients/MTDITID/$clientId/invitations/received/${invitationId.value}"
-    }
+  private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String = {
+      s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
   }
 
 }
