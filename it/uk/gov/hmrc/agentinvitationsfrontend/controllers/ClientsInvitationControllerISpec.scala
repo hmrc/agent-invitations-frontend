@@ -64,22 +64,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
-
-    /*"redirect to notFoundInvitation when invitationId fails regex" in {
-     /* val result = controller.start(InvitationId("someInvitationID"))(FakeRequest())
-     // status(result) shouldBe BAD_REQUEST
-      //global.error.400.message
-     // redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("global.error.400.message"))*/
-
-
-    }
-
-    "redirect to notFoundInvitation when CRC5 does not match invitationID CRC5" in {
-      val result = controller.start(invalidInvitationIdCRC5)(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation.url
-    }*/
   }
 
   "POST / (clicking accept on the landing page)" should {
