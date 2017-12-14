@@ -67,7 +67,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
               auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", clientId, serviceName, agencyName)
               for {
                 name <- invitationsService.getAgencyName(arn)
-                _ <- rejectService(serviceName, invitationId, clientId)
+                _ <- rejectInvitation(serviceName, invitationId, clientId)
               } yield Ok(invitation_declined(name, invitationId))
             }
           }
@@ -142,7 +142,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
                 formWithErrors => {
                   invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, messageKey)))
                 }, _ => {
-                  acceptService(serviceName, invitationId, clientId).map { _ =>
+                  acceptInvitation(serviceName, invitationId, clientId).map { _ =>
                       Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
                   }
                 })
@@ -192,7 +192,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Ok(invitation_expired())
   }
 
-  private def acceptService(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier) = {
+  private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier) = {
     service match {
       case "HMRC-MTD-IT" => invitationsService.acceptITSAInvitation(invitationId, MtdItId(clientId))
       case "HMRC-NI" => invitationsService.acceptAFIInvitation(invitationId, Nino(clientId))
@@ -200,7 +200,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
-  private def rejectService(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier) = {
+  private def rejectInvitation(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier) = {
     service match {
       case "HMRC-MTD-IT" => invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
       case "HMRC-NI" => invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
