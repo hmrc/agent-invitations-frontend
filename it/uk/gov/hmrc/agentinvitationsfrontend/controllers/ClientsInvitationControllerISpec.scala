@@ -106,12 +106,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.p1", "My Agency"))
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value)
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, "My Agency")
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
 
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA)
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, "Declined")
       alreadyActionedRejectInvitationStub(mtdItId.value, invitationIdITSA)
       givenGetAgencyNameStub(arn)
 
@@ -119,7 +119,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value)
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
@@ -169,7 +168,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA)
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationITSA(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value)
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value, "My Agency")
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
@@ -180,7 +179,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdAFI)
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationAFI(authorisedAsValidClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), mtdItId.value))
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", mtdItId.value)
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", mtdItId.value, "My Agency")
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
@@ -494,11 +493,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientId: String): Unit = {
+  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientId: String, agencyName: String): Unit = {
     verifyAuditRequestSent(1, AgentClientInvitationResponse,
       detail = Map(
         "invitationId" -> invitationId.value,
         "agentReferenceNumber" -> arn,
+        "agencyName" -> agencyName,
         "regimeId" -> mtdItId.value,
         "regime" -> "HMRC-MTD-IT",
         "clientResponse" -> clientResponse

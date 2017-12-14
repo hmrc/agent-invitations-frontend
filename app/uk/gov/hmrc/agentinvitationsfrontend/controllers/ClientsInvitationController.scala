@@ -57,11 +57,10 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
   }
 
-  def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
+  def getInvitationDeclined1(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId, invitationId) { arn =>
-        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", mtdItId)
-
+        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", mtdItId,"a")
         for {
           name <- invitationsService.getAgencyName(arn)
           _ <- invitationsService.rejectInvitation(invitationId, mtdItId)
@@ -70,16 +69,27 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
+  def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsClient { mtdItId =>
+      withValidInvitation(mtdItId, invitationId) { arn =>
+        invitationsService.getAgencyName(arn).map { agencyName =>
+          auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", mtdItId, agencyName)
+          invitationsService.rejectInvitation(invitationId, mtdItId)
+          Ok(invitation_declined(agencyName, invitationId))
+        }
+      }
+    }
+  }
+
   def getConfirmInvitation(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId, invitationId) { arn =>
-        auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId)
-        invitationsService.getAgencyName(arn).map { name =>
+        invitationsService.getAgencyName(arn).map { agencyName =>
+          auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", mtdItId, agencyName)
           determineService(invitationId) match {
-            case ValidService(serviceId) => Ok(confirm_invitation(confirmInvitationForm, name, invitationId, serviceId))
+            case ValidService(serviceId) => Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, serviceId))
             case InvalidService => Redirect(routes.ClientsInvitationController.notFoundInvitation())
           }
-
         }
       }
     }.recoverWith {
@@ -100,9 +110,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
             }
           }, data => {
             val result = if (data.value.getOrElse(false))
-                           Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
-                         else
-                           Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+              Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+            else
+              Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
             Future successful result
           })
@@ -114,7 +124,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     withAuthorisedAsClient { mtdItId =>
       withValidInvitation(mtdItId, invitationId) { arn =>
         determineService(invitationId) match {
-          case ValidService(serviceId) =>  invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, serviceId)))
+          case ValidService(serviceId) => invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, serviceId)))
           case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
         }
       }
@@ -176,7 +186,9 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   private def withValidInvitation[A](mtdItId: MtdItId, invitationId: InvitationId)(f: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
-    invitationsService.getClientInvitation(mtdItId, invitationId).flatMap {
+    val inv = invitationsService.getClientInvitation(mtdItId, invitationId)
+      
+      inv.flatMap {
       case Some(invitation) if invitation.status.contains("Expired") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
       case Some(invitation) if !invitation.status.contains("Pending") =>

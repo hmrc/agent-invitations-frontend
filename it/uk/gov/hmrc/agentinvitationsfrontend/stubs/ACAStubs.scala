@@ -57,7 +57,7 @@ trait ACAStubs {
            """.stripMargin)))
   }
 
-  def getInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId): Unit = {
+  def getInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, status: String = "Pending"): Unit = {
     stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
@@ -68,7 +68,7 @@ trait ACAStubs {
                |  "arn" : "${arn.value}",
                |  "service" : "HMRC-MTD-IT",
                |  "clientId" : "$clientId",
-               |  "status" : "Pending",
+               |  "status" : "$status",
                |  "created" : "2017-10-31T23:22:50.971Z",
                |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                |  "_links": {
