@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary, singleCheckbox}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 
 @(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
@@ -34,7 +35,7 @@
         </p>
     </div>
 
-    @if(service == "itsa") {
+    @if(service == Services.ITSA) {
 
     <h2>@Messages(s"confirm-itsa-terms.sub-header")</h2>
 
@@ -53,7 +54,7 @@
 
         <p>@Messages("confirm-terms.p2")</p>
 
-    } @if(service == "afi") {
+    } @if(service == Services.AFI) {
         <p>@Messages("confirm-terms-afi.p1")</p>
         <p>@Messages("confirm-terms-afi.p2")</p>
 

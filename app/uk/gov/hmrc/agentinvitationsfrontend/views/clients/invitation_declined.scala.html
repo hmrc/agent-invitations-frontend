@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 
 @(agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
@@ -29,7 +30,7 @@
 
         <p>@Messages(s"invitation-declined-$service.p1", agencyName)</p>
 
-        @if(service == "itsa") {
+        @if(service == Services.ITSA) {
             <p>@Messages("invitation-declined-itsa.p2")</p>
         }
 
