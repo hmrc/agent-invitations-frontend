@@ -23,10 +23,14 @@ case class ValidService(serviceName: String, serviceIdentifier:String, apiIdenti
 case object InvalidService extends Service
 
 object Services {
+
+  val ITSA = "itsa"
+  val AFI = "afi"
+
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
-      case 'A' => ValidService("HMRC-MTD-IT", "MTDITID", "MTDITID", "itsa")
-      case 'B' => ValidService("HMRC-NI", "NINO", "NI", "afi")
+      case 'A' => ValidService("HMRC-MTD-IT", "MTDITID", "MTDITID", ITSA)
+      case 'B' => ValidService("HMRC-NI", "NINO", "NI", AFI)
       case _ => InvalidService
     }
   }

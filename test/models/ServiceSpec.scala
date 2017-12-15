@@ -17,7 +17,7 @@
 package models
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{InvalidService, ValidService}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{InvalidService, Services, ValidService}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -25,11 +25,11 @@ class ServiceSpec extends UnitSpec {
 
   "Services" should {
     "return ITSA if given prefix of invitationId is A" in {
-      determineService(InvitationId("A6WTS5241C99B")) shouldBe ValidService("HMRC-MTD-IT", "MTDITID", "MTDITID", "itsa")
+      determineService(InvitationId("A6WTS5241C99B")) shouldBe ValidService("HMRC-MTD-IT", "MTDITID", "MTDITID", Services.ITSA)
     }
 
     "return AFI if given prefix of invitationId is B" in {
-      determineService(InvitationId("BBERULMHCKK")) shouldBe ValidService("HMRC-NI", "NINO", "NI", "afi")
+      determineService(InvitationId("BBERULMHCKK")) shouldBe ValidService("HMRC-NI", "NINO", "NI", Services.AFI)
     }
 
     "return Exception when given invalid invitationId" in {
