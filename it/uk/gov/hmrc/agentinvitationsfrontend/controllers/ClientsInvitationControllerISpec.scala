@@ -47,6 +47,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
+    "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
+    "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
+    "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
       val itsaInvId = InvitationId("ATSF4OW9CCRD2")
       val result = controller.start(itsaInvId)(FakeRequest())
       status(result) shouldBe OK
@@ -421,25 +424,45 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/4 (complete page)" should {
 
-    val getCompletePage: Action[AnyContent] = controller.getCompletePage(invitationIdITSA)
+    val getCompletePageITSA: Action[AnyContent] = controller.getCompletePage(invitationIdITSA)
+    val getCompletePageAFI: Action[AnyContent] = controller.getCompletePage(invitationIdAFI)
 
-    "show the complete page" in {
+    "show the complete page for ITSA" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
       givenGetAgencyNameStub(arn)
+      val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.title3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.p1"))
+    }
 
-      val result = getCompletePage(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
+    "return exception when agency name retrieval fails for ITSA" in {
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      givenAgencyNameNotFoundStub(arn)
+
+      val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
+
+      an[NotFoundException] should be thrownBy await(result)
+    }
+
+  "show the complete page for AFI" in {
+      getInvitationStub(arn, nino, invitationIdAFI, serviceNI, identifierAFI)
+      givenGetAgencyNameStub(arn)
+
+      val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.title3"))
     }
 
-    "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+    "return exception when agency name retrieval fails for AFI" in {
+      getInvitationStub(arn, nino, invitationIdAFI, serviceNI, identifierAFI)
       givenAgencyNameNotFoundStub(arn)
-
-      val result = getCompletePage(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
-
+      val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
       an[NotFoundException] should be thrownBy await(result)
     }
   }

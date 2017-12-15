@@ -157,7 +157,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
       withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier).flatMap {
-            case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name)))
+            case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name, messageKey)))
             case None => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
           } recover {
             case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>

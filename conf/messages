@@ -105,10 +105,11 @@ invitation-expired.description=This invitation is no longer available. Contact t
 # Complete
 client-complete.title1=You have confirmed
 client-complete.title2={0}
-client-complete.title3=as your agent for
-client-complete.title4=Online self assessment
+client-complete-itsa.title3=as your agent for
+client-complete-itsa.title4=Online self assessment
+client-complete-afi.title3=as your agent
 client-complete.sub-header=What happens next
-client-complete.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
+client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete.button=Continue to your Business Tax account
 
 # Form Errors

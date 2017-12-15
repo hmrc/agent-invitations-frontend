@@ -16,20 +16,27 @@
 
 @import play.api.Configuration
 
-@(agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agencyName: String, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None) {
 
     <div class="transaction-banner--complete">
         <p class="heading-24--normal">@Messages("client-complete.title1")</p>
         <h1 class="transaction-banner__heading">@Messages("client-complete.title2", agencyName)</h1>
-        <p class="heading-24--normal">@Messages("client-complete.title3")</p>
-        <span class="heading-24"><strong>@Messages("client-complete.title4")</strong></span>
+        @if(service == "itsa") {
+            <p class="heading-24--normal">@Messages("client-complete-itsa.title3")</p>
+            <span class="heading-24"><strong>@Messages("client-complete-itsa.title4")</strong></span>
+        }
+        @if(service == "afi") {
+            <p class="heading-24--normal">@Messages("client-complete-afi.title3")</p>
+        }
     </div>
 
     <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
 
-    <p>@Messages("client-complete.p1")</p>
+    @if(service == "itsa") {
+        <p>@Messages("client-complete-itsa.p1")</p>
+    }
 
     <div class="form-group">
         <a class="button" href="/account" id="continue" role="button">@Messages("client-complete.button")</a>
