@@ -41,7 +41,7 @@ import scala.concurrent.Future
 @Singleton
 class AgentsInvitationController @Inject()(
                                             @Named("agent-invitations-frontend.base-url") externalUrl: String,
-                                            @Named("agent-services-account-frontend-baseUrl") asAccUrl: URL,
+                                            @Named("agent-services-account-frontend.external-url") asAccUrl: String,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,

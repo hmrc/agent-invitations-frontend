@@ -282,7 +282,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationId)}"))
-      checkHtmlResultWithBodyText(result, s"agent-services-account-frontend")
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       verifyAuthoriseAttempt()
     }
 

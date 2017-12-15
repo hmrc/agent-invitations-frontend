@@ -131,7 +131,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
-
       notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       notFoundGetInvitationStub(nino, invitationIdAFI, identifierAFI)
       val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
@@ -145,7 +144,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT / HMRC-NI enrolment but with a different id" in {
-
       incorrectGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       incorrectGetInvitationStub(nino, invitationIdAFI, identifierAFI)
       val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
@@ -161,7 +159,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "redirect to notFound when invitationId missing from session" in {
       val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest(), mtdItId.value))
       val resultAFI = getInvitationDeclinedAFI(authorisedAsValidClientAFI(FakeRequest(), nino))
-
       status(resultITSA) shouldBe SEE_OTHER
       status(resultAFI) shouldBe SEE_OTHER
       redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
@@ -498,7 +495,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to notFoundInvitation where no such invitation" in {
-
       val resultITSA = submitConfirmTermsITSA(authorisedAsValidClientITSA(FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true"), mtdItId.value))
       val resultAFI = submitConfirmTermsAFI(authorisedAsValidClientAFI(FakeRequest().withFormUrlEncodedBody("confirmTerms" -> "true"), nino))
 
