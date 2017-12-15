@@ -28,6 +28,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.des.port" -> wireMockPort,
         "microservice.services.agent-invitations-frontend.base-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
+        "microservice.services.personal-tax-account.external-url" -> wireMockBaseUrlAsString,
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort

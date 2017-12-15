@@ -59,7 +59,7 @@ invitation-declined-itsa.p1={0} will not be able to represent you with HMRC for 
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
 invitation-declined-itsa.p2=You can manage your tax agent relationships from your business tax account (BTA).
 invitation-declined-itsa.button=Continue to your BTA
-invitation-declined-afi.button=Continue to your PTA
+invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
 

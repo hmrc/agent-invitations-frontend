@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
 import play.api.data.Form
@@ -39,7 +39,8 @@ import scala.concurrent.Future
 case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
-class ClientsInvitationController @Inject()(invitationsService: InvitationsService,
+class ClientsInvitationController @Inject()(@Named("personal-tax-account.external-url") continueUrl: String,
+                                            invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
                                             val authConnector: AuthConnector)(implicit val configuration: Configuration)
@@ -68,7 +69,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
               for {
                 name <- invitationsService.getAgencyName(arn)
                 _ <- rejectInvitation(serviceName, invitationId, clientId)
-              } yield Ok(invitation_declined(name, invitationId, messageKey))
+              } yield Ok(invitation_declined(name, invitationId, messageKey, continueUrl))
             }
           }
         }
@@ -157,7 +158,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
       withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier).flatMap {
-            case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name, messageKey)))
+            case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name, messageKey, continueUrl)))
             case None => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
           } recover {
             case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
