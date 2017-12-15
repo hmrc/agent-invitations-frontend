@@ -18,4 +18,4 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import uk.gov.hmrc.domain.Nino
 
-case class AgentInvitationUserInput(nino: Nino, service: Option[String], postcode: String)
+case class AgentInvitationUserInput(nino: Nino, service: Option[String], postcode: Option[String])

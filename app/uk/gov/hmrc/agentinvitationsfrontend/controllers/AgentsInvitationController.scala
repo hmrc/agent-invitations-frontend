@@ -75,7 +75,7 @@ class AgentsInvitationController @Inject()(
   def selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       request.session.get("nino") match {
-        case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, ""))))
+        case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None))))
         case _ => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
       }
     }
@@ -107,7 +107,7 @@ class AgentsInvitationController @Inject()(
 
       (maybeNino, maybeService) match {
         case (Some(nino), Some(service)) =>
-          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), ""))))
+          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), None))))
         case (Some(nino), None) =>
           Future successful Redirect(routes.AgentsInvitationController.selectService())
         case _ =>
@@ -212,7 +212,7 @@ object AgentsInvitationController {
     Form(mapping(
       "nino" -> text.verifying(invalidNino),
       "service" -> optional(text),
-      "postcode" -> text)
+      "postcode" -> optional(text))
     ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, postcode) })
     ({ user => Some((user.nino.value, user.service, user.postcode)) }))
   }
@@ -221,7 +221,7 @@ object AgentsInvitationController {
     Form(mapping(
       "nino" -> text.verifying(invalidNino),
       "service" -> optional(text).verifying(serviceChoice),
-      "postcode" -> text)
+      "postcode" -> optional(text))
     ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, postcode) })
     ({ user => Some((user.nino.value, user.service, user.postcode)) }))
   }
@@ -231,7 +231,7 @@ object AgentsInvitationController {
       "nino" -> text.verifying(invalidNino),
       "service" -> optional(text).verifying(serviceChoice),
       "postcode" -> text.verifying(invalidPostcode))
-    ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, postcode) })
-    ({ user => Some((user.nino.value, user.service, user.postcode)) }))
+    ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, Option(postcode)) })
+    ({ user => Some((user.nino.value, user.service, user.postcode.getOrElse(""))) }))
   }
 }
