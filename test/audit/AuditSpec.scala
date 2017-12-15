@@ -48,7 +48,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val agentInvitaitonUserInput: AgentInvitationUserInput = AgentInvitationUserInput(Nino("WM123456C"), "AA1 1AA")
+      val agentInvitaitonUserInput: AgentInvitationUserInput = AgentInvitationUserInput(Nino("WM123456C"), Some("serviceName"), Some("AA1 1AA"))
       val invitationId: String = "1"
       val result: String = "Success"
 
@@ -71,7 +71,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("invitationId") shouldBe "1"
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
         sentEvent.detail("regimeId") shouldBe "WM123456C"
-        sentEvent.detail("regime") shouldBe "HMRC-MTD-IT"
+        sentEvent.detail("regime") shouldBe "serviceName"
 
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"
@@ -97,12 +97,14 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val clientResponse = "accepted"
       val invitationId: String = "1"
       val mtdItId: MtdItId = MtdItId("mtdItId")
+      val serviceName: String = "HMRC-MTD-IT"
 
       await(service.sendAgentInvitationResponse(
         invitationId,
         arn,
         clientResponse,
-        mtdItId,
+        mtdItId.value,
+        serviceName,
         agencyName)(
         hc,
         FakeRequest("GET", "/path")))
