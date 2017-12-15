@@ -15,6 +15,7 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 
 @(agencyName: String, service: String, continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
@@ -23,18 +24,18 @@
     <div class="transaction-banner--complete">
         <p class="heading-24--normal">@Messages("client-complete.title1")</p>
         <h1 class="transaction-banner__heading">@Messages("client-complete.title2", agencyName)</h1>
-        @if(service == "itsa") {
+        @if(service == Services.ITSA) {
             <p class="heading-24--normal">@Messages("client-complete-itsa.title3")</p>
             <span class="heading-24"><strong>@Messages("client-complete-itsa.title4")</strong></span>
         }
-        @if(service == "afi") {
+        @if(service == Services.AFI) {
             <p class="heading-24--normal">@Messages("client-complete-afi.title3")</p>
         }
     </div>
 
     <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
 
-    @if(service == "itsa") {
+    @if(service == Services.ITSA) {
         <p>@Messages("client-complete-itsa.p1")</p>
     }
 
