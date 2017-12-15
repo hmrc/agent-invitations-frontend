@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.Configuration
@@ -40,6 +41,7 @@ import scala.concurrent.Future
 @Singleton
 class AgentsInvitationController @Inject()(
                                             @Named("agent-invitations-frontend.base-url") externalUrl: String,
+                                            @Named("agent-services-account-frontend.external-url") asAccUrl: String,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
@@ -151,7 +153,8 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { arn =>
       request.session.get("invitationId") match {
         case Some(id) =>
-          Future successful Ok(invitation_sent(s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"))
+          val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
+          Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString))
         case None => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }

@@ -27,9 +27,9 @@ continue.button=Continue
 
 # Invitation Sent
 invitation-sent-link.title=Send your client this link
-invitation-sent.header=What happens next
-invitation-sent.description.advice.pt1=You need to <strong>share this link</strong> with the taxpayer you want to represent.
-invitation-sent.description.advice.pt2=They can then accept your invitation. HMRC will not do this for you.
+invitation-sent.header=What to do next
+invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client by copying and pasting it into an email.
+invitation-sent.description.advice.pt2=This is the only way your client can authorise you. <strong>HMRC will not share the link for you.</strong>
 invitation-sent.button=Return to your account
 
 # Not Enrolled
@@ -55,8 +55,9 @@ landing-page.decline=Decline invitation
 
 # Invitation Declined
 invitation-declined.title=You have declined this request
-invitation-declined.p1={0} will not be able to represent you with HMRC for Self Assessment.
-invitation-declined.p2=You can manage your tax agent relationships from your business tax account (BTA).
+invitation-declined-itsa.p1={0} will not be able to represent you with HMRC for Self Assessment.
+invitation-declined-afi.p1={0} will not be able to view your personal income records.
+invitation-declined-itsa.p2=You can manage your tax agent relationships from your business tax account (BTA).
 invitation-declined.button=Continue to your BTA
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
@@ -105,10 +106,11 @@ invitation-expired.description=This invitation is no longer available. Contact t
 # Complete
 client-complete.title1=You have confirmed
 client-complete.title2={0}
-client-complete.title3=as your agent for
-client-complete.title4=Online self assessment
+client-complete-itsa.title3=as your agent for
+client-complete-itsa.title4=Online self assessment
+client-complete-afi.title3=as your agent
 client-complete.sub-header=What happens next
-client-complete.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
+client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete.button=Continue to your Business Tax account
 
 # Form Errors

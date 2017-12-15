@@ -55,7 +55,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if invitation not found" in {
-      notFoundGetInvitationStub(mtdItId.value, invitationIdITSA)
+      notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       val result = await(connector
         .getInvitation(getITSAInvitation))
 
@@ -139,7 +139,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if AFI invitation not found" in {
-      notFoundGetInvitationStub(validNino.value, invitationIdAFI)
+      notFoundGetInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
       val result = await(invitationsConnector
         .getInvitation(getAFIInvitation))
       result.isEmpty shouldBe true
