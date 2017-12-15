@@ -95,6 +95,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA, "My Agency")
     }
 
@@ -109,6 +111,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", nino, serviceNI, "My Agency")
     }
 
@@ -521,6 +525,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.title3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.button"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
     }
 
     "return exception when agency name retrieval fails for ITSA" in {
@@ -542,6 +548,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.title3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.button"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
     }
 
     "return exception when agency name retrieval fails for AFI" in {

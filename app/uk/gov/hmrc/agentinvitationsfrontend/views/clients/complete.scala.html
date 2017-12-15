@@ -17,7 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 
-@(agencyName: String, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agencyName: String, service: String, continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None) {
 
@@ -40,6 +40,6 @@
     }
 
     <div class="form-group">
-        <a class="button" href="/account" id="continue" role="button">@Messages("client-complete.button")</a>
+        <a class="button" href="@continueUrl" id="continue" role="button">@Messages(s"client-complete-$service.button")</a>
     </div>
 }
