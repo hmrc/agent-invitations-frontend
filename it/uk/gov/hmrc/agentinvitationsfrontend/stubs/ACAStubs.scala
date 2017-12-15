@@ -192,10 +192,10 @@ trait ACAStubs {
         )))
   }
 
-  def acceptInvitationNoPermissionStub(clientId: String, invitationId: InvitationId): Unit = {
+  def acceptInvitationNoPermissionStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
     val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
-    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+    stubFor(put(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(
         aResponse()
           .withStatus(403).withBody(
