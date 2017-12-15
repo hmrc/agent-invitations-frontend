@@ -64,7 +64,7 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
     }
 
     "return no errors when unbinding the form" in {
-      val unboundForm = agentInvitationNinoForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"),None, ""))
+      val unboundForm = agentInvitationNinoForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"),None, None))
       unboundForm("nino") shouldBe "AE123456C"
     }
 

@@ -22,7 +22,7 @@ case class AgentInvitation(
   service: String,
   clientIdType: String,
   clientId: String,
-  clientPostcode: String)
+  clientPostcode: Option[String])
 
 object AgentInvitation {
   implicit val format = Json.format[AgentInvitation]
