@@ -27,9 +27,9 @@ continue.button=Continue
 
 # Invitation Sent
 invitation-sent-link.title=Send your client this link
-invitation-sent.header=What happens next
-invitation-sent.description.advice.pt1=You need to <strong>share this link</strong> with the taxpayer you want to represent.
-invitation-sent.description.advice.pt2=They can then accept your invitation. HMRC will not do this for you.
+invitation-sent.header=What to do next
+invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client by copying and pasting it into an email.
+invitation-sent.description.advice.pt2=This is the only way your client can authorise you. <strong>HMRC will not share the link for you.</strong>
 invitation-sent.button=Return to your account
 
 # Not Enrolled

@@ -16,6 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import play.api.i18n.Messages
 import play.api.mvc.{AnyContentAsEmpty, _}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -278,7 +279,10 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationId)}"))
+      checkHtmlResultWithBodyText(result, s"agent-services-account-frontend")
       verifyAuthoriseAttempt()
     }
 
