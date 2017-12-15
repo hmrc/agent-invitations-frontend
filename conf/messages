@@ -58,7 +58,8 @@ invitation-declined.title=You have declined this request
 invitation-declined-itsa.p1={0} will not be able to represent you with HMRC for Self Assessment.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
 invitation-declined-itsa.p2=You can manage your tax agent relationships from your business tax account (BTA).
-invitation-declined.button=Continue to your BTA
+invitation-declined-itsa.button=Continue to your BTA
+invitation-declined-afi.button=Continue to your PTA
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
 
@@ -111,7 +112,9 @@ client-complete-itsa.title4=Online self assessment
 client-complete-afi.title3=as your agent
 client-complete.sub-header=What happens next
 client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
-client-complete.button=Continue to your Business Tax account
+client-complete-itsa.button=Continue to your business tax account
+client-complete-afi.button=Continue to your personal tax account
+
 
 # Form Errors
 error.confirmInvite.invalid=You must choose an option
