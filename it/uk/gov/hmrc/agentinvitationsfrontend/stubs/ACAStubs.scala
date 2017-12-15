@@ -123,15 +123,15 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
-  def notFoundGetInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+  def notFoundGetInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(404)))
   }
 
-  def incorrectGetInvitationStub(clientId: String, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+  def incorrectGetInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(403).withBody(

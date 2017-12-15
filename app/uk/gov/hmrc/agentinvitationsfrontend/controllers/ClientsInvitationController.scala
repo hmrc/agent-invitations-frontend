@@ -68,7 +68,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
               for {
                 name <- invitationsService.getAgencyName(arn)
                 _ <- rejectInvitation(serviceName, invitationId, clientId)
-              } yield Ok(invitation_declined(name, invitationId))
+              } yield Ok(invitation_declined(name, invitationId, messageKey))
             }
           }
         }
