@@ -25,18 +25,18 @@ import play.api.libs.functional.syntax._
 
 import java.time.LocalDateTime
 
-case class Relationship(arn: Arn,
-                        service: String,
-                        clientId: String,
-                        relationshipStatus: Option[RelationshipStatus] = Some(RelationshipStatus.Active),
-                        startDate: LocalDateTime,
-                        endDate: Option[LocalDateTime],
-                        fromCesa: Option[Boolean] = Some(false))
+case class AfiRelationship(arn: Arn,
+                           service: String,
+                           clientId: String,
+                           relationshipStatus: Option[RelationshipStatus] = Some(RelationshipStatus.Active),
+                           startDate: LocalDateTime,
+                           endDate: Option[LocalDateTime],
+                           fromCesa: Option[Boolean] = Some(false))
 
-object Relationship {
-  implicit val relationshipFormat = Json.format[Relationship]
+object AfiRelationship {
+  implicit val relationshipFormat = Json.format[AfiRelationship]
 
-  def reads(readingFrom: URL): Reads[Relationship] = {
+  def reads(readingFrom: URL): Reads[AfiRelationship] = {
     implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(readingFrom, s))
     (
         (JsPath \ "arn").read[Arn] and
@@ -45,6 +45,6 @@ object Relationship {
         (JsPath \ "relationshipStatus").readNullable[RelationshipStatus] and
         (JsPath \ "startDate").read[LocalDateTime] and
         (JsPath \ "endDate").readNullable[LocalDateTime] and
-        (JsPath \ "fromCesa").readNullable[Boolean]) (Relationship.apply _)
+        (JsPath \ "fromCesa").readNullable[Boolean]) (AfiRelationship.apply _)
   }
 }

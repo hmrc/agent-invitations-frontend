@@ -1,0 +1,40 @@
+package uk.gov.hmrc.agentinvitationsfrontend.connectors
+
+
+import uk.gov.hmrc.agentinvitationsfrontend.models.AfiRelationship
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class AfiRelationshipConnectorISpec extends BaseISpec {
+
+  implicit val hc = HeaderCarrier()
+
+  val connector = app.injector.instanceOf[AfiRelationshipConnector]
+  val arn = Arn("TARN0000001")
+  val clientId = "AA123456A"
+  val afiService = "afi"
+
+  "Get client relationships" should {
+    "return existing ACTIVE relationships for specified clientId" in {
+      getActiveAfiRelationship(arn,afiService,clientId,false)
+
+      val result = await(connector.getAfiClientRelationships(afiService,clientId))
+//      result
+//
+//
+//      result.isInstanceOf[List[AfiRelationship]]
+//      result.head.clientId shouldBe clientId
+    }
+    "return NotFound Exception when ACTIVE relationship not found" in {
+      getNotFoundForAfiRelationship(afiService, clientId)
+
+      val result = await(connector.getAfiClientRelationships(afiService,clientId))
+
+    }
+  }
+
+
+}

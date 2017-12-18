@@ -23,13 +23,13 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 case class RadioConfirm(value: Option[Boolean])
 
 object RadioConfirm {
-  def invitationChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+  def deauthoriseRadioChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
     if (fieldValue.isDefined)
       Valid
     else
       Invalid(ValidationError("error.confirmResponse.invalid"))
   }
-  val confirmInvitationForm: Form[RadioConfirm] = Form[RadioConfirm](
+  val confirmDeauthoriseRadioForm: Form[RadioConfirm] = Form[RadioConfirm](
     mapping("confirmResponse" -> optional(boolean)
-      .verifying(invitationChoice))(RadioConfirm.apply)(RadioConfirm.unapply))
+      .verifying(deauthoriseRadioChoice))(RadioConfirm.apply)(RadioConfirm.unapply))
 }

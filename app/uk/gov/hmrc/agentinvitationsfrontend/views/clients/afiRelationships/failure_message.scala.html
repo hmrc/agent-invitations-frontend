@@ -14,7 +14,9 @@
  * limitations under the License.
  *@
 
-@()(implicit request: Request[_], messages: Messages)
+@import play.api.Configuration
+
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Hello from agent-fi-agent-frontend", bodyClasses = None) {
     <a>@messages("falure_message")</a>

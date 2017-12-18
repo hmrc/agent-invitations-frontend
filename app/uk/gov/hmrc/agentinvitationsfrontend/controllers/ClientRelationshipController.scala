@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named}
-
 import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -25,25 +24,27 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AfiRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.afiRelationships._
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.http.NotFoundException
-
 import scala.concurrent.Future
 
 class ClientRelationshipController @Inject()(
                                               @Named("agent-invitations-frontend.base-url") externalUrl: String,
                                               auditService: AuditService,
                                               afiRelationshipConnector: AfiRelationshipConnector,
-                                              val messagesApi: play.api.i18n.MessagesApi)(implicit val configuration: Configuration)
-  extends FrontendController with I18nSupport {
+                                              val messagesApi: play.api.i18n.MessagesApi,
+                                              val authConnector: AuthConnector)(implicit val configuration: Configuration)
+  extends FrontendController with I18nSupport with AuthActions {
 
   def afiDeauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
-      //implicit nino =>
-      afiRelationshipConnector.getAfiClientRelationships("afi", "AA123456Z").map { hasRelationships =>
-        Ok(client_ends_relationship(RadioConfirm.confirmInvitationForm))
-      }.recover {
-        case ex: NotFoundException => Redirect(routes.ClientRelationshipController.getClientEndsRelationshipNoAgentPage)
+      withAuthorisedAsClient("HMRC-NI","NINO"){ clientId =>
+        afiRelationshipConnector.getAfiClientRelationships("afi", clientId).map { hasRelationships =>
+          Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
+        }.recover {
+          case ex: NotFoundException => Redirect(routes.ClientRelationshipController.getClientEndsRelationshipNoAgentPage)
+        }
       }
   }
 
@@ -52,36 +53,29 @@ class ClientRelationshipController @Inject()(
       Future.successful(Ok(client_ends_relationship_no_agent()))
   }
 
-  def getErrorMessage: Action[AnyContent] = Action.async {
+  def getErrorMessage(): Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Ok(failure_message()))
   }
 
-
-  def testTerminate(): Action[AnyContent] = Action.async {
-    implicit request =>
-      //     Future.successful (Ok("aa"))
-      afiRelationshipConnector.afiTerminateAllClientIdRelationships("afi", "AA123456A").map {
-        case Ok => Ok("aa")
-        case _ => Ok("be")
-      }
+  def submitAfiDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
+      RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(client_ends_relationship(formWithErrors))
+        }, data => {
+          if (data.value.getOrElse(false))
+            afiRelationshipConnector.afiTerminateAllClientIdRelationships("afi", clientId).map {
+              case 200 => Ok(client_ends_relationship_ended())
+              case 404 => Logger.warn(s"Connector failed to terminate relationships for service: Afi, nino: SOMENINOHERE")//$nino.")
+                Redirect(routes.ClientRelationshipController.getErrorMessage())
+              case e => {println(e)
+                Ok("got here: ")
+              }
+            }
+          else Future successful Ok(client_cancelled_deauth())
+        }
+      )
+    }
   }
-
-
-//  def submitAfiDeauthoriseAll(): Action[AnyContent] = authoriseForAgentsForIndividuals { implicit request =>
-//    //implicit nino =>
-//    RadioConfirm.confirmInvitationForm.bindFromRequest().fold(
-//      formWithErrors => {
-//        Future successful Ok(client_ends_relationship(formWithErrors))
-//      }, data => {
-//        if (data.value.getOrElse(false)) //Ok("aa")
-//          afiRelationshipConnector.afiTerminateAllClientIdRelationships("afi", nino).map {
-//            case Ok => Ok(client_ends_relationship_ended())
-//            case NotFound => Logger.warn(s"Connector failed to terminate relationships for service: Afi, nino: SOMENINOHERE")//$nino.")
-//              Redirect(routes.ClientRelationshipController.getErrorMessage())
-//          }
-//        else Future successful Ok(client_cancelled_deauth())
-//      }
-//    )
-//  }
 }

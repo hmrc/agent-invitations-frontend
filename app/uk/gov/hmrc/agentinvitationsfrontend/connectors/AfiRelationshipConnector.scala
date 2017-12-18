@@ -16,20 +16,16 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.Reads
-import play.mvc.Result
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.models.Relationship
+import uk.gov.hmrc.agentinvitationsfrontend.models.AfiRelationship
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.http.{HttpResponse, HeaderCarrier}
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -40,26 +36,26 @@ class AfiRelationshipConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[List[Relationship]] = {
+  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[List[AfiRelationship]] = {
     getAfiRelationshipList(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
-  def afiTerminateAllClientIdRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def afiTerminateAllClientIdRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     afiTerminateAllClientRelationships(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
-  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[List[Relationship]] = {
+  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[List[AfiRelationship]] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = invitationUrl(location)
-      implicit val readsRelationship: Reads[Relationship] = Relationship.reads(url)
-      http.GET[List[Relationship]](url.toString)
+      implicit val readsRelationship: Reads[AfiRelationship] = AfiRelationship.reads(url)
+      http.GET[List[AfiRelationship]](url.toString)
     }
   }
 
-  def afiTerminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Result] = {
+  def afiTerminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = invitationUrl(location)
-      http.DELETE[Result](url.toString).map(response => response)
+      http.DELETE[HttpResponse](url.toString).map(_.status)
     }
   }
 

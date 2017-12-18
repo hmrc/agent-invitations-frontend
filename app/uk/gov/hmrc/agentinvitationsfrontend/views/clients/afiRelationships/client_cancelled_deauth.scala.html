@@ -17,13 +17,13 @@
 @import play.api.Configuration
 
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientCancelled.title"), bodyClasses = None) {
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientEndsRelationshipEnded.title"), bodyClasses = None) {
     <h1 class="heading-large">
-    @Messages("clientEndsRelationshipEnded.title")
+    @Messages("clientCancelled.title")
     </h1>
     <p>
-    @Messages("clientEndsRelationshipEnded.p1")
+    @Messages("clientCancelled.p1")
     </p>
 
     <a href="https://www.tax.service.gov.uk/personal-account" class="button" role="button" id="goToPtaButton">@Messages("common.pta")</a>

@@ -40,13 +40,10 @@ GET         /assets/*file                                               controll
 
 # Client Endpoints
 GET         /individual/manage-your-tax-agents/deauthorise-agent        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.afiDeauthoriseAllStart
-#POST       /individual/manage-your-tax-agents/deauthorise-agent/submit                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.submitAfiDeauthoriseAll
-GET         /testTerminate/terminated                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.testTerminate
+POST        /individual/manage-your-tax-agents/deauthorise-agent        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.submitAfiDeauthoriseAll()
+GET         /end-relationship-no-agent/                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.getClientEndsRelationshipNoAgentPage
 
-
-GET         /end-relationship-no-agent/noAgent                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.getClientEndsRelationshipNoAgentPage
-POST        /end-relationship-no-agent/                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.getClientEndsRelationshipNoAgentPage
-
+GET         /getErrorMessage/                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientRelationshipController.getErrorMessage
 
 
 
