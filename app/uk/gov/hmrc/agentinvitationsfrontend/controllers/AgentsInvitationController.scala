@@ -131,11 +131,8 @@ class AgentsInvitationController @Inject()(
       .createInvitation(arn, userInput)
       .map(invitation => {
         val id = extractInvitationId(invitation.selfUrl.toString)
-        if(invitation.service == "HMRC-MTD-IT") {
-          auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-        } else {
-          auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
-        }
+        if(invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
+        else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent).withSession(request.session + ("invitationId" -> id))
       })
       .recoverWith {
