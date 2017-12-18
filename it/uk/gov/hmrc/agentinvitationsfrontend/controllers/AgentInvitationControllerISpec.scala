@@ -153,7 +153,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"nino=${validNino.value}")
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Success", servicePIR)
+      verifyAgentClientInvitationSubmittedEvent(arn.value,validNino.value,"Not Required", servicePIR)
     }
 
     "return 200 for authorised Agent with no selected service and show error on the page" in {
@@ -216,7 +216,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
       verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
 
     "return 200 for authorised Agent with invalid postcode and redisplay form with error message" in {
@@ -228,7 +228,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
       verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientInvitationSubmitted)
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
 
     "return 303 for authorised Agent when client registration not found " in {
@@ -352,16 +352,17 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentClientInvitationSubmittedEvent(arn: String, nino: String, result: String, service: String): Unit = {
-    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientInvitationSubmitted,
+  def verifyAgentClientInvitationSubmittedEvent(arn: String, clientId: String, result: String, service: String): Unit = {
+    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       detail = Map(
-        "result" -> result,
+        "factCheck" -> result,
         "agentReferenceNumber" -> arn,
-        "regimeId" -> nino,
-        "regime" -> s"$service"
+        "clientIdType" -> "ni",
+        "clientId" -> clientId,
+        "service" -> s"$service"
       ),
       tags = Map(
-        "transactionName" -> "agent-client-invitation-submitted"
+        "transactionName" -> "Agent client service authorisation request created"
       )
     )
   }

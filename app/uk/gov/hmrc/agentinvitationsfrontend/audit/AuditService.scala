@@ -32,7 +32,7 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object AgentInvitationEvent extends Enumeration {
-  val AgentClientInvitationSubmitted, AgentClientInvitationResponse = Value
+  val AgentClientAuthorisationRequestCreated, AgentClientInvitationResponse = Value
   type AgentInvitationEvent = Value
 }
 
@@ -40,14 +40,15 @@ object AgentInvitationEvent extends Enumeration {
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
   def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationUserInput: AgentInvitationUserInput, result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
-    auditEvent(AgentInvitationEvent.AgentClientInvitationSubmitted, "agent-client-invitation-submitted",
+    auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
-        "result" -> result,
+        "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "regimeId" -> agentInvitationUserInput.nino.value,
-        "regime" -> agentInvitationUserInput.service.getOrElse(throw new IllegalStateException("No regime present"))
-      ) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
+        "clientIdType" -> "ni",
+        "clientId" -> agentInvitationUserInput.nino.value,
+        "service" -> agentInvitationUserInput.service.getOrElse(throw new IllegalStateException("No regime present"))
+      ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }
 

@@ -38,7 +38,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
 
   "auditEvent" should {
 
-    "send an AgentClientInvitationSubmitted Event" in {
+    "send an AgentClientAuthorisationRequestCreated Event" in {
       val mockConnector = mock[AuditConnector]
       val service = new AuditService(mockConnector)
 
@@ -65,18 +65,19 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         verify(mockConnector).sendEvent(captor.capture())(any[HeaderCarrier], any[ExecutionContext])
         val sentEvent = captor.getValue.asInstanceOf[DataEvent]
 
-        sentEvent.auditType shouldBe "AgentClientInvitationSubmitted"
+        sentEvent.auditType shouldBe "AgentClientAuthorisationRequestCreated"
         sentEvent.auditSource shouldBe "agent-invitations-frontend"
-        sentEvent.detail("result") shouldBe "Success"
+        sentEvent.detail("factCheck") shouldBe "Success"
         sentEvent.detail("invitationId") shouldBe "1"
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
-        sentEvent.detail("regimeId") shouldBe "WM123456C"
-        sentEvent.detail("regime") shouldBe "serviceName"
+        sentEvent.detail("clientIdType") shouldBe "ni"
+        sentEvent.detail("clientId") shouldBe "WM123456C"
+        sentEvent.detail("service") shouldBe "serviceName"
 
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
-        sentEvent.tags("transactionName") shouldBe "agent-client-invitation-submitted"
+        sentEvent.tags("transactionName") shouldBe "Agent client service authorisation request created"
         sentEvent.tags("path") shouldBe "/path"
         sentEvent.tags("X-Session-ID") shouldBe "dummy session id"
         sentEvent.tags("X-Request-ID") shouldBe "dummy request id"
