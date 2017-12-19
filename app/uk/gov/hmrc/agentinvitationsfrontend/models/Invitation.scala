@@ -51,5 +51,4 @@ object Invitation {
       (JsPath \ "_links" \ "accept").readNullable[URL] and
       (JsPath \ "_links" \ "reject").readNullable[URL])(Invitation.apply _)
   }
-
 }

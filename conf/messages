@@ -116,12 +116,6 @@ client-complete-itsa.button=Continue to your business tax account
 client-complete-afi.button=Continue to your personal tax account
 
 
-# Form Errors
-error.confirmInvite.invalid=You must choose an option
-error.confirmTerms.invalid=You must accept the terms to continue
-error.summary.heading=There is a problem
-error.prefix=Error:
-
 # Generic Issue Title
 client-problem.title=There is a problem
 
@@ -148,3 +142,24 @@ global.error.404.message=Please check that you have entered the correct web addr
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
 global.error.500.heading=Sorry, we’re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
+
+#Relationships
+#Client ends relationship
+clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
+clientEndsRelationshipEnded.title=Your income record is no longer visible to tax agents
+clientEndsRelationshipEnded.p1=If you want to allow an agent to view your record, ask them to send you an authorisation request.
+clientEndsRelationshipNoAgent.title=There is no authorised tax agent in our system
+clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your income record so we can''t remove authorisation.
+clientEndsRelationship.yes=Yes
+clientEndsRelationship.no=No
+clientCancelled.title=Your tax agent can still view your income record
+clientCancelled.p1=You can remove their authorisation at any time.
+
+#Common
+button.deauthorise=Continue
+error.confirmResponse.invalid=You must choose an option
+error.summary.heading=There is a problem
+error.confirmInvite.invalid=You must choose an option
+error.confirmTerms.invalid=You must accept the terms to continue
+error.prefix=Error:
+common.pta=Go to personal tax account
