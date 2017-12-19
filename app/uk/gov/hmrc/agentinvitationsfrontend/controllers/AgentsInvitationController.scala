@@ -23,7 +23,7 @@ import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation._
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
@@ -42,6 +42,8 @@ import scala.concurrent.Future
 class AgentsInvitationController @Inject()(
                                             @Named("agent-invitations-frontend.base-url") externalUrl: String,
                                             @Named("agent-services-account-frontend.external-url") asAccUrl: String,
+                                            @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
+                                            @Named("features.show-personal-income") showPersonalIncome: Boolean,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
@@ -49,6 +51,10 @@ class AgentsInvitationController @Inject()(
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
+
+  private val personalIncomeRecord = if(showPersonalIncome)
+    Seq("PERSONAL-INCOME-RECORD" -> Messages("select-service.personal-income-viewer")) else Seq.empty
+  private val mtdItId = if(showHmrcMtdIt) Seq("HMRC-MTD-IT" -> Messages("select-service.itsa")) else Seq.empty
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AgentsInvitationController.showNinoForm())
@@ -75,7 +81,8 @@ class AgentsInvitationController @Inject()(
   def selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       request.session.get("nino") match {
-        case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None))))
+        case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None)),
+            personalIncomeRecord ++ mtdItId))
         case _ => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
       }
     }
@@ -85,14 +92,14 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { arn =>
       agentInvitationServiceForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(select_service(formWithErrors))
+          Future successful Ok(select_service(formWithErrors, personalIncomeRecord ++ mtdItId))
         },
         userInput => {
           userInput.service match {
             case Some("HMRC-MTD-IT") => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               .withSession(request.session + ("service" -> "HMRC-MTD-IT"))
             case Some("PERSONAL-INCOME-RECORD") => createInvitation(arn, userInput)
-            case _ => Future successful Ok(select_service(agentInvitationServiceForm))
+            case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
           }
         }
       )
