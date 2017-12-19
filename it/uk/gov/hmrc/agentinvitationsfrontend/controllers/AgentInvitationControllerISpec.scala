@@ -290,7 +290,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return exception when no invitation id found in session" in {
+    "return exception when no invitation id and deadline found in session" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       an[RuntimeException] should be thrownBy await(result)
