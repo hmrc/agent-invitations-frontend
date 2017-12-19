@@ -1,7 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
-import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
@@ -81,7 +80,6 @@ trait ACAStubs {
           .withBody(
             s"""
                |{
-               |  "id" : "${invitationId.value}",
                |  "arn" : "${arn.value}",
                |  "service" : "$service",
                |  "clientId" : "$clientId",
@@ -97,17 +95,16 @@ trait ACAStubs {
                |}""".stripMargin)))
   }
 
-  def getExpiredInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+  def getExpiredInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, service: String, serviceIdentifier: String): Unit = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
           .withStatus(200)
           .withBody(
             s"""
                |{
-               |  "id" : "${invitationId.value}",
                |  "arn" : "${arn.value}",
-               |  "service" : "HMRC-MTD-IT",
+               |  "service" : "$service",
                |  "clientId" : "${clientId}",
                |  "status" : "Expired",
                |  "created" : "2017-7-31T23:22:50.971Z",
@@ -129,7 +126,6 @@ trait ACAStubs {
           .withBody(
             s"""
                |{
-               |  "id" : "${invitationId.value}",
                |  "arn" : "${arn.value}",
                |  "service" : "$service",
                |  "clientId" : "${clientId}",

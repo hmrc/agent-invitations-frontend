@@ -25,7 +25,6 @@ import uk.gov.hmrc.domain.SimpleObjectReads
 import play.api.libs.functional.syntax._
 
 case class Invitation(
-  id: String,
   arn: Arn,
   service: String,
   clientId: String,
@@ -43,7 +42,6 @@ object Invitation {
   def reads(readingFrom: URL): Reads[Invitation] = {
     implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(readingFrom, s))
     (
-      (JsPath \ "id").read[String] and
       (JsPath \ "arn").read[Arn] and
       (JsPath \ "service").read[String] and
       (JsPath \ "clientId").read[String] and
