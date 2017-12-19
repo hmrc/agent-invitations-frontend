@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -68,6 +69,7 @@ class ErrorHandler @Inject() ( val env: Environment,
         if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
         else s"$authenticationRedirect${request.uri}")
       case _: InsufficientEnrolments => Forbidden
+      case _: OtacFailureThrowable => Forbidden
       case _ => InternalServerError(error_template(
         Messages("global.error.500.title"),
         Messages("global.error.500.heading"),
