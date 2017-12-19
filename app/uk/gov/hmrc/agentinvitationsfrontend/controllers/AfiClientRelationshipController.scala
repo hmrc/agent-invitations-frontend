@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.http.NotFoundException
 import scala.concurrent.Future
 
-class ClientRelationshipController @Inject()(
+class AfiClientRelationshipController @Inject()(
                                               @Named("agent-invitations-frontend.base-url") externalUrl: String,
                                               auditService: AuditService,
                                               afiRelationshipConnector: AfiRelationshipConnector,
@@ -40,22 +40,11 @@ class ClientRelationshipController @Inject()(
   def afiDeauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsClient("HMRC-NI","NINO"){ clientId =>
-        afiRelationshipConnector.getAfiClientRelationships("afi", clientId).map { hasRelationships =>
-          Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
-        }.recover {
-          case ex: NotFoundException => Redirect(routes.ClientRelationshipController.getClientEndsRelationshipNoAgentPage)
+        afiRelationshipConnector.getAfiClientRelationships("afi", clientId).map {
+          case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
+          case None => Redirect(routes.AfiClientRelationshipController.getClientEndsRelationshipNoAgentPage)
         }
       }
-  }
-
-  def getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
-    implicit request =>
-      Future.successful(Ok(client_ends_relationship_no_agent()))
-  }
-
-  def getErrorMessage(): Action[AnyContent] = Action.async {
-    implicit request =>
-      Future.successful(Ok(failure_message()))
   }
 
   def submitAfiDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
@@ -68,14 +57,21 @@ class ClientRelationshipController @Inject()(
             afiRelationshipConnector.afiTerminateAllClientIdRelationships("afi", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
               case 404 => Logger.warn(s"Connector failed to terminate relationships for service: Afi, nino: SOMENINOHERE")//$nino.")
-                Redirect(routes.ClientRelationshipController.getErrorMessage())
-              case e => {println(e)
-                Ok("got here: ")
-              }
+                Redirect(routes.AfiClientRelationshipController.getErrorMessage())
             }
           else Future successful Ok(client_cancelled_deauth())
         }
       )
     }
+  }
+
+  def getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
+    implicit request =>
+      Future.successful(Ok(client_ends_relationship_no_agent()))
+  }
+
+  def getErrorMessage(): Action[AnyContent] = Action.async {
+    implicit request =>
+      Future.successful(Ok(failure_message()))
   }
 }

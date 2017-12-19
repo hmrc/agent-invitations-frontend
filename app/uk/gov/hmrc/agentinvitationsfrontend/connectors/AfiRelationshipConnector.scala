@@ -36,7 +36,7 @@ class AfiRelationshipConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[List[AfiRelationship]] = {
+  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[AfiRelationship]]] = {
     getAfiRelationshipList(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
@@ -44,11 +44,11 @@ class AfiRelationshipConnector @Inject()(
     afiTerminateAllClientRelationships(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
-  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[List[AfiRelationship]] = {
+  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[AfiRelationship]]] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = invitationUrl(location)
       implicit val readsRelationship: Reads[AfiRelationship] = AfiRelationship.reads(url)
-      http.GET[List[AfiRelationship]](url.toString)
+      http.GET[Option[List[AfiRelationship]]](url.toString)
     }
   }
 

@@ -29,7 +29,7 @@
 
     <h1 class="heading-large">@Messages("clientEndsRelationship.title")</h1>
 
-    @form(routes.ClientRelationshipController.submitAfiDeauthoriseAll()) {
+    @form(routes.AfiClientRelationshipController.submitAfiDeauthoriseAll()) {
         @inputRadioGroup(
             confirmForm("confirmResponse"),
             Seq(("true", Messages("clientEndsRelationship.yes")), ("false", Messages("clientEndsRelationship.no"))),
