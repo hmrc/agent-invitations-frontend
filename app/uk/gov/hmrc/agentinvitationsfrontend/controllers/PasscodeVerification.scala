@@ -40,7 +40,7 @@ class PasscodeVerification @Inject()(configuration: Configuration,
   lazy val passcodeEnabled: Boolean = configuration.getBoolean(passcodeEnabledKey).getOrElse(throwConfigNotFound(passcodeEnabledKey))
   lazy val passcodeRegime: String = configuration.getString(passcodeRegimeKey).getOrElse(throwConfigNotFound(passcodeRegimeKey))
   lazy val env: String = if (environment.mode.equals(Mode.Test)) "Test" else configuration.getString("run.mode").getOrElse("Dev")
-  lazy val verificationURL: String = configuration.getString(s"govuk-tax.$env.url.verification-frontend.redirect").getOrElse("")
+  lazy val verificationURL: String = configuration.getString(s"govuk-tax.$env.url.verification-frontend.redirect").getOrElse("/verification")
   lazy val logoutUrl = s"$verificationURL/otac/logout/$passcodeRegime"
 
   def loginUrl[A](request: Request[A]) = s"$verificationURL/otac/login${tokenQueryParam(request)}"

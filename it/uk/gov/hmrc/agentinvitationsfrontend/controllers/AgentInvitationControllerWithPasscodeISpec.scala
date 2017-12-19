@@ -64,7 +64,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       val request = FakeRequest("GET", "/agents/enter-nino?p=foo123")
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result)(timeout).get should be("/otac/login?p=foo123")
+      redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
       verifyAuthoriseAttempt()
     }
 
