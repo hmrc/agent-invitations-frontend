@@ -53,6 +53,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   protected def htmlEscapedMessage(key: String, args: Any*): String = HtmlFormat.escape(Messages(key, args: _*)).toString
 
+  protected def hasMessage(key: String, args: Any*): String = Messages(key, args: _*).toString
+
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
 }

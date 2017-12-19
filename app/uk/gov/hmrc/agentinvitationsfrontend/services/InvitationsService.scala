@@ -31,8 +31,6 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector) {
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
-
-    //TODO Handle No Postcode for AFI Journey
     val service = userInput.service.getOrElse(throw new Exception("Service is missing"))
     val agentInvitation = AgentInvitation(service, "ni", userInput.nino.value, userInput.postcode)
 
