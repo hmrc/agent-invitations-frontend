@@ -28,7 +28,7 @@ continue.button=Continue
 # Invitation Sent
 invitation-sent-link.title=Send your client this link
 invitation-sent.header=What to do next
-invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>
+invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>.
 invitation-sent.description.advice.pt2=Copy and paste the link into an email. If your client does not respond in time, you will need to request authorisation again and send them the new link.
 invitation-sent.description.advice.pt3=This is the only way your client can authorise you. <strong>HMRC will not share the link for you.</strong>
 invitation-sent.button=Return to your account
