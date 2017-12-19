@@ -22,25 +22,26 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
-import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector, OtacFailureThrowable}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.auth.otac.{Authorised, NoOtacTokenInSession, OtacAuthConnector, OtacFailureThrowable}
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthActions extends AuthorisedFunctions {
 
   val configuration: Configuration
+
   def otacAuthConnector: OtacAuthConnector
 
   private lazy val passcodeRegime: String = configuration.getString("passcodeAuthentication.regime").getOrElse("agent-fi-agent-frontend")
   private lazy val passcodeEnabled: Boolean = configuration.getBoolean("passcodeAuthentication.enabled").getOrElse(true)
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    withVerifiedPasscode(passcodeRegime, None) {
-      withEnrolledAsAgent {
-        case Some(arn) => body(Arn(arn))
-        case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
+    withEnrolledAsAgent {
+      case Some(arn) => withVerifiedPasscode(passcodeRegime) {
+        body(Arn(arn))
       }
+      case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
     }
 
   protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
@@ -79,12 +80,17 @@ trait AuthActions extends AuthorisedFunctions {
       }
   }
 
-  private def withVerifiedPasscode[T](serviceName: String, otacToken: Option[String])(body: => Future[T])
-                             (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[T] = {
-    if(passcodeEnabled) {
-      otacAuthConnector.authorise(serviceName, headerCarrier, otacToken).flatMap {
-        case Authorised => body
-        case otherResult => Future.failed(OtacFailureThrowable(otherResult))
+  private def withVerifiedPasscode[A, T](serviceName: String)(body: => Future[T])
+                                        (implicit request: Request[A], headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[T] = {
+    if (passcodeEnabled) {
+      request.session.get(SessionKeys.otacToken).fold[Future[T]](
+        Future.failed(OtacFailureThrowable(NoOtacTokenInSession))
+      ) {
+        otacToken =>
+          otacAuthConnector.authorise(serviceName, headerCarrier, Option(otacToken)).flatMap {
+            case Authorised => body
+            case otherResult => Future.failed(OtacFailureThrowable(otherResult))
+          }
       }
     } else {
       body
