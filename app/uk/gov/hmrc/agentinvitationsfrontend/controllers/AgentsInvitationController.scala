@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.http.Upstream4xxResponse
@@ -47,7 +48,8 @@ class AgentsInvitationController @Inject()(
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
-                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
+                                            val authConnector: AuthConnector,
+                                            val otacAuthConnector: OtacAuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._

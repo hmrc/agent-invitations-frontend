@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
+import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -43,7 +44,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
-                                            val authConnector: AuthConnector)(implicit val configuration: Configuration)
+                                            val authConnector: AuthConnector,
+                                            val otacAuthConnector: OtacAuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
@@ -85,7 +87,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
             arn =>
               invitationsService.getAgencyName(arn).map {
                 agencyName =>
-                auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", clientId, serviceName, agencyName)
+                  auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", clientId, serviceName, agencyName)
                   Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey))
               }
           }
@@ -101,20 +103,20 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-            withValidInvitation(clientId, invitationId, apiIdentifier) {
-              arn =>
-                confirmInvitationForm.bindFromRequest().fold(
-                  formWithErrors => {
-                    invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, messageKey)))
-                  }, data => {
-                    val result = if (data.value.getOrElse(false))
-                      Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
-                    else
-                      Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+          withValidInvitation(clientId, invitationId, apiIdentifier) {
+            arn =>
+              confirmInvitationForm.bindFromRequest().fold(
+                formWithErrors => {
+                  invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, messageKey)))
+                }, data => {
+                  val result = if (data.value.getOrElse(false))
+                                 Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+                               else
+                                 Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
 
-                    Future successful result
-                  })
-            }
+                  Future successful result
+                })
+          }
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
@@ -124,10 +126,10 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, (messageKey)) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-            withValidInvitation(clientId, invitationId, apiIdentifier) {
-              arn =>
-                invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, messageKey)))
-            }
+          withValidInvitation(clientId, invitationId, apiIdentifier) {
+            arn =>
+              invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, messageKey)))
+          }
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
@@ -136,7 +138,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
   def submitConfirmTerms(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-      withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier) {
             arn =>
               confirmTermsForm.bindFromRequest().fold(
@@ -144,19 +146,19 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
                   invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, messageKey)))
                 }, _ => {
                   acceptInvitation(serviceName, invitationId, clientId).map { _ =>
-                      Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
+                    Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
                   }
                 })
           }
-      }
-    case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        }
+      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
 
   def getCompletePage(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-      withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier).flatMap {
             case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name, messageKey, continueUrl)))
             case None => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -168,7 +170,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
             case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
               Redirect(routes.ClientsInvitationController.notFoundInvitation())
           }
-      }
+        }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
