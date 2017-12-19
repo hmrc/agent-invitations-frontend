@@ -4,7 +4,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
-class AgentServicesAccountConnectorISpec  extends BaseISpec {
+class AgentServicesAccountConnectorISpec extends BaseISpec {
 
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[AgentServicesAccountConnector]

@@ -18,8 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import java.net.URL
 
-import org.joda.time.DateTime
-import play.api.libs.json.{ JsPath, Reads }
+import org.joda.time.{DateTime, LocalDate}
+import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.SimpleObjectReads
 import play.api.libs.functional.syntax._
@@ -31,6 +31,7 @@ case class Invitation(
   status: String,
   created: DateTime,
   lastUpdated: DateTime,
+  expiryDate: LocalDate,
   selfUrl: URL,
   acceptUrl: Option[URL],
   rejectUrl: Option[URL])
@@ -47,9 +48,9 @@ object Invitation {
       (JsPath \ "status").read[String] and
       (JsPath \ "created").read[DateTime] and
       (JsPath \ "lastUpdated").read[DateTime] and
+      (JsPath \ "expiryDate").read[LocalDate] and
       (JsPath \ "_links" \ "self").read[URL] and
       (JsPath \ "_links" \ "accept").readNullable[URL] and
       (JsPath \ "_links" \ "reject").readNullable[URL])(Invitation.apply _)
   }
-
 }

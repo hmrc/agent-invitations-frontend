@@ -1,35 +1,36 @@
 # microservice specific routes
 
+# Invitations ---------------------------------------------------------------------------------------------------------
+
 # Agent Endpoints
-GET         /agents/                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
-GET         /agents/enter-nino                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showNinoForm
-POST        /agents/enter-nino                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
-GET         /agents/enter-postcode                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showPostcodeForm
-POST        /agents/enter-postcode                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
-GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
-GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
-POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
+GET         /agents/                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
+GET         /agents/enter-nino                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showNinoForm
+POST        /agents/enter-nino                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
+GET         /agents/enter-postcode                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showPostcodeForm
+POST        /agents/enter-postcode                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
+GET         /agents/invitation-sent                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
+GET         /agents/select-service                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
+POST        /agents/select-service                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
 
 # Error Agent Endpoints
-GET         /agents/not-enrolled                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
-GET         /agents/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
+GET         /agents/not-enrolled                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
+GET         /agents/not-matched                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
 
 # Client Endpoints
-GET         /:invitationId                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-POST        /:invitationId                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-GET         /accept-tax-agent-invitation/2/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-POST        /accept-tax-agent-invitation/2/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-GET         /accept-tax-agent-invitation/3/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-POST        /accept-tax-agent-invitation/3/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmTerms(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-GET         /accept-tax-agent-invitation/4/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getCompletePage(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-GET         /reject-tax-agent-invitation/1/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /:invitationId                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+POST        /:invitationId                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /accept-tax-agent-invitation/2/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmInvitation(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+POST        /accept-tax-agent-invitation/2/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmInvitation(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /accept-tax-agent-invitation/3/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+POST        /accept-tax-agent-invitation/3/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmTerms(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /accept-tax-agent-invitation/4/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getCompletePage(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /reject-tax-agent-invitation/1/:invitationId                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 
 # Error Client Endpoints
-GET         /not-signed-up/                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
-GET         /incorrect/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.incorrectInvitation
-GET         /not-found/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
-GET         /already-responded/                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
-GET         /expired/                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
+GET         /not-signed-up/                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
+GET         /incorrect/                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.incorrectInvitation
+GET         /not-found/                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
+GET         /already-responded/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
+GET         /expired/                                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
 
-GET         /assets/*file        controllers.Assets.at(path="/public", file)
-
+GET         /assets/*file                                               controllers.Assets.at(path="/public", file)

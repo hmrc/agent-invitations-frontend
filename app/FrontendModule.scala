@@ -51,6 +51,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-personal-income")
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
+    bindBaseUrl("agent-fi-relationship")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
     bindServiceProperty("agent-services-account-frontend.external-url")

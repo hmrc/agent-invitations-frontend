@@ -140,8 +140,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent with valid nino and Personal Income Record service, redirect to invitation sent page" in {
-      createInvitationStubForPIR(arn, mtdItId.value, invitationId, validNino.value, "", servicePIR, "NI")
-      getInvitationStub(arn, mtdItId.value, invitationId, servicePIR, "NI")
+      createInvitationStubForPIR(arn, validNino.value, invitationId, validNino.value, servicePIR, "NI")
+      getInvitationStub(arn, validNino.value, invitationId, servicePIR, "NI")
 
       val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(servicePIR), None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*)
@@ -274,18 +274,21 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val invitationSent = controller.invitationSent()
 
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3"), arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationId)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       verifyAuthoriseAttempt()
     }
 
-    "return exception when no invitation id found in session" in {
+    "return exception when no invitation id and deadline found in session" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       an[RuntimeException] should be thrownBy await(result)

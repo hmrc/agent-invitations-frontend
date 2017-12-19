@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
+import org.joda.time.format.DateTimeFormat
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
@@ -111,7 +111,6 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { arn =>
       val maybeNino = request.session.get("nino")
       val maybeService = request.session.get("service")
-
       (maybeNino, maybeService) match {
         case (Some(nino), Some(service)) =>
           Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), None))))
@@ -140,7 +139,9 @@ class AgentsInvitationController @Inject()(
         val id = extractInvitationId(invitation.selfUrl.toString)
         if(invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
         else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
-        Redirect(routes.AgentsInvitationController.invitationSent).withSession(request.session + ("invitationId" -> id))
+        Redirect(routes.AgentsInvitationController.invitationSent).withSession(
+          request.session + ("invitationId" -> id) + ("deadline" -> invitation.expiryDate.toString(DateTimeFormat.longDate()))
+        )
       })
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
@@ -159,11 +160,11 @@ class AgentsInvitationController @Inject()(
 
   def invitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      request.session.get("invitationId") match {
-        case Some(id) =>
+      (request.session.get("invitationId"), request.session.get("deadline")) match {
+        case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString))
-        case None => throw new RuntimeException("User attempted to browse to invitationSent")
+          Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
+        case _ => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
   }
