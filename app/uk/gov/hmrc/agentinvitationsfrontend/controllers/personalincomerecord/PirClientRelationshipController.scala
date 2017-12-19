@@ -14,35 +14,35 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord
 
 import javax.inject.{Inject, Named}
-import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AfiRelationshipConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.afiRelationships._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.pirRelationships._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.http.NotFoundException
 import scala.concurrent.Future
 
-class AfiClientRelationshipController @Inject()(
-                                              @Named("agent-invitations-frontend.base-url") externalUrl: String,
-                                              auditService: AuditService,
-                                              afiRelationshipConnector: AfiRelationshipConnector,
-                                              val messagesApi: play.api.i18n.MessagesApi,
-                                              val authConnector: AuthConnector)(implicit val configuration: Configuration)
+class PirClientRelationshipController @Inject()(
+                                                 @Named("agent-invitations-frontend.base-url") externalUrl: String,
+                                                 auditService: AuditService,
+                                                 afiRelationshipConnector: PirRelationshipConnector,
+                                                 val messagesApi: play.api.i18n.MessagesApi,
+                                                 val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   def afiDeauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsClient("HMRC-NI","NINO"){ clientId =>
-        afiRelationshipConnector.getAfiClientRelationships("afi", clientId).map {
+        afiRelationshipConnector.getAfiClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
-          case None => Redirect(routes.AfiClientRelationshipController.getClientEndsRelationshipNoAgentPage)
+          case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
         }
       }
   }
@@ -54,15 +54,20 @@ class AfiClientRelationshipController @Inject()(
           Future successful Ok(client_ends_relationship(formWithErrors))
         }, data => {
           if (data.value.getOrElse(false))
-            afiRelationshipConnector.afiTerminateAllClientIdRelationships("afi", clientId).map {
+            afiRelationshipConnector.afiTerminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
-              case 404 => Logger.warn(s"Connector failed to terminate relationships for service: Afi, nino: SOMENINOHERE")//$nino.")
-                Redirect(routes.AfiClientRelationshipController.getErrorMessage())
+              case 404 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
+                Redirect(routes.PirClientRelationshipController.getErrorMessage)
             }
-          else Future successful Ok(client_cancelled_deauth())
+          else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination))
         }
       )
     }
+  }
+
+  def getClientDeclinedRelationshipTermination: Action[AnyContent] = Action.async {
+    implicit request =>
+      Future.successful(Ok(client_cancelled_deauth()))
   }
 
   def getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {

@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm.confirmDeauthoriseRadioForm
 import uk.gov.hmrc.play.test.UnitSpec
 
-class ClientAfiRelationshipFormSpec extends UnitSpec {
+class ClientPirRelationshipFormSpec extends UnitSpec {
 
   "confirmDeauthoriseRadioForm" should {
     "return no error for the input - Yes" in {

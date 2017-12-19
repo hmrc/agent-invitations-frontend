@@ -1,0 +1,10 @@
+# Relationships -------------------------------------------------------------------------------------------------------
+
+# Client Endpoints
+GET         /individual/manage-your-tax-agents/deauthorise-agent                @uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController.afiDeauthoriseAllStart
+GET         /end-relationship-no-agent/                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage
+POST        /individual/manage-your-tax-agents/deauthorise-agent/accept         @uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController.submitAfiDeauthoriseAll()
+GET         /individual/manage-your-tax-agents/deauthorise-agent/decline        @uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController.getClientDeclinedRelationshipTermination
+
+# Error
+GET         /getErrorMessage/                                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController.getErrorMessage

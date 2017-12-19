@@ -22,21 +22,21 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.Reads
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.models.AfiRelationship
+import uk.gov.hmrc.agentinvitationsfrontend.models.PirRelationship
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.http.{HttpResponse, HeaderCarrier}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AfiRelationshipConnector @Inject()(
+class PirRelationshipConnector @Inject()(
                                           @Named("agent-fi-relationship-baseUrl") baseUrl: URL,
                                           http: HttpGet with HttpPost with HttpPut with HttpDelete,
                                           metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[AfiRelationship]]] = {
+  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[PirRelationship]]] = {
     getAfiRelationshipList(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
@@ -44,11 +44,11 @@ class AfiRelationshipConnector @Inject()(
     afiTerminateAllClientRelationships(afiDeauthServiceClientIdUrl(service, clientId))
   }
 
-  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[AfiRelationship]]] = {
+  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[PirRelationship]]] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = invitationUrl(location)
-      implicit val readsRelationship: Reads[AfiRelationship] = AfiRelationship.reads(url)
-      http.GET[Option[List[AfiRelationship]]](url.toString)
+      implicit val readsRelationship: Reads[PirRelationship] = PirRelationship.reads(url)
+      http.GET[Option[List[PirRelationship]]](url.toString)
     }
   }
 

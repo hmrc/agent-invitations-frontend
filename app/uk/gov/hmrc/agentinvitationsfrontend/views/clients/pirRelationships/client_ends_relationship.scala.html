@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.routes
 @import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary, inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
@@ -29,7 +29,7 @@
 
     <h1 class="heading-large">@Messages("clientEndsRelationship.title")</h1>
 
-    @form(routes.AfiClientRelationshipController.submitAfiDeauthoriseAll()) {
+    @form(routes.PirClientRelationshipController.submitAfiDeauthoriseAll()) {
         @inputRadioGroup(
             confirmForm("confirmResponse"),
             Seq(("true", Messages("clientEndsRelationship.yes")), ("false", Messages("clientEndsRelationship.no"))),
