@@ -142,7 +142,7 @@ class AgentsInvitationController @Inject()(
         if(invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
         else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent).withSession(
-          request.session + ("invitationId" -> id) + ("deadline" -> invitation.expiryDate.toString(DateTimeFormat.longDate()))
+          request.session + ("invitationId" -> id) + ("deadline" -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY")))
         )
       })
       .recoverWith {
