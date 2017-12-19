@@ -37,24 +37,24 @@ class PirClientRelationshipController @Inject()(
                                                  val authConnector: AuthConnector)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
-  def afiDeauthoriseAllStart(): Action[AnyContent] = Action.async {
+  def deauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsClient("HMRC-NI","NINO"){ clientId =>
-        afiRelationshipConnector.getAfiClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
+        afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
           case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
         }
       }
   }
 
-  def submitAfiDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
+  def submitDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
       RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(client_ends_relationship(formWithErrors))
         }, data => {
           if (data.value.getOrElse(false))
-            afiRelationshipConnector.afiTerminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
+            afiRelationshipConnector.terminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
               case 404 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
                 Redirect(routes.PirClientRelationshipController.getErrorMessage)

@@ -17,7 +17,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
   val afiService = "PERSONAL-INCOME-RECORD"
 
   "afiDeauthoriseAllStart" should {
-    val afiDeauthoriseAllStart: Action[AnyContent] = controller.afiDeauthoriseAllStart()
+    val afiDeauthoriseAllStart: Action[AnyContent] = controller.deauthoriseAllStart()
 
     "receive Some active relationships for given clientId" in {
       getActiveAfiRelationship(arn, afiService, clientId, false)
@@ -42,7 +42,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
   }
 
   "submitAfiDeauthoriseAll" should {
-    val submitAfiDeauthoriseAll: Action[AnyContent] = controller.submitAfiDeauthoriseAll()
+    val submitAfiDeauthoriseAll: Action[AnyContent] = controller.submitDeauthoriseAll()
 
     "Happy path, client terminates all relationships" in {
       terminateAfiRelationshipsForClientId(afiService, clientId)

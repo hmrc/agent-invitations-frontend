@@ -18,7 +18,7 @@ class PirRelationshipConnectorISpec extends BaseISpec {
     "return existing ACTIVE relationships for specified clientId" in {
       getActiveAfiRelationship(arn, afiService, clientId, false)
 
-      val result = await(connector.getAfiClientRelationships(afiService, clientId))
+      val result = await(connector.getClientRelationships(afiService, clientId))
 
       result.isDefined shouldBe true
       result.get.isInstanceOf[List[PirRelationship]] shouldBe true
@@ -27,7 +27,7 @@ class PirRelationshipConnectorISpec extends BaseISpec {
     "return NotFound Exception when ACTIVE relationship not found" in {
       getNotFoundForAfiRelationship(afiService, clientId)
 
-      val result = await(connector.getAfiClientRelationships(afiService, clientId))
+      val result = await(connector.getClientRelationships(afiService, clientId))
 
       result.isDefined shouldBe false
       result shouldBe None
@@ -38,7 +38,7 @@ class PirRelationshipConnectorISpec extends BaseISpec {
     "return 200, terminating all active relationships for given clientId" in {
       terminateAfiRelationshipsForClientId(afiService, clientId)
 
-      val result = await(connector.afiTerminateAllClientIdRelationships(afiService, clientId))
+      val result = await(connector.terminateAllClientIdRelationships(afiService, clientId))
 
       result shouldBe 200
     }
@@ -46,7 +46,7 @@ class PirRelationshipConnectorISpec extends BaseISpec {
       failedTerminationAfiRelationshipsForClientId(afiService, clientId)
 
       intercept[NotFoundException] {
-        await(connector.afiTerminateAllClientIdRelationships(afiService, clientId))
+        await(connector.terminateAllClientIdRelationships(afiService, clientId))
       }
       verifyTerminateAfiRelationshipsAttempt(afiService, clientId)
     }

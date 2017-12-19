@@ -36,31 +36,31 @@ class PirRelationshipConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAfiClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[PirRelationship]]] = {
-    getAfiRelationshipList(afiDeauthServiceClientIdUrl(service, clientId))
+  def getClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[PirRelationship]]] = {
+    getRelationshipList(deauthServiceClientIdUrl(service, clientId))
   }
 
-  def afiTerminateAllClientIdRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    afiTerminateAllClientRelationships(afiDeauthServiceClientIdUrl(service, clientId))
+  def terminateAllClientIdRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    terminateAllClientRelationships(deauthServiceClientIdUrl(service, clientId))
   }
 
-  def getAfiRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[PirRelationship]]] = {
+  def getRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[PirRelationship]]] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
-      val url = invitationUrl(location)
+      val url = craftUrl(location)
       implicit val readsRelationship: Reads[PirRelationship] = PirRelationship.reads(url)
       http.GET[Option[List[PirRelationship]]](url.toString)
     }
   }
 
-  def afiTerminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def terminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
-      val url = invitationUrl(location)
+      val url = craftUrl(location)
       http.DELETE[HttpResponse](url.toString).map(_.status)
     }
   }
 
-  private def afiDeauthServiceClientIdUrl(service: String, clientId: String): String =
+  private def deauthServiceClientIdUrl(service: String, clientId: String): String =
     s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"
 
-  private def invitationUrl(location: String) = new URL(baseUrl, location)
+  private def craftUrl(location: String) = new URL(baseUrl, location)
 }
