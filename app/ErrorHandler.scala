@@ -68,8 +68,14 @@ class ErrorHandler @Inject() ( val env: Environment,
       case _: NoActiveSession => toGGLogin(
         if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
         else s"$authenticationRedirect${request.uri}")
-      case _: InsufficientEnrolments => Forbidden
-      case _: OtacFailureThrowable => Forbidden
+      case _: InsufficientEnrolments => Forbidden(error_template(
+        Messages("global.error.403.title"),
+        Messages("global.error.403.heading"),
+        Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+      case _: OtacFailureThrowable => Forbidden(error_template(
+        Messages("global.error.passcode.title"),
+        Messages("global.error.passcode.heading"),
+        Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
       case _ => InternalServerError(error_template(
         Messages("global.error.500.title"),
         Messages("global.error.500.heading"),
