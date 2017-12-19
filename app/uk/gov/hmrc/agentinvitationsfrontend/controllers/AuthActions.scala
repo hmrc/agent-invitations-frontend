@@ -16,29 +16,22 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import play.api.Configuration
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
-import uk.gov.hmrc.auth.otac.{Authorised, NoOtacTokenInSession, OtacAuthConnector, OtacFailureThrowable}
-import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthActions extends AuthorisedFunctions {
 
-  val configuration: Configuration
-
-  def otacAuthConnector: OtacAuthConnector
-
-  private lazy val passcodeRegime: String = configuration.getString("passcodeAuthentication.regime").getOrElse("agent-fi-agent-frontend")
-  private lazy val passcodeEnabled: Boolean = configuration.getBoolean("passcodeAuthentication.enabled").getOrElse(true)
+  def withVerifiedPasscode: PasscodeVerification
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     withEnrolledAsAgent {
-      case Some(arn) => withVerifiedPasscode(passcodeRegime) {
+      case Some(arn) => withVerifiedPasscode {
         body(Arn(arn))
       }
       case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
@@ -78,22 +71,5 @@ trait AuthActions extends AuthorisedFunctions {
 
         body(id)
       }
-  }
-
-  private def withVerifiedPasscode[A, T](serviceName: String)(body: => Future[T])
-                                        (implicit request: Request[A], headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[T] = {
-    if (passcodeEnabled) {
-      request.session.get(SessionKeys.otacToken).fold[Future[T]](
-        Future.failed(OtacFailureThrowable(NoOtacTokenInSession))
-      ) {
-        otacToken =>
-          otacAuthConnector.authorise(serviceName, headerCarrier, Option(otacToken)).flatMap {
-            case Authorised => body
-            case otherResult => Future.failed(OtacFailureThrowable(otherResult))
-          }
-      }
-    } else {
-      body
-    }
   }
 }
