@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
 import uk.gov.hmrc.domain.Nino
