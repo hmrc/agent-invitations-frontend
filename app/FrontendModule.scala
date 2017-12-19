@@ -15,14 +15,15 @@
  */
 
 import java.net.URL
-import javax.inject.{ Inject, Provider, Singleton }
+import javax.inject.{Inject, Provider, Singleton}
 
 import com.google.inject.AbstractModule
-import com.google.inject.name.{ Named, Names }
+import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
-import play.api.{ Configuration, Environment, Logger }
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.FrontendAuthConnector
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -47,16 +48,20 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[HttpGet]).to(classOf[HttpVerbs])
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
-    bindBooleanProperty("features.show-hmrc-mtd-it")
-    bindBooleanProperty("features.show-personal-income")
+    bind(classOf[OtacAuthConnector]).to(classOf[FrontendAuthConnector])
+
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("agent-fi-relationship")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+
     bindServiceProperty("agent-services-account-frontend.external-url")
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.base-url")
+
+    bindBooleanProperty("features.show-hmrc-mtd-it")
+    bindBooleanProperty("features.show-personal-income")
   }
 
   private def bindBaseUrl(serviceName: String) =
