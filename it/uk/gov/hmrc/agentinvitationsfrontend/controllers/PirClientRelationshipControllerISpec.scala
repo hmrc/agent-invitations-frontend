@@ -35,7 +35,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user is not logged in" in {
       an[InsufficientEnrolments] shouldBe thrownBy {
-        await(afiDeauthoriseAllStart(authenticated(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
+        await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       }
       verifyAuthoriseAttempt()
     }
@@ -70,7 +70,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user is not logged in" in {
       an[InsufficientEnrolments] shouldBe thrownBy {
-        await(submitAfiDeauthoriseAll(authenticated(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
+        await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       }
       verifyAuthoriseAttempt()
     }

@@ -37,22 +37,38 @@ trait AuthActions extends AuthorisedFunctions {
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode(passcodeRegime, None) {
-      withEnrolledFor("HMRC-AS-AGENT", "AgentReferenceNumber") {
+      withEnrolledAsAgent {
         case Some(arn) => body(Arn(arn))
         case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
       }
     }
 
   protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    withEnrolledFor(serviceName, identifierKey) {
+    withEnrolledAsClient(serviceName, identifierKey) {
       case Some(clientId) => body(clientId)
       case None => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
     }
 
-  protected def withEnrolledFor[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+    authorised(
+      Enrolment("HMRC-AS-AGENT")
+        and AuthProviders(GovernmentGateway))
+      .retrieve(authorisedEnrolments) { enrolments =>
+        val id = for {
+          enrolment <- enrolments.getEnrolment("HMRC-AS-AGENT")
+          identifier <- enrolment.getIdentifier("AgentReferenceNumber")
+        } yield identifier.value
+
+        body(id)
+      }
+  }
+
+  protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
       Enrolment(serviceName)
-        and AuthProviders(GovernmentGateway))
+        and AuthProviders(GovernmentGateway)
+        and ConfidenceLevel.L200
+    )
       .retrieve(authorisedEnrolments) { enrolments =>
         val id = for {
           enrolment <- enrolments.getEnrolment(serviceName)

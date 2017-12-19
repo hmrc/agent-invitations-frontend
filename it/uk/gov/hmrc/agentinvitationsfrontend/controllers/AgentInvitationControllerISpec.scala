@@ -333,14 +333,14 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
       an[InsufficientEnrolments] shouldBe thrownBy {
-        await(action(authenticated(request, Enrolment("", "", ""))))
+        await(action(authenticatedClient(request, Enrolment("", "", ""))))
       }
       verifyAuthoriseAttempt()
     }
 
     "return 303 for no Agent and redirected to Login Page" in {
       an[InsufficientEnrolments] shouldBe thrownBy {
-        await(action(authenticated(request, Enrolment("OtherEnrolment", "Key", "Value"))))
+        await(action(authenticatedClient(request, Enrolment("OtherEnrolment", "Key", "Value"))))
       }
       verifyAuthoriseAttempt()
     }

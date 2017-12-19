@@ -10,13 +10,36 @@ trait AuthStubs {
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
-  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticated(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
+  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
 
-  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticated(request, Enrolment("HMRC-NI", "NINO", clientId))
+  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId))
 
-  def authenticated[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
+  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
+    givenAuthorisedFor(
+      s"""
+         |{
+         |  "authorise": [
+         |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
+         |    { "authProviders": ["GovernmentGateway"] },
+         |    {"confidenceLevel":200}
+         |  ],
+         |  "retrieve":["authorisedEnrolments"]
+         |}
+           """.stripMargin,
+      s"""
+         |{
+         |"authorisedEnrolments": [
+         |  { "key":"${enrolment.serviceName}", "identifiers": [
+         |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
+         |  ]}
+         |]}
+          """.stripMargin)
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+  }
+
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
