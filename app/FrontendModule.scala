@@ -47,7 +47,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[HttpGet]).to(classOf[HttpVerbs])
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
-
+    bindBooleanProperty("features.show-hmrc-mtd-it")
+    bindBooleanProperty("features.show-personal-income")
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("agent-fi-relationship")
@@ -78,6 +79,14 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
   private class ServicePropertyProvider(propertyName: String) extends Provider[String] {
     override lazy val get = getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
+  }
+
+  private def bindBooleanProperty(propertyName: String) =
+    bind(classOf[Boolean]).annotatedWith(Names.named(propertyName)).toProvider(new BooleanPropertyProvider(propertyName))
+
+  private class BooleanPropertyProvider(confKey: String) extends Provider[Boolean] {
+    override lazy val get: Boolean = configuration.getBoolean(confKey)
+      .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 }
 

@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
-@(agentInvitationsForm: Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@(agentInvitationsForm: Form[AgentInvitationUserInput], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("select-service.title"), bodyClasses = None) {
 
@@ -33,7 +33,7 @@
   <div class="form-group">
   @inputRadioGroup(
    agentInvitationsForm("service"),
-   Seq("PERSONAL-INCOME-RECORD" -> Messages("select-service.personal-income-viewer"), "HMRC-MTD-IT" -> Messages("select-service.itsa")),
+   services,
    '_label -> Messages("select-service.label"),
    '_legendClass -> "h2-heading",
    '_groupDivClass -> "form-group soft--ends",

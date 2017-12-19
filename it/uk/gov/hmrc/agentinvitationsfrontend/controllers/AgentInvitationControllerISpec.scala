@@ -16,9 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import org.joda.time.LocalDate
-import play.api.i18n.Messages
-import play.api.mvc.{AnyContentAsEmpty, _}
+import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
