@@ -23,11 +23,10 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.pirRelationships._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
@@ -38,12 +37,12 @@ class PirClientRelationshipController @Inject()(
                                                  afiRelationshipConnector: PirRelationshipConnector,
                                                  val messagesApi: play.api.i18n.MessagesApi,
                                                  val authConnector: AuthConnector,
-                                                 val otacAuthConnector: OtacAuthConnector)(implicit val configuration: Configuration)
+                                                 val withVerifiedPasscode: PasscodeVerification)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   def deauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
-      withAuthorisedAsClient("HMRC-NI","NINO"){ clientId =>
+      withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
         afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
           case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)

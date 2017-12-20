@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.http.Upstream4xxResponse
@@ -49,14 +48,14 @@ class AgentsInvitationController @Inject()(
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
                                             val authConnector: AuthConnector,
-                                            val otacAuthConnector: OtacAuthConnector)(implicit val configuration: Configuration)
+                                            val withVerifiedPasscode: PasscodeVerification)(implicit val configuration: Configuration)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
 
-  private val personalIncomeRecord = if(showPersonalIncome)
+  private val personalIncomeRecord = if (showPersonalIncome)
     Seq("PERSONAL-INCOME-RECORD" -> Messages("select-service.personal-income-viewer")) else Seq.empty
-  private val mtdItId = if(showHmrcMtdIt) Seq("HMRC-MTD-IT" -> Messages("select-service.itsa")) else Seq.empty
+  private val mtdItId = if (showHmrcMtdIt) Seq("HMRC-MTD-IT" -> Messages("select-service.itsa")) else Seq.empty
 
   def agentsRoot: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AgentsInvitationController.showNinoForm())
@@ -84,7 +83,7 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { arn =>
       request.session.get("nino") match {
         case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None)),
-            personalIncomeRecord ++ mtdItId))
+          personalIncomeRecord ++ mtdItId))
         case _ => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
       }
     }
@@ -139,7 +138,7 @@ class AgentsInvitationController @Inject()(
       .createInvitation(arn, userInput)
       .map(invitation => {
         val id = extractInvitationId(invitation.selfUrl.toString)
-        if(invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
+        if (invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
         else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent).withSession(
           request.session + ("invitationId" -> id) + ("deadline" -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY")))
