@@ -170,3 +170,4 @@ error.confirmInvite.invalid=You must choose an option
 error.confirmTerms.invalid=You must accept the terms to continue
 error.prefix=Error:
 common.pta=Go to personal tax account
+failure_message=Sorry we are experiencing technical difficulties
