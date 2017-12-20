@@ -163,6 +163,8 @@ clientCancelled.title=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
 
 #Common
+error.terminate.title=Sorry, we are experiencing technical difficulties
+error.termination.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 button.deauthorise=Continue
 error.confirmResponse.invalid=You must choose an option
 error.summary.heading=There is a problem
