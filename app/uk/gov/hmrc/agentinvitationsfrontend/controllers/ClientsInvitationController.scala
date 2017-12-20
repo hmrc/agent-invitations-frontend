@@ -73,6 +73,12 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
               } yield Ok(invitation_declined(name, invitationId, messageKey, continueUrl))
             }
           }
+        }.recoverWith {
+          case _: InsufficientEnrolments =>
+            Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
+          case _: InsufficientConfidenceLevel =>
+            Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
