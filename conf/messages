@@ -161,11 +161,11 @@ clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
 clientCancelled.title=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
-
-#Common
-error.terminate.404.heading=Sorry, we’re experiencing technical difficulties
+error.terminate.404.heading=Sorry, we’'re experiencing technical difficulties
 error.terminate.404.title=Sorry, we are experiencing technical difficulties
 error.terminate.404.message=Your income record is still visible to tax agents. Please try again in a few minutes.
+
+#Common
 button.deauthorise=Continue
 error.confirmResponse.invalid=You must choose an option
 error.summary.heading=There is a problem
