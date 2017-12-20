@@ -61,8 +61,8 @@ class PirClientRelationshipController @Inject()(
             afiRelationshipConnector.terminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
               case 404 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
-                Ok(error_template(Messages("error.terminate.title"),
-                  Messages("global.error.500.heading"), Messages("error.termination.message")))
+                Ok(error_template(Messages("error.terminate.404.title"),
+                  Messages("error.terminate.404.heading"), Messages("error.terminate.404.message")))
             }
           else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination))
         }

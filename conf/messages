@@ -163,8 +163,9 @@ clientCancelled.title=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
 
 #Common
-error.terminate.title=Sorry, we are experiencing technical difficulties
-error.termination.message=Your income record is still visible to tax agents. Please try again in a few minutes.
+error.terminate.404.heading=Sorry, we’re experiencing technical difficulties
+error.terminate.404.title=Sorry, we are experiencing technical difficulties
+error.terminate.404.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 button.deauthorise=Continue
 error.confirmResponse.invalid=You must choose an option
 error.summary.heading=There is a problem
@@ -172,4 +173,3 @@ error.confirmInvite.invalid=You must choose an option
 error.confirmTerms.invalid=You must accept the terms to continue
 error.prefix=Error:
 common.pta=Go to personal tax account
-failure_message=Sorry we are experiencing technical difficulties
