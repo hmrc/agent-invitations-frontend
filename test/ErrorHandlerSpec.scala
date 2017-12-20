@@ -20,7 +20,8 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.auth.core.MissingBearerToken
+import uk.gov.hmrc.auth.core.{InsufficientEnrolments, MissingBearerToken}
+import uk.gov.hmrc.auth.otac.{NoOtacTokenInSession, OtacFailureThrowable}
 import uk.gov.hmrc.http.BadGatewayException
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -38,6 +39,23 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
       status(result) shouldBe INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some(HTML)
       checkIncludesMessages(result, "global.error.500.title", "global.error.500.heading", "global.error.500.message")
+    }
+
+    "error occurs due to InsufficientEnrolments" in {
+      val result = handler.onServerError(FakeRequest(), new InsufficientEnrolments)
+
+      status(result) shouldBe FORBIDDEN
+      contentType(result) shouldBe Some(HTML)
+      checkIncludesMessages(result, "global.error.403.title", "global.error.403.heading", "global.error.403.message")
+    }
+
+    "error occurs due to Otac Failure" in {
+      val result = handler.onServerError(FakeRequest(), new OtacFailureThrowable(NoOtacTokenInSession))
+
+      status(result) shouldBe FORBIDDEN
+      contentType(result) shouldBe Some(HTML)
+      checkIncludesMessages(result, "global.error.passcode.title",
+        "global.error.passcode.heading", "global.error.passcode.message")
     }
 
     "a client error (400) occurs" in {
