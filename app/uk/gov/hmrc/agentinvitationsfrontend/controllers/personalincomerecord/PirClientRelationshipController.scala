@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord
 import javax.inject.{Inject, Named}
 
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
@@ -27,7 +27,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVe
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.pirRelationships._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientConfidenceLevel, InsufficientEnrolments}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
@@ -43,7 +44,7 @@ class PirClientRelationshipController @Inject()(
 
   def deauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
-      withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
+      authorisedAsClient { clientId =>
         afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
           case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
@@ -52,7 +53,7 @@ class PirClientRelationshipController @Inject()(
   }
 
   def submitDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
+    authorisedAsClient { clientId =>
       RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(client_ends_relationship(formWithErrors))
@@ -79,4 +80,12 @@ class PirClientRelationshipController @Inject()(
     implicit request =>
       Future.successful(Ok(client_ends_relationship_no_agent()))
   }
+
+  private def authorisedAsClient[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) =
+    withAuthorisedAsClient("HMRC-NI", "NINO")(body).recover {
+      case _: InsufficientEnrolments =>
+        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notSignedUp())
+      case _: InsufficientConfidenceLevel =>
+        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notFoundInvitation())
+    }
 }
