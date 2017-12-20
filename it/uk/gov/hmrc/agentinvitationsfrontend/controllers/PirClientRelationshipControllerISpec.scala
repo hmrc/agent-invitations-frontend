@@ -2,12 +2,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.auth.core.InsufficientEnrolments
 import uk.gov.hmrc.http.NotFoundException
-import play.api.test.Helpers._
 
 class PirClientRelationshipControllerISpec extends BaseISpec {
 
@@ -33,10 +32,19 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       status(result) shouldBe 303
     }
 
-    "verify Unauthorized if user is not logged in" in {
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
-      }
+    "verify Unauthorized if user has insufficient enrolments" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      verifyAuthoriseAttempt()
+    }
+
+    "verify Unauthorized if user has insufficient confidence level" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "50")))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
       verifyAuthoriseAttempt()
     }
   }
@@ -68,10 +76,19 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationship.title"))
     }
 
-    "verify Unauthorized if user is not logged in" in {
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
-      }
+    "verify Unauthorized if user has insufficient enrolments" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      verifyAuthoriseAttempt()
+    }
+
+    "verify Unauthorized if user has insufficient confidence level" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "50")))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
       verifyAuthoriseAttempt()
     }
 

@@ -332,6 +332,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
+      givenUnauthorisedForInsufficientEnrolments()
       an[InsufficientEnrolments] shouldBe thrownBy {
         await(action(authenticatedClient(request, Enrolment("", "", ""))))
       }
@@ -339,6 +340,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for no Agent and redirected to Login Page" in {
+      givenUnauthorisedForInsufficientEnrolments()
       an[InsufficientEnrolments] shouldBe thrownBy {
         await(action(authenticatedClient(request, Enrolment("OtherEnrolment", "Key", "Value"))))
       }

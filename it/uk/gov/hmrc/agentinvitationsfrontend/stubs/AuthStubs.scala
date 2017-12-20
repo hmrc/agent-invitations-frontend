@@ -70,17 +70,25 @@ trait AuthStubs {
 
   def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
     stubFor(post(urlEqualTo("/auth/authorise"))
-      .atPriority(1)
       .withRequestBody(equalToJson(payload, true, true))
       .willReturn(aResponse()
         .withStatus(200)
         .withHeader("Content-Type", "application/json")
         .withBody(responseBody)))
+  }
 
-    stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
+  def givenUnauthorisedForInsufficientEnrolments(): Unit = {
+    stubFor(post(urlEqualTo("/auth/authorise"))
       .willReturn(aResponse()
         .withStatus(401)
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+  }
+
+  def givenUnauthorisedForInsufficientConfidenceLevel(): Unit = {
+    stubFor(post(urlEqualTo("/auth/authorise"))
+      .willReturn(aResponse()
+        .withStatus(401)
+        .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientConfidenceLevel\"")))
   }
 
   def verifyAuthoriseAttempt(): Unit = {

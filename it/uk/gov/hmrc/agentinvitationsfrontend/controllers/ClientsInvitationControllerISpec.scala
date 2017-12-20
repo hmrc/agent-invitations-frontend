@@ -227,6 +227,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmInvitation(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
         Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
@@ -235,6 +236,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
         Enrolment("OtherEnrolment", "OtherValue", nino)))
@@ -242,12 +244,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
-        Enrolment("OtherEnrolment", "OtherValue", nino), "50"))
+        Enrolment("HMRC-NI", "NINO", nino), "50"))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {

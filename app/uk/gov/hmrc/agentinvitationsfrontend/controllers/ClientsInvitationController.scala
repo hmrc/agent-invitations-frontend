@@ -94,7 +94,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
           case _: InsufficientEnrolments =>
             Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
           case _: InsufficientConfidenceLevel =>
-            Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
+            Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
 
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
