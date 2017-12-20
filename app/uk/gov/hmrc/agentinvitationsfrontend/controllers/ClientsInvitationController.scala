@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
-import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments}
+import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientConfidenceLevel, InsufficientEnrolments}
 import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
@@ -94,6 +94,9 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
         }.recoverWith {
           case _: InsufficientEnrolments =>
             Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
+          case _: InsufficientConfidenceLevel =>
+            Future successful Redirect(routes.ClientsInvitationController.notSignedUp())
+
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }

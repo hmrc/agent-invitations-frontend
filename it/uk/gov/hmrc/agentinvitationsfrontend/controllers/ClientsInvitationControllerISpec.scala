@@ -227,12 +227,27 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
-      val resultITSA = getConfirmInvitationITSA(authorisedAsValidAgent(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
-      val resultAFI = getConfirmInvitationITSA(authorisedAsValidAgent(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), mtdItId.value))
-      status(resultITSA) shouldBe SEE_OTHER
-      status(resultAFI) shouldBe SEE_OTHER
-      redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController.notSignedUp().url
-      redirectLocation(resultAFI).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      val result = controller.getConfirmInvitation(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
+        Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      val result = controller.getConfirmInvitation(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+        Enrolment("OtherEnrolment", "OtherValue", nino)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the Confidence Level 200" in {
+      val result = controller.getConfirmInvitation(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+        Enrolment("OtherEnrolment", "OtherValue", nino), "50"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {

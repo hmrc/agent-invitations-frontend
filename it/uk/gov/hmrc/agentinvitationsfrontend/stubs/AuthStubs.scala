@@ -16,14 +16,14 @@ trait AuthStubs {
 
   def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId))
 
-  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
+  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment, confidenceLevel: String = "200"): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
          |  "authorise": [
          |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
          |    { "authProviders": ["GovernmentGateway"] },
-         |    {"confidenceLevel":200}
+         |    {"confidenceLevel":$confidenceLevel}
          |  ],
          |  "retrieve":["authorisedEnrolments"]
          |}
