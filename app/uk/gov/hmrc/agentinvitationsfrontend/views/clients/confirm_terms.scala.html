@@ -23,19 +23,20 @@
 
 @(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) + Messages("confirm-terms.title"), bodyClasses = None) {
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages(s"confirm-terms.$service.title"), bodyClasses = None) {
 
     @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
 
-    <h1 class="heading-xlarge">@Messages("confirm-terms.title")</h1>
-
-    <div class="form-group">
-        <p class="important-notice">
-            <strong>@Messages(s"confirm-$service-terms.alert", agencyName)</strong>
-        </p>
-    </div>
-
     @if(service == Services.ITSA) {
+
+        <h1 class="heading-xlarge">@Messages("confirm-terms.itsa.heading")</h1>
+
+        <div class="form-group">
+            <p class="important-notice">
+                <strong>@Messages(s"confirm-$service-terms.alert", agencyName)</strong>
+            </p>
+        </div>
 
     <h2>@Messages(s"confirm-itsa-terms.sub-header")</h2>
 
@@ -55,14 +56,19 @@
         <p>@Messages("confirm-terms.p2")</p>
 
     } @if(service == Services.AFI) {
+
+        <h1 class="heading-xlarge">@Messages("confirm-terms.afi.heading", agencyName)</h1>
+
         <p>@Messages("confirm-terms-afi.p1")</p>
-        <p>@Messages("confirm-terms-afi.p2")</p>
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms-afi.bullet1")</li>
             <li>@Messages("confirm-terms-afi.bullet2")</li>
             <li>@Messages("confirm-terms-afi.bullet3")</li>
+            <li>@Messages("confirm-terms-afi.bullet4")</li>
         </ul>
+
+        <p>@Messages("confirm-terms-afi.p2")</p>
     }
 
 

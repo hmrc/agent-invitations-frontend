@@ -364,7 +364,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultAFI = getConfirmTermsAFI(reqAFI)
 
       status(resultITSA) shouldBe OK
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.title"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.title"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-itsa-terms.alert", "My Agency"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
     }
@@ -376,8 +376,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getConfirmTermsAFI(req)
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-afi-terms.alert", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
     }
 
@@ -459,8 +458,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(resultITSA) shouldBe OK
       status(resultAFI) shouldBe OK
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.title"))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.title"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.heading"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.heading", "My Agency"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("error.confirmTerms.invalid"))
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmTerms.invalid"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
