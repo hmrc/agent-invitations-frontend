@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord
 
 import javax.inject.{Inject, Named}
 
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.pirRelationships._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -60,7 +61,8 @@ class PirClientRelationshipController @Inject()(
             afiRelationshipConnector.terminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
               case 404 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
-                Redirect(routes.PirClientRelationshipController.getErrorMessage)
+                Ok(error_template(Messages("error.terminate.404.title"),
+                  Messages("error.terminate.404.heading"), Messages("error.terminate.404.message")))
             }
           else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination))
         }
@@ -76,10 +78,5 @@ class PirClientRelationshipController @Inject()(
   def getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Ok(client_ends_relationship_no_agent()))
-  }
-
-  def getErrorMessage(): Action[AnyContent] = Action.async {
-    implicit request =>
-      Future.successful(Ok(failure_message()))
   }
 }
