@@ -185,7 +185,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = controller.getConfirmInvitation(invitationIdITSA)(
+      val result = controller.getInvitationDeclined(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
