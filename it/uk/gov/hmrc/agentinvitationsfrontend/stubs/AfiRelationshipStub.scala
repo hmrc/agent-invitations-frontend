@@ -42,7 +42,7 @@ trait AfiRelationshipStub {
     stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
       .willReturn(
         aResponse()
-          .withStatus(404)))
+          .withStatus(500)))
   }
 
   def verifyTerminateAfiRelationshipsAttempt(service: String, clientId: String): Unit = {

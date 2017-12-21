@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.NotFoundException
 
 class PirClientRelationshipControllerISpec extends BaseISpec {
 
@@ -92,13 +91,13 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "afiTerminateAllClientIdRelationships returned NotFoundException" in {
+    "failed to afiTerminateAllClientIdRelationships" in {
       failedTerminationAfiRelationshipsForClientId(afiService, clientId)
-      intercept[NotFoundException] {
-        await(submitAfiDeauthoriseAll(authorisedAsValidClientAFI(
-          FakeRequest().withFormUrlEncodedBody("confirmResponse" -> "true"), clientId)))
-      }
-      verifyTerminateAfiRelationshipsAttempt(afiService, clientId)
+      val result = await(submitAfiDeauthoriseAll(authorisedAsValidClientAFI(
+        FakeRequest().withFormUrlEncodedBody("confirmResponse" -> "true"), clientId)))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.terminate.500.title"))
     }
   }
 }
