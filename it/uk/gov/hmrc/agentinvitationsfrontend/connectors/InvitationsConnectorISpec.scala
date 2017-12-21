@@ -47,7 +47,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Get Invitation" should {
 
     "return an invitation" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA,"Pending")
       val result = await(connector
         .getInvitation(getITSAInvitation))
       result.isDefined shouldBe true
@@ -131,7 +131,7 @@ class InvitationsConnectorISpec extends BaseISpec {
 
   def anGetAFIInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
     "return AFI Invitation" in {
-      getInvitationStub(arn, validNino.value, invitationIdAFI, servicePIR, identifierAFI)
+      getInvitationStub(arn, validNino.value, invitationIdAFI, servicePIR, identifierAFI,"Pending")
       val result = await(invitationsConnector
         .getInvitation(getAFIInvitation))
       result.isDefined shouldBe true

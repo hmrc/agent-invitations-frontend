@@ -72,7 +72,7 @@ trait ACAStubs {
            """.stripMargin)))
   }
 
-  def getInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, service: String, serviceIdentifier: String, status: String = "Pending"): Unit = {
+  def getInvitationStub(arn: Arn, clientId: String, invitationId: InvitationId, service: String, serviceIdentifier: String, status: String): Unit = {
     stubFor(get(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
       .willReturn(
         aResponse()
