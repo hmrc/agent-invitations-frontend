@@ -22,7 +22,7 @@ import play.api.http.HttpErrorHandler
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result}
-import play.api.{Configuration, Environment, Mode}
+import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
@@ -72,14 +72,19 @@ class ErrorHandler @Inject() ( val env: Environment,
         Messages("global.error.403.title"),
         Messages("global.error.403.heading"),
         Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
-      case _: OtacFailureThrowable => Forbidden(error_template(
-        Messages("global.error.passcode.title"),
-        Messages("global.error.passcode.heading"),
-        Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
-      case _ => InternalServerError(error_template(
-        Messages("global.error.500.title"),
-        Messages("global.error.500.heading"),
-        Messages("global.error.500.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+      case ex: OtacFailureThrowable =>
+        Logger.warn(s"There has been a failure ${ex.getMessage}")
+        Forbidden(error_template(
+          Messages("global.error.passcode.title"),
+          Messages("global.error.passcode.heading"),
+          Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+      case ex =>
+        Logger.warn(s"There has been a failure ${ex.getMessage}")
+        InternalServerError(error_template(
+          Messages("global.error.500.title"),
+          Messages("global.error.500.heading"),
+          Messages("global.error.500.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+
     }
     Future.successful(response)
   }
