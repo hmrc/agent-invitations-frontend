@@ -2,11 +2,11 @@ app.name=Manage your agent invitations
 
 # Agent Pages
 # Enter Nino
-enter-nino.title=Enter NINO
-enter-nino.header=Enter a client''s National Insurance number
+enter-nino.title=Enter an individual''s National Insurance number
+enter-nino.header=Enter an individual''s National Insurance number
 enter-nino.label=National Insurance number
 enter-nino.invalid-format=Enter a valid National Insurance number
-nino-example.hint=For example, ''VO 12 34 56 D''.
+nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 # Enter Postcode
@@ -21,15 +21,15 @@ select-service.title=Select service
 select-service.header=Which information do you want to access for this individual?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
-select-service.itsa=Report their Self Assessment income and expenses through software
+select-service.itsa=Ask to view their income and expense updates
 
 continue.button=Continue
 
 # Invitation Sent
 invitation-sent-link.title=Send your client this link
 invitation-sent.header=What to do next
-invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>.
-invitation-sent.description.advice.pt2=Copy and paste the link into an email. If your client does not respond in time, you will need to request authorisation again and send them the new link.
+invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>. Copy and paste the link into an email.
+invitation-sent.description.advice.pt2=If your client does not respond in time, you will need to request authorisation again and send them the new link.
 invitation-sent.description.advice.pt3=This is the only way your client can authorise you. <strong>HMRC will not share the link for you.</strong>
 invitation-sent.button=Return to your account
 
@@ -150,7 +150,7 @@ global.error.404.title=Page not found - 404
 global.error.404.heading=This page can''t be found
 global.error.404.message=Please check that you have entered the correct web address.
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
-global.error.500.heading=Sorry, we’re experiencing technical difficulties
+global.error.500.heading=Sorry, we''re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
 
 #Relationships
@@ -164,9 +164,10 @@ clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
 clientCancelled.title=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
-error.terminate.500.heading=Sorry, we’'re experiencing technical difficulties
+error.terminate.500.heading=Sorry, we''re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
+
 
 #Common
 button.deauthorise=Continue
