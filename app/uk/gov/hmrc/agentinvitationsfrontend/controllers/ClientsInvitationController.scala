@@ -204,31 +204,29 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     }
   }
 
-  def checkInvitationIsPending(f: Invitation => Future[Result]): Option[Invitation] => Future[Result] = {
-    case Some(invitation) if invitation.status.contains("Pending") =>
+  def checkInvitationIsPending(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+    case invitation if invitation.status.contains("Pending") =>
       f(invitation)
-    case Some(invitation) if invitation.status.contains("Expired") =>
+    case invitation if invitation.status.contains("Expired") =>
       Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
-    case Some(_) =>
+    case _ =>
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-    case None =>
-      Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
   }
 
-  def checkInvitationIsAccepted(f: Invitation => Future[Result]): Option[Invitation] => Future[Result] = {
-    case Some(invitation) if invitation.status.contains("Accepted") =>
+  def checkInvitationIsAccepted(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+    case invitation if invitation.status.contains("Accepted") =>
       f(invitation)
-    case Some(_) =>
+    case _ =>
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-    case None =>
-      Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
   }
 
   private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)
-                                    (checkInvitation: Option[Invitation] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+                                    (body: Invitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier)
       .flatMap {
-        checkInvitation
+        case Some(invitation) => body(invitation)
+        case None =>
+          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
       .recover {
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
