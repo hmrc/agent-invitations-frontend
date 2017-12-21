@@ -121,7 +121,7 @@ client-complete-afi.button=Continue to your personal tax account
 
 
 # Generic Issue Title
-client-problem.title=There is a problem
+client-problem.title=Your authorisation request is no longer valid
 
 # Not Signed Up
 not-signed-up.description=You are not signed up to report tax using software.
@@ -130,7 +130,7 @@ not-signed-up.description=You are not signed up to report tax using software.
 incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
 
 # Not Found Invitation
-not-found-invitation.description=The invitation you have accepted does not match our records. Contact the tax agent who sent you the invitation.
+not-found-invitation.description=Ask the tax agent to send another request if you still want to authorise them.
 
 # Invitation Already Responded
 invitation-already-responded.description=Someone has already responded to this invitation. If you think this is wrong, contact the tax agent who sent you the invitation.
