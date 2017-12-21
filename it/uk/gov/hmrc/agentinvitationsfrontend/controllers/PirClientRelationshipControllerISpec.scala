@@ -97,7 +97,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
         FakeRequest().withFormUrlEncodedBody("confirmResponse" -> "true"), clientId)))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.terminate.404.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.terminate.500.title"))
     }
   }
 }

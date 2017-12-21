@@ -47,7 +47,7 @@ class PirRelationshipConnectorISpec extends BaseISpec {
 
       val result = await(connector.terminateAllClientIdRelationships(afiService, clientId))
 
-      result shouldBe 404
+      result shouldBe 500
     }
   }
 }
