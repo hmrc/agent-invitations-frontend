@@ -141,7 +141,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid nino and Personal Income Record service, redirect to invitation sent page" in {
       createInvitationStubForPIR(arn, validNino.value, invitationId, validNino.value, servicePIR, "NI")
-      getInvitationStub(arn, validNino.value, invitationId, servicePIR, "NI")
+      getInvitationStub(arn, validNino.value, invitationId, servicePIR, "NI","Pending")
 
       val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(validNino, Some(servicePIR), None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*)
@@ -192,7 +192,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
       createInvitationStubForITSA(arn, mtdItId.value, invitationId, validNino.value, validPostcode, serviceITSA, "MTDITID")
-      getInvitationStub(arn, mtdItId.value, invitationId, serviceITSA, "MTDITID")
+      getInvitationStub(arn, mtdItId.value, invitationId, serviceITSA, "MTDITID","Pending")
 
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(validNino, Some(serviceITSA), Some(validPostcode)))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
