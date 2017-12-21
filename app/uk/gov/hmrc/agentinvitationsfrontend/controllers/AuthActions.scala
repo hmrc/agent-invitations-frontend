@@ -22,6 +22,7 @@ import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.Results._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +42,12 @@ trait AuthActions extends AuthorisedFunctions {
     withEnrolledAsClient(serviceName, identifierKey) {
       case Some(clientId) => body(clientId)
       case None => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
+    }.recover {
+      case _: InsufficientEnrolments =>
+        Redirect(routes.ClientsInvitationController.notSignedUp())
+      case _: InsufficientConfidenceLevel =>
+        Redirect(routes.ClientsInvitationController.notFoundInvitation())
+
     }
 
   protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {

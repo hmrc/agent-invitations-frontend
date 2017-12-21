@@ -148,7 +148,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentClientInvitationResponse)
     }
 
-    "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT / HMRC-NI enrolment but with a different id" in {
+    "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT or HMRC-NI enrolment but with a different id" in {
       incorrectGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       incorrectGetInvitationStub(nino, invitationIdAFI, identifierAFI)
       val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
@@ -280,7 +280,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
 
-    "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
+    "redirect to /not-found/ if authenticated user has HMRC-MTD-IT or HMRC-NI enrolment but the invitationId they supplied does not exist" in {
       notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       notFoundGetInvitationStub(nino, invitationIdAFI, identifierAFI)
       val resultITSA = getConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
@@ -305,7 +305,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentClientInvitationResponse)
     }
 
-    "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different mtdItId.value" in {
+    "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT or HMRC-NI enrolment but with a different mtdItId.value" in {
       incorrectGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       incorrectGetInvitationStub(nino, invitationIdAFI, identifierAFI)
       val resultITSA = getConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
@@ -392,6 +392,33 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       an[NotFoundException] should be thrownBy await(resultITSA)
       an[NotFoundException] should be thrownBy await(resultAFI)
     }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmInvitation(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmInvitation(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("OtherEnrolment", "OtherValue", nino)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = controller.submitConfirmInvitation(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("HMRC-NI", "NINO", nino), "50"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
   }
 
   "GET /accept-tax-agent-invitation/3 (confirm terms page)" should {
@@ -448,6 +475,33 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getConfirmTermsITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
 
       an[NotFoundException] should be thrownBy await(result)
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getConfirmTerms(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getConfirmTerms(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("OtherEnrolment", "OtherValue", nino)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = controller.getConfirmTerms(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("HMRC-NI", "NINO", nino), "50"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
   }
 
@@ -554,6 +608,33 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentClientInvitationResponse)
     }
 
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmTerms(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmTerms(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("OtherEnrolment", "OtherValue", nino)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = controller.submitConfirmTerms(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("HMRC-NI", "NINO", nino), "50"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+
   }
 
   "GET /accept-tax-agent-invitation/4 (complete page)" should {
@@ -602,6 +683,33 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenAgencyNameNotFoundStub(arn)
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
       an[NotFoundException] should be thrownBy await(result)
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getCompletePage(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdITSA.value),
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getCompletePage(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("OtherEnrolment", "OtherValue", nino)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = controller.getCompletePage(invitationIdAFI)(
+        authenticatedClient(FakeRequest().withSession("invitationId" -> invitationIdAFI.value),
+          Enrolment("HMRC-NI", "NINO", nino), "50"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
   }
 

@@ -3,7 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
+import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -116,7 +117,7 @@ class AuthActionsISpec extends BaseISpec {
       bodyOf(result) shouldBe "fooNINO"
     }
 
-    "throw InsufficientEnrolments when client not enrolled for service" in {
+    "throw InsufficientEnrolments and redirect to not-sign-up page when client not enrolled for service" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -125,12 +126,12 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
-      }
+      val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments when client not enrolled for service for AFI" in {
+    "throw InsufficientEnrolments and redirect to not-sign-up page when client not enrolled for service for AFI" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -139,12 +140,12 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
-      }
+      val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments when expected client's identifier missing" in {
+    "throw InsufficientEnrolments and redirect to not-sign-up page  when expected client's identifier missing" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -153,9 +154,9 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
-      }
+      val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "throw InsufficientEnrolments when expected client's identifier missing for AFI" in {
@@ -167,9 +168,16 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
-      }
+      val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+    }
+
+    "throw InsufficientConfidenceLevel when expected client's is less than 200" in {
+      givenUnauthorisedForInsufficientConfidenceLevel()
+      val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
   }
 }
