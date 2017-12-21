@@ -22,6 +22,7 @@ import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.FrontendAuthConnector
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{StrictPasscodeVerification, PasscodeVerification}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.http._
@@ -49,6 +50,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
     bind(classOf[OtacAuthConnector]).to(classOf[FrontendAuthConnector])
+    bind(classOf[PasscodeVerification]).to(classOf[StrictPasscodeVerification])
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")

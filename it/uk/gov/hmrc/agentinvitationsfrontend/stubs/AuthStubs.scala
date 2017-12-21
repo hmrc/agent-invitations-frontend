@@ -95,4 +95,8 @@ trait AuthStubs {
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
   }
 
+  def verifyNoAuthoriseAttempt(): Unit = {
+    verify(0, postRequestedFor(urlEqualTo("/auth/authorise")))
+  }
+
 }
