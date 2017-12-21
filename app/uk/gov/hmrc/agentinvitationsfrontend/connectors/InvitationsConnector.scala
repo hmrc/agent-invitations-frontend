@@ -58,11 +58,11 @@ class InvitationsConnector @Inject() (
     }
   }
 
-  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Option[Invitation]] = {
+  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Invitation] = {
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       implicit val readsInvitation: Reads[Invitation] = Invitation.reads(url)
-      http.GET[Option[Invitation]](url.toString)
+      http.GET[Invitation](url.toString)
     }
   }
 

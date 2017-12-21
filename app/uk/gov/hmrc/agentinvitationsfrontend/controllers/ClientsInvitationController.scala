@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
@@ -223,11 +223,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
   private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)
                                     (body: Invitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier)
-      .flatMap {
-        case Some(invitation) => body(invitation)
-        case None =>
-          Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
-      }
+      .flatMap(body)
       .recover {
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Logger.warn(s"${invitationId.value} Has been access by the wrong Client.")
@@ -236,6 +232,9 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
           Logger.warn(s"${invitationId.value} Has already been responded.")
           Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
         case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
+          Logger.warn(s"${invitationId.value} is not found.")
+          Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        case _: NotFoundException =>
           Logger.warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }

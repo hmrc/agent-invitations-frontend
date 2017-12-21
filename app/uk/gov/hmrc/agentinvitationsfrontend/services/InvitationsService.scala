@@ -36,10 +36,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitationOpt <- invitationsConnector
+      invitation <- invitationsConnector
         .getInvitation(locationOpt.getOrElse { throw new Exception("Invitation location expected; but missing.") })
-      invitation = invitationOpt
-        .getOrElse { throw new Exception("Invitation expected; but missing.") }
     } yield invitation
   }
 
@@ -55,12 +53,12 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
   def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectAFIInvitation(nino, invitationId)
 
-  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] = {
+  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
   }
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    agentServicesAccountConnector.getAgencyname(arn.value).map {
+    agentServicesAccountConnector.getAgencyName(arn.value).map {
       case Some(name) => name
       case None => throw new Exception("Agency name not found")
     }

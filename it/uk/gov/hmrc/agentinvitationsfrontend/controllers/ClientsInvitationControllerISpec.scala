@@ -20,6 +20,7 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.auth.core.AuthorisationException
@@ -177,8 +178,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
       val resultAFI = getInvitationDeclinedAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
 
-      an[NotFoundException] should be thrownBy await(resultITSA)
-      an[NotFoundException] should be thrownBy await(resultAFI)
+      an[AgencyNameNotFound] should be thrownBy await(resultITSA)
+      an[AgencyNameNotFound] should be thrownBy await(resultAFI)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
@@ -387,8 +388,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultITSA = submitConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
       val resultAFI = submitConfirmInvitationAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
 
-      an[NotFoundException] should be thrownBy await(resultITSA)
-      an[NotFoundException] should be thrownBy await(resultAFI)
+      an[AgencyNameNotFound] should be thrownBy await(resultITSA)
+      an[AgencyNameNotFound] should be thrownBy await(resultAFI)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
@@ -472,7 +473,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       val result = getConfirmTermsITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
 
-      an[NotFoundException] should be thrownBy await(result)
+      an[AgencyNameNotFound] should be thrownBy await(result)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
@@ -659,7 +660,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value))
 
-      an[NotFoundException] should be thrownBy await(result)
+      an[AgencyNameNotFound] should be thrownBy await(result)
     }
 
   "show the complete page for AFI" in {
@@ -680,7 +681,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI, "Accepted")
       givenAgencyNameNotFoundStub(arn)
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino))
-      an[NotFoundException] should be thrownBy await(result)
+      an[AgencyNameNotFound] should be thrownBy await(result)
     }
 
     "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-IT Enrolment" in {
