@@ -23,12 +23,14 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
 case class AgencyName(name: Option[String])
+
+case class AgencyNameNotFound() extends Exception
 
 object AgencyName {
   implicit val nameReads: Reads[AgencyName] =
@@ -42,8 +44,10 @@ class AgentServicesAccountConnector @Inject() (
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAgencyname(arn: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
+  def getAgencyName(arn: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
       http.GET[AgencyName](new URL(baseUrl, s"/agent-services-account/client/agency-name/$arn").toString).map(_.name)
+    } recoverWith {
+      case _: NotFoundException => Future failed AgencyNameNotFound()
     }
 }

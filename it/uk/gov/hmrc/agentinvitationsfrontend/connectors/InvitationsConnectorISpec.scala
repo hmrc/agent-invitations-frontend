@@ -50,16 +50,13 @@ class InvitationsConnectorISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA,"Pending")
       val result = await(connector
         .getInvitation(getITSAInvitation))
-      result.isDefined shouldBe true
-      result.get.arn shouldBe Arn("TARN0000001")
+      result.arn shouldBe Arn("TARN0000001")
     }
 
     "return an error if invitation not found" in {
       notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-      val result = await(connector
-        .getInvitation(getITSAInvitation))
-
-      result.isEmpty shouldBe true
+      an[NotFoundException] shouldBe thrownBy (await(connector
+        .getInvitation(getITSAInvitation)))
     }
 
     behave like anGetAFIInvitationEndpoint(connector)
@@ -134,15 +131,13 @@ class InvitationsConnectorISpec extends BaseISpec {
       getInvitationStub(arn, validNino.value, invitationIdAFI, servicePIR, identifierAFI,"Pending")
       val result = await(invitationsConnector
         .getInvitation(getAFIInvitation))
-      result.isDefined shouldBe true
-      result.get.arn shouldBe Arn("TARN0000001")
+      result.arn shouldBe Arn("TARN0000001")
     }
 
     "return an error if AFI invitation not found" in {
       notFoundGetInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
-      val result = await(invitationsConnector
-        .getInvitation(getAFIInvitation))
-      result.isEmpty shouldBe true
+      an[NotFoundException] shouldBe thrownBy (await(invitationsConnector
+        .getInvitation(getAFIInvitation)))
     }
   }
 

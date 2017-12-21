@@ -10,23 +10,21 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
   val connector = app.injector.instanceOf[AgentServicesAccountConnector]
   val arn = Arn("TARN0000001")
 
-  "getAgencyname" should {
+  "getAgencyName" should {
     "return agency name for a valid arn" in {
       givenGetAgencyNameStub(arn)
 
-      val result = await(connector.getAgencyname(arn.value))
+      val result = await(connector.getAgencyName(arn.value))
 
       result shouldBe Some("My Agency")
     }
 
-    "return NotFound exception for an invalid arn" in {
+    "return AgencyNameNotFound exception for an invalid arn" in {
       givenAgencyNameNotFoundStub(Arn("INVALID_ARN"))
 
-      val exception = intercept[NotFoundException] {
-        await(connector.getAgencyname("INVALID_ARN"))
+      intercept[AgencyNameNotFound] {
+        await(connector.getAgencyName("INVALID_ARN"))
       }
-
-      exception.getMessage should include("Not Found")
     }
   }
 
