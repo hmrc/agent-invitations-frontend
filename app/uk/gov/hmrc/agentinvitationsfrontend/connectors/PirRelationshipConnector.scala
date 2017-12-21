@@ -47,7 +47,6 @@ class PirRelationshipConnector @Inject()(
   def getRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[PirRelationship]]] = {
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = craftUrl(location)
-      implicit val readsRelationship: Reads[PirRelationship] = PirRelationship.reads(url)
       http.GET[Option[List[PirRelationship]]](url.toString)
     }
   }

@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import java.net.URL
+import java.time.LocalDateTime
 
+import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Json, Reads}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.domain.SimpleObjectReads
-import play.api.libs.functional.syntax._
-
-import java.time.LocalDateTime
 
 case class PirRelationship(arn: Arn,
                            service: String,
@@ -36,10 +33,9 @@ case class PirRelationship(arn: Arn,
 object PirRelationship {
   implicit val relationshipFormat = Json.format[PirRelationship]
 
-  def reads(readingFrom: URL): Reads[PirRelationship] = {
-    implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(readingFrom, s))
+  implicit val reads: Reads[PirRelationship] = {
     (
-        (JsPath \ "arn").read[Arn] and
+      (JsPath \ "arn").read[Arn] and
         (JsPath \ "service").read[String] and
         (JsPath \ "clientId").read[String] and
         (JsPath \ "relationshipStatus").readNullable[RelationshipStatus] and

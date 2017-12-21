@@ -23,7 +23,7 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 case class RadioConfirm(value: Option[Boolean])
 
 object RadioConfirm {
-  def deauthoriseRadioChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+  val deauthoriseRadioChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
     if (fieldValue.isDefined)
       Valid
     else

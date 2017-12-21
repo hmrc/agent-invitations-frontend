@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord
 
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Singleton}
 
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
@@ -27,12 +27,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVe
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.pirRelationships._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientConfidenceLevel, InsufficientEnrolments}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
+@Singleton
 class PirClientRelationshipController @Inject()(
                                                  @Named("agent-invitations-frontend.base-url") externalUrl: String,
                                                  auditService: AuditService,
