@@ -2,11 +2,11 @@ app.name=Manage your agent invitations
 
 # Agent Pages
 # Enter Nino
-enter-nino.title=Enter NINO
-enter-nino.header=Enter a client''s National Insurance number
+enter-nino.title=Enter an individual's National Insurance number
+enter-nino.header=Enter an individual's National Insurance number
 enter-nino.label=National Insurance number
 enter-nino.invalid-format=Enter a valid National Insurance number
-nino-example.hint=For example, ''VO 12 34 56 D''.
+nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 # Enter Postcode
