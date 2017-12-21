@@ -145,7 +145,7 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments and redirect to not-sign-up page  when expected client's identifier missing" in {
+    "throw InsufficientEnrolments and redirect to not-sign-up page when expected client's identifier missing" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -159,7 +159,7 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments when expected client's identifier missing for AFI" in {
+    "throw InsufficientEnrolments and redirect to not-sign-up page when expected client's identifier missing for AFI" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -173,7 +173,7 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientConfidenceLevel when expected client's is less than 200" in {
+    "throw InsufficientConfidenceLevel and redirect to not-found page when expected client's is less than 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
