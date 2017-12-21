@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
@@ -37,6 +37,7 @@ object AgencyName {
     (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
 }
 
+@Singleton
 class AgentServicesAccountConnector @Inject() (
                                                 @Named("agent-services-account-baseUrl") baseUrl: URL,
                                                 http: HttpGet,

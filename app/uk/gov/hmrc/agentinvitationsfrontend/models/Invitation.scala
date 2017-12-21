@@ -32,15 +32,13 @@ case class Invitation(
   created: DateTime,
   lastUpdated: DateTime,
   expiryDate: LocalDate,
-  selfUrl: URL,
-  acceptUrl: Option[URL],
-  rejectUrl: Option[URL])
+  selfUrl: URL)
 
 object Invitation {
   import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
 
-  def reads(readingFrom: URL): Reads[Invitation] = {
-    implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(readingFrom, s))
+  implicit val reads: Reads[Invitation] = {
+    implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(s))
     (
       (JsPath \ "arn").read[Arn] and
       (JsPath \ "service").read[String] and
@@ -49,8 +47,6 @@ object Invitation {
       (JsPath \ "created").read[DateTime] and
       (JsPath \ "lastUpdated").read[DateTime] and
       (JsPath \ "expiryDate").read[LocalDate] and
-      (JsPath \ "_links" \ "self").read[URL] and
-      (JsPath \ "_links" \ "accept").readNullable[URL] and
-      (JsPath \ "_links" \ "reject").readNullable[URL])(Invitation.apply _)
+      (JsPath \ "_links" \ "self").read[URL])(Invitation.apply _)
   }
 }

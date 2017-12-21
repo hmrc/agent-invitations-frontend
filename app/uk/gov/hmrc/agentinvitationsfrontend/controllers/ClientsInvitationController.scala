@@ -242,14 +242,15 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 }
 
 object ClientsInvitationController {
-  def invitationChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+
+  val invitationChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
     if (fieldValue.isDefined)
       Valid
     else
       Invalid(ValidationError("error.confirmInvite.invalid"))
   }
 
-  def termsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+  val termsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
     fieldValue match {
       case Some(true) => Valid
       case _ => Invalid(ValidationError("error.confirmTerms.invalid"))

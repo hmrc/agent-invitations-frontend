@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
@@ -32,6 +32,7 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
+@Singleton
 class InvitationsConnector @Inject() (
   @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
   http: HttpGet with HttpPost with HttpPut,
@@ -61,7 +62,6 @@ class InvitationsConnector @Inject() (
   def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Invitation] = {
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
-      implicit val readsInvitation: Reads[Invitation] = Invitation.reads(url)
       http.GET[Invitation](url.toString)
     }
   }
