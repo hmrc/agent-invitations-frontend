@@ -44,7 +44,7 @@ class PirClientRelationshipController @Inject()(
 
   def deauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
-      authorisedAsClient { clientId =>
+      withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
         afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
           case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
@@ -53,7 +53,7 @@ class PirClientRelationshipController @Inject()(
   }
 
   def submitDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
-    authorisedAsClient { clientId =>
+    withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
       RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(client_ends_relationship(formWithErrors))
@@ -80,7 +80,4 @@ class PirClientRelationshipController @Inject()(
     implicit request =>
       Future.successful(Ok(client_ends_relationship_no_agent()))
   }
-
-  private def authorisedAsClient[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) =
-    withAuthorisedAsClient("HMRC-NI", "NINO")(body)
 }
