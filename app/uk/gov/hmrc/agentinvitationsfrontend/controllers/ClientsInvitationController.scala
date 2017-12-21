@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
@@ -26,6 +26,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
@@ -64,11 +65,11 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier) { arn =>
-            invitationsService.getAgencyName(arn).flatMap { agencyName =>
-              auditService.sendAgentInvitationResponse(invitationId.value, arn, "Declined", clientId, serviceName, agencyName)
+          withValidInvitation(clientId, invitationId, apiIdentifier) { invitation =>
+            invitationsService.getAgencyName(invitation.arn).flatMap { agencyName =>
+              auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Declined", clientId, serviceName, agencyName)
               for {
-                name <- invitationsService.getAgencyName(arn)
+                name <- invitationsService.getAgencyName(invitation.arn)
                 _ <- rejectInvitation(serviceName, invitationId, clientId)
               } yield Ok(invitation_declined(name, invitationId, messageKey, continueUrl))
             }
@@ -82,11 +83,10 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier) {
-            arn =>
-              invitationsService.getAgencyName(arn).map {
+          withValidInvitation(clientId, invitationId, apiIdentifier) { invitation =>
+              invitationsService.getAgencyName(invitation.arn).map {
                 agencyName =>
-                  auditService.sendAgentInvitationResponse(invitationId.value, arn, "Accepted", clientId, serviceName, agencyName)
+                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Accepted", clientId, serviceName, agencyName)
                   Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey))
               }
           }
@@ -99,11 +99,10 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier) {
-            arn =>
+          withValidInvitation(clientId, invitationId, apiIdentifier) { invitation =>
               confirmInvitationForm.bindFromRequest().fold(
                 formWithErrors => {
-                  invitationsService.getAgencyName(arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, messageKey)))
+                  invitationsService.getAgencyName(invitation.arn).map(name => Ok(confirm_invitation(formWithErrors, name, invitationId, messageKey)))
                 }, data => {
                   val result = if (data.value.getOrElse(false))
                     Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
@@ -123,8 +122,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, (messageKey)) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier) {
-            arn =>
-              invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, messageKey)))
+            invitation: Invitation =>
+              invitationsService.getAgencyName(invitation.arn).map(name => Ok(confirm_terms(confirmTermsForm, name, invitationId, messageKey)))
           }
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -135,11 +134,10 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier) {
-            arn =>
+          withValidInvitation(clientId, invitationId, apiIdentifier) { invitation =>
               confirmTermsForm.bindFromRequest().fold(
                 formWithErrors => {
-                  invitationsService.getAgencyName(arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, messageKey)))
+                  invitationsService.getAgencyName(invitation.arn).map(name => Ok(confirm_terms(formWithErrors, name, invitationId, messageKey)))
                 }, _ => {
                   acceptInvitation(serviceName, invitationId, clientId).map { _ =>
                     Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
@@ -155,16 +153,9 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     determineService(invitationId) match {
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier).flatMap {
-            case Some(invitation) => invitationsService.getAgencyName(invitation.arn).map(name => Ok(complete(name, messageKey, continueUrl)))
-            case None => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
-          } recover {
-            case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
-              Redirect(routes.ClientsInvitationController.incorrectInvitation())
-            case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
-              Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
-            case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
-              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          withValidInvitation(clientId, invitationId, apiIdentifier) { invitation =>
+            invitationsService.getAgencyName(invitation.arn).map( name =>
+              Ok(complete(name, messageKey, continueUrl)))
           }
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -207,22 +198,25 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     }
   }
 
-  private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)(f: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+  private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)(f: Invitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier).flatMap {
       case Some(invitation) if invitation.status.contains("Expired") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
       case Some(invitation) if !invitation.status.contains("Pending") =>
         Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
       case Some(invitation) =>
-        f(invitation.arn)
+        f(invitation)
       case None =>
         Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     } recover {
       case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
+        Logger.warn(s"${invitationId.value} Has been access by the wrong Client.")
         Redirect(routes.ClientsInvitationController.incorrectInvitation())
       case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
+        Logger.warn(s"${invitationId.value} Has already been responded.")
         Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
       case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
+        Logger.warn(s"${invitationId.value} is not found.")
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }

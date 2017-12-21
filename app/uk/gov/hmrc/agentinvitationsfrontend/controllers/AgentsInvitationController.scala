@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import org.joda.time.format.DateTimeFormat
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation._
@@ -146,14 +146,17 @@ class AgentsInvitationController @Inject()(
       })
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
+          Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
           auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
           Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
+          Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
           auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
+          Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
           auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
