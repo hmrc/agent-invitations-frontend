@@ -82,10 +82,5 @@ class PirClientRelationshipController @Inject()(
   }
 
   private def authorisedAsClient[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) =
-    withAuthorisedAsClient("HMRC-NI", "NINO")(body).recover {
-      case _: InsufficientEnrolments =>
-        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notSignedUp())
-      case _: InsufficientConfidenceLevel =>
-        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notFoundInvitation())
-    }
+    withAuthorisedAsClient("HMRC-NI", "NINO")(body)
 }
