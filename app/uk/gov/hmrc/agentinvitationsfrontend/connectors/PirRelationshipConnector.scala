@@ -56,6 +56,9 @@ class PirRelationshipConnector @Inject()(
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = craftUrl(location)
       http.DELETE[HttpResponse](url.toString).map(_.status)
+        .recover{
+          case ex: NotFoundException => 404
+        }
     }
   }
 
