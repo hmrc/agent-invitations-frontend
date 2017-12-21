@@ -21,17 +21,22 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Mode}
-import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector, OtacFailureThrowable}
+import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector, OtacFailureThrowable, Unauthorised}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PasscodeVerificationException(msg: String) extends RuntimeException(msg)
 
+trait PasscodeVerification {
+  def apply[A, T](body: => Future[Result])(implicit request: Request[A], headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Result]
+}
+
 @Singleton
-class PasscodeVerification @Inject()(configuration: Configuration,
-                                     environment: Environment,
-                                     otacAuthConnector: OtacAuthConnector) {
+class StrictPasscodeVerification @Inject()(configuration: Configuration,
+                                           environment: Environment,
+                                           otacAuthConnector: OtacAuthConnector)
+  extends PasscodeVerification {
 
   val tokenParam = "p"
   val passcodeEnabledKey = "passcodeAuthentication.enabled"
@@ -46,9 +51,11 @@ class PasscodeVerification @Inject()(configuration: Configuration,
   def loginUrl[A](request: Request[A]) = s"$verificationURL/otac/login${tokenQueryParam(request)}"
 
   def tokenQueryParam[A](request: Request[A]): String =
-    request.getQueryString(tokenParam).map(token => s"?$tokenParam=$token").getOrElse("")
+    request.getQueryString(tokenParam).map(token => s"?$tokenParam=$token")
+      .getOrElse(throw OtacFailureThrowable(Unauthorised))
 
-  def throwConfigNotFound(configKey: String) = throw new PasscodeVerificationException(s"The value for the key '$configKey' should be setup in the config file.")
+  def throwConfigNotFound(configKey: String) = throw new PasscodeVerificationException(
+    s"The value for the key '$configKey' should be setup in the config file.")
 
   def addRedirectUrl[A](implicit request: Request[A]): Result => Result = e =>
     e.addingToSession(SessionKeys.redirect -> buildRedirectUrl(request))

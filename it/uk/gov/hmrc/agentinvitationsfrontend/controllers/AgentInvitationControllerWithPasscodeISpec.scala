@@ -16,13 +16,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo, equalTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, stubFor, urlEqualTo}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.SessionKeys
 
 import scala.concurrent.duration._
@@ -65,10 +66,10 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
-      verifyAuthoriseAttempt()
+      verifyNoAuthoriseAttempt()
     }
 
-    "return 200 for an authorised Agent with OTAC token" in {
+    "return 200 for an authorised Agent with OTAC session key" in {
       val request = FakeRequest("GET", "/agents/enter-nino").withSession((SessionKeys.otacToken,"someOtacToken123"))
       stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
         .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
@@ -79,6 +80,13 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       verifyAuthoriseAttempt()
+    }
+
+    "return error for an unauthorised attempt without passcode nor OTAC session key" in {
+      val request = FakeRequest("GET", "/agents/enter-nino")
+      an[OtacFailureThrowable] shouldBe thrownBy {
+        showNinoForm(authorisedAsValidAgent(request, arn.value))
+      }
     }
   }
 }

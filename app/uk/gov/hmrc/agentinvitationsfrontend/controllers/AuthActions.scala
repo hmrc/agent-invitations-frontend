@@ -31,11 +31,12 @@ trait AuthActions extends AuthorisedFunctions {
   def withVerifiedPasscode: PasscodeVerification
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    withEnrolledAsAgent {
-      case Some(arn) => withVerifiedPasscode {
-        body(Arn(arn))
+    withVerifiedPasscode {
+      withEnrolledAsAgent {
+        case Some(arn) =>
+          body(Arn(arn))
+        case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
       }
-      case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
     }
 
   protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
