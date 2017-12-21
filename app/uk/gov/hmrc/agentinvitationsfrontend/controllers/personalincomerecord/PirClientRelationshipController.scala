@@ -44,7 +44,7 @@ class PirClientRelationshipController @Inject()(
 
   def deauthoriseAllStart(): Action[AnyContent] = Action.async {
     implicit request =>
-      authorisedAsClient { clientId =>
+      withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
         afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
           case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
@@ -53,7 +53,7 @@ class PirClientRelationshipController @Inject()(
   }
 
   def submitDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
-    authorisedAsClient { clientId =>
+    withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
       RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(client_ends_relationship(formWithErrors))
@@ -61,9 +61,9 @@ class PirClientRelationshipController @Inject()(
           if (data.value.getOrElse(false))
             afiRelationshipConnector.terminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
               case 200 => Ok(client_ends_relationship_ended())
-              case 404 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
-                Ok(error_template(Messages("error.terminate.404.title"),
-                  Messages("error.terminate.404.heading"), Messages("error.terminate.404.message")))
+              case 500 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
+                Ok(error_template(Messages("error.terminate.500.title"),
+                  Messages("error.terminate.500.heading"), Messages("error.terminate.500.message")))
             }
           else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination))
         }
@@ -80,12 +80,4 @@ class PirClientRelationshipController @Inject()(
     implicit request =>
       Future.successful(Ok(client_ends_relationship_no_agent()))
   }
-
-  private def authorisedAsClient[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) =
-    withAuthorisedAsClient("HMRC-NI", "NINO")(body).recover {
-      case _: InsufficientEnrolments =>
-        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notSignedUp())
-      case _: InsufficientConfidenceLevel =>
-        Redirect(uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsInvitationController.notFoundInvitation())
-    }
 }

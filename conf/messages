@@ -121,7 +121,7 @@ client-complete-afi.button=Continue to your personal tax account
 
 
 # Generic Issue Title
-client-problem.title=There is a problem
+client-problem.title=Your authorisation request is no longer valid
 
 # Not Signed Up
 not-signed-up.description=You are not signed up to report tax using software.
@@ -130,7 +130,7 @@ not-signed-up.description=You are not signed up to report tax using software.
 incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
 
 # Not Found Invitation
-not-found-invitation.description=The invitation you have accepted does not match our records. Contact the tax agent who sent you the invitation.
+not-found-invitation.description=Ask the tax agent to send another request if you still want to authorise them.
 
 # Invitation Already Responded
 invitation-already-responded.description=Someone has already responded to this invitation. If you think this is wrong, contact the tax agent who sent you the invitation.
@@ -141,16 +141,16 @@ global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request
 global.error.400.message=Please check that you have entered the correct web address.
 global.error.403.title=Forbidden - 403
-global.error.403.heading=Sorry, you are not authorised to access this page.
+global.error.403.heading=Sorry, you haven't been authorised to proceed.
 global.error.403.message=
 global.error.passcode.title=Forbidden - 403
-global.error.passcode.heading=Sorry, you are not authorised to access this page.
+global.error.passcode.heading=Sorry, you haven't been authorised to proceed.
 global.error.passcode.message=
 global.error.404.title=Page not found - 404
 global.error.404.heading=This page can''t be found
 global.error.404.message=Please check that you have entered the correct web address.
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
-global.error.500.heading=Sorry, we’re experiencing technical difficulties
+global.error.500.heading=Sorry, we''re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
 
 #Relationships
@@ -164,9 +164,10 @@ clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
 clientCancelled.title=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
-error.terminate.404.heading=Sorry, we’re experiencing technical difficulties
-error.terminate.404.title=Sorry, we are experiencing technical difficulties
-error.terminate.404.message=Your income record is still visible to tax agents. Please try again in a few minutes.
+error.terminate.500.heading=Sorry, we''re experiencing technical difficulties
+error.terminate.500.title=Sorry, we are experiencing technical difficulties
+error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
+
 
 #Common
 button.deauthorise=Continue

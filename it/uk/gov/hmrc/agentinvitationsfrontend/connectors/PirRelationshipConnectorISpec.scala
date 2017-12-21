@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import uk.gov.hmrc.agentinvitationsfrontend.models.PirRelationship
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class PirRelationshipConnectorISpec extends BaseISpec {
@@ -45,10 +45,9 @@ class PirRelationshipConnectorISpec extends BaseISpec {
     "return 404 when failing to find/terminate relationship " in {
       failedTerminationAfiRelationshipsForClientId(afiService, clientId)
 
-      intercept[NotFoundException] {
-        await(connector.terminateAllClientIdRelationships(afiService, clientId))
-      }
-      verifyTerminateAfiRelationshipsAttempt(afiService, clientId)
+      val result = await(connector.terminateAllClientIdRelationships(afiService, clientId))
+
+      result shouldBe 500
     }
   }
 }
