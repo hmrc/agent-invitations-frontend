@@ -30,7 +30,7 @@ class FrontendAuthConnector @Inject() (@Named("auth-baseUrl") baseUrl: URL)
 
   override val serviceUrl = baseUrl.toString
 
-  override def http = new HttpPost with HttpGet with WSPost with WSGet {
+  override val http = new HttpPost with HttpGet with WSPost with WSGet {
     override val hooks = NoneRequired
   }
 }

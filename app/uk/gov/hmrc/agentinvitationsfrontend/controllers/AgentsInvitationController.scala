@@ -191,7 +191,7 @@ class AgentsInvitationController @Inject()(
 
 object AgentsInvitationController {
 
-  private def postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
+  private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
   private def nonEmpty(failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
@@ -209,7 +209,7 @@ object AgentsInvitationController {
     }
   }
 
-  def serviceChoice: Constraint[Option[String]] = Constraint[Option[String]] { fieldValue: Option[String] =>
+  val serviceChoice: Constraint[Option[String]] = Constraint[Option[String]] { fieldValue: Option[String] =>
     if (fieldValue.isDefined)
       Valid
     else
