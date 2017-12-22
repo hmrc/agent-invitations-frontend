@@ -34,7 +34,7 @@ import scala.concurrent.Future
 
 @Singleton
 class PirClientRelationshipController @Inject()(
-                                                 @Named("agent-invitations-frontend.base-url") externalUrl: String,
+                                                 @Named("agent-invitations-frontend.external-url") externalUrl: String,
                                                  auditService: AuditService,
                                                  afiRelationshipConnector: PirRelationshipConnector,
                                                  val messagesApi: play.api.i18n.MessagesApi,
