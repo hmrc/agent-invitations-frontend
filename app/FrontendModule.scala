@@ -60,7 +60,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindServiceProperty("agent-services-account-frontend.external-url")
     bindServiceProperty("personal-tax-account.external-url")
-    bindServiceProperty("agent-invitations-frontend.base-url")
+    bindServiceProperty("agent-invitations-frontend.external-url")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
