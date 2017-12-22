@@ -40,7 +40,7 @@ import scala.concurrent.Future
 
 @Singleton
 class AgentsInvitationController @Inject()(
-                                            @Named("agent-invitations-frontend.base-url") externalUrl: String,
+                                            @Named("agent-invitations-frontend.external-url") externalUrl: String,
                                             @Named("agent-services-account-frontend.external-url") asAccUrl: String,
                                             @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
                                             @Named("features.show-personal-income") showPersonalIncome: Boolean,

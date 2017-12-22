@@ -42,7 +42,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,
         "microservice.services.agent-fi-relationship.port" -> wireMockPort,
-        "microservice.services.agent-invitations-frontend.base-url" -> wireMockBaseUrlAsString,
+        "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.personal-tax-account.external-url" -> wireMockBaseUrlAsString,
         "auditing.enabled" -> true,
