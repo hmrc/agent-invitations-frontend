@@ -160,7 +160,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an error if AFI invitation not found" in {
-      notFoundAcceptInvitationStub(validNino.value, invitationIdAFI, identifierITSA)
+      notFoundAcceptInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
 
       intercept[NotFoundException] {
         await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdAFI))

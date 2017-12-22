@@ -112,7 +112,7 @@ trait ACAStubs {
                |  "expiryDate" : "2017-12-18",
                |  "_links": {
                |    	"self" : {
-               |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
+               |			  "href" : "/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
                |		  }
                |  }
                |}""".stripMargin)))

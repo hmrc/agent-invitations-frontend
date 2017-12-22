@@ -79,7 +79,7 @@ class ErrorHandler @Inject() ( val env: Environment,
           Messages("global.error.passcode.heading"),
           Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
       case ex =>
-        Logger.warn(s"There has been a failure ${ex.getMessage}")
+        Logger.warn(s"There has been a failure", ex)
         InternalServerError(error_template(
           Messages("global.error.500.title"),
           Messages("global.error.500.heading"),
