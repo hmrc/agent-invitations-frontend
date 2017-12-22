@@ -21,7 +21,9 @@ import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 object UrlBinders {
 
-  implicit def invitationIdBinder(implicit stringBinder: PathBindable[String]) = new PathBindable[InvitationId] {
+  implicit val invitationIdBinder: PathBindable[InvitationId] = getInvitationIdBinder
+
+  def getInvitationIdBinder(implicit stringBinder: PathBindable[String]) = new PathBindable[InvitationId] {
 
     override def bind(key: String, value: String): Either[String, InvitationId] = {
       val isValidPrefix = value.headOption.fold(false)(Seq('A', 'B').contains)
