@@ -67,16 +67,13 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             invitationsService.getAgencyName(invitation.arn).flatMap { agencyName =>
-              for {
-                name <- invitationsService.getAgencyName(invitation.arn)
-                status <- rejectInvitation(serviceName, invitationId, clientId)
-              } yield status match {
-                case NO_CONTENT => {
-                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Rejected", clientId, serviceName, agencyName)
-                  Ok(invitation_declined(name, invitationId, messageKey, continueUrl))
+              rejectInvitation(serviceName, invitationId, clientId).map {
+                  case NO_CONTENT => {
+                    auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Rejected", clientId, serviceName, agencyName)
+                    Ok(invitation_declined(agencyName, invitationId, messageKey, continueUrl))
+                  }
+                  case status => throw new Exception(s"Invitation rejection failed with status $status")
                 }
-                case _ => throw new Exception(s"Invitation rejection failed with status $status")
-              }
             }
           })
         }

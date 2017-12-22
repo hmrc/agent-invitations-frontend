@@ -160,16 +160,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentClientInvitationResponse)
     }
 
-    "redirect to notFound when invitationId missing from session" in {
-      val resultITSA = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest(), mtdItId.value))
-      val resultAFI = getInvitationDeclinedAFI(authorisedAsValidClientAFI(FakeRequest(), nino))
-      status(resultITSA) shouldBe SEE_OTHER
-      status(resultAFI) shouldBe SEE_OTHER
-      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
-      redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
-      verifyAuditRequestNotSent(AgentClientInvitationResponse)
-    }
-
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI, "Pending")
