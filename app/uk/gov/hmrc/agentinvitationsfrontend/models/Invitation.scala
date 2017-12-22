@@ -19,10 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
-import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.domain.SimpleObjectReads
-import play.api.libs.functional.syntax._
 
 case class Invitation(
   arn: Arn,
@@ -33,20 +30,3 @@ case class Invitation(
   lastUpdated: DateTime,
   expiryDate: LocalDate,
   selfUrl: URL)
-
-object Invitation {
-  import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
-
-  implicit val reads: Reads[Invitation] = {
-    implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(s))
-    (
-      (JsPath \ "arn").read[Arn] and
-      (JsPath \ "service").read[String] and
-      (JsPath \ "clientId").read[String] and
-      (JsPath \ "status").read[String] and
-      (JsPath \ "created").read[DateTime] and
-      (JsPath \ "lastUpdated").read[DateTime] and
-      (JsPath \ "expiryDate").read[LocalDate] and
-      (JsPath \ "_links" \ "self").read[URL])(Invitation.apply _)
-  }
-}

@@ -21,7 +21,7 @@ import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import play.api.libs.json.Reads
+import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
@@ -39,6 +39,8 @@ class InvitationsConnector @Inject() (
   metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  import Reads._
 
   private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
@@ -94,6 +96,27 @@ class InvitationsConnector @Inject() (
   def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
+    }
+  }
+
+  object Reads {
+
+    import play.api.libs.functional.syntax._
+    import play.api.libs.json.{JsPath, Reads}
+    import uk.gov.hmrc.domain.SimpleObjectReads
+    import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
+
+    implicit val reads: Reads[Invitation] = {
+      implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(baseUrl,s))
+      (
+        (JsPath \ "arn").read[Arn] and
+          (JsPath \ "service").read[String] and
+          (JsPath \ "clientId").read[String] and
+          (JsPath \ "status").read[String] and
+          (JsPath \ "created").read[DateTime] and
+          (JsPath \ "lastUpdated").read[DateTime] and
+          (JsPath \ "expiryDate").read[LocalDate] and
+          (JsPath \ "_links" \ "self").read[URL])(Invitation.apply _)
     }
   }
 }
