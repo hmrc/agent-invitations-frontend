@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
 
@@ -50,15 +50,15 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   import ClientsInvitationController._
 
-  def start(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
+  def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, messageKey) if messageKey.nonEmpty => Future successful Ok(landing_page(invitationId, messageKey))
-      case _ => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case ValidService(_, _, _, messageKey) if messageKey.nonEmpty => Ok(landing_page(invitationId, messageKey))
+      case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
 
-  def submitStart(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
+  def submitStart(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
+    Redirect(routes.ClientsInvitationController.getConfirmInvitation(invitationId))
   }
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
@@ -165,24 +165,24 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     }
   }
 
-  def notSignedUp: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Forbidden(not_signed_up())
+  val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
+    Forbidden(not_signed_up())
   }
 
-  def incorrectInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Forbidden(incorrect_invitation())
+  val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
+    Forbidden(incorrect_invitation())
   }
 
-  def notFoundInvitation: Action[AnyContent] = Action.async { implicit request =>
-    Future successful NotFound(not_found_invitation())
+  val notFoundInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
+    NotFound(not_found_invitation())
   }
 
-  def invitationAlreadyResponded: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Forbidden(invitation_already_responded())
+  val invitationAlreadyResponded: Action[AnyContent] = ActionWithMdc { implicit request =>
+    Forbidden(invitation_already_responded())
   }
 
-  def invitationExpired: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(invitation_expired())
+  val invitationExpired: Action[AnyContent] = ActionWithMdc { implicit request =>
+    Ok(invitation_expired())
   }
 
   private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
@@ -201,7 +201,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     }
   }
 
-  def checkInvitationIsPending(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+  private def checkInvitationIsPending(f: Invitation => Future[Result]): Invitation => Future[Result] = {
     case invitation if invitation.status.contains("Pending") =>
       f(invitation)
     case invitation if invitation.status.contains("Expired") =>
@@ -210,7 +210,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
   }
 
-  def checkInvitationIsAccepted(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+  private def checkInvitationIsAccepted(f: Invitation => Future[Result]): Invitation => Future[Result] = {
     case invitation if invitation.status.contains("Accepted") =>
       f(invitation)
     case _ =>
