@@ -21,7 +21,12 @@ import javax.inject.{Inject, Named, Singleton}
 import play.api.Configuration
 
 @Singleton
-class ExternalUrls @Inject() (@Named("government-gateway-registration-frontend.external-url") val sosRedirectUrl: String){
+class ExternalUrls @Inject()
+(
+  @Named("government-gateway-registration-frontend.external-url") val sosRedirectUrl: String,
+  @Named("contact-frontend.external-url") val contactFrontendUrl: String
+){
+  private val contactFrontendServiceId = "INVITAGENT"
 
   def signOutUrl(isAgent: Boolean): String = {
     if(isAgent){
@@ -32,4 +37,11 @@ class ExternalUrls @Inject() (@Named("government-gateway-registration-frontend.e
     }
   }
 
+  def contactFrontendAjaxUrl: String = {
+    s"$contactFrontendUrl/contact/problem_reports_ajax?service=$contactFrontendServiceId"
+  }
+
+  def contactFrontendNonJsUrl: String = {
+    s"$contactFrontendUrl/contact/problem_reports_nonjs?service=$contactFrontendServiceId"
+  }
 }
