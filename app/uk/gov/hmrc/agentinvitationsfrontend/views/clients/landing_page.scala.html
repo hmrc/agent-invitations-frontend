@@ -19,7 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-@(invitationId: InvitationId, serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@(invitationId: InvitationId, serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None) {
 

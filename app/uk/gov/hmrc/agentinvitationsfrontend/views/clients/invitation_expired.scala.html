@@ -15,7 +15,8 @@
  *@
 
 @import play.api.Configuration
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-expired.title"), bodyClasses = None) {
 

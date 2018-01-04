@@ -58,6 +58,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
 
+    bindServiceProperty("government-gateway-registration-frontend.external-url")
+
     bindServiceProperty("agent-services-account-frontend.external-url")
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")

@@ -22,6 +22,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.models.RadioConfirm
@@ -39,7 +40,8 @@ class PirClientRelationshipController @Inject()(
                                                  afiRelationshipConnector: PirRelationshipConnector,
                                                  val messagesApi: play.api.i18n.MessagesApi,
                                                  val authConnector: AuthConnector,
-                                                 val withVerifiedPasscode: PasscodeVerification)(implicit val configuration: Configuration)
+                                                 val withVerifiedPasscode: PasscodeVerification)
+                                               (implicit val configuration: Configuration, externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
   def deauthoriseAllStart(): Action[AnyContent] = Action.async {

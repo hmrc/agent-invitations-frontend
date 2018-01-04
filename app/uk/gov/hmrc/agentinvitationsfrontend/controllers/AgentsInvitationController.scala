@@ -26,6 +26,7 @@ import play.api.data.validation._
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -48,7 +49,8 @@ class AgentsInvitationController @Inject()(
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
                                             val authConnector: AuthConnector,
-                                            val withVerifiedPasscode: PasscodeVerification)(implicit val configuration: Configuration)
+                                            val withVerifiedPasscode: PasscodeVerification)
+                                          (implicit val configuration: Configuration, externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._

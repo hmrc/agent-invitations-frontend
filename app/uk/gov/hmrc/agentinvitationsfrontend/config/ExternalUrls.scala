@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(pageTitle: String, heading: String, message: String)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+package uk.gov.hmrc.agentinvitationsfrontend.config
 
-@contentHeader = {
- <h1 class="heading-xlarge">@heading</h1>
+import javax.inject.{Inject, Named, Singleton}
+
+import play.api.Configuration
+
+@Singleton
+class ExternalUrls @Inject() (@Named("government-gateway-registration-frontend.external-url") val sosRedirectUrl: String){
+
+  def signOutUrl(isAgent: Boolean): String = {
+    if(isAgent){
+      s"$sosRedirectUrl?accountType=agent&continue=/agent-services-account"
+    }
+    else{
+      s"$sosRedirectUrl?accountType=individual&continue=/business-account"
+    }
+  }
+
 }
-
-@mainContent = {
- <p>@message</p>
-}
-
-@govuk_wrapper(title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent, isAgent = false)
