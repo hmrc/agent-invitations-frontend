@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-expired.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-expired.title"), bodyClasses = None, isAgent = false) {
 
   <h1 class="heading-xlarge">@Messages("invitation-expired.heading")</h1>
 
