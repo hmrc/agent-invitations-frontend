@@ -17,6 +17,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   override implicit lazy val app: Application = appBuilder.build()
 
+  val sosRedirectUrl = "https://government-gateway-registration-frontend"
+
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
       .configure(
@@ -30,6 +32,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.personal-tax-account.external-url" -> wireMockBaseUrlAsString,
+        "microservice.services.government-gateway-registration-frontend.external-url" -> sosRedirectUrl,
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,

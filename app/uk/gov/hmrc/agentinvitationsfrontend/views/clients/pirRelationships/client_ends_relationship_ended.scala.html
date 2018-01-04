@@ -1,5 +1,5 @@
 @*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 @import play.api.Configuration
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientEndsRelationshipEnded.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientEndsRelationshipEnded.title"), bodyClasses = None, isAgent = false) {
     <h1 class="heading-large">
     @Messages("clientEndsRelationshipEnded.title")
     </h1>

@@ -1,5 +1,5 @@
 @*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-nino.title"), bodyClasses = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-nino.title"), bodyClasses = None, isAgent = true) {
 
 @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-nino"))
 

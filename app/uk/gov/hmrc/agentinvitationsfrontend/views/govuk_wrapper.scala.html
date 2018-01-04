@@ -1,5 +1,5 @@
 @*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 @import layouts.{govuk_template => hmrcGovUkTemplate}
 @import uk.gov.hmrc.play.views.html.{helpers => uiHelpers, layouts => uiLayouts}
 @import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(title: String,
     mainClass: Option[String] = None,
     mainDataAttributes: Option[Html] = None,
@@ -26,7 +27,9 @@
     mainContent: Html = HtmlFormat.empty,
     serviceInfoContent: Html = HtmlFormat.empty,
     scriptElem: Option[Html] = None,
-    gaCode: Seq[String] = Seq.empty)(implicit messages: Messages, configuration: Configuration)
+    gaCode: Seq[String] = Seq.empty,
+    cookies: Option[Cookies] = None,
+    isAgent: Boolean)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @head = {
 @uiLayouts.head(
@@ -43,7 +46,16 @@
     <script src="@controllers.routes.Assets.at("javascripts/scripts.js")" type="text/javascript"></script>
 }
 
-@headerNavLinks = {}
+
+
+
+@headerNavLinks = {
+    <li>
+        @if(cookies.flatMap(_.get("mdtp")).fold(false)(cookie => cookie.value.contains("authToken=Bearer+"))) {
+            <a href="@Html(externalUrls.signOutUrl(isAgent))" data-journey-click="primary-navigation:Click:Sign out">Sign out</a>
+        }
+    </li>
+}
 
 @insideHeader = {
 @uiLayouts.header_nav(

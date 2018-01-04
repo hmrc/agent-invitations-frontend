@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
@@ -40,7 +41,7 @@ class ErrorHandler @Inject() ( val env: Environment,
                                val messagesApi: MessagesApi,
                                val auditConnector: AuditConnector,
                                @Named("appName") val appName: String)
-                             (implicit val config: Configuration, ec: ExecutionContext)
+                             (implicit val config: Configuration, ec: ExecutionContext, externalUrls: ExternalUrls)
   extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
 
   val authenticationRedirect: String = config.getString("authentication.login-callback.url")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-fi-relationship")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+
+    bindServiceProperty("government-gateway-registration-frontend.external-url")
 
     bindServiceProperty("agent-services-account-frontend.external-url")
     bindServiceProperty("personal-tax-account.external-url")
