@@ -26,7 +26,7 @@ class ExternalUrls @Inject()
   @Named("government-gateway-registration-frontend.external-url") val sosRedirectUrl: String,
   @Named("contact-frontend.external-url") val contactFrontendUrl: String
 ){
-  private val contactFrontendServiceId = "INVITAGENT"
+  private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) "INVITAGENT" else "INVITCLIENT"
 
   def signOutUrl(isAgent: Boolean): String = {
     if(isAgent){
@@ -37,11 +37,12 @@ class ExternalUrls @Inject()
     }
   }
 
-  def contactFrontendAjaxUrl: String = {
-    s"$contactFrontendUrl/contact/problem_reports_ajax?service=$contactFrontendServiceId"
+
+  def contactFrontendAjaxUrl(isAgent: Boolean): String = {
+    s"$contactFrontendUrl/contact/problem_reports_ajax?service=${contactFrontendServiceId(isAgent)}"
   }
 
-  def contactFrontendNonJsUrl: String = {
-    s"$contactFrontendUrl/contact/problem_reports_nonjs?service=$contactFrontendServiceId"
+  def contactFrontendNonJsUrl(isAgent: Boolean): String = {
+    s"$contactFrontendUrl/contact/problem_reports_nonjs?service=${contactFrontendServiceId(isAgent)}"
   }
 }

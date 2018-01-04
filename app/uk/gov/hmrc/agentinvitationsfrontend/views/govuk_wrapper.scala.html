@@ -97,7 +97,7 @@
 }
 
 @getHelpForm = @{
-  uiHelpers.reportAProblemLink(externalUrls.contactFrontendAjaxUrl, externalUrls.contactFrontendNonJsUrl)
+  uiHelpers.reportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))
 }
 
 @content = {
