@@ -1,11 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.PirClientRelationshipController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+
+import scala.concurrent.Future
 
 class PirClientRelationshipControllerISpec extends BaseISpec {
 
@@ -58,6 +60,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipEnded.title"))
+      checkHasClientSignOutUrl(result)
     }
 
     "redirect to clientCancelled if confirmResponse is false" in {
@@ -99,5 +102,10 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.terminate.500.title"))
     }
+  }
+
+  def checkHasClientSignOutUrl(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result, s"$sosRedirectUrl?accountType=individual&continue=/business-account")
   }
 }

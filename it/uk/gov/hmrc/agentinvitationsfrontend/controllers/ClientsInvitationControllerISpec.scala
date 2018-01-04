@@ -16,7 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Cookie, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
@@ -25,6 +25,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.http.NotFoundException
+
+import scala.concurrent.Future
 
 class ClientsInvitationControllerISpec extends BaseISpec {
 
@@ -46,6 +48,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = controller.start(invitationIdITSA)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
     "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
@@ -69,6 +72,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = controller.start(strangePrefixInvId)(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+
+    "show a signout url on the landing page if the user is authenticated" in {
+      val result = controller.start(invitationIdITSA)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe OK
+      checkHasClientSignOutUrl(result)
     }
   }
 
@@ -99,6 +108,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasClientSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Rejected", mtdItId.value, serviceITSA, "My Agency")
     }
 
@@ -115,6 +125,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasClientSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Rejected", nino, serviceNI, "My Agency")
     }
 
@@ -213,6 +224,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.itsa.sub-header", "My Agency"))
+      checkHasClientSignOutUrl(result)
     }
 
     "show the confirm invitation page for AFI" in {
@@ -224,6 +236,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.afi.sub-header", "My Agency"))
+      checkHasClientSignOutUrl(result)
     }
 
     "return 303 for not logged in user and redirected to Login Page for ITSA" in {
@@ -420,14 +433,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI,"Pending")
       givenGetAgencyNameStub(arn)
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("invitationId" -> invitationIdITSA.value), mtdItId.value)
-      val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("invitationId" -> invitationIdAFI.value), nino)
       val resultITSA = getConfirmTermsITSA(reqITSA)
-      val resultAFI = getConfirmTermsAFI(reqAFI)
 
       status(resultITSA) shouldBe OK
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.title"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-itsa-terms.alert", "My Agency"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
+      checkHasClientSignOutUrl(resultITSA)
     }
 
     "show the confirm terms page for AFI" in {
@@ -439,6 +451,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
+      checkHasClientSignOutUrl(result)
     }
 
     "show the invitation expired page when invitation has expired" in {
@@ -552,6 +565,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmTerms.invalid"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
+      checkHasClientSignOutUrl(resultITSA)
+      checkHasClientSignOutUrl(resultAFI)
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT or HMRC-NI enrolment but with a different clientId" in {
@@ -642,6 +657,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasClientSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for ITSA" in {
@@ -665,6 +681,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.title3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasClientSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for AFI" in {
@@ -703,11 +720,18 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   }
 
   "GET /not-sign-up/" should {
-    "show not sign up page if user does not have a valid enrolment" in {
+    "show not-sign-up page if user does not have a valid enrolment" in {
       val result = controller.notSignedUp(FakeRequest())
       status(result) shouldBe FORBIDDEN
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+
+    "show not-sign-up page with signout button if logged in" in {
+      val result = controller.notSignedUp(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe FORBIDDEN
+      checkHasClientSignOutUrl(result)
     }
   }
 
@@ -717,24 +741,45 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe FORBIDDEN
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-invitation.description"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+
+    "show incorrect page with signout button if logged in" in {
+      val result = controller.incorrectInvitation(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe FORBIDDEN
+      checkHasClientSignOutUrl(result)
     }
   }
 
   "GET /not-found/" should {
-    "show not found page if user responds to an invitation that does not exist" in {
+    "show not-found page if user responds to an invitation that does not exist" in {
       val result = controller.notFoundInvitation(FakeRequest())
       status(result) shouldBe NOT_FOUND
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+
+    "show not-found page with signout button if logged in" in {
+      val result = controller.notFoundInvitation(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe NOT_FOUND
+      checkHasClientSignOutUrl(result)
     }
   }
 
   "GET /already-responded/" should {
-    "show already responded page if user responds to an invitation that does not have a status Pending" in {
+    "show already-responded page if user responds to an invitation that does not have a status Pending" in {
       val result = controller.invitationAlreadyResponded(FakeRequest())
       status(result) shouldBe FORBIDDEN
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+
+    "show already-responded page with signout button if logged in" in {
+      val result = controller.invitationAlreadyResponded(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe FORBIDDEN
+      checkHasClientSignOutUrl(result)
     }
   }
 
@@ -753,5 +798,10 @@ class ClientsInvitationControllerISpec extends BaseISpec {
         "path" -> "/"
       )
     )
+  }
+
+  def checkHasClientSignOutUrl(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result, s"$sosRedirectUrl?accountType=individual&continue=/business-account")
   }
 }

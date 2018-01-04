@@ -28,6 +28,7 @@ import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.BadRequestException
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class AgentInvitationControllerISpec extends BaseISpec {
@@ -59,6 +60,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
+      checkHasAgentSignOutLink(result)
+
       verifyAuthoriseAttempt()
     }
     behave like anAuthorisedEndpoint(request, showNinoForm)
@@ -85,6 +88,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.nino.required"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -95,6 +99,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.invalid-format"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
   }
@@ -111,6 +116,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("select-service.itsa"),
         htmlEscapedMessage("select-service.personal-income-viewer"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -162,6 +168,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
     behave like anAuthorisedEndpoint(request, submitService)
@@ -175,6 +182,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showPostcodeForm(authorisedAsValidAgent(request.withSession("nino" -> validNino.value, "service" -> serviceITSA), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -214,6 +222,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
@@ -226,6 +235,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
@@ -285,6 +295,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationId)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -307,6 +318,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -323,10 +335,16 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.description"))
+      checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
     behave like anAuthorisedEndpoint(request, notMatched)
+  }
+
+  def checkHasAgentSignOutLink(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result, s"$sosRedirectUrl?accountType=agent&continue=/agent-services-account")
   }
 
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
