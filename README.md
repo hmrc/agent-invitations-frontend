@@ -38,6 +38,7 @@ It should run at port 9448
 sm --stop AGENT_MTD
 ```
 
+
 ## Endpoints
 All Endpoints require Authentication.
 
