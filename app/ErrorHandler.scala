@@ -44,7 +44,7 @@ class ErrorHandler @Inject() ( val env: Environment,
                              (implicit val config: Configuration, ec: ExecutionContext, externalUrls: ExternalUrls)
   extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
 
-  val authenticationRedirect: String = config.getString("authentication.login-callback.url")
+  lazy val authenticationRedirect: String = config.getString("authentication.login-callback.url")
     .getOrElse(throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
@@ -93,11 +93,11 @@ class ErrorHandler @Inject() ( val env: Environment,
 
 object EventTypes {
 
-  val RequestReceived: String = "RequestReceived"
-  val TransactionFailureReason: String = "transactionFailureReason"
-  val ServerInternalError: String = "ServerInternalError"
-  val ResourceNotFound: String = "ResourceNotFound"
-  val ServerValidationError: String = "ServerValidationError"
+  lazy val RequestReceived: String = "RequestReceived"
+  lazy val TransactionFailureReason: String = "transactionFailureReason"
+  lazy val ServerInternalError: String = "ServerInternalError"
+  lazy val ResourceNotFound: String = "ResourceNotFound"
+  lazy val ServerValidationError: String = "ServerValidationError"
 }
 
 trait ErrorAuditing extends HttpAuditEvent {
@@ -106,9 +106,9 @@ trait ErrorAuditing extends HttpAuditEvent {
 
   def auditConnector: AuditConnector
 
-  private val unexpectedError = "Unexpected error"
-  private val notFoundError = "Resource Endpoint Not Found"
-  private val badRequestError = "Request bad format exception"
+  private lazy val unexpectedError = "Unexpected error"
+  private lazy val notFoundError = "Resource Endpoint Not Found"
+  private lazy val badRequestError = "Request bad format exception"
 
   def auditServerError(request: RequestHeader, ex: Throwable)(implicit ec: ExecutionContext): Unit = {
     val eventType = ex match {
