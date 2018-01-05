@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
+import java.net.URL
+
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -17,7 +19,9 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   override implicit lazy val app: Application = appBuilder.build()
 
-  val sosRedirectUrl = "https://government-gateway-registration-frontend"
+  val companyAuthUrl = "https://company-auth-url"
+  val companyAuthSignOutPath = "/sign-out-path"
+  val businessTaxAccountUrl = "https://business-tax-account-url"
 
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
@@ -32,7 +36,9 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.personal-tax-account.external-url" -> wireMockBaseUrlAsString,
-        "microservice.services.government-gateway-registration-frontend.external-url" -> sosRedirectUrl,
+        "microservice.services.company-auth-frontend.external-url" -> companyAuthUrl,
+        "microservice.services.company-auth-frontend.sign-out.path" -> companyAuthSignOutPath,
+        "microservice.services.business-tax-account.external-url" -> businessTaxAccountUrl,
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,

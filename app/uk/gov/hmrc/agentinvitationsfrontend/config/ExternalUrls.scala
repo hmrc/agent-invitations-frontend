@@ -16,25 +16,29 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.config
 
+import java.net.{URL, URLEncoder}
+import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Named, Singleton}
-
-import play.api.Configuration
 
 @Singleton
 class ExternalUrls @Inject()
 (
-  @Named("government-gateway-registration-frontend.external-url") val sosRedirectUrl: String,
+  @Named("company-auth-frontend.external-url") val companyAuthUrl: String,
+  @Named("company-auth-frontend.sign-out.path") val companyAuthSignOutPath: String,
+  @Named("business-tax-account.external-url") val businessTaxAccountUrl: String,
+  @Named("agent-services-account-frontend.external-url") val agentServicesAccountUrl: String,
   @Named("contact-frontend.external-url") val contactFrontendUrl: String
 ){
   private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) "INVITAGENT" else "INVITCLIENT"
 
   def signOutUrl(isAgent: Boolean): String = {
-    if(isAgent){
-      s"$sosRedirectUrl?accountType=agent&continue=/agent-services-account"
+    val continueUrl = if(isAgent) {
+      s"$agentServicesAccountUrl/agent-services-account"
+    } else {
+      s"$businessTaxAccountUrl/business-account"
     }
-    else{
-      s"$sosRedirectUrl?accountType=individual&continue=/business-account"
-    }
+
+    s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
 
 

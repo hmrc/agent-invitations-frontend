@@ -16,6 +16,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -344,7 +347,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   def checkHasAgentSignOutLink(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    checkHtmlResultWithBodyText(result, s"$sosRedirectUrl?accountType=agent&continue=/agent-services-account")
+    val asAcHomepageExternalUrl = wireMockBaseUrlAsString
+    val continueUrl = URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
