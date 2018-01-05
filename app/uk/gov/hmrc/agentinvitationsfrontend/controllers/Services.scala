@@ -24,14 +24,14 @@ case object InvalidService extends Service
 
 object Services {
 
-  lazy val ITSA = "itsa"
-  lazy val AFI = "afi"
-  lazy val HMRCMTDIT = "HMRC-MTD-IT"
-  lazy val HMRCNI = "HMRC-NI"
-  lazy val HMRCPIR = "PERSONAL-INCOME-RECORD"
-  lazy val MTDITID = "MTDITID"
-  lazy val NINO = "NINO"
-  lazy val NI = "NI"
+  val ITSA = "itsa"
+  val AFI = "afi"
+  val HMRCMTDIT = "HMRC-MTD-IT"
+  val HMRCNI = "HMRC-NI"
+  val HMRCPIR = "PERSONAL-INCOME-RECORD"
+  val MTDITID = "MTDITID"
+  val NINO = "NINO"
+  val NI = "NI"
 
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {

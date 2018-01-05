@@ -93,11 +93,11 @@ class ErrorHandler @Inject() ( val env: Environment,
 
 object EventTypes {
 
-  lazy val RequestReceived: String = "RequestReceived"
-  lazy val TransactionFailureReason: String = "transactionFailureReason"
-  lazy val ServerInternalError: String = "ServerInternalError"
-  lazy val ResourceNotFound: String = "ResourceNotFound"
-  lazy val ServerValidationError: String = "ServerValidationError"
+  val RequestReceived: String = "RequestReceived"
+  val TransactionFailureReason: String = "transactionFailureReason"
+  val ServerInternalError: String = "ServerInternalError"
+  val ResourceNotFound: String = "ResourceNotFound"
+  val ServerValidationError: String = "ServerValidationError"
 }
 
 trait ErrorAuditing extends HttpAuditEvent {
@@ -106,9 +106,9 @@ trait ErrorAuditing extends HttpAuditEvent {
 
   def auditConnector: AuditConnector
 
-  private lazy val unexpectedError = "Unexpected error"
-  private lazy val notFoundError = "Resource Endpoint Not Found"
-  private lazy val badRequestError = "Request bad format exception"
+  private val unexpectedError = "Unexpected error"
+  private val notFoundError = "Resource Endpoint Not Found"
+  private val badRequestError = "Request bad format exception"
 
   def auditServerError(request: RequestHeader, ex: Throwable)(implicit ec: ExecutionContext): Unit = {
     val eventType = ex match {

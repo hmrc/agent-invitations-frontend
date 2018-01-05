@@ -35,7 +35,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.http.Upstream4xxResponse
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCPIR}
 
 import scala.concurrent.Future
@@ -60,8 +60,8 @@ class AgentsInvitationController @Inject()(
     Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
   private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
 
-  val agentsRoot: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+  val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
+    Redirect(routes.AgentsInvitationController.showNinoForm())
   }
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>

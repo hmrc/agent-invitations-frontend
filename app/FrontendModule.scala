@@ -37,9 +37,9 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
   override protected def mode = environment.mode
 
   def configure(): Unit = {
-    lazy val appName = "agent-invitations-frontend"
+    val appName = "agent-invitations-frontend"
 
-    lazy val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
+    val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
     Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
