@@ -44,7 +44,7 @@ class ErrorHandler @Inject() ( val env: Environment,
                              (implicit val config: Configuration, ec: ExecutionContext, externalUrls: ExternalUrls)
   extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
 
-  val authenticationRedirect: String = config.getString("authentication.login-callback.url")
+  lazy val authenticationRedirect: String = config.getString("authentication.login-callback.url")
     .getOrElse(throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {

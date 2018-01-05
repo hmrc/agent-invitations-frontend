@@ -44,17 +44,17 @@ class PirClientRelationshipController @Inject()(
                                                (implicit val configuration: Configuration, externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
-  def deauthoriseAllStart(): Action[AnyContent] = Action.async {
+  val deauthoriseAllStart: Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
         afiRelationshipConnector.getClientRelationships("PERSONAL-INCOME-RECORD", clientId).map {
           case Some(_) => Ok(client_ends_relationship(RadioConfirm.confirmDeauthoriseRadioForm))
-          case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage)
+          case None => Redirect(routes.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage())
         }
       }
   }
 
-  def submitDeauthoriseAll(): Action[AnyContent] = Action.async { implicit request =>
+  val submitDeauthoriseAll: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsClient("HMRC-NI", "NINO") { clientId =>
       RadioConfirm.confirmDeauthoriseRadioForm.bindFromRequest().fold(
         formWithErrors => {
@@ -67,18 +67,18 @@ class PirClientRelationshipController @Inject()(
                 Ok(error_template(Messages("error.terminate.500.title"),
                   Messages("error.terminate.500.heading"), Messages("error.terminate.500.message")))
             }
-          else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination))
+          else Future.successful(Redirect(routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination()))
         }
       )
     }
   }
 
-  def getClientDeclinedRelationshipTermination: Action[AnyContent] = Action.async {
+  val getClientDeclinedRelationshipTermination: Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Ok(client_cancelled_deauth()))
   }
 
-  def getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
+  val getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Ok(client_ends_relationship_no_agent()))
   }
