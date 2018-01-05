@@ -16,6 +16,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import play.api.mvc.{Action, AnyContent, Cookie, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -802,6 +805,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   def checkHasClientSignOutUrl(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    checkHtmlResultWithBodyText(result, s"$sosRedirectUrl?accountType=individual&continue=/business-account")
+    val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 }
