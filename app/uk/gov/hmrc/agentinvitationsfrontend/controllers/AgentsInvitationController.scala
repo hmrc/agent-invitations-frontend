@@ -36,6 +36,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.domain.Nino.isValid
 import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCPIR}
 
 import scala.concurrent.Future
 
@@ -56,32 +57,32 @@ class AgentsInvitationController @Inject()(
   import AgentsInvitationController._
 
   private val personalIncomeRecord = if (showPersonalIncome)
-    Seq("PERSONAL-INCOME-RECORD" -> Messages("select-service.personal-income-viewer")) else Seq.empty
-  private val mtdItId = if (showHmrcMtdIt) Seq("HMRC-MTD-IT" -> Messages("select-service.itsa")) else Seq.empty
+    Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
+  private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
 
-  def agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.showNinoForm())
+  val agentsRoot: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
   }
 
-  def showNinoForm: Action[AnyContent] = Action.async { implicit request =>
+  val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       Future successful Ok(enter_nino(agentInvitationNinoForm))
     }
   }
 
-  def submitNino: Action[AnyContent] = Action.async { implicit request =>
+  val submitNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Future successful Redirect(routes.AgentsInvitationController.selectService()).withSession(request.session + ("nino" -> userInput.nino.value))
+          Future successful Redirect(routes.AgentsInvitationController.selectService()).addingToSession("nino" -> userInput.nino.value)
         })
     }
   }
 
-  def selectService: Action[AnyContent] = Action.async { implicit request =>
+  val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       request.session.get("nino") match {
         case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None)),
@@ -91,7 +92,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def submitService: Action[AnyContent] = Action.async { implicit request =>
+  val submitService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationServiceForm.bindFromRequest().fold(
         formWithErrors => {
@@ -99,9 +100,9 @@ class AgentsInvitationController @Inject()(
         },
         userInput => {
           userInput.service match {
-            case Some("HMRC-MTD-IT") => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-              .withSession(request.session + ("service" -> "HMRC-MTD-IT"))
-            case Some("PERSONAL-INCOME-RECORD") => createInvitation(arn, userInput)
+            case Some(HMRCMTDIT) => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+              .addingToSession("service" -> HMRCMTDIT)
+            case Some(HMRCPIR) => createInvitation(arn, userInput)
             case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
           }
         }
@@ -110,7 +111,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
+  val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       val maybeNino = request.session.get("nino")
       val maybeService = request.session.get("service")
@@ -125,7 +126,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def submitPostcode: Action[AnyContent] = Action.async { implicit request =>
+  val submitPostcode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       agentInvitationPostCodeForm.bindFromRequest().fold(
         formWithErrors => {
@@ -136,14 +137,15 @@ class AgentsInvitationController @Inject()(
   }
 
   private def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit request: Request[_]) = {
-    invitationsService
-      .createInvitation(arn, userInput)
+    invitationsService.createInvitation(arn, userInput)
       .map(invitation => {
-        val id = extractInvitationId(invitation.selfUrl.toString)
-        if (invitation.service == "HMRC-MTD-IT") auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
+        val id = invitation.selfUrl.toString.split("/").toStream.last
+        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
         else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
-        Redirect(routes.AgentsInvitationController.invitationSent).withSession(
-          request.session + ("invitationId" -> id) + ("deadline" -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY")))
+        Redirect(routes.AgentsInvitationController.invitationSent())
+          .addingToSession(
+            "invitationId" -> id,
+            "deadline" -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY"))
         )
       })
       .recoverWith {
@@ -164,31 +166,29 @@ class AgentsInvitationController @Inject()(
       }
   }
 
-  def invitationSent: Action[AnyContent] = Action.async { implicit request =>
+  val invitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
           Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
+            .removingFromSession("nino", "service", "invitationId", "deadline")
         case _ => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
   }
 
-  def notEnrolled: Action[AnyContent] = Action.async { implicit request =>
+  val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       Future successful Forbidden(not_enrolled())
     }
   }
 
-  def notMatched: Action[AnyContent] = Action.async { implicit request =>
+  val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       Future successful Forbidden(not_matched())
     }
   }
-
-  private def extractInvitationId(url: String) = url.substring(url.lastIndexOf("/") + 1)
-
 }
 
 object AgentsInvitationController {
@@ -211,7 +211,7 @@ object AgentsInvitationController {
     }
   }
 
-  val serviceChoice: Constraint[Option[String]] = Constraint[Option[String]] { fieldValue: Option[String] =>
+  private val serviceChoice: Constraint[Option[String]] = Constraint[Option[String]] { fieldValue: Option[String] =>
     if (fieldValue.isDefined)
       Valid
     else
@@ -250,3 +250,4 @@ object AgentsInvitationController {
     ({ user => Some((user.nino.value, user.service, user.postcode.getOrElse(""))) }))
   }
 }
+

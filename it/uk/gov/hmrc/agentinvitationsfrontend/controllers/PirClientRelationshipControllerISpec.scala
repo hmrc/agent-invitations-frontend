@@ -71,7 +71,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
         FakeRequest().withFormUrlEncodedBody("confirmResponse" -> "false"), clientId)))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/relationships/individual/manage-your-tax-agents/deauthorise-agent/decline")
+      redirectLocation(result).get shouldBe personalincomerecord.routes.PirClientRelationshipController.getClientDeclinedRelationshipTermination().url
     }
 
     "return 200 with errors for failing radioButton submit" in {
@@ -79,6 +79,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationship.title"))
+      checkHasClientSignOutUrl(result)
     }
 
     "verify Unauthorized if user has insufficient enrolments" in {
