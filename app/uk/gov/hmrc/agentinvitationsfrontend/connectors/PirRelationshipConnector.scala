@@ -18,14 +18,17 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
+
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.Reads
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models.PirRelationship
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.http.{HttpResponse, HeaderCarrier}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -60,6 +63,17 @@ class PirRelationshipConnector @Inject()(
         }
     }
   }
+
+  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+    val url = deleteRelationshipUrl(arn, service, clientId)
+    http.DELETE[HttpResponse](url).map(_.status)
+      .recover {
+        case _: Upstream5xxResponse => 500
+      }
+  }
+
+  private def deleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
+    s"/agent-fi-relationship/relationships/${arn.value}/service/$service/client/$clientId"
 
   private def deauthServiceClientIdUrl(service: String, clientId: String): String =
     s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"

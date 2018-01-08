@@ -1,0 +1,55 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@(field: Field, args: (Symbol, Any)*)(implicit messages: play.api.i18n.Messages, lang: Lang = Lang("en"))
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.labelWrap
+@import views.html.helper.FieldElements
+@argsMap = @{ args.toMap }
+@elements = @{ new FieldElements(field.id, field, null, argsMap, messages) }
+@value = @{ field.value match { case Some(x) => x case None => "" case x => x }}
+@wrapperClass = @{
+    var w = Seq("form-field") ++ argsMap.getOrElse('_modifierClass, "").asInstanceOf[String].split(" ")
+    w = if (field.hasErrors) w :+ "form-field--error" else w
+    w.mkString(" ")
+}
+@inputClass = @{
+    var c:String = argsMap.getOrElse('_inputClass, "").asInstanceOf[String]
+    c = if(field.hasErrors) c + " error-field" else c
+    c.trim
+}
+<div@if(wrapperClass.nonEmpty){ class="@wrapperClass"}>
+    @labelWrap('labelText -> argsMap.getOrElse('label, ""), 'for -> elements.field.name, '_modifierClass -> argsMap.get('_labelClass)){
+        @if(argsMap.get('hint).isDefined) {<div class="form-hint form-hint--small">@argsMap.get('hint)</div>}
+
+        <input type="text"@if(inputClass.nonEmpty){ class="@inputClass" } name="@elements.field.name" id="@elements.field.name" value="@value"
+            @if(elements.args.contains('_dataAttributes) ){ @elements.args.get('_dataAttributes)}
+            @if(elements.args.get('_autoComplete) ){ autocomplete="@elements.args.get('_autoComplete)" }
+            @if(elements.args.get('_error_id).isDefined) { aria-labeledby="@elements.args.get('_error_id)" }
+            @if(elements.args.get('_hintId).isDefined) { aria-describedby="@elements.args.get('_hintId)" }
+            @if(elements.args.get('_maxlength).isDefined) { maxlength="@elements.args.get('_maxlength)" }
+            @if(elements.args.get('_max).isDefined) { max="@elements.args.get('_max)" }
+            @if(elements.args.get('_pattern).isDefined) { pattern="@elements.args.get('_pattern)" }
+            @if(elements.args.get('_title).isDefined) { title="@elements.args.get('_title)" }
+            @if(elements.args.get('datalist).isDefined) { list="@{elements.field.name}_datalist" }
+        />
+        @if(elements.args.get('datalist).isDefined) {
+            <datalist id="@{elements.field.name}_datalist">
+                @elements.args.get('datalist).get.asInstanceOf[Seq[String]].map { v:String => <option value="@v"/>
+                }
+            </datalist>
+        }
+    }
+</div>
