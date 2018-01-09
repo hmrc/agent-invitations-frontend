@@ -1,0 +1,49 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.Relationship
+@import uk.gov.hmrc.play.views.html.helpers.{form, input}
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Delete a relationship", isAgent = true) {
+    <h1>Test Only: Delete a relationship</h1>
+    @form(routes.TestEndpointsController.submitDeleteRelationship()) {
+        <fieldset class="form-field-group">
+            <div class="form-group">
+                @input(
+                    dRForm("arn"),
+                    '_label -> "Arn"
+                )
+                <p>&nbsp;</p>
+                @input(
+                    dRForm("service"),
+                    '_label -> "Service"
+                )
+                <p>&nbsp;</p>
+                @input(
+                    dRForm("clientId"),
+                    '_label -> "Client ID"
+                )
+            </div>
+        </fieldset>
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">Delete</button>
+        </div>
+    }
+}

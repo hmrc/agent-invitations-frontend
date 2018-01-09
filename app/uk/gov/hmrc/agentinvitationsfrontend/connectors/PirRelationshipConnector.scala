@@ -18,14 +18,17 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
+
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import play.api.libs.json.Reads
+import org.joda.time.DateTime
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models.PirRelationship
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.http.{HttpResponse, HeaderCarrier}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -55,11 +58,36 @@ class PirRelationshipConnector @Inject()(
     monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
       val url = craftUrl(location)
       http.DELETE[HttpResponse](url.toString).map(_.status)
-        .recover{
-          case ex: Upstream5xxResponse => 500
+        .recover {
+          case _: Upstream5xxResponse => 500
         }
     }
   }
+
+  def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+    monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
+      val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
+      val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+      http.PUT[JsObject, HttpResponse](url.toString, body).map(_.status)
+        .recover {
+          case _: Upstream5xxResponse => 500
+        }
+    }
+  }
+
+  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+    monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
+      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
+      http.DELETE[HttpResponse](url.toString).map(_.status)
+        .recover {
+          case _: Upstream5xxResponse => 500
+        }
+    }
+  }
+
+  private def createAndDeleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
+    s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"
 
   private def deauthServiceClientIdUrl(service: String, clientId: String): String =
     s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"
