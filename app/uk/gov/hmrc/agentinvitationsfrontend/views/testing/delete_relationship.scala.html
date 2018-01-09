@@ -16,29 +16,34 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.DeleteRelationship
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{form, submit}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.textinput
 @(dRForm: Form[DeleteRelationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Delete a relationship", isAgent = true) {
     <h1>Test Only: Delete a relationship</h1>
     @form(routes.TestEndpointsController.submitDeleteRelationship()) {
         <fieldset class="form-field-group">
-            <p>&nbsp;</p>
-            @textinput(dRForm("arn"),
-                'label -> Messages("Arn"))
-            @textinput(dRForm("service"),
-                'label -> Messages("Service"))
-            @textinput(dRForm("clientId"),
-                'label -> Messages("Client ID"))
+            <div class="form-group">
+                @input(
+                    dRForm("arn"),
+                    '_label -> "Arn"
+                )
+                <p>&nbsp;</p>
+                @input(
+                    dRForm("service"),
+                    '_label -> "Service"
+                )
+                <p>&nbsp;</p>
+                @input(
+                    dRForm("clientId"),
+                    '_label -> "Client ID"
+                )
+            </div>
         </fieldset>
-        <p>&nbsp;</p>
-        </fieldset>
-        @submit('id -> "buttonDelete") {
-            @Messages("Delete")
-        }
-        <p>&nbsp;</p>
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">Delete</button>
+        </div>
     }
 }
