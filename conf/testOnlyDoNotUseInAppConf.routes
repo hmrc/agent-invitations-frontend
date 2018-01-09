@@ -11,8 +11,7 @@
 
 # Add all the application routes to the prod.routes file
 ->          /                                                          prod.Routes
-#GET         /invitations/test-only/relationships/create                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getCreateRelationship()
-#POST        /invitations/test-only/relationships/create                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.submitCreateRelationship()
-#GET         /invitations/test-only/relationships/create-success        @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getCreateRelationshipSuccess()
+GET         /invitations/test-only/relationships/create                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getCreateRelationship()
+POST        /invitations/test-only/relationships/create                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.submitCreateRelationship()
 GET         /invitations/test-only/relationships/delete                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getDeleteRelationship()
 POST        /invitations/test-only/relationships/delete                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.submitDeleteRelationship()

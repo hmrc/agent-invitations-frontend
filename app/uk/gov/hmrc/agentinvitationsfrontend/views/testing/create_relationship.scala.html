@@ -21,9 +21,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Delete a relationship", isAgent = true) {
-    <h1>Test Only: Delete a relationship</h1>
-    @form(routes.TestEndpointsController.submitDeleteRelationship()) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Create a relationship", isAgent = true) {
+    <h1>Test Only: Create a relationship</h1>
+    @form(routes.TestEndpointsController.submitCreateRelationship()) {
         <fieldset class="form-field-group">
             <div class="form-group">
                 @input(
@@ -43,7 +43,7 @@
             </div>
         </fieldset>
         <div class="form-group">
-            <button class="button" type="submit" id="continue">Delete</button>
+            <button class="button" type="submit" id="continue">Create</button>
         </div>
     }
 }

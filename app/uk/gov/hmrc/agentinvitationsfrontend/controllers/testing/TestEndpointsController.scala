@@ -25,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.delete_relationship
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{routes => agentRoutes}
@@ -40,11 +40,11 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
   import TestEndpointsController._
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(delete_relationship(testDeleteRelationshipForm))
+    Future successful Ok(delete_relationship(testRelationshipForm))
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    testDeleteRelationshipForm.bindFromRequest().fold(
+    testRelationshipForm.bindFromRequest().fold(
       formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
       validFormData => {
         rsConnector.deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
@@ -55,48 +55,36 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
     )
   }
 
-  def getCreateRelationship: Action[AnyContent] = ???
+  def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
+      Future successful Ok(create_relationship(testRelationshipForm))
+    }
 
-  //    Action.async { implicit request =>
-  //    Future successful Ok(create_relationship(createRelationship))
-  //  }
-
-  def submitCreateRelationship: Action[AnyContent] = ???
-
-  //    Action.async { implicit request =>
-  //    createRelationship.bindFromRequest().fold(
-  //      formWithErrors ⇒ failedForm(formWithErrors),
-  //      validFormData => {
-  //        rsConnector.createRelationship(validFormData.arn, validFormData.service, validFormData.clientId, LocalDateTime.now.toString).map(response ⇒
-  //          response.fold(_ ⇒ Redirect(agentRoutes.AgentController.getErrorPage()),
-  //            _ ⇒ Redirect(routes.TestEndpointsController.submitCreateRelationship())
-  //          ))
-  //      }
-  //    )
-  //  }
-
-  def getCreateRelationshipSuccess: Action[AnyContent] = ???
-
-  //    Action.async { implicit request =>
-  //    Future successful Ok(select_client_success("We have created a relationship"))
-  //  }
+  def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
+    testRelationshipForm.bindFromRequest().fold(
+        formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
+        validFormData => {
+          rsConnector.createRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
+            case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
+            case _ => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+          }
+        }
+      )
+    }
 }
 
 object TestEndpointsController {
 
-  case class CreateRelationship(arn: Arn, service: String, clientId: String)
+  case class Relationship(arn: Arn, service: String, clientId: String)
 
-  case class DeleteRelationship(arn: Arn, service: String, clientId: String)
-
-  val testDeleteRelationshipForm: Form[DeleteRelationship] = {
+  val testRelationshipForm: Form[Relationship] = {
     Form(mapping(
       "arn" -> text,
       "service" -> text,
       "clientId" -> text
     )({
-      case (arn, service, clientId) => DeleteRelationship(Arn(arn), service, clientId)
+      case (arn, service, clientId) => Relationship(Arn(arn), service, clientId)
     })({
-      dr: DeleteRelationship => Some((dr.arn.value, dr.service, dr.clientId))
+      dr: Relationship => Some((dr.arn.value, dr.service, dr.clientId))
     }))
   }
 }
