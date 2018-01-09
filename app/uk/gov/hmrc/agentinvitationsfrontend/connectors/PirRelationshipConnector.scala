@@ -65,21 +65,25 @@ class PirRelationshipConnector @Inject()(
   }
 
   def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
-    val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
-    val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
-    val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
-    http.PUT[JsObject, HttpResponse](url.toString, body).map(_.status)
-      .recover {
-        case _: Upstream5xxResponse => 500
-      }
+    monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
+      val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
+      val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+      http.PUT[JsObject, HttpResponse](url.toString, body).map(_.status)
+        .recover {
+          case _: Upstream5xxResponse => 500
+        }
+    }
   }
 
   def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
-    val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
-    http.DELETE[HttpResponse](url.toString).map(_.status)
-      .recover {
-        case _: Upstream5xxResponse => 500
-      }
+    monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
+      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
+      http.DELETE[HttpResponse](url.toString).map(_.status)
+        .recover {
+          case _: Upstream5xxResponse => 500
+        }
+    }
   }
 
   private def createAndDeleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
