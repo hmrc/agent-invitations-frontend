@@ -47,6 +47,13 @@ class TestEndpointsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url
     }
+
+    "return a Bad Request and reload the page if invalid form data" in {
+      val result = await(controller.submitDeleteRelationship().apply(FakeRequest()))
+
+      status(result) shouldBe 400
+      checkHtmlResultWithBodyText(result, "Test Only: Delete a relationship")
+    }
   }
 
   "getCreateRelationship" should {
@@ -77,6 +84,13 @@ class TestEndpointsControllerISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url
+    }
+
+    "return a Bad Request and reload the page if invalid form data" in {
+      val result = await(controller.submitCreateRelationship().apply(FakeRequest()))
+
+      status(result) shouldBe 400
+      checkHtmlResultWithBodyText(result, "Test Only: Create a relationship")
     }
   }
 }
