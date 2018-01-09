@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
@@ -47,5 +48,35 @@ trait AfiRelationshipStub {
 
   def verifyTerminateAfiRelationshipsAttempt(service: String, clientId: String): Unit = {
     verify(1, deleteRequestedFor(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId")))
+  }
+
+  def deleteRelationship(arn: Arn, service: String, clientId: String): Unit = {
+    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+      .willReturn(
+        aResponse()
+          .withStatus(200)
+      ))
+  }
+
+  def deleteRelationshipFailed(arn: Arn, service: String, clientId: String): Unit = {
+    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+      .willReturn(
+        aResponse()
+          .withStatus(500)
+      ))
+  }
+
+  def createRelationship(arn: Arn, service: String, clientId: String): Unit = {
+    stubFor(put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+      .willReturn(
+        aResponse()
+          .withStatus(201)))
+  }
+
+  def createRelationshipFailed(arn: Arn, service: String, clientId: String): Unit = {
+    stubFor(put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+      .willReturn(
+        aResponse()
+          .withStatus(500)))
   }
 }
