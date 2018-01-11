@@ -66,7 +66,10 @@ class AgentsInvitationController @Inject()(
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      Future successful Ok(enter_nino(agentInvitationNinoForm))
+      request.session.get("service") match {
+        case Some(service) => Future successful Ok (enter_nino (agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
     }
   }
 
@@ -78,8 +81,9 @@ class AgentsInvitationController @Inject()(
         },
         userInput => {
           userInput.nino match {
-            case Some(nino) => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            case Some(nino) if userInput.service == HMRCMTDIT => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               .addingToSession("nino" -> nino.value)
+            case Some(nino) if userInput.service == HMRCPIR => createInvitation(arn, userInput)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
         })
@@ -210,7 +214,7 @@ object AgentsInvitationController {
   }
 
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
-    if (fieldValue.nonEmpty)
+    if (fieldValue.trim.nonEmpty)
       Valid
     else
       Invalid(ValidationError("error.service.required"))

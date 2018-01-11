@@ -32,26 +32,19 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "")
+      val data = Json.obj("service" -> serviceITSA, "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid service PIR" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> servicePIR, "postcode" -> "")
+      val data = Json.obj("nino" -> "", "service" -> servicePIR, "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for form with empty service" in {
       val data = Json.obj("nino" -> "WM123456C", "service" -> "", "postcode" -> "")
-      val serviceForm = agentInvitationServiceForm.bind(data)
-      serviceForm.errors.contains(serviceEmptyFormError) shouldBe true
-      serviceForm.errors.length shouldBe 1
-    }
-
-    "return an error message for form with missing service" in {
-      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.contains(serviceEmptyFormError) shouldBe true
       serviceForm.errors.length shouldBe 1
