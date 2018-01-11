@@ -183,7 +183,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitService = controller.submitService()
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter nino page" in {
-      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), None))
+      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -194,7 +194,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to enter nino" in {
-      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(servicePIR, Some(validNino), None))
+      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(servicePIR, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303

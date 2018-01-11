@@ -92,11 +92,7 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      request.session.get("service") match {
-        case Some(service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-          .addingToSession("service" -> service)
-        case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
-      }
+      Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
     }
   }
 
