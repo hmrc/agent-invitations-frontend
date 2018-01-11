@@ -61,7 +61,7 @@ class AgentsInvitationController @Inject()(
   private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Redirect(routes.AgentsInvitationController.showNinoForm())
+    Redirect(routes.AgentsInvitationController.selectService())
   }
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
@@ -77,17 +77,21 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          Future successful Redirect(routes.AgentsInvitationController.selectService()).addingToSession("nino" -> userInput.nino.value)
+          userInput.nino match {
+            case Some(nino) => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+              .addingToSession("nino" -> nino.value)
+            case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
+          }
         })
     }
   }
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      request.session.get("nino") match {
-        case Some(nino) => Future successful Ok(select_service(agentInvitationServiceForm.fill(AgentInvitationUserInput(Nino(nino), None, None)),
-          personalIncomeRecord ++ mtdItId))
-        case _ => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+      request.session.get("service") match {
+        case Some(service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+          .addingToSession("service" -> service)
+        case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
       }
     }
   }
@@ -99,15 +103,9 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(select_service(formWithErrors, personalIncomeRecord ++ mtdItId))
         },
         userInput => {
-          userInput.service match {
-            case Some(HMRCMTDIT) => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-              .addingToSession("service" -> HMRCMTDIT)
-            case Some(HMRCPIR) => createInvitation(arn, userInput)
-            case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId))
-          }
+            Future successful Redirect(routes.AgentsInvitationController.showNinoForm()).addingToSession("service" -> userInput.service)
         }
       )
-
     }
   }
 
@@ -117,7 +115,7 @@ class AgentsInvitationController @Inject()(
       val maybeService = request.session.get("service")
       (maybeNino, maybeService) match {
         case (Some(nino), Some(service)) =>
-          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(Nino(nino), Some(service), None))))
+          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(service, Some(Nino(nino)), None))))
         case (Some(nino), None) =>
           Future successful Redirect(routes.AgentsInvitationController.selectService())
         case _ =>
@@ -211,8 +209,8 @@ object AgentsInvitationController {
     }
   }
 
-  private val serviceChoice: Constraint[Option[String]] = Constraint[Option[String]] { fieldValue: Option[String] =>
-    if (fieldValue.isDefined)
+  private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.nonEmpty)
       Valid
     else
       Invalid(ValidationError("error.service.required"))
@@ -225,29 +223,29 @@ object AgentsInvitationController {
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
+      "service" -> text.verifying(serviceChoice),
       "nino" -> text.verifying(invalidNino),
-      "service" -> optional(text),
       "postcode" -> optional(text))
-    ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, postcode) })
-    ({ user => Some((user.nino.value, user.service, user.postcode)) }))
+    ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), postcode) })
+    ({ user => Some((user.service, user.nino.map(_.value).getOrElse(""), user.postcode)) }))
   }
 
   val agentInvitationServiceForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
-      "nino" -> text.verifying(invalidNino),
-      "service" -> optional(text).verifying(serviceChoice),
+      "service" -> text.verifying(serviceChoice),
+      "nino" -> optional(text),
       "postcode" -> optional(text))
-    ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, postcode) })
-    ({ user => Some((user.nino.value, user.service, user.postcode)) }))
+    ({ (service, nino, postcode) => AgentInvitationUserInput(service, nino.map(x => Nino(x.toUpperCase)), postcode) })
+    ({ user => Some((user.service, user.nino.map(_.value), user.postcode)) }))
   }
 
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
+      "service" -> text.verifying(serviceChoice),
       "nino" -> text.verifying(invalidNino),
-      "service" -> optional(text).verifying(serviceChoice),
       "postcode" -> text.verifying(invalidPostcode))
-    ({ (nino, service, postcode) => AgentInvitationUserInput(Nino(nino.trim.toUpperCase()), service, Option(postcode)) })
-    ({ user => Some((user.nino.value, user.service, user.postcode.getOrElse(""))) }))
+    ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
+    ({ user => Some((user.service, user.nino.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }
 }
 

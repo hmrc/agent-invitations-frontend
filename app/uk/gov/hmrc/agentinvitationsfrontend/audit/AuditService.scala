@@ -46,8 +46,8 @@ class AuditService @Inject() (val auditConnector: AuditConnector) {
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "clientIdType" -> "ni",
-        "clientId" -> agentInvitationUserInput.nino.value,
-        "service" -> agentInvitationUserInput.service.getOrElse(throw new IllegalStateException("No regime present"))
+        "clientId" -> agentInvitationUserInput.nino.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
+        "service" -> agentInvitationUserInput.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }
