@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.TaxIdentifier
 
-case class AgentInvitationUserInput(service: String, nino: Option[Nino], postcode: Option[String])
+case class AgentInvitationUserInput(service: String, taxIdentifier: Option[TaxIdentifier], postcode: Option[String])

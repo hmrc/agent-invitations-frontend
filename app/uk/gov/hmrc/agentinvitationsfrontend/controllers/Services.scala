@@ -24,19 +24,27 @@ case object InvalidService extends Service
 
 object Services {
 
-  val ITSA = "itsa"
-  val AFI = "afi"
   val HMRCMTDIT = "HMRC-MTD-IT"
-  val HMRCNI = "HMRC-NI"
-  val HMRCPIR = "PERSONAL-INCOME-RECORD"
   val MTDITID = "MTDITID"
+  val ITSA = "itsa"
+
+  val HMRCNI = "HMRC-NI"
   val NINO = "NINO"
   val NI = "NI"
+  val AFI = "afi"
+  val HMRCPIR = "PERSONAL-INCOME-RECORD"
+
+  val HMRCMTDVAT = "HMRC-MTD-VAT"
+  val VRN = "VRN"
+  val VAT = "VAT"
+
+
 
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
       case 'A' => ValidService(HMRCMTDIT, MTDITID, MTDITID, ITSA)
       case 'B' => ValidService(HMRCNI, NINO, NI, AFI)
+      case 'C' => ValidService(HMRCMTDVAT, VRN, VAT, VAT.toLowerCase)
       case _ => InvalidService
     }
   }

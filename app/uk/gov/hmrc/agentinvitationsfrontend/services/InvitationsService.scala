@@ -32,7 +32,7 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     val service = userInput.service
-    val agentInvitation = AgentInvitation(service, "ni", userInput.nino.map(_.value).getOrElse(throw new Exception("Nino is missing")), userInput.postcode)
+    val agentInvitation = AgentInvitation(service, "ni", userInput.taxIdentifier.map(_.value).getOrElse(throw new Exception("Nino is missing")), userInput.postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
