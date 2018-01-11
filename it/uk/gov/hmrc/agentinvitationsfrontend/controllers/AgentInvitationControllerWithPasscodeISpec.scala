@@ -69,8 +69,21 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       verifyNoAuthoriseAttempt()
     }
 
-    "return 200 for an authorised Agent with OTAC session key" in {
-      val request = FakeRequest("GET", "/agents/enter-nino").withSession((SessionKeys.otacToken,"someOtacToken123"))
+    "return 200 for an authorised Agent with OTAC session key in select service page" in {
+      val request = FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken,"someOtacToken123"))
+      stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
+        .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
+        .willReturn(aResponse()
+          .withStatus(200)))
+      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      verifyAuthoriseAttempt()
+    }
+
+    "return 200 for an authorised Agent with OTAC session key in enter nino page" in {
+      val request = FakeRequest("GET", "/agents/enter-nino").withSession(SessionKeys.otacToken -> "someOtacToken123", "service" -> "HMRC-MTD-IT")
       stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
         .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
         .willReturn(aResponse()

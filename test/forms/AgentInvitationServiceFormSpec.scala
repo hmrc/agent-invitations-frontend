@@ -32,13 +32,13 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "")
+      val data = Json.obj("service" -> serviceITSA, "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid service PIR" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> servicePIR, "postcode" -> "")
+      val data = Json.obj("nino" -> "", "service" -> servicePIR, "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
@@ -50,18 +50,11 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
       serviceForm.errors.length shouldBe 1
     }
 
-    "return an error message for form with missing service" in {
-      val data = Json.obj("nino" -> "WM123456C", "postcode" -> "")
-      val serviceForm = agentInvitationServiceForm.bind(data)
-      serviceForm.errors.contains(serviceEmptyFormError) shouldBe true
-      serviceForm.errors.length shouldBe 1
-    }
-
     "return no errors when unbinding the form" in {
-      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), Some(serviceITSA), None))
+      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(serviceITSA, Some(Nino("AE123456C")), None))
       unboundFormITSA("service") shouldBe serviceITSA
 
-      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(Nino("AE123456C"), Some(servicePIR), None))
+      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(servicePIR, Some(Nino("AE123456C")), None))
       unboundFormAFI("service") shouldBe servicePIR
     }
   }
