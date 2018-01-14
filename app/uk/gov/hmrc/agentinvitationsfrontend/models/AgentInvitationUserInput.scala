@@ -16,6 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier, Vrn}
 
-case class AgentInvitationUserInput(service: String, taxIdentifier: Option[TaxIdentifier], postcode: Option[String])
+case class AgentInvitationUserInput(service: String, taxIdentifier: Option[TaxIdentifier], postcode: Option[String]) {
+  val taxIdentifierType: String = taxIdentifier match {
+    case Some(_:Nino) => "ni"
+    case Some(_:Vrn) => "vrn"
+    case _ => throw new Exception("TaxIdentifier is missing")
+  }
+}

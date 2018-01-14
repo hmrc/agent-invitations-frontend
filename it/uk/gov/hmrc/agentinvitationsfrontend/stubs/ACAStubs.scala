@@ -8,7 +8,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStubForITSA(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, postcode: String, service: String, serviceIdentifier: String): Unit = {
+  def createInvitationStubWithKnownFacts(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, postcode: String, service: String, serviceIdentifier: String): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
       equalToJson(s"""
          |{
@@ -24,12 +24,18 @@ trait ACAStubs {
           .withHeader("location", s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}")))
   }
 
-  def createInvitationStubForPIR(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, service: String, serviceIdentifier: String): Unit = {
+  def createInvitationStubForNoKnownFacts(arn: Arn,
+                                          clientId: String,
+                                          invitationId: InvitationId,
+                                          suppliedClientId: String,
+                                          suppliedClientType: String,
+                                          service: String,
+                                          serviceIdentifier: String): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
       equalToJson(s"""
                      |{
                      |   "service": "$service",
-                     |   "clientIdType": "ni",
+                     |   "clientIdType": "$suppliedClientType",
                      |   "clientId":"$suppliedClientId"
                      |}
            """.stripMargin)

@@ -106,14 +106,7 @@ class AgentsInvitationController @Inject()(
         formWithErrors => {
           Future successful Ok(enter_vrn(formWithErrors))
         },
-        userInput => {
-          userInput.taxIdentifier match {
-            case Some(_) => Future successful Redirect(routes.AgentsInvitationController.invitationSent())
-              .addingToSession("invitationId" -> "C + TBC", "deadline" -> "TBC")
-            case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
-
-          }
-        })
+        userInput => createInvitation(arn, userInput))
     }
   }
 
