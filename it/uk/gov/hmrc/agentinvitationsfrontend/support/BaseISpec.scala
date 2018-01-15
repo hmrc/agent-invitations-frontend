@@ -43,7 +43,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,
         "features.show-hmrc-mtd-it"-> true,
-        "features.show-personal-income" -> true
+        "features.show-personal-income" -> true,
+        "features.show-hmrc-mtd-vat" -> true
       )
   }
 

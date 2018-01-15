@@ -256,7 +256,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
         htmlEscapedMessage("select-service.title"),
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("select-service.itsa"),
-        htmlEscapedMessage("select-service.personal-income-viewer"))
+        htmlEscapedMessage("select-service.personal-income-viewer"),
+        htmlEscapedMessage("select-service.vat"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }

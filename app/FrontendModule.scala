@@ -69,6 +69,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
+    bindBooleanProperty("features.show-hmrc-mtd-vat")
   }
 
   private def bindBaseUrl(serviceName: String) =
