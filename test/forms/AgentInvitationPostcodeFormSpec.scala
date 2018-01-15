@@ -18,7 +18,7 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationServiceForm, agentInvitationPostCodeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationPostCodeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
@@ -34,32 +34,32 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
   "PostCodeForm" should {
     "return no error message for valid postcode" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12 7TQ")
+      val data = Json.obj("taxIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12 7TQ")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid postcode with spaces" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "  W12 7TQ  ")
+      val data = Json.obj("taxIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "  W12 7TQ  ")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid lower case postcode" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "w12 7tq")
+      val data = Json.obj("taxIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "w12 7tq")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for invalid postcode" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12")
+      val data = Json.obj("taxIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeFormatFormError) shouldBe true
       postcodeForm.errors.length shouldBe 1
     }
 
     "return an error message for form with empty postcode" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "")
+      val data = Json.obj("taxIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeEmptyFormError) shouldBe true
       postcodeForm.errors.length shouldBe 1

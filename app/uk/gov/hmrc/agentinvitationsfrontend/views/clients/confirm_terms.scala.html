@@ -29,7 +29,7 @@
 
     @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
 
-    @if(service == Services.ITSA) {
+    @if(service == Services.messageKeyForITSA) {
 
         <h1 class="heading-xlarge">@Messages("confirm-terms.itsa.heading")</h1>
 
@@ -56,7 +56,7 @@
 
         <p>@Messages("confirm-terms.p2")</p>
 
-    } @if(service == Services.AFI) {
+    } @if(service == Services.messageKeyForAfi) {
 
         <h1 class="heading-xlarge">@Messages("confirm-terms.afi.heading", agencyName)</h1>
 

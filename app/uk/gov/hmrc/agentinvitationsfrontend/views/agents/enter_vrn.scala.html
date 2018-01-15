@@ -24,34 +24,33 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-nino.title"), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-vrn.title"), bodyClasses = None, isAgent = true) {
 
-@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-nino"))
-
-
-  <h1 class="heading-xlarge">@Messages("enter-nino.header")</h1>
+  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-vrn"))
 
 
- @form(
-  action = routes.AgentsInvitationController.submitNino,
-  'class -> "form js-form") {
+  <h1 class="heading-xlarge">@Messages("enter-vrn.header")</h1>
+
+
+  @form(
+    action = routes.AgentsInvitationController.submitVrn(),
+    'class -> "form js-form") {
 
     <div class="form-group">
-        @input(
-        agentInvitationsForm("taxIdentifier"),
-        '_label -> Messages("enter-nino.label"),
-        '_inputClass -> "input--medium input--cleared",
-        '_labelTextClass -> "h2-heading",
-        '_inputHint -> Messages("nino-example.hint"),
-        '_labelClass -> "soft--ends"
-        )
+    @input(
+      agentInvitationsForm("taxIdentifier"),
+      '_label -> Messages("enter-vrn.label"),
+      '_inputClass -> "input--medium input--cleared",
+      '_labelTextClass -> "h2-heading",
+      '_labelClass -> "soft--ends"
+    )
     </div>
 
-  <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
-  <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
+    <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
+    <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
-  <div class="form-group">
-   <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-  </div>
- }
+    <div class="form-group">
+      <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+    </div>
+  }
 }

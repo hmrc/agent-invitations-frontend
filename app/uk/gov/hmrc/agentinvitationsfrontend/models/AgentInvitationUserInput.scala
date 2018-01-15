@@ -16,6 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
-case class AgentInvitationUserInput(service: String, nino: Option[Nino], postcode: Option[String])
+case class AgentInvitationUserInput(service: String, taxIdentifier: Option[TaxIdentifier], postcode: Option[String]) {
+  val taxIdentifierType: Option[String] = taxIdentifier match {
+    case Some(_:Nino) => Some("ni")
+    case Some(_:Vrn) => Some("vrn")
+    case None => None
+  }
+}
