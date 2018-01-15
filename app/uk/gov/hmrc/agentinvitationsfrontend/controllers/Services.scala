@@ -26,23 +26,24 @@ object Services {
 
   val HMRCMTDIT = "HMRC-MTD-IT"
   val MTDITID = "MTDITID"
-  val ITSA = "itsa"
+  val messageKeyForITSA = "itsa"
 
   val HMRCNI = "HMRC-NI"
   val NINO = "NINO"
   val NI = "NI"
-  val AFI = "afi"
+  val messageKeyForAfi = "afi"
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
 
   val HMRCMTDVAT = "HMRC-MTD-VAT"
   val MTDVATID = "MTDVATID"
   val VAT = "VAT"
+  val messageKeyForVAT = "vat"
 
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
-      case 'A' => ValidService(HMRCMTDIT, MTDITID, MTDITID, ITSA)
-      case 'B' => ValidService(HMRCNI, NINO, NI, AFI)
-      case 'C' => ValidService(HMRCMTDVAT, MTDVATID, VAT, VAT.toLowerCase)
+      case 'A' => ValidService(HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
+      case 'B' => ValidService(HMRCNI, NINO, NI, messageKeyForAfi)
+      case 'C' => ValidService(HMRCMTDVAT, MTDVATID, VAT, messageKeyForVAT)
       case _ => InvalidService
     }
   }

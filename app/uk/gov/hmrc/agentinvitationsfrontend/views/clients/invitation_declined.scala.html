@@ -31,7 +31,7 @@
 
         <p>@Messages(s"invitation-declined-$service.p1", agencyName)</p>
 
-        @if(service == Services.ITSA) {
+        @if(service == Services.messageKeyForITSA) {
             <p>@Messages("invitation-declined-itsa.p2")</p>
         }
 
