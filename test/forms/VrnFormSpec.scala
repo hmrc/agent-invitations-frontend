@@ -20,7 +20,6 @@ import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationVrnForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -29,7 +28,6 @@ class VrnFormSpec extends UnitSpec {
 
   val validVrn97 = Vrn("101747696")
   val validVrn9755 = Vrn("101747641")
-  val validNino = Nino("WM123456C")
   val vrnEmptyMessage: String = "error.vrn.required"
   val vrnFormatMessage: String = "enter-vrn.invalid-format"
   val vrnEmptyFormError: FormError = FormError("taxIdentifier", List(vrnEmptyMessage))

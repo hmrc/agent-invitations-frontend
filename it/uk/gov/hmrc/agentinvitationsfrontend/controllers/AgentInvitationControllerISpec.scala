@@ -26,9 +26,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.BadRequestException
 
@@ -52,7 +51,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val identifierVAT = "MTDVATID"
   val validVrn97 = Vrn("101747696")
   val validVrn9755 = Vrn("101747641")
-  val vrnType = "vrn"
 
   "GET /agents/" should {
     "redirect to /agent/select-service" in {
@@ -62,8 +60,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result)(timeout).get should include("/agents/select-service")
     }
   }
-
-  //TODO - Add Vrn Test
 
   "GET /agents/enter-vrn" should {
     val request = FakeRequest("GET", "/agents/enter-vrn")
@@ -92,7 +88,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/enter-vrn")
     val submitVrn = controller.submitVrn()
 
-    "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
+    "return 303 for authorised Agent with valid vrn and redirected to invitations-sent page" in {
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
@@ -141,13 +137,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       an[BadRequestException] should be thrownBy await(result)
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, vrnType, "Fail", serviceVAT)
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Fail", serviceVAT)
     }
 
     behave like anAuthorisedEndpoint(request, submitVrn)
   }
-
-  // End of Vrn Test
 
   "GET /agents/enter-nino" should {
     val request = FakeRequest("GET", "/agents/enter-nino")
