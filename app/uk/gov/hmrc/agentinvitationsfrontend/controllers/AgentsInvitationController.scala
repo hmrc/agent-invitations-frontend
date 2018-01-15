@@ -19,24 +19,24 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import org.joda.time.format.DateTimeFormat
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation._
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.domain.{Nino, Vrn}
-import uk.gov.hmrc.domain.Nino.isValid
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
 import scala.concurrent.Future
 
@@ -94,7 +94,7 @@ class AgentsInvitationController @Inject()(
   val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
       request.session.get("service") match {
-        case Some(_) => Future successful Ok(enter_vrn(agentInvitationVrnForm))
+        case Some(service) => Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationUserInput(service, None, None))))
         case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
@@ -125,6 +125,7 @@ class AgentsInvitationController @Inject()(
         userInput => {
           userInput.service match {
             case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+              .addingToSession("service" -> HMRCMTDVAT)
             case service => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
               .addingToSession("service" -> service)
             case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId ++ vat))
@@ -242,13 +243,10 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.service.required"))
   }
 
-  private val vrnRegex =  "^(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})$"
-  private def isValidVrn(vrn: String): Boolean = vrn.matches(vrnRegex)
-
   private val invalidNino =
-    validateField("error.nino.required", "enter-nino.invalid-format")(nino => isValid(nino))
+    validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
   private val invalidVrn =
-    validateField("error.vrn.required", "enter-vrn.invalid-format")(vrn => isValidVrn(vrn))
+    validateField("error.vrn.required", "enter-vrn.invalid-format")(vrn => Vrn.isValid(vrn))
   private val invalidPostcode =
     validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
 
@@ -257,8 +255,8 @@ object AgentsInvitationController {
       "service" -> text.verifying(serviceChoice),
       "taxIdentifier" -> text.verifying(invalidNino),
       "postcode" -> optional(text))
-    ({ (service, taxIdentifier, postcode) => AgentInvitationUserInput(service, Some(Nino(taxIdentifier.trim.toUpperCase())), postcode) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+    ({ (service, taxIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(taxIdentifier.trim.toUpperCase())), None) })
+    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), None)) }))
   }
 
   val agentInvitationVrnForm: Form[AgentInvitationUserInput] = {
@@ -266,8 +264,8 @@ object AgentsInvitationController {
       "service" -> text.verifying(serviceChoice),
       "taxIdentifier" -> text.verifying(invalidVrn),
       "postcode" -> optional(text))
-    ({ (service, taxIdentifier, postcode) => AgentInvitationUserInput(service, Some(Vrn(taxIdentifier)), postcode) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+    ({ (service, taxIdentifier, _) => AgentInvitationUserInput(service, Some(Vrn(taxIdentifier)), None) })
+    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), None)) }))
   }
 
   val agentInvitationServiceForm: Form[AgentInvitationUserInput] = {
@@ -275,8 +273,8 @@ object AgentsInvitationController {
       "service" -> text.verifying(serviceChoice),
       "taxIdentifier" -> optional(text),
       "postcode" -> optional(text))
-    ({ (service, taxIdentifier, postcode) => AgentInvitationUserInput(service, taxIdentifier.map(x => Nino(x.toUpperCase)), postcode) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value), user.postcode)) }))
+    ({ (service, _, _) => AgentInvitationUserInput(service, None, None) })
+    ({ user => Some((user.service, None, None)) }))
   }
 
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {

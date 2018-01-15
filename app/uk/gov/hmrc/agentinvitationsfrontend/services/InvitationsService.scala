@@ -32,7 +32,9 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     val service = userInput.service
-    val agentInvitation = AgentInvitation(service, userInput.taxIdentifierType, userInput.taxIdentifier.map(_.value).getOrElse(throw new Exception("TaxIdentifier is missing")), userInput.postcode)
+    val agentInvitation = AgentInvitation(service,
+      userInput.taxIdentifierType.getOrElse(throw new IllegalStateException("TaxIdentifierType is Missing")),
+      userInput.taxIdentifier.map(_.value).getOrElse(throw new Exception("TaxIdentifier is missing")), userInput.postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

@@ -29,11 +29,15 @@ class ServiceSpec extends UnitSpec {
     }
 
     "return AFI if given prefix of invitationId is B" in {
-      determineService(InvitationId("BBERULMHCKK")) shouldBe ValidService("HMRC-NI", "NINO", "NI", Services.AFI)
+      determineService(InvitationId("B9SCS2T4NZBAX")) shouldBe ValidService("HMRC-NI", "NINO", "NI", Services.AFI)
+    }
+
+    "return VAT if given prefix of invitationId is C" in {
+      determineService(InvitationId("CZTW1KY6RTAAT")) shouldBe ValidService("HMRC-MTD-VAT", "MTDVATID", "VAT", Services.VAT.toLowerCase)
     }
 
     "return Exception when given invalid invitationId" in {
-      determineService(InvitationId("CBERULMHCKK")) shouldBe InvalidService
+      determineService(InvitationId("Z9SCS2T4NZBAX")) shouldBe InvalidService
     }
 
   }

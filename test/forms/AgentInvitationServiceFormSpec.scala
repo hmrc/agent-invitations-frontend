@@ -20,6 +20,7 @@ import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -29,22 +30,29 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
   val serviceEmptyFormError: FormError = FormError("service", List(serviceEmptyMessage))
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
+  val serviceVAT = "HMRC-MTD-VAT"
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
-      val data = Json.obj("service" -> serviceITSA, "postcode" -> "")
+      val data = Json.obj("service" -> serviceITSA, "taxIdentifier" -> "", "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid service PIR" in {
-      val data = Json.obj("nino" -> "", "service" -> servicePIR, "postcode" -> "")
+      val data = Json.obj("service" -> servicePIR, "taxIdentifier" -> "", "postcode" -> "")
+      val serviceForm = agentInvitationServiceForm.bind(data)
+      serviceForm.errors.isEmpty shouldBe true
+    }
+
+    "return no error message for valid service VAT" in {
+      val data = Json.obj("service" -> serviceVAT, "taxIdentifier" -> "", "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for form with empty service" in {
-      val data = Json.obj("nino" -> "WM123456C", "service" -> "", "postcode" -> "")
+      val data = Json.obj("service" -> "", "taxIdentifier" -> "", "postcode" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.contains(serviceEmptyFormError) shouldBe true
       serviceForm.errors.length shouldBe 1
@@ -56,6 +64,9 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
 
       val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(servicePIR, Some(Nino("AE123456C")), None))
       unboundFormAFI("service") shouldBe servicePIR
+
+      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(serviceVAT, Some(Vrn("101747696")), None))
+      unboundFormVAT("service") shouldBe serviceVAT
     }
   }
 

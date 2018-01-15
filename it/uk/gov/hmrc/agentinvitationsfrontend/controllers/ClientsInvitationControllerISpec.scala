@@ -37,6 +37,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val invitationIdAFI = InvitationId("BT5YMLY6GG2L6")
+  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
   val invalidInvitationIdCRC5 = InvitationId("ABERULMHCKKW1")
   val serviceITSA = "HMRC-MTD-IT"
   val serviceNI = "HMRC-NI"
@@ -54,23 +55,28 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
-      val itsaInvId = InvitationId("ATSF4OW9CCRD2")
-      val result = controller.start(itsaInvId)(FakeRequest())
+      val result = controller.start(invitationIdITSA)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.itsa.p1"))
     }
 
     "show the landing page with AFI content variant if the invitation ID prefix is 'B'" in {
-      val afiPrefixInvId = InvitationId("BTSF4OW9CCRBO")
-      val result = controller.start(afiPrefixInvId)(FakeRequest())
+      val result = controller.start(invitationIdAFI)(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.afi.p1"))
     }
 
+    "show the landing page with VAT content variant if the invitation ID prefix is 'C'" in {
+      val result = controller.start(invitationIdVAT)(FakeRequest())
+      status(result) shouldBe OK
+
+      //TODO See APB-1884 To add test to check content for VAT
+    }
+
     "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
-      val strangePrefixInvId = InvitationId("CTSF4OW9CCRPT")
+      val strangePrefixInvId = InvitationId("ZTSF4OW9CCRPT")
       val result = controller.start(strangePrefixInvId)(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
