@@ -10,8 +10,8 @@ nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 #Enter VRN
-enter-vrn.title=Enter an client''s VAT Registration Number
-enter-vrn.header=Enter an client''s VAT Registration Number
+enter-vrn.title=Enter a client''s VAT Registration Number
+enter-vrn.header=Enter a client''s VAT Registration Number
 enter-vrn.label=VAT Registration Number
 enter-vrn.invalid-format=You must enter a valid VAT Registration Number
 error.vrn.required=You must enter a valid VAT Registration Number
