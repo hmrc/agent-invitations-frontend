@@ -106,7 +106,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 200 for authorised Agent with no vrn submitted and redisplay form with error message" in {
       val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "taxIdentifier" -> "", "postcode" -> "")
+      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> "", "postcode" -> "")
       val result = submitVrn(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
@@ -119,7 +119,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 200 for authorised Agent with invalid vrn and redisplay form with error message" in {
       val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "taxIdentifier" -> validNino.value, "postcode" -> "")
+      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> validNino.value, "postcode" -> "")
       val result = submitVrn(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
@@ -189,7 +189,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/enter-postcode")
       header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include(s"taxIdentifier=${validNino.value}")
+      header("Set-Cookie", result).get should include(s"clientIdentifier=${validNino.value}")
       header("Set-Cookie", result).get should include(s"service=$serviceITSA")
     }
 
@@ -199,19 +199,19 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(servicePIR, Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)
-        .withSession("taxIdentifier" -> validNino.value, "service" -> servicePIR), arn.value))
+        .withSession("clientIdentifier" -> validNino.value, "service" -> servicePIR), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include(s"taxIdentifier=${validNino.value}")
+      header("Set-Cookie", result).get should include(s"clientIdentifier=${validNino.value}")
       header("Set-Cookie", result).get should include(s"service=$servicePIR")
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Not Required", servicePIR)
     }
 
     "return 200 for authorised Agent with an empty nino and show errors on the page" in {
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("taxIdentifier" -> "", "postcode" -> ""), arn.value))
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "", "postcode" -> ""), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
@@ -222,7 +222,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 200 for authorised Agent with an invalid nino and show errors on the page" in {
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("taxIdentifier" -> "AB", "postcode" -> ""), arn.value))
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB", "postcode" -> ""), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
@@ -309,7 +309,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val showPostcodeForm = controller.showPostcodeForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = showPostcodeForm(authorisedAsValidAgent(request.withSession("taxIdentifier" -> validNino.value, "service" -> serviceITSA), arn.value))
+      val result = showPostcodeForm(authorisedAsValidAgent(request.withSession("clientIdentifier" -> validNino.value, "service" -> serviceITSA), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
       checkHasAgentSignOutLink(result)
