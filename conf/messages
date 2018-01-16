@@ -13,8 +13,8 @@ error.nino.required = You must enter an individual''s number
 enter-vrn.title=Enter an client''s VAT Registration Number
 enter-vrn.header=Enter an client''s VAT Registration Number
 enter-vrn.label=VAT Registration Number
-enter-vrn.invalid-format=Please enter a valid VAT Registration Number
-error.vrn.required=Please enter a valid VAT Registration Number
+enter-vrn.invalid-format=You must enter a valid VAT Registration Number
+error.vrn.required=You must enter a valid VAT Registration Number
 
 # Enter Postcode
 enter-postcode.title=We need more information about this individual
