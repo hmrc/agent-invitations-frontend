@@ -84,9 +84,9 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          userInput.taxIdentifier match {
-            case Some(taxIdentifier) if userInput.service == HMRCMTDIT => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-              .addingToSession("taxIdentifier" -> taxIdentifier.value)
+          userInput.clientIdentifier match {
+            case Some(clientIdentifier) if userInput.service == HMRCMTDIT => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+              .addingToSession("clientIdentifier" -> clientIdentifier.value)
             case Some(_) if userInput.service == HMRCPIR => createInvitation(arn, userInput)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
@@ -140,7 +140,7 @@ class AgentsInvitationController @Inject()(
 
   val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      val maybeNino = request.session.get("taxIdentifier")
+      val maybeNino = request.session.get("clientIdentifier")
       val maybeService = request.session.get("service")
       (maybeNino, maybeService) match {
         case (Some(nino), Some(service)) =>
@@ -200,7 +200,7 @@ class AgentsInvitationController @Inject()(
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
           Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
-            .removingFromSession("taxIdentifier", "service", "invitationId", "deadline")
+            .removingFromSession("clientIdentifier", "service", "invitationId", "deadline")
         case _ => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
@@ -256,25 +256,25 @@ object AgentsInvitationController {
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "taxIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> text.verifying(invalidNino),
       "postcode" -> optional(text))
-    ({ (service, taxIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(taxIdentifier.trim.toUpperCase())), None) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), None)) }))
+    ({ (service, clientIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
   }
 
   val agentInvitationVrnForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "taxIdentifier" -> text.verifying(invalidVrn),
+      "clientIdentifier" -> text.verifying(invalidVrn),
       "postcode" -> optional(text))
-    ({ (service, taxIdentifier, _) => AgentInvitationUserInput(service, Some(Vrn(taxIdentifier)), None) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), None)) }))
+    ({ (service, clientIdentifier, _) => AgentInvitationUserInput(service, Some(Vrn(clientIdentifier)), None) })
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
   }
 
   val agentInvitationServiceForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "taxIdentifier" -> optional(text),
+      "clientIdentifier" -> optional(text),
       "postcode" -> optional(text))
     ({ (service, _, _) => AgentInvitationUserInput(service, None, None) })
     ({ user => Some((user.service, None, None)) }))
@@ -283,10 +283,10 @@ object AgentsInvitationController {
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "taxIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> text.verifying(invalidNino),
       "postcode" -> text.verifying(invalidPostcode))
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
-    ({ user => Some((user.service, user.taxIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }
 }
 
