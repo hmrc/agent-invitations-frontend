@@ -46,6 +46,7 @@ class AgentsInvitationController @Inject()(
                                             @Named("agent-services-account-frontend.external-url") asAccUrl: String,
                                             @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
                                             @Named("features.show-personal-income") showPersonalIncome: Boolean,
+                                            @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
@@ -59,7 +60,9 @@ class AgentsInvitationController @Inject()(
   private val personalIncomeRecord = if (showPersonalIncome)
     Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
   private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
-  private val vat = if (true) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+  private val vat = if (showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+
+  private val enabledServices = personalIncomeRecord ++ mtdItId ++ vat
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
@@ -112,7 +115,7 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { arn =>
-      Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId ++ vat))
+      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices))
     }
   }
 
@@ -120,7 +123,7 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { arn =>
       agentInvitationServiceForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(select_service(formWithErrors, personalIncomeRecord ++ mtdItId ++ vat))
+          Future successful Ok(select_service(formWithErrors, enabledServices))
         },
         userInput => {
           userInput.service match {
@@ -128,7 +131,7 @@ class AgentsInvitationController @Inject()(
               .addingToSession("service" -> HMRCMTDVAT)
             case service => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
               .addingToSession("service" -> service)
-            case _ => Future successful Ok(select_service(agentInvitationServiceForm, personalIncomeRecord ++ mtdItId ++ vat))
+            case _ => Future successful Ok(select_service(agentInvitationServiceForm, enabledServices))
           }
         }
       )
