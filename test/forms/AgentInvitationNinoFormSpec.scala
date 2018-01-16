@@ -27,37 +27,37 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
 
   val ninoEmptyMessage: String = "error.nino.required"
   val ninoFormatMessage: String = "enter-nino.invalid-format"
-  val ninoEmptyFormError: FormError = FormError("taxIdentifier", List(ninoEmptyMessage))
-  val ninoFormatFormError: FormError = FormError("taxIdentifier", List(ninoFormatMessage))
+  val ninoEmptyFormError: FormError = FormError("clientIdentifier", List(ninoEmptyMessage))
+  val ninoFormatFormError: FormError = FormError("clientIdentifier", List(ninoFormatMessage))
 
   "NinoForm" should {
     "return no error message for valid Nino" in {
-      val data = Json.obj("service"-> "someService", "taxIdentifier" -> "WM123456C", "postcode" -> "")
+      val data = Json.obj("service"-> "someService", "clientIdentifier" -> "WM123456C", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid Nino with spaces" in {
-      val data = Json.obj("service" -> "someService", "taxIdentifier" -> "  WM123456C  ", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "  WM123456C  ", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid lower case Nino" in {
-      val data = Json.obj("service" -> "someService", "taxIdentifier" -> "wn123456c", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "wn123456c", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for invalid Nino" in {
-      val data = Json.obj("service" -> "someService", "taxIdentifier" -> "12345", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "12345", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.contains(ninoFormatFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }
 
     "return an error message for empty form" in {
-      val data = Json.obj("service" -> "someService", "taxIdentifier" -> "", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "", "postcode" -> "")
       val ninoForm = agentInvitationNinoForm.bind(data)
       ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
@@ -65,7 +65,7 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
 
     "return no errors when unbinding the form" in {
       val unboundForm = agentInvitationNinoForm.mapping.unbind(AgentInvitationUserInput("", Some(Nino("AE123456C")), None))
-      unboundForm("taxIdentifier") shouldBe "AE123456C"
+      unboundForm("clientIdentifier") shouldBe "AE123456C"
     }
 
   }

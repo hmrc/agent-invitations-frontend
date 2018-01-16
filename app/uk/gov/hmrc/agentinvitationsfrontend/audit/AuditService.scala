@@ -45,8 +45,8 @@ class AuditService @Inject() (val auditConnector: AuditConnector) {
         "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType" -> agentInvitationUserInput.taxIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
-        "clientId" -> agentInvitationUserInput.taxIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
+        "clientIdType" -> agentInvitationUserInput.clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
+        "clientId" -> agentInvitationUserInput.clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
         "service" -> agentInvitationUserInput.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
