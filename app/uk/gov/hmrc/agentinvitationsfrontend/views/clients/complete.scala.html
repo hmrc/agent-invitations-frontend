@@ -40,7 +40,12 @@
         <p>@Messages("client-complete-itsa.p1")</p>
     }
 
+    <p>@Html(Messages("client-complete.remove-authorisation.p", agencyName))</p>
+
+    <p>@Messages("client-complete.remove-authorisation.url")</p>
+
     <div class="form-group">
         <a class="button" href="@continueUrl" id="continue" role="button">@Messages(s"client-complete-$service.button")</a>
     </div>
+
 }
