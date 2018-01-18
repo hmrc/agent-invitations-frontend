@@ -126,7 +126,8 @@ client-complete.sub-header=What happens next
 client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete-itsa.button=Continue to your business tax account
 client-complete-afi.button=Continue to your personal tax account
-
+client-complete.remove-authorisation.p=You will need the link below if you want to remove this authorisation. Please make a note of it now, and keep it in a safe place.
+client-complete.remove-authorisation.url=www.tax.service.gov.uk/relationships/individual/manage-your-tax-agents/deauthorise-agent
 
 # Generic Issue Title
 client-problem.title=Your authorisation request is no longer valid
