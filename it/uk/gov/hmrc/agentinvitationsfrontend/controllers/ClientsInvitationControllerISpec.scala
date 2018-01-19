@@ -32,6 +32,8 @@ import scala.concurrent.Future
 
 class ClientsInvitationControllerISpec extends BaseISpec {
 
+  //TODO Refactor this test as it may become unmanageable.
+
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
@@ -72,6 +74,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = controller.start(invitationIdVAT)(FakeRequest())
       status(result) shouldBe OK
 
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.vat.p1"))
       //TODO See APB-1884 To add test to check content for VAT
     }
 

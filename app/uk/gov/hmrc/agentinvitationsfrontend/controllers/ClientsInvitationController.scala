@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
@@ -194,6 +194,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     service match {
       case HMRCMTDIT => invitationsService.acceptITSAInvitation(invitationId, MtdItId(clientId))
       case HMRCNI => invitationsService.acceptAFIInvitation(invitationId, Nino(clientId))
+      case HMRCMTDVAT => invitationsService.acceptVATInvitation(invitationId, Vrn(clientId))
       case _ => throw new IllegalStateException("Unsupported Service")
     }
   }
@@ -202,6 +203,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     service match {
       case HMRCMTDIT => invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
       case HMRCNI => invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+      case HMRCMTDVAT => invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
       case _ => throw new IllegalStateException("Unsupported Service")
     }
   }
