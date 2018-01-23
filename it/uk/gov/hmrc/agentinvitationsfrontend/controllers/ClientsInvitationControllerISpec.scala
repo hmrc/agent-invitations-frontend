@@ -37,21 +37,22 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
+  val validVrn97 = Vrn("101747696")
+
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val invitationIdAFI = InvitationId("BT5YMLY6GG2L6")
   val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val invalidInvitationIdCRC5 = InvitationId("ABERULMHCKKW1")
+
   val serviceITSA = "HMRC-MTD-IT"
   val serviceNI = "HMRC-NI"
   val servicePIR = "PERSONAL-INCOME-RECORD"
+
   val identifierITSA = "MTDITID"
   val identifierAFI = "NI"
-  val nino = "AB123456A"
 
+  val nino = "AB123456A"
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VAT"
-  val validVrn97 = Vrn("101747696")
-  val validVrn9755 = Vrn("101747641")
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
@@ -526,8 +527,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(resultITSA) shouldBe SEE_OTHER
       status(resultAFI) shouldBe SEE_OTHER
 
-      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.invitationExpired.url)
-      redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.invitationExpired.url)
+      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.invitationExpired().url)
+      redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.invitationExpired().url)
     }
 
     "return exception when agency name retrieval fails" in {
