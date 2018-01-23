@@ -72,7 +72,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
             invitationsService.getAgencyName(invitation.arn).flatMap { agencyName =>
               rejectInvitation(serviceName, invitationId, clientId).map {
                 case NO_CONTENT => {
-                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Rejected", clientId, serviceName, agencyName)
+                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Declined", clientId, serviceName, agencyName)
                   Ok(invitation_declined(agencyName, invitationId, messageKey, continueUrl))
                 }
                 case status => throw new Exception(s"Invitation rejection failed with status $status")
