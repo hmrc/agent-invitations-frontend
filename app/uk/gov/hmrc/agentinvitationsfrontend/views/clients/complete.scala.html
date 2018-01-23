@@ -32,6 +32,8 @@
         @if(service == Services.messageKeyForAfi) {
             <p class="heading-24--normal">@Messages("client-complete-afi.title3")</p>
         }
+        @if(service == Services.messageKeyForVAT) {
+          <p class="heading-24--normal">@Messages("client-complete-vat.title3")</p>}
     </div>
 
     <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
@@ -47,5 +49,4 @@
     <div class="form-group">
         <a class="button" href="@continueUrl" id="continue" role="button">@Messages(s"client-complete-$service.button")</a>
     </div>
-
 }

@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -54,6 +54,12 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectAFIInvitation(nino, invitationId)
+
+  def acceptVATInvitation(invitationId: InvitationId, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.acceptVATInvitation(vrn, invitationId)
+
+  def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    invitationsConnector.rejectVATInvitation(vrn, invitationId)
 
   def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))

@@ -25,7 +25,7 @@ import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -86,7 +86,6 @@ class InvitationsConnector @Inject() (
   private[connectors] def rejectAFIInvitationUrl(nino: Nino, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
 
-
   def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
@@ -96,6 +95,24 @@ class InvitationsConnector @Inject() (
   def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
+    }
+  }
+
+  private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/accept")
+
+  private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/reject")
+
+  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+    }
+  }
+
+  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
     }
   }
 

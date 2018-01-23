@@ -26,7 +26,7 @@ object UrlBinders {
   def getInvitationIdBinder(implicit stringBinder: PathBindable[String]) = new PathBindable[InvitationId] {
 
     override def bind(key: String, value: String): Either[String, InvitationId] = {
-      val isValidPrefix = value.headOption.fold(false)(Seq('A', 'B').contains)
+      val isValidPrefix = value.headOption.fold(false)(Seq('A', 'B', 'C').contains)
 
       if (isValidPrefix && InvitationId.isValid(value))
         Right(InvitationId(value))
