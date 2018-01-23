@@ -48,6 +48,11 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val identifierAFI = "NI"
   val nino = "AB123456A"
 
+  val serviceVAT = "HMRC-MTD-VAT"
+  val identifierVAT = "VAT"
+  val validVrn97 = Vrn("101747696")
+  val validVrn9755 = Vrn("101747641")
+
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
       val result = controller.start(invitationIdITSA)(FakeRequest())
@@ -73,10 +78,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the landing page with VAT content variant if the invitation ID prefix is 'C'" in {
       val result = controller.start(invitationIdVAT)(FakeRequest())
       status(result) shouldBe OK
-
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.vat.p1"))
-      //TODO See APB-1884 To add test to check content for VAT
     }
 
     "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
@@ -107,6 +110,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   "GET /reject-tax-agent-invitation/1" should {
     val getInvitationDeclinedITSA = controller.getInvitationDeclined(invitationIdITSA)
     val getInvitationDeclinedAFI = controller.getInvitationDeclined(invitationIdAFI)
+    val getInvitationDeclinedVAT = controller.getInvitationDeclined(invitationIdVAT)
 
     "show invitation_declined page for an authenticated client with a valid invitation for ITSA" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
@@ -139,6 +143,19 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHasClientSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Rejected", nino, serviceNI, "My Agency")
+    }
+
+    "show invitation_declined page for an authenticated client with a valid invitation for VAT" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      rejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+      givenGetAgencyNameStub(arn)
+
+      val result = getInvitationDeclinedVAT(authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value))
+
+      status(result) shouldBe OK
+      //TODO checkResultBody: Test for content -- Out of Scope of APB-1884
+      checkHasClientSignOutUrl(result)
+      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Rejected", validVrn97.value, serviceVAT, "My Agency")
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
@@ -227,12 +244,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     val getConfirmInvitationITSA: Action[AnyContent] = controller.getConfirmInvitation(invitationIdITSA)
     val getConfirmInvitationAFI: Action[AnyContent] = controller.getConfirmInvitation(invitationIdAFI)
+    val getConfirmInvitationVAT: Action[AnyContent] = controller.getConfirmInvitation(invitationIdVAT)
 
     "show the confirm invitation page for ITSA" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value, serviceITSA, "My Agency")
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.itsa.sub-header", "My Agency"))
@@ -243,11 +260,21 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, "NI", "Pending")
       givenGetAgencyNameStub(arn)
       val result = getConfirmInvitationAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", nino, serviceNI, "My Agency")
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.afi.sub-header", "My Agency"))
+      checkHasClientSignOutUrl(result)
+    }
+
+    "show the confirm invitation page for VAT" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenGetAgencyNameStub(arn)
+      val result = getConfirmInvitationVAT(authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value))
+
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.title", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.vat.sub-header", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -263,6 +290,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedWith("MissingBearerToken")
       an[AuthorisationException] shouldBe thrownBy {
         await(getConfirmInvitationAFI(FakeRequest().withSession("agencyName" -> "My Agency")))
+      }
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for not logged in user and redirected to Login Page for VAT" in {
+      givenUnauthorisedWith("MissingBearerToken")
+      an[AuthorisationException] shouldBe thrownBy {
+        await(getConfirmInvitationVAT(FakeRequest().withSession("agencyName" -> "My Agency")))
       }
       verifyAuthoriseAttempt()
     }
@@ -438,6 +473,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     val getConfirmTermsITSA: Action[AnyContent] = controller.getConfirmTerms(invitationIdITSA)
     val getConfirmTermsAFI: Action[AnyContent] = controller.getConfirmTerms(invitationIdAFI)
+    val getConfirmTermsVAT: Action[AnyContent] = controller.getConfirmTerms(invitationIdVAT)
 
     "show the confirm terms page for ITSA" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA,"Pending")
@@ -462,6 +498,19 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
+      checkHasClientSignOutUrl(result)
+    }
+
+    "show the confirm terms page for VAT" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenGetAgencyNameStub(arn)
+      val req = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value)
+      val result = getConfirmTermsVAT(req)
+
+      status(result) shouldBe OK
+      //TODO Update for Content
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.section"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.checkbox", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -521,25 +570,36 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   "POST /accept-tax-agent-invitation/3 (clicking confirm on the confirm terms page)" should {
     val submitConfirmTermsITSA: Action[AnyContent] = controller.submitConfirmTerms(invitationIdITSA)
     val submitConfirmTermsAFI: Action[AnyContent] = controller.submitConfirmTerms(invitationIdAFI)
+    val submitConfirmTermsVAT: Action[AnyContent] = controller.submitConfirmTerms(invitationIdVAT)
 
     "redirect to complete page when the checkbox was checked" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA,"Pending")
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI,"Pending")
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT,"Pending")
       acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       acceptInvitationStub(nino, invitationIdAFI, identifierAFI)
+      acceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
         .withFormUrlEncodedBody("confirmTerms" -> "true").withSession("agencyName" -> "My Agency")
       val reqAFI = authorisedAsValidClientAFI(FakeRequest(), nino)
         .withFormUrlEncodedBody("confirmTerms" -> "true").withSession("agencyName" -> "My Agency")
+      val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn97.value)
+        .withFormUrlEncodedBody("confirmTerms" -> "true").withSession("agencyName" -> "My Agency")
       val resultITSA = submitConfirmTermsITSA(reqITSA)
       val resultAFI = submitConfirmTermsAFI(reqAFI)
+      val resultVAT = submitConfirmTermsVAT(reqVAT)
 
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", nino, serviceITSA, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", nino, serviceNI, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Accepted", validVrn97.value, serviceVAT, "My Agency")
       status(resultITSA) shouldBe SEE_OTHER
       status(resultAFI) shouldBe SEE_OTHER
+      status(resultVAT) shouldBe SEE_OTHER
       redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController.getCompletePage(invitationIdITSA).url
       redirectLocation(resultAFI).get shouldBe routes.ClientsInvitationController.getCompletePage(invitationIdAFI).url
+      redirectLocation(resultVAT).get shouldBe routes.ClientsInvitationController.getCompletePage(invitationIdVAT).url
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when the checkbox was checked" in {
@@ -675,6 +735,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     val getCompletePageITSA: Action[AnyContent] = controller.getCompletePage(invitationIdITSA)
     val getCompletePageAFI: Action[AnyContent] = controller.getCompletePage(invitationIdAFI)
+    val getCompletePageVAT: Action[AnyContent] = controller.getCompletePage(invitationIdVAT)
 
     "show the complete page for ITSA" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
@@ -716,6 +777,25 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "return exception when agency name retrieval fails for AFI" in {
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI, "Accepted")
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest(), nino))
+      an[AgencyNameNotFound] should be thrownBy await(result)
+    }
+
+    "show the complete page for VAT" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
+
+      val result = getCompletePageVAT(authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value))
+
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-vat.title3"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHasClientSignOutUrl(result)
+    }
+
+    "return exception when agency name retrieval fails for VAT" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
+      val result = getCompletePageVAT(authorisedAsValidClientVAT(FakeRequest(), validVrn97.value))
       an[AgencyNameNotFound] should be thrownBy await(result)
     }
 

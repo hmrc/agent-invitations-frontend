@@ -54,6 +54,7 @@ not-matched.description = The details provided do not match our records.
 landing-page.title=Accept or decline an agent''s invitation
 landing-page.service.itsa.p1=You need to authorise your tax agent to act on your behalf with HMRC for online self assessment.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
+landing-page.service.vat.p1=You need to authorise your tax agent to act on your behalf with HMRC for VAT.
 landing-page.p2=You will need to create or use a Government Gateway account for an
 landing-page.p3=individual
 landing-page.p4=to continue.
@@ -77,6 +78,7 @@ confirm-invitation.title=Confirm Invitation
 confirm-invitation.heading={0} has requested to represent you to HMRC:
 confirm-invitation.itsa.sub-header=Would you like {0} to represent you for Online self assessment?
 confirm-invitation.afi.sub-header=Would you like {0} to represent you?
+confirm-invitation.vat.sub-header=Would you like {0} to represent you for VAT?
 confirm-invitation.radio1=Yes
 confirm-invitation.radio2=No
 confirm-invitation.button=Continue
@@ -108,6 +110,10 @@ confirm-terms-afi.bullet3=pensions
 confirm-terms-afi.bullet4=your PAYE employment start and end dates
 confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my self assessment data
 confirm-terms-afi.checkbox=I understand {0} will be able to view my income record until I remove their authorisation.
+
+confirm-terms-vat.section=YOUR OBLIGATIONS SECTION<TBC>
+confirm-terms-vat.checkbox=I understand that {0} will be granted access to my VAT data
+
 confirm-terms.continue=Authorise tax agent
 confirm-terms.back=Back
 
@@ -126,6 +132,7 @@ client-complete.sub-header=What happens next
 client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete-itsa.button=Continue to your business tax account
 client-complete-afi.button=Continue to your personal tax account
+client-complete-vat.title3=as your agent for VAT
 
 
 # Generic Issue Title

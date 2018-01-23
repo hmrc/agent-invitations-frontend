@@ -90,7 +90,6 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Accepted", clientId, serviceName, agencyName)
                 Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey)).addingToSession("agencyName" -> agencyName)
             }
           })
@@ -141,13 +140,15 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
       case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
+            val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
             confirmTermsForm.bindFromRequest().fold(
-              formWithErrors => {
-                val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
+            formWithErrors => {
                 Future successful Ok(confirm_terms(formWithErrors, name, invitationId, messageKey))
               }, _ => {
                 acceptInvitation(serviceName, invitationId, clientId).map {
-                  case NO_CONTENT => Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
+                  case NO_CONTENT =>
+                    auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Accepted", clientId, serviceName, name)
+                    Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
                   case status => throw new Exception(s"Invitation acceptance failed with status $status")
                 }
               })

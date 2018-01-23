@@ -70,6 +70,9 @@
         </ul>
 
         <p>@Messages("confirm-terms-afi.p2")</p>
+
+    } @if(service == Services.messageKeyForVAT) {
+        <p>@Messages("confirm-terms-vat.section")</p>
     }
 
 

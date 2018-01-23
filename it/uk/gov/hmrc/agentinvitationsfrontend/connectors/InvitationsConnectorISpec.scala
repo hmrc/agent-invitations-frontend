@@ -1,9 +1,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, Upstream4xxResponse}
 
@@ -15,21 +15,28 @@ class InvitationsConnectorISpec extends BaseISpec {
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdAFI = InvitationId("BT5YMLY6GG2L6")
+  val invitationIdPIR = InvitationId("BT5YMLY6GG2L6")
+  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
   val identifierITSA = "MTDITID"
-  val identifierAFI = "NI"
+  val identifierPIR = "NI"
+  val identifierVAT = "VAT"
 
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
+  val serviceVAT = "HMRC-MTD-VAT"
+
+  val validVrn97 = Vrn("101747696")
+  val validVrn9755 = Vrn("101747641")
 
   val getITSAInvitation = s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"
-  val getAFIInvitation = s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdAFI.value}"
+  val getPIRInvitation = s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
+  val getVATInvitation = s"/agent-client-authorisation/clients/VAT/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
 
   "Create Invitation" should {
 
     val agentInvitation = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", Some("W12 7TQ"))
 
-    "return a link of a specific created invitation" in {
+    "return a link of a ITSA created invitation" in {
       createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", "W12 7TQ", serviceITSA, identifierITSA)
       val result: Option[String] = await(connector.createInvitation(arn, agentInvitation))
       result.isDefined shouldBe true
@@ -42,6 +49,9 @@ class InvitationsConnectorISpec extends BaseISpec {
         await(connector.createInvitation(arn, agentInvitation))
       }
     }
+
+    behave like anCreatePIRInvitationEndpoint(connector)
+    behave like anCreateVATInvitationEndpoint(connector)
   }
 
   "Get Invitation" should {
@@ -59,7 +69,8 @@ class InvitationsConnectorISpec extends BaseISpec {
         .getInvitation(getITSAInvitation)))
     }
 
-    behave like anGetAFIInvitationEndpoint(connector)
+    behave like anGetPIRInvitationEndpoint(connector)
+    behave like anGetVATInvitationEndpoint(connector)
   }
 
   "Accept invitation" should {
@@ -91,7 +102,8 @@ class InvitationsConnectorISpec extends BaseISpec {
       verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
     }
 
-    behave like anAcceptAFIInvitationEndpoint(connector)
+    behave like anAcceptPIRInvitationEndpoint(connector)
+    behave like anAcceptVATInvitationEndpoint(connector)
   }
 
   "Reject invitation" should {
@@ -123,79 +135,189 @@ class InvitationsConnectorISpec extends BaseISpec {
       verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
     }
 
-    behave like anRejectAFIInvitationEndpoint(connector)
+    behave like anRejectPIRInvitationEndpoint(connector)
+    behave like anRejectVATInvitationEndpoint(connector)
   }
 
-  def anGetAFIInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
-    "return AFI Invitation" in {
-      getInvitationStub(arn, validNino.value, invitationIdAFI, servicePIR, identifierAFI,"Pending")
+  def anCreatePIRInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    val agentInvitation = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
+
+    "return a link of a PIR created invitation" in {
+      createInvitationStubForNoKnownFacts(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
+      val result: Option[String] = await(connector.createInvitation(arn, agentInvitation))
+      result.isDefined shouldBe true
+      result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/BT5YMLY6GG2L6")
+    }
+
+    "return an error if unexpected response when creating PIR invitation" in {
+      failedCreateInvitation(arn)
+      intercept[BadRequestException] {
+        await(connector.createInvitation(arn, agentInvitation))
+      }
+    }
+  }
+
+  def anCreateVATInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    val agentInvitation = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
+
+    "return a link of a VAT created invitation" in {
+      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
+      val result: Option[String] = await(connector.createInvitation(arn, agentInvitation))
+      result.isDefined shouldBe true
+      result.get should include("agent-client-authorisation/clients/VAT/101747696/invitations/received/CZTW1KY6RTAAT")
+    }
+
+    "return an error if unexpected response when creating VAT invitation" in {
+      failedCreateInvitation(arn)
+      intercept[BadRequestException] {
+        await(connector.createInvitation(arn, agentInvitation))
+      }
+    }
+  }
+
+  def anGetPIRInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return PIR Invitation" in {
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR,"Pending")
       val result = await(invitationsConnector
-        .getInvitation(getAFIInvitation))
+        .getInvitation(getPIRInvitation))
       result.arn shouldBe Arn("TARN0000001")
     }
 
-    "return an error if AFI invitation not found" in {
-      notFoundGetInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
+    "return an error if PIR invitation not found" in {
+      notFoundGetInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
       an[NotFoundException] shouldBe thrownBy (await(invitationsConnector
-        .getInvitation(getAFIInvitation)))
+        .getInvitation(getPIRInvitation)))
     }
   }
 
-  def anAcceptAFIInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
-    "return status 204 if AFI invitation was accepted" in {
-      acceptInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
-      val result = await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdAFI))
-      result shouldBe 204
-      verifyAcceptInvitationAttempt(validNino.value, invitationIdAFI, "NI")
+  def anGetVATInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return VAT Invitation" in {
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      val result = await(invitationsConnector
+        .getInvitation(getVATInvitation))
+      result.arn shouldBe Arn("TARN0000001")
     }
 
-    "return an error if AFI invitation is already actioned" in {
-      alreadyActionedAcceptInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
-
-      intercept[Upstream4xxResponse] {
-        await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdAFI))
-      }
-
-      verifyAcceptInvitationAttempt(validNino.value, invitationIdAFI, "NI")
-    }
-
-    "return an error if AFI invitation not found" in {
-      notFoundAcceptInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
-
-      intercept[NotFoundException] {
-        await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdAFI))
-      }
-
-      verifyAcceptInvitationAttempt(validNino.value, invitationIdAFI, identifierAFI)
+    "return an error if VAT invitation not found" in {
+      notFoundGetInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+      an[NotFoundException] shouldBe thrownBy (await(invitationsConnector
+        .getInvitation(getVATInvitation)))
     }
   }
 
-  def anRejectAFIInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
-    "return status 204 if AFI invitation was rejected" in {
-      rejectInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
-      val result = await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdAFI))
+  def anAcceptPIRInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return status 204 if PIR invitation was accepted" in {
+      acceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+      val result = await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdPIR))
       result shouldBe 204
-      verifyRejectInvitationAttempt(validNino.value, invitationIdAFI, identifierAFI)
+      verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
     }
 
-    "return an error if AFI invitation is already actioned" in {
-      alreadyActionedRejectInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
+    "return an error if PIR invitation is already actioned" in {
+      alreadyActionedAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
 
       intercept[Upstream4xxResponse] {
-        await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdAFI))
+        await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdPIR))
       }
 
-      verifyRejectInvitationAttempt(validNino.value, invitationIdAFI, identifierAFI)
+      verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
     }
 
-    "return an error if AFI invitation not found" in {
-      notFoundRejectInvitationStub(validNino.value, invitationIdAFI, identifierAFI)
+    "return an error if PIR invitation not found" in {
+      notFoundAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
 
       intercept[NotFoundException] {
-        await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdAFI))
+        await(invitationsConnector.acceptAFIInvitation(validNino, invitationIdPIR))
       }
 
-      verifyRejectInvitationAttempt(validNino.value, invitationIdAFI, identifierAFI)
+      verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+    }
+  }
+
+  def anAcceptVATInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return status 204 if VAT invitation was accepted" in {
+      acceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+      val result = await(invitationsConnector.acceptVATInvitation(validVrn97, invitationIdVAT))
+      result shouldBe 204
+      verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+    }
+
+    "return an error if VAT invitation is already actioned" in {
+      alreadyActionedAcceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+
+      intercept[Upstream4xxResponse] {
+        await(invitationsConnector.acceptVATInvitation(validVrn97, invitationIdVAT))
+      }
+
+      verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+    }
+
+    "return an error if VAT invitation not found" in {
+      notFoundAcceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+
+      intercept[NotFoundException] {
+        await(invitationsConnector.acceptVATInvitation(validVrn97, invitationIdVAT))
+      }
+
+      verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+    }
+  }
+
+  def anRejectPIRInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return status 204 if PIR invitation was rejected" in {
+      rejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+      val result = await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdPIR))
+      result shouldBe 204
+      verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+    }
+
+    "return an error if PIR invitation is already actioned" in {
+      alreadyActionedRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+
+      intercept[Upstream4xxResponse] {
+        await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdPIR))
+      }
+
+      verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+    }
+
+    "return an error if PIR invitation not found" in {
+      notFoundRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+
+      intercept[NotFoundException] {
+        await(invitationsConnector.rejectAFIInvitation(validNino, invitationIdPIR))
+      }
+
+      verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+    }
+  }
+
+  def anRejectVATInvitationEndpoint(invitationsConnector: InvitationsConnector): Unit = {
+    "return status 204 if VAT invitation was rejected" in {
+      rejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+      val result = await(invitationsConnector.rejectVATInvitation(validVrn97, invitationIdVAT))
+      result shouldBe 204
+      verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+    }
+
+    "return an error if VAT invitation is already actioned" in {
+      alreadyActionedRejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+
+      intercept[Upstream4xxResponse] {
+        await(invitationsConnector.rejectVATInvitation(validVrn97, invitationIdVAT))
+      }
+
+      verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+    }
+
+    "return an error if VAT invitation not found" in {
+      notFoundRejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+
+      intercept[NotFoundException] {
+        await(invitationsConnector.rejectVATInvitation(validVrn97, invitationIdVAT))
+      }
+
+      verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
     }
   }
 }

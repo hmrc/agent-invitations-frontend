@@ -32,12 +32,18 @@
         @if(service == Services.messageKeyForAfi) {
             <p class="heading-24--normal">@Messages("client-complete-afi.title3")</p>
         }
+        @if(service == Services.messageKeyForVAT) {
+          <p class="heading-24--normal">@Messages("client-complete-vat.title3")</p>}
     </div>
 
     <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
 
     @if(service == Services.messageKeyForITSA) {
         <p>@Messages("client-complete-itsa.p1")</p>
+    }
+
+    @if(service == Services.messageKeyForVAT) {
+      @* TODO -- Add VAT Specific Content Here *@
     }
 
     <div class="form-group">
