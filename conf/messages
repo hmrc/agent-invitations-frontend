@@ -128,12 +128,14 @@ client-complete.title2={0}
 client-complete-itsa.title3=as your agent for
 client-complete-itsa.title4=Online self assessment
 client-complete-afi.title3=as your agent
-client-complete.sub-header=What happens next
+client-complete.sub-header=What to do next
 client-complete-itsa.p1=You can manage your relationships with your agent(s) from within your Business Tax account. This account gives you direct access to information from HMRC.
 client-complete-itsa.button=Continue to your business tax account
 client-complete-afi.button=Continue to your personal tax account
 client-complete-vat.title3=as your agent for VAT
 
+client-complete.remove-authorisation.p=<strong>Save this link for your records</strong> and use it to deauthorise {0} at any time:
+client-complete.remove-authorisation.url=https://www.tax.service.gov.uk/relationships/individual/manage-your-tax-agents/deauthorise-agent
 
 # Generic Issue Title
 client-problem.title=Your authorisation request is no longer valid
