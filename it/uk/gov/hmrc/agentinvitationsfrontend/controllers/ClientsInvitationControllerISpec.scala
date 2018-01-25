@@ -126,7 +126,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHasClientSignOutUrl(result)
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", mtdItId.value, serviceITSA, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", "ni", mtdItId.value, serviceITSA, "My Agency")
     }
 
     "show invitation_declined page for an authenticated client with a valid invitation for AFI" in {
@@ -143,7 +143,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHasClientSignOutUrl(result)
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", nino, serviceNI, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, serviceNI, "My Agency")
     }
 
     "show invitation_declined page for an authenticated client with a valid invitation for VAT" in {
@@ -156,7 +156,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       //TODO checkResultBody: Test for content -- Out of Scope of APB-1884
       checkHasClientSignOutUrl(result)
-      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Declined", validVrn97.value, serviceVAT, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Declined", "vrn", validVrn97.value, serviceVAT, "My Agency")
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
@@ -592,9 +592,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultAFI = submitConfirmTermsAFI(reqAFI)
       val resultVAT = submitConfirmTermsVAT(reqVAT)
 
-      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", mtdItId.value, serviceITSA, "My Agency")
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", nino, serviceNI, "My Agency")
-      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Accepted", validVrn97.value, serviceVAT, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", "ni", mtdItId.value, serviceITSA, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", "ni", nino, serviceNI, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Accepted", "vrn", validVrn97.value, serviceVAT, "My Agency")
       status(resultITSA) shouldBe SEE_OTHER
       status(resultAFI) shouldBe SEE_OTHER
       status(resultVAT) shouldBe SEE_OTHER
@@ -892,14 +892,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientId: String, service: String,  agencyName: String): Unit = {
+  def verifyAgentInvitationResponseEvent(invitationId: InvitationId, arn: String, clientResponse: String, clientIdType: String, clientId: String, service: String,  agencyName: String): Unit = {
     verifyAuditRequestSent(1, AgentClientInvitationResponse,
       detail = Map(
         "invitationId" -> invitationId.value,
         "agentReferenceNumber" -> arn,
         "agencyName" -> agencyName,
-        "regimeId" -> clientId,
-        "regime" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "service" -> service,
         "clientResponse" -> clientResponse
       ),
       tags = Map(

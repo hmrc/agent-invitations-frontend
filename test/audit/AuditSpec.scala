@@ -97,6 +97,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val agencyName: String = "someAgency"
       val clientResponse = "accepted"
       val invitationId: String = "1"
+      val clientIdType: String = "ni"
       val mtdItId: MtdItId = MtdItId("mtdItId")
       val serviceName: String = "HMRC-MTD-IT"
 
@@ -104,6 +105,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         invitationId,
         arn,
         clientResponse,
+        clientIdType,
         mtdItId.value,
         serviceName,
         agencyName)(
@@ -121,8 +123,9 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("invitationId") shouldBe "1"
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
         sentEvent.detail("agencyName") shouldBe "someAgency"
-        sentEvent.detail("regimeId") shouldBe "mtdItId"
-        sentEvent.detail("regime") shouldBe "HMRC-MTD-IT"
+        sentEvent.detail("clientIdType") shouldBe "ni"
+        sentEvent.detail("clientId") shouldBe "mtdItId"
+        sentEvent.detail("service") shouldBe "HMRC-MTD-IT"
 
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"
