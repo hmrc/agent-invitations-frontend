@@ -744,11 +744,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.title3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-itsa.button"))
-      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.self.assessment"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -768,10 +766,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.title3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-afi.button"))
-      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.view"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.income"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.sub-header"))
+      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -788,9 +788,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title2", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete-vat.title3"))
-      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
       checkHasClientSignOutUrl(result)
     }
 
