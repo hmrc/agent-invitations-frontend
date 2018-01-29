@@ -72,7 +72,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
             invitationsService.getAgencyName(invitation.arn).flatMap { agencyName =>
               rejectInvitation(serviceName, invitationId, clientId).map {
                 case NO_CONTENT => {
-                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Declined", clientId, serviceName, agencyName)
+                  auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Declined", clientIdentifierType(invitation.clientId), clientId, serviceName, agencyName)
                   Ok(invitation_declined(agencyName, invitationId, messageKey, continueUrl))
                 }
                 case status => throw new Exception(s"Invitation rejection failed with status $status")
@@ -147,7 +147,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
               }, _ => {
                 acceptInvitation(serviceName, invitationId, clientId).map {
                   case NO_CONTENT =>
-                    auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Accepted", clientId, serviceName, name)
+                    auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Accepted", clientIdentifierType(clientId), clientId, serviceName, name)
                     Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
                   case status => throw new Exception(s"Invitation acceptance failed with status $status")
                 }
@@ -243,6 +243,12 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
           Logger.warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
+  }
+
+  private def clientIdentifierType(clientId: String): String = clientId match {
+    case maybeVrn if Vrn.isValid(maybeVrn) => "vrn"
+    case maybeNino if Nino.isValid(maybeNino) || MtdItId.isValid(maybeNino) => "ni"
+    case _ => throw new IllegalStateException(s"Unsupported ClientIdType")
   }
 }
 

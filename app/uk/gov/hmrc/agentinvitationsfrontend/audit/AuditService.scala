@@ -52,15 +52,16 @@ class AuditService @Inject() (val auditConnector: AuditConnector) {
     )
   }
 
-  def sendAgentInvitationResponse(invitationId: String, arn: Arn, clientResponse: String, clientId: String, service: String, agencyName:String)
+  def sendAgentInvitationResponse(invitationId: String, arn: Arn, clientResponse: String, clientIdType: String, clientId: String, service: String, agencyName:String)
                                  (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientInvitationResponse, "agent-client-invitation-response",
       Seq(
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "agencyName" -> agencyName,
-        "regimeId" -> clientId,
-        "regime" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "service" -> service,
         "clientResponse" -> clientResponse))
   }
 
