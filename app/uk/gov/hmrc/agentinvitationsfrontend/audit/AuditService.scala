@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationForm, AgentInvitationUserInput}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
@@ -39,15 +39,15 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationUserInput: AgentInvitationUserInput, result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationform: AgentInvitationForm, result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
         "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType" -> agentInvitationUserInput.clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
-        "clientId" -> agentInvitationUserInput.clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
-        "service" -> agentInvitationUserInput.service
+        "clientIdType" -> agentInvitationform.clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
+        "clientId" -> agentInvitationform.clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
+        "service" -> agentInvitationform.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }

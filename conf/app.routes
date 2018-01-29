@@ -8,7 +8,9 @@ GET         /agents/enter-nino                                          @uk.gov.
 POST        /agents/enter-nino                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
 GET         /agents/enter-vrn                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showVrnForm
 POST        /agents/enter-vrn                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitVrn
+GET         /agents/enter-vat-registration-date                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showVatRegistrationDateForm
 GET         /agents/enter-postcode                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showPostcodeForm
+POST        /agents/enter-vat-registration-date                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitVatRegistrationDate
 POST        /agents/enter-postcode                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 GET         /agents/invitation-sent                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
 GET         /agents/select-service                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService

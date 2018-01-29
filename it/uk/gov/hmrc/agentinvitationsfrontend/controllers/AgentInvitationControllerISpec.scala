@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
@@ -50,6 +50,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "MTDVATID"
   val validVrn97 = Vrn("101747696")
+  val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
 
   "GET /agents/" should {
@@ -87,21 +88,16 @@ class AgentInvitationControllerISpec extends BaseISpec {
   "POST /agents/enter-vrn" should {
     val request = FakeRequest("POST", "/agents/enter-vrn")
     val submitVrn = controller.submitVrn()
+    val submitVatRegistrationDate = controller.submitVatRegistrationDate()
 
-    "return 303 for authorised Agent with valid vrn and redirected to invitations-sent page" in {
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-
-      val form = agentInvitationVrnForm.fill(AgentInvitationUserInput(serviceVAT, Some(validVrn97), None))
+    "return 303 for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
+      val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
       val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include(s"invitationId=${invitationIdVAT.value}")
+      redirectLocation(result) shouldBe Some("/invitations/agents/enter-vat-registration-date")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
     }
 
     "return 200 for authorised Agent with no vrn submitted and redisplay form with error message" in {
@@ -128,16 +124,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    "return exception when create invitation fails" in {
-      failedCreateInvitation(arn)
-
-      val form = agentInvitationVrnForm.fill(AgentInvitationUserInput(serviceVAT, Some(validVrn97), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      an[BadRequestException] should be thrownBy await(result)
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Fail", serviceVAT)
     }
 
     behave like anAuthorisedEndpoint(request, submitVrn)
@@ -175,6 +161,90 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
 
     behave like anAuthorisedEndpoint(request, showNinoForm)
+  }
+  "GET /agents/enter-vat-registration-date" should {
+    val request = FakeRequest("GET", "/agents/enter-vat-registration-date")
+    val showVatRegistrationDateForm = controller.showVatRegistrationDateForm()
+
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
+      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request.withSession("clientIdentifier" -> validVrn97.value, "service" -> serviceVAT), arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
+      checkHasAgentSignOutLink(result)
+
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
+      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+    }
+
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is available but clientIdentifier(vrn) not available in session" in {
+      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request.withSession("service" -> serviceVAT), arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/enter-vrn")
+    }
+
+    behave like anAuthorisedEndpoint(request, showVatRegistrationDateForm)
+  }
+
+  "POST /agents/enter-vat-registration-date" should {
+    val request = FakeRequest("POST", "/agents/enter-vrn")
+    val submitVatRegistrationDate = controller.submitVatRegistrationDate()
+
+    "return 303 for authorised Agent with valid vrn and known fact check pass to invitation sent page" in {
+      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      getRegisteredClientStub(validVrn97.value, "2007-07-07")
+
+      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
+      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      header("Set-Cookie", result) shouldBe defined
+      header("Set-Cookie", result).get should include(s"invitationId=${invitationIdVAT.value}")
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+
+      verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
+    }
+
+    "return 303 when the user supplied VAT registration date doen not match our records" in {
+
+      getRegisteredClientStub(validVrn97.value, "2007-07-30")
+
+      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
+      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      header("Set-Cookie", result) shouldBe None
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+    }
+
+    "return exception when create invitation fails" in {
+      getRegisteredClientStub(validVrn97.value, "2007-07-07")
+      failedCreateInvitation(arn)
+
+      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-07")))
+      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      an[BadRequestException] should be thrownBy await(result)
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Fail", serviceVAT)
+    }
+
+    "return 303 when client is not registerd for VAT" in {
+      notFoundRegisteredClientStub(validVrn97.value, "2007-07-20")
+
+      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-20")))
+      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      header("Set-Cookie", result) shouldBe None
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+    }
   }
 
   "POST /agents/enter-nino" should {
@@ -330,7 +400,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
-      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, validPostcode, serviceITSA, "MTDITID")
+      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID")
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
 
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some(validPostcode)))

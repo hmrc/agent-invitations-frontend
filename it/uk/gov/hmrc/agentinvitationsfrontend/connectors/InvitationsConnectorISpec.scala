@@ -33,9 +33,9 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Create Invitation" when {
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", Some("W12 7TQ"))
+      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", "W12 7TQ", serviceITSA, identifierITSA)
+        createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", serviceITSA, identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
@@ -50,7 +50,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
+      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
         createInvitationStubForNoKnownFacts(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
@@ -67,7 +67,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
+      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value)
       "return a link of a VAT created invitation" in {
         createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))

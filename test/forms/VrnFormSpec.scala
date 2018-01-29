@@ -19,7 +19,7 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationVrnForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -61,7 +61,7 @@ class VrnFormSpec extends UnitSpec {
     }
 
     "return no errors when unbinding the form" in {
-      val unboundForm = agentInvitationVrnForm.mapping.unbind(AgentInvitationUserInput("", Some(validVrn97), None))
+      val unboundForm = agentInvitationVrnForm.mapping.unbind(AgentInvitationVatForm("", Some(validVrn97), None))
       unboundForm("clientIdentifier") shouldBe validVrn97.value
     }
 

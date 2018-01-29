@@ -1,7 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
-import java.net.URL
-
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -15,7 +13,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with AfiRelationshipStub with DataStreamStubs {
+abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with AfiRelationshipStub with DataStreamStubs with AgentStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -33,6 +31,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,
         "microservice.services.agent-fi-relationship.port" -> wireMockPort,
+        "microservice.services.agent-stubs.port" -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.personal-tax-account.external-url" -> wireMockBaseUrlAsString,
