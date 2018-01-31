@@ -14,41 +14,39 @@
  * limitations under the License.
  *@
 
-@import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import play.api.Configuration
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationVatForm
 @(agentInvitationsForm : Form[AgentInvitationVatForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-vrn.title"), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =   error_prefix(agentInvitationsForm) + Messages("enter-vat-registration-date.title"), bodyClasses = None, isAgent = true) {
 
-  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-vrn"))
+   @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-vat-registration-date"))
 
-
-  <h1 class="heading-xlarge">@Messages("enter-vrn.header")</h1>
-
+  <h1 class="heading-xlarge">@Messages("enter-vat-registration-date.header")</h1>
 
   @form(
-    action = routes.AgentsInvitationController.submitVrn(),
+    action = routes.AgentsInvitationController.submitVatRegistrationDate(),
     'class -> "form js-form") {
 
     <div class="form-group">
     @input(
-      agentInvitationsForm("clientIdentifier"),
-      '_label -> Messages("enter-vrn.label"),
-      '_inputClass -> "input--medium input--cleared",
+      agentInvitationsForm("registrationDate"),
+      '_label -> Messages("enter-vat-registration-date.label"),
+      '_inputClass -> "input--medium input--cleared input--small",
       '_labelTextClass -> "h2-heading",
+      '_inputHint -> Messages("enter-vat-registration-date.hint"),
       '_labelClass -> "soft--ends"
     )
     </div>
 
     <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
-    <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
+    <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
 
     <div class="form-group">
       <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

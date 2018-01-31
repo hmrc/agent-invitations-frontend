@@ -18,23 +18,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentInvitationUserInput, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, AgentStubsConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
-                                    agentServicesAccountConnector: AgentServicesAccountConnector) {
+                                    agentServicesAccountConnector: AgentServicesAccountConnector,
+                                    agentStubsConnector: AgentStubsConnector) {
 
-  def createInvitation(arn: Arn, userInput: AgentInvitationUserInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
-    val service = userInput.service
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier])
+                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     val agentInvitation = AgentInvitation(service,
-      userInput.clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
-      userInput.clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), userInput.postcode)
+      clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
+      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")))
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -69,7 +71,17 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
     agentServicesAccountConnector.getAgencyName(arn.value).map {
       case Some(name) => name
       case None => throw new Exception("Agency name not found")
+  }
+
+  def checkVatRegistrationDateMatches(vrn: String, userInputRegistrationDate: String): Future[(Boolean,Boolean)] = {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    agentStubsConnector.getVatRegisteredClient(vrn).map{registeredClient =>
+      registeredClient match {
+        case Some(r) => (true,if(r.registrationDate.equals(userInputRegistrationDate)) true else false)
+        case None => (false, false)
+      }
     }
+  }
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String = {
       s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"

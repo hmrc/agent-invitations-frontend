@@ -23,6 +23,14 @@ enter-postcode.invalid-format=You can only enter these characters: a-z A-Z 0-9
 postcode.hint=This must match our records
 error.postcode.required = You must enter an individual''s postcode
 
+# Enter Postcode
+enter-vat-registration-date.title=We need more information about this individual
+enter-vat-registration-date.header=We need more information about this individual
+enter-vat-registration-date.label=VAT registration date
+enter-vat-registration-date.invalid-format=You must enter the date in the following format: YYYY-MM-DD (eg. 2018-01-20)
+enter-vat-registration-date.hint=This must match our records
+error.vat-registration-date.required = You must enter the client''s VAT registration date
+
 # Select Service
 select-service.title=Select service
 select-service.header=Which information do you want to access for this individual?
