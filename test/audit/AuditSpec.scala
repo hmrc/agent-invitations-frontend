@@ -84,7 +84,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       }
     }
 
-    "send an AgentClientInvitationResponse Event" in {
+    "send an AgentClientInvitationResponse Event for ITSA" in {
       val mockConnector = mock[AuditConnector]
       val service = new AuditService(mockConnector)
 
@@ -126,6 +126,112 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientIdType") shouldBe "ni"
         sentEvent.detail("clientId") shouldBe "mtdItId"
         sentEvent.detail("service") shouldBe "HMRC-MTD-IT"
+
+        sentEvent.tags.contains("Authorization") shouldBe false
+        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
+
+        sentEvent.tags("transactionName") shouldBe "agent-client-invitation-response"
+        sentEvent.tags("path") shouldBe "/path"
+        sentEvent.tags("X-Session-ID") shouldBe "dummy session id"
+        sentEvent.tags("X-Request-ID") shouldBe "dummy request id"
+      }
+    }
+
+    "send an AgentClientInvitationResponse Event for PIR" in {
+      val mockConnector = mock[AuditConnector]
+      val service = new AuditService(mockConnector)
+
+      val hc = HeaderCarrier(
+        authorization = Some(Authorization("dummy bearer token")),
+        sessionId = Some(SessionId("dummy session id")),
+        requestId = Some(RequestId("dummy request id")))
+
+      val arn: Arn = Arn("HX2345")
+      val agencyName: String = "someAgency"
+      val clientResponse = "accepted"
+      val invitationId: String = "2"
+      val clientIdType: String = "ni"
+      val nino: String = "nino"
+      val serviceName: String = "PERSONAL-INCOME-RECORD"
+
+      await(service.sendAgentInvitationResponse(
+        invitationId,
+        arn,
+        clientResponse,
+        clientIdType,
+        nino,
+        serviceName,
+        agencyName)(
+        hc,
+        FakeRequest("GET", "/path")))
+
+      eventually {
+        val captor = ArgumentCaptor.forClass(classOf[DataEvent])
+        verify(mockConnector).sendEvent(captor.capture())(any[HeaderCarrier], any[ExecutionContext])
+        val sentEvent = captor.getValue.asInstanceOf[DataEvent]
+
+        sentEvent.auditType shouldBe "AgentClientInvitationResponse"
+        sentEvent.auditSource shouldBe "agent-invitations-frontend"
+        sentEvent.detail("clientResponse") shouldBe "accepted"
+        sentEvent.detail("invitationId") shouldBe "2"
+        sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
+        sentEvent.detail("agencyName") shouldBe "someAgency"
+        sentEvent.detail("clientIdType") shouldBe "ni"
+        sentEvent.detail("clientId") shouldBe "nino"
+        sentEvent.detail("service") shouldBe "PERSONAL-INCOME-RECORD"
+
+        sentEvent.tags.contains("Authorization") shouldBe false
+        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
+
+        sentEvent.tags("transactionName") shouldBe "agent-client-invitation-response"
+        sentEvent.tags("path") shouldBe "/path"
+        sentEvent.tags("X-Session-ID") shouldBe "dummy session id"
+        sentEvent.tags("X-Request-ID") shouldBe "dummy request id"
+      }
+    }
+
+    "send an AgentClientInvitationResponse Event for VAT" in {
+      val mockConnector = mock[AuditConnector]
+      val service = new AuditService(mockConnector)
+
+      val hc = HeaderCarrier(
+        authorization = Some(Authorization("dummy bearer token")),
+        sessionId = Some(SessionId("dummy session id")),
+        requestId = Some(RequestId("dummy request id")))
+
+      val arn: Arn = Arn("HX2345")
+      val agencyName: String = "someAgency"
+      val clientResponse = "accepted"
+      val invitationId: String = "3"
+      val clientIdType: String = "vrn"
+      val vatRegistrationNumber: String = "vat"
+      val serviceName: String = "HMRC-MTD-VAT"
+
+      await(service.sendAgentInvitationResponse(
+        invitationId,
+        arn,
+        clientResponse,
+        clientIdType,
+        vatRegistrationNumber,
+        serviceName,
+        agencyName)(
+        hc,
+        FakeRequest("GET", "/path")))
+
+      eventually {
+        val captor = ArgumentCaptor.forClass(classOf[DataEvent])
+        verify(mockConnector).sendEvent(captor.capture())(any[HeaderCarrier], any[ExecutionContext])
+        val sentEvent = captor.getValue.asInstanceOf[DataEvent]
+
+        sentEvent.auditType shouldBe "AgentClientInvitationResponse"
+        sentEvent.auditSource shouldBe "agent-invitations-frontend"
+        sentEvent.detail("clientResponse") shouldBe "accepted"
+        sentEvent.detail("invitationId") shouldBe "3"
+        sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
+        sentEvent.detail("agencyName") shouldBe "someAgency"
+        sentEvent.detail("clientIdType") shouldBe "vrn"
+        sentEvent.detail("clientId") shouldBe "vat"
+        sentEvent.detail("service") shouldBe "HMRC-MTD-VAT"
 
         sentEvent.tags.contains("Authorization") shouldBe false
         sentEvent.detail("Authorization") shouldBe "dummy bearer token"

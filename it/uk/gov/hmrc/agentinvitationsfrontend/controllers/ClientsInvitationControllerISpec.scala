@@ -143,7 +143,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHasClientSignOutUrl(result)
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, serviceNI, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, servicePIR, "My Agency")
     }
 
     "show invitation_declined page for an authenticated client with a valid invitation for VAT" in {
@@ -593,7 +593,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultVAT = submitConfirmTermsVAT(reqVAT)
 
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Accepted", "ni", mtdItId.value, serviceITSA, "My Agency")
-      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", "ni", nino, serviceNI, "My Agency")
+      verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Accepted", "ni", nino, servicePIR, "My Agency")
       verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Accepted", "vrn", validVrn97.value, serviceVAT, "My Agency")
       status(resultITSA) shouldBe SEE_OTHER
       status(resultAFI) shouldBe SEE_OTHER

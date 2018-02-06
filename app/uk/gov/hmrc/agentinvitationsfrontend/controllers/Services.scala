@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 trait Service
-case class ValidService(serviceName: String, serviceIdentifier:String, apiIdentifier: String, messageKey: String) extends Service
+case class ValidService(serviceName: String, enrolmentName: String, enrolmentIdentifier: String, apiIdentifier: String, messageKey: String) extends Service
 case object InvalidService extends Service
 
 object Services {
@@ -41,9 +41,9 @@ object Services {
 
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {
-      case 'A' => ValidService(HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
-      case 'B' => ValidService(HMRCNI, NINO, NI, messageKeyForAfi)
-      case 'C' => ValidService(HMRCMTDVAT, MTDVATID, VAT, messageKeyForVAT)
+      case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
+      case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
+      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, MTDVATID, VAT, messageKeyForVAT)
       case _ => InvalidService
     }
   }

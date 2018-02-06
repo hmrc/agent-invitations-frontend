@@ -55,7 +55,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, messageKey) if messageKey.nonEmpty => Ok(landing_page(invitationId, messageKey))
+      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty => Ok(landing_page(invitationId, messageKey))
       case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -66,8 +66,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+      case ValidService(serviceName, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             invitationsService.getAgencyName(invitation.arn).flatMap { agencyName =>
               rejectInvitation(serviceName, invitationId, clientId).map {
@@ -86,8 +86,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def getConfirmInvitation(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+      case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             invitationsService.getAgencyName(invitation.arn).map { agencyName =>
                 Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey)).addingToSession("agencyName" -> agencyName)
@@ -100,8 +100,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def submitConfirmInvitation(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+      case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             confirmInvitationForm.bindFromRequest().fold(
               formWithErrors => {
@@ -123,10 +123,9 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def getConfirmTerms(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, (messageKey)) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending {
-            invitation: Invitation =>
+      case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
+          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { _ =>
               val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
               Future successful Ok(confirm_terms(confirmTermsForm, name, invitationId, messageKey))
           })
@@ -137,8 +136,8 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def submitConfirmTerms(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
+      case ValidService(serviceName, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
             confirmTermsForm.bindFromRequest().fold(
@@ -160,9 +159,9 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
 
   def getCompletePage(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(serviceName, serviceIdentifier, apiIdentifier, messageKey) =>
-        withAuthorisedAsClient(serviceName, serviceIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsAccepted { invitation =>
+      case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
+          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsAccepted { _ =>
             val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
             Future successful Ok (complete (name, messageKey, continueUrl) ).removingFromSession("agencyName")
           })
@@ -194,7 +193,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
   private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
     service match {
       case HMRCMTDIT => invitationsService.acceptITSAInvitation(invitationId, MtdItId(clientId))
-      case HMRCNI => invitationsService.acceptAFIInvitation(invitationId, Nino(clientId))
+      case HMRCPIR => invitationsService.acceptAFIInvitation(invitationId, Nino(clientId))
       case HMRCMTDVAT => invitationsService.acceptVATInvitation(invitationId, Vrn(clientId))
       case _ => throw new IllegalStateException("Unsupported Service")
     }
@@ -203,7 +202,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
   private def rejectInvitation(service: String, invitationId: InvitationId, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
     service match {
       case HMRCMTDIT => invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
-      case HMRCNI => invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+      case HMRCPIR => invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
       case HMRCMTDVAT => invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
       case _ => throw new IllegalStateException("Unsupported Service")
     }
