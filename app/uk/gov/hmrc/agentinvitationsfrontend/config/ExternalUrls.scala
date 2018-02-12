@@ -28,26 +28,26 @@ class ExternalUrls @Inject()
   @Named("business-tax-account.external-url") val businessTaxAccountUrl: String,
   @Named("agent-services-account-frontend.external-url") val agentServicesAccountUrl: String,
   @Named("contact-frontend.external-url") val contactFrontendUrl: String,
-  @Named("survey.invitation.agentUrl") val agentSurveyUrl: String,
-  @Named("survey.invitation.clientUrl") val clientSurveyUrl: String
+  @Named("feedback-survey-frontend.external-url") val exitSurveyUrl: String,
+  @Named("survey.feedbackSurveyURNWithoutOriginToken") val invitationExitSurvey: String,
+  @Named("survey.originTokenIdentifier.agent") val agentOriginTokenIdentifier: String,
+  @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String
 ) {
-  private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) "INVITAGENT" else "INVITCLIENT"
+  private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
 
-  def signOutUrl(isAgent: Boolean, goToSurvey: Option[String]): String = {
+  def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
     val continueUrl = isAgent match {
       case true => {
-        if (goToSurvey.getOrElse("") == "InviteSent") agentSurveyUrl
+        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
         else s"$agentServicesAccountUrl/agent-services-account"
       }
       case false => {
-        if (goToSurvey.getOrElse("") == "ActedOnInvite") clientSurveyUrl
+        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
         else s"$businessTaxAccountUrl/business-account"
       }
     }
         s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
     }
-
-
 
   def contactFrontendAjaxUrl(isAgent: Boolean): String = {
     s"$contactFrontendUrl/contact/problem_reports_ajax?service=${contactFrontendServiceId(isAgent)}"

@@ -53,6 +53,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   val nino = "AB123456A"
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VAT"
+  val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
 
   "GET /:invitationId (landing page)" should {
     "show the landing page even if the user is not authenticated" in {
@@ -918,7 +919,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    val continueUrl = URLEncoder.encode("https://www.tax.service.gov.uk/feedback-survey/?origin=INVITCLIENT", StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+    val continueUrl = URLEncoder.encode(clientFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, continueUrl)
   }
 }

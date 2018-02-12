@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agencyName: String, service: String, continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some("ActedOnInvite")) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true)) {
 
     <div class="transaction-banner--complete">
         <p class="heading-24--normal">@Messages("client-complete.title1")</p>
