@@ -19,23 +19,24 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(title: String,
-    mainClass: Option[String] = None,
-    mainDataAttributes: Option[Html] = None,
-    bodyClasses: Option[String] = None,
-    sidebar: Html = HtmlFormat.empty,
-    contentHeader: Option[Html] = None,
-    mainContent: Html = HtmlFormat.empty,
-    serviceInfoContent: Html = HtmlFormat.empty,
-    scriptElem: Option[Html] = None,
-    gaCode: Seq[String] = Seq.empty,
-    cookies: Option[Cookies] = None,
-    isAgent: Boolean)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+        mainClass: Option[String] = None,
+        mainDataAttributes: Option[Html] = None,
+        bodyClasses: Option[String] = None,
+        sidebar: Html = HtmlFormat.empty,
+        contentHeader: Option[Html] = None,
+        mainContent: Html = HtmlFormat.empty,
+        serviceInfoContent: Html = HtmlFormat.empty,
+        scriptElem: Option[Html] = None,
+        gaCode: Seq[String] = Seq.empty,
+        cookies: Option[Cookies] = None,
+        isAgent: Boolean,
+        completedInviteGoSurvey: Option[String] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @head = {
 @uiLayouts.head(
-  linkElem = None,
-  headScripts = Some(headScripts))
-  <meta name="format-detection" content="telephone=no"/>
+    linkElem = None,
+    headScripts = Some(headScripts))
+    <meta name="format-detection" content="telephone=no"/>
 }
 
 @headScripts = {
@@ -47,22 +48,21 @@
 }
 
 
-
-
 @headerNavLinks = {
     <li>
-        @if(cookies.flatMap(_.get("mdtp")).fold(false)(cookie => cookie.value.contains("authToken=Bearer+"))) {
-            <a href="@Html(externalUrls.signOutUrl(isAgent))" data-journey-click="primary-navigation:Click:Sign out">Sign out</a>
-        }
+    @if(cookies.flatMap(_.get("mdtp")).fold(false)(cookie => cookie.value.contains("authToken=Bearer+"))) {
+        <a href="@Html(externalUrls.signOutUrl(isAgent, completedInviteGoSurvey))" data-journey-click="primary-navigation:Click:Sign out">
+            Sign out</a>
+    }
     </li>
 }
 
 @insideHeader = {
 @uiLayouts.header_nav(
-  navTitle = Some(Messages("app.name")),
-  navTitleLink = None,
-  showBetaLink = false,
-  navLinks = Some(headerNavLinks))
+    navTitle = Some(Messages("app.name")),
+    navTitleLink = None,
+    showBetaLink = false,
+    navLinks = Some(headerNavLinks))
 }
 
 @afterHeader = {}
@@ -73,11 +73,11 @@
 
 @bodyEnd = {
 @uiLayouts.footer(analyticsToken = configuration.getString("google-analytics.token"),
-  analyticsHost = configuration.getString("google-analytics.host").get,
-  ssoUrl = None,
-  scriptElem = Some(scriptElement),
-  gaCalls = None,
-  analyticsAdditionalJs = Some(gaJS))
+    analyticsHost = configuration.getString("google-analytics.host").get,
+    ssoUrl = None,
+    scriptElem = Some(scriptElement),
+    gaCalls = None,
+    analyticsAdditionalJs = Some(gaJS))
 }
 
 @footerTop = {}
@@ -85,29 +85,29 @@
 
 @serviceInfo = {
 @uiLayouts.serviceInfo(
-  betaBanner = HtmlFormat.empty,
-  includeGridWrapper = false,
-  Some(serviceInfoContent))
+    betaBanner = HtmlFormat.empty,
+    includeGridWrapper = false,
+    Some(serviceInfoContent))
 }
 
 @mainContentHeader = {
 @if(contentHeader.isDefined) {
-  @uiLayouts.main_content_header(contentHeader.get)
+    @uiLayouts.main_content_header(contentHeader.get)
 }
 }
 
 @getHelpForm = @{
-  uiHelpers.reportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))
+    uiHelpers.reportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))
 }
 
 @content = {
 @uiLayouts.main_content(article = mainContent,
-  mainClass = mainClass,
-  mainDataAttributes = mainDataAttributes,
-  mainContentHeader = mainContentHeader,
-  serviceInfo = serviceInfo,
-  getHelpForm = getHelpForm,
-  sidebar = sidebar)
+    mainClass = mainClass,
+    mainDataAttributes = mainDataAttributes,
+    mainContentHeader = mainContentHeader,
+    serviceInfo = serviceInfo,
+    getHelpForm = getHelpForm,
+    sidebar = sidebar)
 }
 
 @hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), nav = true)(content)

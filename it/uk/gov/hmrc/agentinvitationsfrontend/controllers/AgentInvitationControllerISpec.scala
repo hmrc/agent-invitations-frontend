@@ -496,7 +496,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
-      checkHasAgentSignOutLink(result)
+      checkInviteSentExitSurveyAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
@@ -547,6 +547,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString
     val continueUrl = URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+  }
+
+  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val continueUrl = URLEncoder.encode("https://www.tax.service.gov.uk/feedback-survey/?origin=INVITAGENT", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
