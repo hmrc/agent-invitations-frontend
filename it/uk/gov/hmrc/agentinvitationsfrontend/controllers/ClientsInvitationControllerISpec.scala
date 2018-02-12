@@ -125,7 +125,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
-      checkHasClientSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", "ni", mtdItId.value, serviceITSA, "My Agency")
     }
 
@@ -142,7 +142,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
-      checkHasClientSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, servicePIR, "My Agency")
     }
 
@@ -155,7 +155,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe OK
       //TODO checkResultBody: Test for content -- Out of Scope of APB-1884
-      checkHasClientSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdVAT, arn.value, "Declined", "vrn", validVrn97.value, serviceVAT, "My Agency")
     }
 
@@ -747,7 +747,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.self.assessment"))
-      checkHasClientSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for ITSA" in {
@@ -772,7 +772,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.sub-header"))
       checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
-      checkHasClientSignOutUrl(result)
+    checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for AFI" in {
@@ -791,7 +791,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
-      checkHasClientSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for VAT" in {
@@ -913,6 +913,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
   def checkHasClientSignOutUrl(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+  }
+
+  def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val continueUrl = URLEncoder.encode("https://www.tax.service.gov.uk/feedback-survey/?origin=INVITCLIENT", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 }
