@@ -24,7 +24,7 @@
         mainClass: Option[String] = None,
         scriptElem: Option[Html] = None,
         isAgent: Boolean,
-        completedInviteGoSurvey: Option[String] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
+        completedInviteGoSurvey: Option[Boolean] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
     @serviceInfoContent = {}
 

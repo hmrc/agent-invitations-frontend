@@ -30,7 +30,7 @@
         gaCode: Seq[String] = Seq.empty,
         cookies: Option[Cookies] = None,
         isAgent: Boolean,
-        completedInviteGoSurvey: Option[String] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+        completedInviteGoSurvey: Option[Boolean] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @head = {
 @uiLayouts.head(

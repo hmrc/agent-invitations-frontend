@@ -52,6 +52,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val validVrn97 = Vrn("101747696")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
+  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
   "GET /agents/" should {
     "redirect to /agent/select-service" in {
@@ -552,8 +553,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    val continueUrl = URLEncoder.encode("https://www.tax.service.gov.uk/feedback-survey/?origin=INVITAGENT", StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+    val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, continueUrl)
   }
 
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
