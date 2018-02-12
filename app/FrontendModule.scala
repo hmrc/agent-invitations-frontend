@@ -68,6 +68,11 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
 
+    bindServiceProperty("feedback-survey-frontend.external-url")
+    bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
+    bindProperty("survey.originTokenIdentifier.agent")
+    bindProperty("survey.originTokenIdentifier.client")
+
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
     bindBooleanProperty("features.show-hmrc-mtd-vat")

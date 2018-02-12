@@ -18,28 +18,30 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(title: String,
-    sidebarLinks: Option[Html] = None,
-    contentHeader: Option[Html] = None,
-    bodyClasses: Option[String] = None,
-    mainClass: Option[String] = None,
-    scriptElem: Option[Html] = None,
-    isAgent: Boolean)(mainContent: Html)(implicit messages: Messages, request : Request[_], configuration: Configuration, externalUrls: ExternalUrls)
+        sidebarLinks: Option[Html] = None,
+        contentHeader: Option[Html] = None,
+        bodyClasses: Option[String] = None,
+        mainClass: Option[String] = None,
+        scriptElem: Option[Html] = None,
+        isAgent: Boolean,
+        completedInviteGoSurvey: Option[Boolean] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
-@serviceInfoContent = {}
+    @serviceInfoContent = {}
 
-@sidebar = {
-@if(sidebarLinks.isDefined) {
-  @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
-}
-}
+    @sidebar = {
+    @if(sidebarLinks.isDefined) {
+        @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
+    }
+    }
 
-@govuk_wrapper(title,
-  mainClass,
-  bodyClasses = bodyClasses,
-  sidebar = sidebar,
-  contentHeader = contentHeader,
-  mainContent = layouts.article(mainContent),
-  serviceInfoContent = serviceInfoContent,
-  scriptElem = scriptElem,
-  cookies = Some(request.cookies),
-  isAgent = isAgent)
+    @govuk_wrapper(title,
+        mainClass,
+        bodyClasses = bodyClasses,
+        sidebar = sidebar,
+        contentHeader = contentHeader,
+        mainContent = layouts.article(mainContent),
+        serviceInfoContent = serviceInfoContent,
+        scriptElem = scriptElem,
+        cookies = Some(request.cookies),
+        isAgent = isAgent,
+        completedInviteGoSurvey = completedInviteGoSurvey)
