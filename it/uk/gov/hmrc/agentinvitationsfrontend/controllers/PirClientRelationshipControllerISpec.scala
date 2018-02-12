@@ -11,6 +11,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 import scala.concurrent.Future
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.personalincomerecord.{ routes => routesPir }
 
 class PirClientRelationshipControllerISpec extends BaseISpec {
 
@@ -34,6 +35,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       val result = await(afiDeauthoriseAllStart(authorisedAsValidClientAFI(FakeRequest(), clientId)))
 
       status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routesPir.PirClientRelationshipController.getClientEndsRelationshipNoAgentPage.url
     }
 
     "verify Unauthorized if user has insufficient enrolments" in {
@@ -64,6 +66,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipEnded.title"))
       checkHasClientSignOutUrl(result)
+      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
     }
 
     "redirect to clientCancelled if confirmResponse is false" in {
@@ -105,6 +108,28 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.terminate.500.title"))
+    }
+  }
+
+  "getClientDeclinedRelationshipTermination" should {
+    "show the client cancelled deauth page with correct content" in {
+      val result = await(controller.getClientDeclinedRelationshipTermination(authorisedAsValidClientAFI(FakeRequest(), clientId)))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientCancelled.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientCancelled.p1"))
+      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
+    }
+  }
+
+  "getClientEndsRelationshipNoAgentPage" should {
+    "show the client ends relationship but no agent page with correct content" in {
+      val result = await(controller.getClientEndsRelationshipNoAgentPage(authorisedAsValidClientAFI(FakeRequest(), clientId)))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipNoAgent.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipNoAgent.p1"))
+      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
     }
   }
 

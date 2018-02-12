@@ -124,7 +124,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
-      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
       checkHasClientSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", "ni", mtdItId.value, serviceITSA, "My Agency")
     }
@@ -141,7 +141,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
-      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
       checkHasClientSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, servicePIR, "My Agency")
     }
