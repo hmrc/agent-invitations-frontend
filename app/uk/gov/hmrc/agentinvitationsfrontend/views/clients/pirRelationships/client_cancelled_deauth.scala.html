@@ -17,7 +17,7 @@
 @import play.api.Configuration
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(personalTaxAccountUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientCancelled.title"), bodyClasses = None, isAgent = false) {
 
     <h1 class="heading-large">
@@ -27,5 +27,5 @@
     @Messages("clientCancelled.p1")
     </p>
 
-    <a href="https://www.tax.service.gov.uk/personal-account" class="button" role="button" id="goToPtaButton">@Messages("common.pta")</a>
+    <a href="@personalTaxAccountUrl" class="button" role="button" id="goToPtaButton">@Messages("common.pta")</a>
 }

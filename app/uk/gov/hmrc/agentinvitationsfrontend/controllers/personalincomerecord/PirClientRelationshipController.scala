@@ -35,7 +35,7 @@ import scala.concurrent.Future
 
 @Singleton
 class PirClientRelationshipController @Inject()(
-                                                 @Named("agent-invitations-frontend.external-url") externalUrl: String,
+                                                 @Named("personal-tax-account.external-url") personalTaxAccountUrl: String,
                                                  auditService: AuditService,
                                                  afiRelationshipConnector: PirRelationshipConnector,
                                                  val messagesApi: play.api.i18n.MessagesApi,
@@ -62,7 +62,7 @@ class PirClientRelationshipController @Inject()(
         }, data => {
           if (data.value.getOrElse(false))
             afiRelationshipConnector.terminateAllClientIdRelationships("PERSONAL-INCOME-RECORD", clientId).map {
-              case 200 => Ok(client_ends_relationship_ended())
+              case 200 => Ok(client_ends_relationship_ended(personalTaxAccountUrl))
               case 500 => Logger.warn(s"Connector failed to terminate relationships for service: PIR, nino: $clientId")
                 Ok(error_template(Messages("error.terminate.500.title"),
                   Messages("error.terminate.500.heading"), Messages("error.terminate.500.message")))
@@ -75,11 +75,11 @@ class PirClientRelationshipController @Inject()(
 
   val getClientDeclinedRelationshipTermination: Action[AnyContent] = Action.async {
     implicit request =>
-      Future.successful(Ok(client_cancelled_deauth()))
+      Future.successful(Ok(client_cancelled_deauth(personalTaxAccountUrl)))
   }
 
   val getClientEndsRelationshipNoAgentPage: Action[AnyContent] = Action.async {
     implicit request =>
-      Future.successful(Ok(client_ends_relationship_no_agent()))
+      Future.successful(Ok(client_ends_relationship_no_agent(personalTaxAccountUrl)))
   }
 }
