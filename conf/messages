@@ -73,10 +73,9 @@ landing-page.decline=Decline invitation
 
 # Invitation Declined
 invitation-declined.title=You have declined this request
-invitation-declined-itsa.p1={0} will not be able to represent you with HMRC for Self Assessment.
+invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
-invitation-declined-itsa.p2=You can manage your tax agent relationships from your business tax account (BTA).
-invitation-declined-itsa.button=Continue to your BTA
+invitation-declined-itsa.button=Continue to your tax account
 invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
