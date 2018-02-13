@@ -32,10 +32,6 @@
 
         <p>@Messages(s"invitation-declined-$service.p1", agencyName)</p>
 
-        @if(service == Services.messageKeyForITSA) {
-            <p>@Messages("invitation-declined-itsa.p2")</p>
-        }
-
         <div class="form-group">
             <a class="button" href="@continueUrl" id="continue" role="button">@Messages(s"invitation-declined-$service.button")</a>
         </div>
