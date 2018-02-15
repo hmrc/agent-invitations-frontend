@@ -50,8 +50,8 @@ invitation-sent.description.advice.pt3=This is the only way your client can auth
 invitation-sent.button=Return to your account
 
 # Not Enrolled
-not-enrolled.title = This individual has not signed up to report their tax using software
-not-enrolled.description = You can''t authorise an individual until they have signed up.
+not-enrolled.title = This individual has not signed up to report their income and expenses through software
+not-enrolled.description = You can''t get authorisation from an individual until they have signed up.
 
 # Not Matched
 not-matched.title = There was a problem
