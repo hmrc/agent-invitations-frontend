@@ -51,7 +51,7 @@ invitation-sent.button=Return to your account
 
 # Not Enrolled
 not-enrolled.title = This individual has not signed up to report their income and expenses through software
-not-enrolled.description = You can''t get authorisation from an individual until they have signed up.
+not-enrolled.description = You cannot get authorisation from an individual until they have signed up.
 
 # Not Matched
 not-matched.title = There was a problem
