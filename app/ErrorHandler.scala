@@ -26,8 +26,9 @@ import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.models.InsufficientEnrolmentsForAgent
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments, NoActiveSession}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -40,7 +41,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class ErrorHandler @Inject() ( val env: Environment,
                                val messagesApi: MessagesApi,
                                val auditConnector: AuditConnector,
-                               @Named("appName") val appName: String)
+                               @Named("appName") val appName: String,
+                               @Named("agent-subscription.external-url") val subscriptionURL:String)
                              (implicit val config: Configuration, ec: ExecutionContext, externalUrls: ExternalUrls)
   extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
 
@@ -69,10 +71,15 @@ class ErrorHandler @Inject() ( val env: Environment,
       case _: NoActiveSession => toGGLogin(
         if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
         else s"$authenticationRedirect${request.uri}")
-      case _: InsufficientEnrolments => Forbidden(error_template(
-        Messages("global.error.403.title"),
-        Messages("global.error.403.heading"),
-        Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+      case _: InsufficientEnrolmentsForAgent => {
+        Redirect(subscriptionURL)
+      }
+      case _: InsufficientEnrolments => {
+        Forbidden(error_template(
+          Messages("global.error.403.title"),
+          Messages("global.error.403.heading"),
+          Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+      }
       case ex: OtacFailureThrowable =>
         Logger.warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(error_template(

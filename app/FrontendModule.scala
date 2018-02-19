@@ -67,6 +67,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("agent-services-account-frontend.external-url")
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
+    bindServiceProperty("agent-subscription.external-url")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
