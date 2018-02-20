@@ -42,7 +42,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
       verifyAuthoriseAttempt()
     }
 
@@ -89,7 +89,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
       verifyAuthoriseAttempt()
     }
 

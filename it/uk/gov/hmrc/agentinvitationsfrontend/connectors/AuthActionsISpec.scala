@@ -131,7 +131,7 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments and redirect to not-sign-up page when client not enrolled for service for AFI" in {
+    "throw InsufficientEnrolments and redirect to not-authorised page when client not enrolled for service for PIR" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -142,7 +142,7 @@ class AuthActionsISpec extends BaseISpec {
            |]}""".stripMargin)
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "throw InsufficientEnrolments and redirect to not-sign-up page when expected client's identifier missing" in {
@@ -159,7 +159,7 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "throw InsufficientEnrolments and redirect to not-sign-up page when expected client's identifier missing for AFI" in {
+    "throw InsufficientEnrolments and redirect to not-authorised page when expected client's identifier missing for PIR" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -170,7 +170,7 @@ class AuthActionsISpec extends BaseISpec {
            |]}""".stripMargin)
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "throw InsufficientConfidenceLevel and redirect to not-found page when expected client's is less than 200" in {

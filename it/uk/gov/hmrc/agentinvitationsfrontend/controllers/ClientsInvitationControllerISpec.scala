@@ -223,13 +223,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+    "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
@@ -313,13 +313,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+    "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
         Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
@@ -452,13 +452,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+    "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
@@ -550,13 +550,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+    "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
@@ -704,13 +704,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
-    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-NI Enrolment" in {
+    "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
