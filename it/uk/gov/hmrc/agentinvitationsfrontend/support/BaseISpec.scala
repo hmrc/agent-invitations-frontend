@@ -44,7 +44,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "auditing.consumer.baseUri.port" -> wireMockPort,
         "features.show-hmrc-mtd-it"-> true,
         "features.show-personal-income" -> true,
-        "features.show-hmrc-mtd-vat" -> true
+        "features.show-hmrc-mtd-vat" -> true,
+        "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl"
       )
   }
 
