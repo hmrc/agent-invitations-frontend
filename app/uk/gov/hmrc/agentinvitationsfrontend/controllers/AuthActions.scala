@@ -23,12 +23,14 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.mvc.Results._
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthActions extends AuthorisedFunctions {
 
   def withVerifiedPasscode: PasscodeVerification
+  def externalUrls: ExternalUrls
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode {
@@ -37,6 +39,8 @@ trait AuthActions extends AuthorisedFunctions {
           body(Arn(arn))
         case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
       }
+    } recoverWith {
+      case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)
     }
 
   protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
