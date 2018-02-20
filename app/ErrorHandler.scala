@@ -26,9 +26,8 @@ import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.InsufficientEnrolmentsForAgent
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -71,15 +70,12 @@ class ErrorHandler @Inject() ( val env: Environment,
       case _: NoActiveSession => toGGLogin(
         if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
         else s"$authenticationRedirect${request.uri}")
-      case _: InsufficientEnrolmentsForAgent => {
-        Redirect(subscriptionURL)
-      }
-      case _: InsufficientEnrolments => {
+      case _: InsufficientEnrolments if request.path.contains("/agents/") => Redirect(subscriptionURL)
+      case _: InsufficientEnrolments =>
         Forbidden(error_template(
           Messages("global.error.403.title"),
           Messages("global.error.403.heading"),
           Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
-      }
       case ex: OtacFailureThrowable =>
         Logger.warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(error_template(

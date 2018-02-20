@@ -49,6 +49,13 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
       checkIncludesMessages(result, "global.error.403.title", "global.error.403.heading", "global.error.403.message")
     }
 
+    "error occurs due to InsufficientEnrolments when path contains 'agents' " in {
+      val result = handler.onServerError(FakeRequest("GET","http://host:port/invitations/agents/enter-nino"), new InsufficientEnrolments)
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get endsWith "/agent-subscription/start"
+    }
+
     "error occurs due to Otac Failure" in {
       val result = handler.onServerError(FakeRequest(), new OtacFailureThrowable(NoOtacTokenInSession))
 
