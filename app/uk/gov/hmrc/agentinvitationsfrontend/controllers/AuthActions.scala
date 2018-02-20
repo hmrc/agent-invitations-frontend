@@ -45,7 +45,11 @@ trait AuthActions extends AuthorisedFunctions {
       case None => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
     }.recover {
       case _: InsufficientEnrolments =>
-        Redirect(routes.ClientsInvitationController.notSignedUp())
+        serviceName match {
+          case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
+          case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
+        }
+
       case _: InsufficientConfidenceLevel =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
 

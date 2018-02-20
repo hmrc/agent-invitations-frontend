@@ -147,6 +147,10 @@ client-problem.title=Your authorisation request is no longer valid
 # Not Signed Up
 not-signed-up.description=You are not signed up to report tax using software.
 
+#Not Authorised
+not-authorised.title=Sorry, you haven''t been authorised to proceed.
+not-authorised.description=Try again with an Individual Government Gateway ID.
+
 # Incorrect Invitation
 incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
 
