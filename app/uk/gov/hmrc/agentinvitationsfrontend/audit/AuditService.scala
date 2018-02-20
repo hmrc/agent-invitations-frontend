@@ -22,6 +22,7 @@ import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationForm, AgentInvitationUserInput}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -39,15 +40,15 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, agentInvitationform: AgentInvitationForm, result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
         "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType" -> agentInvitationform.clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
-        "clientId" -> agentInvitationform.clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
-        "service" -> agentInvitationform.service
+        "clientIdType" -> clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
+        "clientId" -> clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
+        "service" -> service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }

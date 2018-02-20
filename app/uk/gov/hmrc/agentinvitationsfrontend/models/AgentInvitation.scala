@@ -21,7 +21,9 @@ import play.api.libs.json.Json
 case class AgentInvitation(
   service: String,
   clientIdType: String,
-  clientId: String)
+  clientId: String,
+  clientPostcode: Option[String])
+
 
 object AgentInvitation {
   implicit val format = Json.format[AgentInvitation]

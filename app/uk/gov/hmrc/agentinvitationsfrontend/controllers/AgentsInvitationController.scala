@@ -28,13 +28,13 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationForm, AgentInvitationUserInput, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
@@ -87,7 +87,7 @@ class AgentsInvitationController @Inject()(
           userInput.clientIdentifier match {
             case Some(clientIdentifier) if userInput.service == HMRCMTDIT => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            case Some(_) if userInput.service == HMRCPIR => createInvitation(arn, userInput)
+            case Some(_) if userInput.service == HMRCPIR => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
         })
@@ -145,7 +145,7 @@ class AgentsInvitationController @Inject()(
           checkVatRegistrationDateMatches(userInput.clientIdentifier
             .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput")).value,
             userInput.registrationDate.getOrElse("")) flatMap {
-            case (true, true) => createInvitation(arn, userInput)
+            case (true, true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case (true, false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
             case (false, false) => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
           }
@@ -200,19 +200,19 @@ class AgentsInvitationController @Inject()(
         formWithErrors => {
           Future successful Ok(enter_postcode(formWithErrors))
         },
-        userInput => createInvitation(arn, userInput))
+        userInput => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode))
     }
   }
 
   private def checkVatRegistrationDateMatches(vrn: String, vatRegistrationDate: String) =
     invitationsService.checkVatRegistrationDateMatches(vrn, vatRegistrationDate)
 
-  private def createInvitation(arn: Arn, userInput: AgentInvitationForm)(implicit request: Request[_]) = {
-    invitationsService.createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier)
+  private def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])(implicit request: Request[_]) = {
+    invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)
       .map(invitation => {
         val id = invitation.selfUrl.toString.split("/").toStream.last
-        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Success")
-        else auditService.sendAgentInvitationSubmitted(arn, id, userInput, "Not Required")
+        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent())
           .addingToSession(
             "invitationId" -> id,
@@ -222,17 +222,17 @@ class AgentsInvitationController @Inject()(
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-          auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
           Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-          auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
           Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", userInput, "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }
