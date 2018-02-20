@@ -4,6 +4,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
@@ -31,6 +32,8 @@ class AuthActionsISpec extends BaseISpec {
     def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result = {
       await(super.withAuthorisedAsClient(serviceName, identifierKey) { clientId => Future.successful(Ok(clientId)) })
     }
+
+    override def externalUrls: ExternalUrls = new ExternalUrls("","","","","","","","","","fooSubscriptionUrl")
   }
 
   "withAuthorisedAsAgent" should {
@@ -65,9 +68,9 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"MTDITID", "value": "fooMtdItId" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsAgent
-      }
+      val result = await(TestController.withAuthorisedAsAgent)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
     }
 
     "throw InsufficientEnrolments when expected agent's identifier missing" in {
@@ -79,9 +82,9 @@ class AuthActionsISpec extends BaseISpec {
            |    { "key":"BAR", "value": "fooArn" }
            |  ]}
            |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.withAuthorisedAsAgent
-      }
+      val result = await(TestController.withAuthorisedAsAgent)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
     }
   }
 

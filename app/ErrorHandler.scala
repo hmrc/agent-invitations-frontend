@@ -40,8 +40,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ErrorHandler @Inject() ( val env: Environment,
                                val messagesApi: MessagesApi,
                                val auditConnector: AuditConnector,
-                               @Named("appName") val appName: String,
-                               @Named("agent-subscription.external-url") val subscriptionURL:String)
+                               @Named("appName") val appName: String)
                              (implicit val config: Configuration, ec: ExecutionContext, externalUrls: ExternalUrls)
   extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
 
@@ -70,7 +69,6 @@ class ErrorHandler @Inject() ( val env: Environment,
       case _: NoActiveSession => toGGLogin(
         if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
         else s"$authenticationRedirect${request.uri}")
-      case _: InsufficientEnrolments if request.path.contains("/agents/") => Redirect(subscriptionURL)
       case _: InsufficientEnrolments =>
         Forbidden(error_template(
           Messages("global.error.403.title"),

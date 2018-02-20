@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.config
 
-import java.net.{URL, URLEncoder}
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Named, Singleton}
 
@@ -31,7 +31,9 @@ class ExternalUrls @Inject()
   @Named("feedback-survey-frontend.external-url") val exitSurveyUrl: String,
   @Named("survey.feedbackSurveyURNWithoutOriginToken") val invitationExitSurvey: String,
   @Named("survey.originTokenIdentifier.agent") val agentOriginTokenIdentifier: String,
-  @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String
+  @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
+  @Named("agent-subscription-frontend.external-url") val subscriptionURL:String
+
 ) {
   private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
 

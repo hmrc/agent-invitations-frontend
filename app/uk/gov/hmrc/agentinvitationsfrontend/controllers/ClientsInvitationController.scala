@@ -48,7 +48,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
                                             val messagesApi: play.api.i18n.MessagesApi,
                                             val authConnector: AuthConnector,
                                             val withVerifiedPasscode: PasscodeVerification)
-                                           (implicit val configuration: Configuration, externalUrls: ExternalUrls)
+                                           (implicit val configuration: Configuration, val externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
