@@ -49,7 +49,7 @@ class AuthActionsISpec extends BaseISpec {
       bodyOf(result) shouldBe "fooArn"
     }
 
-    "throw AutorisationException when user not logged in" in {
+    "throw AuthorisationException when user not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
       an[AuthorisationException] shouldBe thrownBy {
         TestController.withAuthorisedAsAgent
