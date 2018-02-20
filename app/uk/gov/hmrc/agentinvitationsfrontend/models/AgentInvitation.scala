@@ -23,6 +23,18 @@ case class AgentInvitation(
   clientIdType: String,
   clientId: String)
 
+
 object AgentInvitation {
   implicit val format = Json.format[AgentInvitation]
+}
+
+
+case class CreateInvitationRequest(
+                            service: String,
+                            clientIdType: String,
+                            clientId: String,
+                            clientPostcode: Option[String])
+
+object CreateInvitationRequest {
+  implicit val format = Json.format[CreateInvitationRequest]
 }
