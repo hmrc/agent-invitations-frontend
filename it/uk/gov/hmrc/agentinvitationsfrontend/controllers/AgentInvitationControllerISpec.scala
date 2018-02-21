@@ -401,7 +401,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitPostcode = controller.submitPostcode()
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
-      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID")
+      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", validPostcode)
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
 
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some(validPostcode)))
