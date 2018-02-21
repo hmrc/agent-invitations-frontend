@@ -19,12 +19,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, AgentStubsConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, CreateInvitationRequest, Invitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -32,11 +32,11 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector,
                                     agentStubsConnector: AgentStubsConnector) {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier])
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
-    val agentInvitation = AgentInvitation(service,
+    val agentInvitation = CreateInvitationRequest(service,
       clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
-      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")))
+      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

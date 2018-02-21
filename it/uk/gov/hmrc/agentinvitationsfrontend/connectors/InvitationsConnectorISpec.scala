@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, CreateInvitationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -33,9 +33,9 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Create Invitation" when {
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
+      val agentInvitationITSA = CreateInvitationRequest("HMRC-MTD-IT", "ni", "AB123456B", Some("AB1 1BA"))
       "return a link of a ITSA created invitation" in {
-        createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", serviceITSA, identifierITSA)
+        createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", serviceITSA, identifierITSA, "AB1 1BA")
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
@@ -50,7 +50,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
+      val agentInvitationPIR = CreateInvitationRequest("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
       "return a link of a PIR created invitation" in {
         createInvitationStubForNoKnownFacts(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
@@ -67,7 +67,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value)
+      val agentInvitationVAT = CreateInvitationRequest("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
       "return a link of a VAT created invitation" in {
         createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))

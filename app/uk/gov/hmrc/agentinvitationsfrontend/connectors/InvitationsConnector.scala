@@ -24,7 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, CreateInvitationRequest, Invitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
@@ -53,9 +53,9 @@ class InvitationsConnector @Inject() (
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
-  def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  def createInvitation(arn: Arn, agentInvitation: CreateInvitationRequest)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
-      http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
+      http.POST[CreateInvitationRequest, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
         r.header("location")
       }
     }
