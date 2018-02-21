@@ -845,6 +845,16 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
   }
 
+  "GET /not-authorised/" should {
+    "show the unauthorised page" in {
+     val  result = controller.notAuthorised(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description"))
+      checkHasClientSignOutUrl(result)
+    }
+  }
+
   "GET /incorrect/" should {
     "show incorrect page if user accidentally attempted to respond to another client's invitation" in {
       val result = controller.incorrectInvitation(FakeRequest())
