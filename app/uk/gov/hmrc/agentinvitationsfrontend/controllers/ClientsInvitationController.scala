@@ -174,6 +174,10 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
     Forbidden(not_signed_up())
   }
 
+  val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
+    Forbidden(not_authorised())
+  }
+
   val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
     Forbidden(incorrect_invitation())
   }
