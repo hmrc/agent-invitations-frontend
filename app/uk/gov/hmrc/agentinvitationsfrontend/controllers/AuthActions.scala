@@ -38,9 +38,9 @@ trait AuthActions extends AuthorisedFunctions {
         case Some(arn) =>
           body(Arn(arn))
         case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
+      } recoverWith {
+        case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)
       }
-    } recoverWith {
-      case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)
     }
 
   protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
