@@ -34,14 +34,14 @@
     @form(routes.ClientsInvitationController.submitConfirmInvitation(invitationId)){
 
         @inputRadioGroup(
-        confirmForm("confirmInvite"),
-        Seq(("true", Messages("confirm-invitation.radio1")),("false",Messages("confirm-invitation.radio2"))),
-        '_legend -> Messages(s"confirm-invitation.$service.sub-header", agencyName),
-        '_legendClass -> "h2-heading",
-        '_groupDivClass -> "form-group soft--ends",
-        '_groupClass -> "inline",
-        '_fieldsetAttributes -> Html("""id='confirmInvite'""")
-    )
+            confirmForm("confirmInvite"),
+            Seq(("true", Messages("confirm-invitation.radio1")),("false",Messages("confirm-invitation.radio2"))),
+            '_legend -> Messages(s"confirm-invitation.$service.sub-header", agencyName),
+            '_legendClass -> "h2-heading",
+            '_groupDivClass -> "form-group soft--ends",
+            '_groupClass -> "inline",
+            '_fieldsetAttributes -> Html("""id='confirmInvite'""")
+        )
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("confirm-invitation.button")</button>

@@ -47,4 +47,8 @@
         <p>@Messages("client-complete.remove-authorisation.url")</p>
     }
 
+    @if(service == Services.messageKeyForITSA) {
+        <p><a href="/account" class="button" role="button" id="continueTaxAccount">@Messages("continueTaxAccount.itsa")</a></p>
+    }
+
 }

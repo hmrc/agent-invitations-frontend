@@ -32,17 +32,8 @@
 
     @if(service == Services.messageKeyForITSA) {
 
-        <h1 class="heading-xlarge">@Messages("confirm-terms.itsa.heading")</h1>
+        <h1 class="heading-xlarge">@Messages("confirm-terms.itsa.heading", agencyName)</h1>
 
-        <div class="form-group">
-            <p class="important-notice">
-                <strong>@Messages(s"confirm-$service-terms.alert", agencyName)</strong>
-            </p>
-        </div>
-
-    <h2>@Messages(s"confirm-itsa-terms.sub-header")</h2>
-
-        <p>@Messages("confirm-terms.p1")</p>
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.bullet1")</li>
@@ -51,8 +42,6 @@
             <li>@Messages("confirm-terms.bullet4")</li>
             <li>@Messages("confirm-terms.bullet5")</li>
             <li>@Messages("confirm-terms.bullet6")</li>
-            <li>@Messages("confirm-terms.bullet7")</li>
-            <li>@Messages("confirm-terms.bullet8")</li>
         </ul>
 
         <p>@Messages("confirm-terms.p2")</p>
