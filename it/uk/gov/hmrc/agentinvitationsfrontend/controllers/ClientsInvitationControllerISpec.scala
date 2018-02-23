@@ -485,8 +485,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val resultITSA = getConfirmTermsITSA(reqITSA)
 
       status(resultITSA) shouldBe OK
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.title"))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-itsa-terms.alert", "My Agency"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.title", "My Agency"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
       checkHasClientSignOutUrl(resultITSA)
     }
@@ -636,7 +635,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(resultITSA) shouldBe OK
       status(resultAFI) shouldBe OK
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.heading"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.heading", "My Agency"))
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.heading", "My Agency"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("error.confirmTerms.invalid"))
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmTerms.invalid"))
