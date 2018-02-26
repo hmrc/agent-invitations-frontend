@@ -61,6 +61,12 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  protected def checkHtmlResultWithoutBodyText(result: Result, expectedSubstrings: String*): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+    expectedSubstrings.foreach(s => bodyOf(result) should not include(s))
+  }
+
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
 

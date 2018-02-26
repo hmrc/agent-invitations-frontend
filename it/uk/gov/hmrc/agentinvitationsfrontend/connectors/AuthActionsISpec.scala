@@ -26,7 +26,7 @@ class AuthActionsISpec extends BaseISpec {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     def withAuthorisedAsAgent[A]: Result = {
-      await(super.withAuthorisedAsAgent { arn => Future.successful(Ok(arn.value)) })
+      await(super.withAuthorisedAsAgent { (arn, isWhitelisted) => Future.successful(Ok((arn.value, isWhitelisted).toString)) })
     }
 
     def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result = {
@@ -38,7 +38,7 @@ class AuthActionsISpec extends BaseISpec {
 
   "withAuthorisedAsAgent" should {
 
-    "call body with arn when valid agent" in {
+    "call body with arn and isWhitelisted flag when valid agent" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -49,7 +49,7 @@ class AuthActionsISpec extends BaseISpec {
            |]}""".stripMargin)
       val result = TestController.withAuthorisedAsAgent
       status(result) shouldBe 200
-      bodyOf(result) shouldBe "fooArn"
+      bodyOf(result) shouldBe "(fooArn,true)"
     }
 
     "throw AuthorisationException when user not logged in" in {
