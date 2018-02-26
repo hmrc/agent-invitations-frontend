@@ -62,14 +62,20 @@ class AgentsInvitationController @Inject()(
   private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
   private val vat = if (showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
 
-  private val enabledServices = personalIncomeRecord ++ mtdItId ++ vat
+  private def enabledServices(isWhitelisted:Boolean): Seq[(String,String)] = {
+    if(isWhitelisted) {
+      personalIncomeRecord ++ mtdItId ++ vat
+    } else {
+      mtdItId ++ vat
+    }
+  }
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
   }
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (_, _) =>
       request.session.get("service") match {
         case Some(service) => Future successful Ok (enter_nino (agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
         case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -78,7 +84,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitNino: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (arn, _) =>
       agentInvitationNinoForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(enter_nino(formWithErrors))
@@ -95,7 +101,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (_, _) =>
       request.session.get("service") match {
         case Some(service) => Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, None))))
         case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -104,7 +110,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitVrn: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (_, _) =>
       agentInvitationVrnForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(enter_vrn(formWithErrors))
@@ -122,7 +128,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val showVatRegistrationDateForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAgent { (_, _) =>
       val maybeVrn = request.session.get("clientIdentifier")
       val maybeService = request.session.get("service")
       (maybeVrn, maybeService) match {
@@ -138,7 +144,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitVatRegistrationDate: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (arn, _) =>
       agentInvitationVatRegistrationDateForm.bindFromRequest().fold(
         formWithErrors => Future successful Ok(enter_vat_registration_date(formWithErrors)),
         userInput => {
@@ -155,24 +161,26 @@ class AgentsInvitationController @Inject()(
   }
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
-      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices))
+    withAuthorisedAsAgent { (_, isWhitelisted) =>
+      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
     }
   }
 
   val submitService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (_, isWhitelisted) =>
+      val services = enabledServices(isWhitelisted)
       agentInvitationServiceForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(select_service(formWithErrors, enabledServices))
+          Future successful Ok(select_service(formWithErrors, services))
         },
         userInput => {
           userInput.service match {
             case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
               .addingToSession("service" -> HMRCMTDVAT)
+            case HMRCPIR if !isWhitelisted => Future successful BadRequest
             case service => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
               .addingToSession("service" -> service)
-            case _ => Future successful Ok(select_service(agentInvitationServiceForm, enabledServices))
+            case _ => Future successful Ok(select_service(agentInvitationServiceForm, services))
           }
         }
       )
@@ -180,7 +188,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (_, _) =>
       val maybeNino = request.session.get("clientIdentifier")
       val maybeService = request.session.get("service")
       (maybeNino, maybeService) match {
@@ -195,7 +203,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitPostcode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (arn, _) =>
       agentInvitationPostCodeForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(enter_postcode(formWithErrors))
@@ -238,7 +246,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { arn =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
       Logger.info(s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
@@ -251,13 +259,13 @@ class AgentsInvitationController @Inject()(
   }
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAgent { (_, _) =>
       Future successful Forbidden(not_enrolled())
     }
   }
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAgent { (_, _) =>
       Future successful Forbidden(not_matched())
     }
   }

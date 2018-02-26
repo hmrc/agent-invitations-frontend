@@ -32,11 +32,11 @@ trait AuthActions extends AuthorisedFunctions {
   def withVerifiedPasscode: PasscodeVerification
   def externalUrls: ExternalUrls
 
-  protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    withVerifiedPasscode {
+  protected def withAuthorisedAsAgent[A](body: (Arn, Boolean) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    withVerifiedPasscode { isWhitelisted =>
       withEnrolledAsAgent {
         case Some(arn) =>
-          body(Arn(arn))
+          body(Arn(arn), isWhitelisted)
         case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
       } recoverWith {
         case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)

@@ -21,11 +21,16 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.HMRCPIR
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.select_service
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.SessionKeys
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
@@ -58,19 +63,17 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   private val arn = Arn("TARN0000001")
   private val timeout = 2.seconds
 
-  "GET /agents/enter-nino" should {
-    val showNinoForm = controller.showNinoForm()
-
-    "return 303 for an authorised Agent without OTAC token" in {
-      val request = FakeRequest("GET", "/agents/enter-nino?p=foo123")
-      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
+  "GET /agents/select-service" should {
+    "return 303 for an authorised Agent without OTAC token but with passcode" in {
+      val request = FakeRequest("GET", "/agents/select-service?p=foo123")
+      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
       verifyNoAuthoriseAttempt()
     }
 
-    "return 200 for an authorised Agent with OTAC session key in select service page" in {
-      val request = FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken,"someOtacToken123"))
+    "return 200 for an authorised whitelisted Agent with OTAC session key in select service page" in {
+      val request = FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken, "someOtacToken123"))
       stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
         .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
         .willReturn(aResponse()
@@ -79,27 +82,76 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for an authorised Agent with OTAC session key in enter nino page" in {
-      val request = FakeRequest("GET", "/agents/enter-nino").withSession(SessionKeys.otacToken -> "someOtacToken123", "service" -> "HMRC-MTD-IT")
+    "return 200 and don't show the IRV option for an authorised non-whitelisted agent without passcode or OTAC session key in select service page" in {
+      val request = FakeRequest("GET", "/agents/select-service")
       stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
-        .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
         .willReturn(aResponse()
           .withStatus(200)))
-      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
+      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithoutBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }
+  }
 
-    "return error for an unauthorised attempt without passcode nor OTAC session key" in {
-      val request = FakeRequest("GET", "/agents/enter-nino")
-      an[OtacFailureThrowable] shouldBe thrownBy {
-        showNinoForm(authorisedAsValidAgent(request, arn.value))
+  "POST to /select-service" when {
+    "service is IRV" should {
+      "redirect to /enter-nino if user is whitelisted (has valid OTAC session key)" in {
+        stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
+          .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
+          .willReturn(aResponse()
+            .withStatus(200)))
+
+        val request = FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("PERSONAL-INCOME-RECORD", None, None))
+        val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-nino"
+        verifyAuthoriseAttempt()
+      }
+      "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
+        val request = FakeRequest("POST", "/agents/select-service")
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("PERSONAL-INCOME-RECORD", None, None))
+        val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+        status(result) shouldBe 400
       }
     }
+
+    "service is ITSA" should {
+      "not be restricted by whitelisting" in {
+        val request = FakeRequest("POST", "/agents/select-service")
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("HMRC-MTD-IT", None, None))
+        val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-nino"
+      }
+    }
+
+    "service is VAT" should {
+      "not be restricted by whitelisting" in {
+        val request = FakeRequest("POST", "/agents/select-service")
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("HMRC-MTD-VAT", None, None))
+        val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-vrn"
+      }
+    }
+  }
+
+  "GET /agents/enter-nino not be restricted by whitelisting" in {
+    val request = FakeRequest("GET", "/agents/enter-nino").withSession("service" -> "HMRC-MTD-IT")
+    val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))
+    status(result) shouldBe 200
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
   }
 }
