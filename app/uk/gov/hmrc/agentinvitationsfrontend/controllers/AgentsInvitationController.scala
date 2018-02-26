@@ -168,19 +168,18 @@ class AgentsInvitationController @Inject()(
 
   val submitService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      val services = enabledServices(isWhitelisted)
+      val allowedServices = enabledServices(isWhitelisted)
       agentInvitationServiceForm.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(select_service(formWithErrors, services))
+          Future successful Ok(select_service(formWithErrors, allowedServices))
         },
         userInput => {
           userInput.service match {
             case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
               .addingToSession("service" -> HMRCMTDVAT)
-            case HMRCPIR if !isWhitelisted => Future successful BadRequest
-            case service => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+            case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
               .addingToSession("service" -> service)
-            case _ => Future successful Ok(select_service(agentInvitationServiceForm, services))
+            case _ => Future successful BadRequest
           }
         }
       )

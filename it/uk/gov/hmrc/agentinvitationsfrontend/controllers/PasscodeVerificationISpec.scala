@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import java.io.File
 
@@ -24,7 +24,6 @@ import org.scalatest.mockito.MockitoSugar
 import play.api.mvc.Results.Ok
 import play.api.test.{FakeApplication, FakeRequest}
 import play.api.{Configuration, Environment, Mode, Play}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FrontendPasscodeVerification
 import uk.gov.hmrc.agentinvitationsfrontend.support.AkkaMaterializerSpec
 import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector, Unauthorised}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -32,7 +31,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PasscodeVerificationSpec extends UnitSpec with MockitoSugar with AkkaMaterializerSpec with BeforeAndAfterAll {
+class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMaterializerSpec with BeforeAndAfterAll {
 
   val hc: HeaderCarrier = HeaderCarrier()
   val ec: ExecutionContext = concurrent.ExecutionContext.Implicits.global
