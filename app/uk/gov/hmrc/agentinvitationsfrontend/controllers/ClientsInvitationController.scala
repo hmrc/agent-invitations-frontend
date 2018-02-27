@@ -42,8 +42,7 @@ import scala.concurrent.Future
 case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
-class ClientsInvitationController @Inject()(@Named("personal-tax-account.external-url") continueUrl: String,
-                                            invitationsService: InvitationsService,
+class ClientsInvitationController @Inject()(invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
                                             val authConnector: AuthConnector,
@@ -73,7 +72,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
               rejectInvitation(serviceName, invitationId, clientId).map {
                 case NO_CONTENT => {
                   auditService.sendAgentInvitationResponse(invitationId.value, invitation.arn, "Declined", clientIdentifierType(invitation.clientId), clientId, serviceName, agencyName)
-                  Ok(invitation_declined(agencyName, invitationId, messageKey, continueUrl))
+                  Ok(invitation_declined(agencyName, invitationId, messageKey))
                 }
                 case status => throw new Exception(s"Invitation rejection failed with status $status")
               }
@@ -163,7 +162,7 @@ class ClientsInvitationController @Inject()(@Named("personal-tax-account.externa
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsAccepted { _ =>
             val name = request.session.get("agencyName").getOrElse(throw AgencyNameNotFound())
-            Future successful Ok (complete (name, messageKey, continueUrl) ).removingFromSession("agencyName")
+            Future successful Ok (complete (name, messageKey) ).removingFromSession("agencyName")
           })
         }
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())

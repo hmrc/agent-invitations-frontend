@@ -21,6 +21,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   val companyAuthSignOutPath = "/sign-out-path"
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
+  val taxAccountRelativeUrl = "/account"
 
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
@@ -38,6 +39,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.company-auth-frontend.external-url" -> companyAuthUrl,
         "microservice.services.company-auth-frontend.sign-out.path" -> companyAuthSignOutPath,
         "microservice.services.business-tax-account.external-url" -> businessTaxAccountUrl,
+        "microservice.services.tax-account-router-frontend.account-url" -> taxAccountRelativeUrl,
         "microservice.services.personal-tax-account.external-url" -> personalTaxAccountUrl,
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,

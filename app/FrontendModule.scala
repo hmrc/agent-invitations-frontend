@@ -65,6 +65,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindServiceProperty("business-tax-account.external-url")
     bindServiceProperty("agent-services-account-frontend.external-url")
+    bindServiceProperty("tax-account-router-frontend.account-url")
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
     bindServiceProperty("agent-subscription-frontend.external-url")

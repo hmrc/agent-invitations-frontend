@@ -122,10 +122,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getInvitationDeclinedITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-itsa.button"))
-      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
+
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("invitation-declined.title"),
+        htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"),
+        htmlEscapedMessage("invitation-declined-itsa.button"),
+        s"""href="$taxAccountRelativeUrl"""")
+
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdITSA, arn.value, "Declined", "ni", mtdItId.value, serviceITSA, "My Agency")
     }
@@ -139,10 +142,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getInvitationDeclinedAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-afi.button"))
-      checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
+
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("invitation-declined.title"),
+        htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"),
+        htmlEscapedMessage("invitation-declined-afi.button"),
+        s"""href="$taxAccountRelativeUrl"""")
+
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(invitationIdAFI, arn.value, "Declined", "ni", nino, servicePIR, "My Agency")
     }
@@ -742,11 +748,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
       givenGetAgencyNameStub(arn)
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
-      status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.self.assessment"))
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("client-complete.title1"),
+        htmlEscapedMessage("My Agency"),
+        htmlEscapedMessage("client-complete.title.agent"),
+        htmlEscapedMessage("client-complete.title.self.assessment"),
+        htmlEscapedMessage("client-complete.button.itsa"),
+        s"""href="$taxAccountRelativeUrl"""")
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
@@ -759,7 +767,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       an[AgencyNameNotFound] should be thrownBy await(result)
     }
 
-  "show the complete page for AFI" in {
+    "show the complete page for AFI" in {
       getInvitationStub(arn, nino, invitationIdAFI, servicePIR, identifierAFI, "Accepted")
 
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
@@ -772,7 +780,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.sub-header"))
       checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
-    checkExitSurveyAfterInviteResponseSignOutUrl(result)
+      checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
     "return exception when agency name retrieval fails for AFI" in {
