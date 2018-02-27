@@ -33,7 +33,7 @@ class AuthActionsISpec extends BaseISpec {
       await(super.withAuthorisedAsClient(serviceName, identifierKey) { clientId => Future.successful(Ok(clientId)) })
     }
 
-    override def externalUrls: ExternalUrls = new ExternalUrls("","","","","","","","","","fooSubscriptionUrl")
+    override def externalUrls: ExternalUrls = new ExternalUrls("","","","","","","","","","","fooSubscriptionUrl")
   }
 
   "withAuthorisedAsAgent" should {
