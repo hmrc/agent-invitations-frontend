@@ -72,3 +72,4 @@ def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
     new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq(s"-Dtest.name=${test.name}"))))
   }
 }
+
