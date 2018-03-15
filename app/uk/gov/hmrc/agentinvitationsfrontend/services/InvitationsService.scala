@@ -32,11 +32,12 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector,
                                     agentStubsConnector: AgentStubsConnector) {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[String], postcode: Option[String])
                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     val agentInvitation = AgentInvitation(service,
       clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
-      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), postcode)
+      clientIdentifier.getOrElse(throw new Exception("clientIdentifier is missing")),
+      postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

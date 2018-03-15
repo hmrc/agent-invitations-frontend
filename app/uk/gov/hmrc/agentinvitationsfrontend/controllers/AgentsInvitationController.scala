@@ -215,11 +215,12 @@ class AgentsInvitationController @Inject()(
     invitationsService.checkVatRegistrationDateMatches(vrn, vatRegistrationDate)
 
   private def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])(implicit request: Request[_]) = {
-    invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)
+    val clientIdentifierReformat: Option[String] = clientIdentifier.map(_.value.replaceAll("\\s", ""))
+    invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifierReformat, postcode)
       .map(invitation => {
         val id = invitation.selfUrl.toString.split("/").toStream.last
-        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
-        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
+        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifierReformat, "Success")
+        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifierReformat, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent())
           .addingToSession(
             "invitationId" -> id,
@@ -229,17 +230,17 @@ class AgentsInvitationController @Inject()(
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
           Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
           Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }

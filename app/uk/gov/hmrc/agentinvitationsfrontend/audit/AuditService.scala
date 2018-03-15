@@ -40,14 +40,14 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[String], result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
         "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "clientIdType" -> clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
-        "clientId" -> clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
+        "clientId" -> clientIdentifier.getOrElse(throw new IllegalStateException("No clientId present")),
         "service" -> service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )

@@ -40,6 +40,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
+  private val validNinoSpace = Nino("AB 12 34 56 A")
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val validPostcode = "BN12 6BX"
@@ -276,6 +277,23 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       header("Set-Cookie", result) shouldBe defined
       header("Set-Cookie", result).get should include(s"clientIdentifier=${validNino.value}")
+      header("Set-Cookie", result).get should include(s"service=$servicePIR")
+      verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Not Required", servicePIR)
+    }
+
+    "return 303 for authorised Agent with valid nino that has spaces in between and Personal Income Record service, redirect to invitation sent page" in {
+      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(servicePIR, Some(validNinoSpace), None))
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)
+        .withSession("clientIdentifier" -> validNinoSpace.value, "service" -> servicePIR), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      header("Set-Cookie", result) shouldBe defined
+      header("Set-Cookie", result).get should include(s"clientIdentifier=${validNinoSpace.value.replace(" ", "+")}")
       header("Set-Cookie", result).get should include(s"service=$servicePIR")
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Not Required", servicePIR)
