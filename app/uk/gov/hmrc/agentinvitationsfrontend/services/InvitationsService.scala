@@ -76,11 +76,9 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def checkVatRegistrationDateMatches(vrn: String, userInputRegistrationDate: String): Future[(Boolean,Boolean)] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    agentStubsConnector.getVatRegisteredClient(vrn).map{registeredClient =>
-      registeredClient match {
+    agentStubsConnector.getVatRegisteredClient(vrn).map{
         case Some(r) => (true,if(r.registrationDate.equals(userInputRegistrationDate)) true else false)
         case None => (false, false)
-      }
     }
   }
 
