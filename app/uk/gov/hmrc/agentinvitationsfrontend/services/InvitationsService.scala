@@ -32,12 +32,11 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector,
                                     agentStubsConnector: AgentStubsConnector) {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[String], postcode: Option[String])
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
     val agentInvitation = AgentInvitation(service,
       clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
-      clientIdentifier.getOrElse(throw new Exception("clientIdentifier is missing")),
-      postcode)
+      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -76,9 +75,9 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
 
   def checkVatRegistrationDateMatches(vrn: String, userInputRegistrationDate: String): Future[(Boolean,Boolean)] = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    agentStubsConnector.getVatRegisteredClient(vrn).map{
-        case Some(r) => (true,if(r.registrationDate.equals(userInputRegistrationDate)) true else false)
-        case None => (false, false)
+    agentStubsConnector.getVatRegisteredClient(vrn).map {
+      case Some(r) => (true, if (r.registrationDate.equals(userInputRegistrationDate)) true else false)
+      case None => (false, false)
     }
   }
 

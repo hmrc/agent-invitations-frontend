@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import org.joda.time.format.DateTimeFormat
-import play.api.data.Form
+import play.api.data.{Form, Mapping}
 import play.api.data.Forms._
 import play.api.data.validation._
 import play.api.i18n.{I18nSupport, Messages}
@@ -215,12 +215,11 @@ class AgentsInvitationController @Inject()(
     invitationsService.checkVatRegistrationDateMatches(vrn, vatRegistrationDate)
 
   private def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])(implicit request: Request[_]) = {
-    val clientIdentifierReformat: Option[String] = clientIdentifier.map(_.value.replaceAll("\\s", ""))
-    invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifierReformat, postcode)
+    invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)
       .map(invitation => {
         val id = invitation.selfUrl.toString.split("/").toStream.last
-        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifierReformat, "Success")
-        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifierReformat, "Not Required")
+        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent())
           .addingToSession(
             "invitationId" -> id,
@@ -230,17 +229,17 @@ class AgentsInvitationController @Inject()(
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
           Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
           Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifierReformat, "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }
@@ -317,13 +316,17 @@ object AgentsInvitationController {
       case _ @ _ => false
     }
   }
+
   private val invalidPostcode =
     validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
+
+  import play.api.data.format.Formats.stringFormat
+  val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> normalizedText.verifying(invalidNino),
       "postcode" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
@@ -332,7 +335,7 @@ object AgentsInvitationController {
   val agentInvitationVrnForm: Form[AgentInvitationVatForm] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidVrn),
+      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
       "registrationDate" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationVatForm(service, Some(Vrn(clientIdentifier)), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate))}))
@@ -341,7 +344,7 @@ object AgentsInvitationController {
   val agentInvitationVatRegistrationDateForm: Form[AgentInvitationVatForm] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidVrn),
+      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
       "registrationDate" -> text.verifying(invalidVatDateFormat))
     ({ (service, clientIdentifier, registrationDate) => AgentInvitationVatForm(service, Some(Vrn(clientIdentifier)), Some(registrationDate)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate.getOrElse(""))) }))
@@ -350,7 +353,7 @@ object AgentsInvitationController {
   val agentInvitationServiceForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> optional(text),
+      "clientIdentifier" -> optional(normalizedText),
       "postcode" -> optional(text))
     ({ (service, _, _) => AgentInvitationUserInput(service, None, None) })
     ({ user => Some((user.service, None, None)) }))
@@ -359,7 +362,7 @@ object AgentsInvitationController {
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> normalizedText.verifying(invalidNino),
       "postcode" -> text.verifying(invalidPostcode))
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))

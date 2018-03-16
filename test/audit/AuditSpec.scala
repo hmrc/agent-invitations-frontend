@@ -57,7 +57,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         invitationId,
         agentInvitaitonUserInput.service,
         agentInvitaitonUserInput.clientIdentifierType,
-        agentInvitaitonUserInput.clientIdentifier.map(_.value),
+        agentInvitaitonUserInput.clientIdentifier,
         result)(
         hc,
         FakeRequest("GET", "/path")))
