@@ -27,7 +27,7 @@ trait AgentInvitationForm {
   val clientIdentifierType: Option[String] = clientIdentifier match {
     case Some(_:Nino) => Some("ni")
     case Some(_:Vrn) => Some("vrn")
-    case None => None
+    case _ => None
   }
 }
 

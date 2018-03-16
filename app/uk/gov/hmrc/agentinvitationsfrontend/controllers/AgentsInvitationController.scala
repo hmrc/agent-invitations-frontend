@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 import org.joda.time.format.DateTimeFormat
-import play.api.data.Form
+import play.api.data.{Form, Mapping}
 import play.api.data.Forms._
 import play.api.data.validation._
 import play.api.i18n.{I18nSupport, Messages}
@@ -316,13 +316,17 @@ object AgentsInvitationController {
       case _ @ _ => false
     }
   }
+
   private val invalidPostcode =
     validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
+
+  import play.api.data.format.Formats.stringFormat
+  val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> normalizedText.verifying(invalidNino),
       "postcode" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
@@ -331,7 +335,7 @@ object AgentsInvitationController {
   val agentInvitationVrnForm: Form[AgentInvitationVatForm] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidVrn),
+      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
       "registrationDate" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationVatForm(service, Some(Vrn(clientIdentifier)), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate))}))
@@ -340,7 +344,7 @@ object AgentsInvitationController {
   val agentInvitationVatRegistrationDateForm: Form[AgentInvitationVatForm] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidVrn),
+      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
       "registrationDate" -> text.verifying(invalidVatDateFormat))
     ({ (service, clientIdentifier, registrationDate) => AgentInvitationVatForm(service, Some(Vrn(clientIdentifier)), Some(registrationDate)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate.getOrElse(""))) }))
@@ -349,7 +353,7 @@ object AgentsInvitationController {
   val agentInvitationServiceForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> optional(text),
+      "clientIdentifier" -> optional(normalizedText),
       "postcode" -> optional(text))
     ({ (service, _, _) => AgentInvitationUserInput(service, None, None) })
     ({ user => Some((user.service, None, None)) }))
@@ -358,7 +362,7 @@ object AgentsInvitationController {
   val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text.verifying(serviceChoice),
-      "clientIdentifier" -> text.verifying(invalidNino),
+      "clientIdentifier" -> normalizedText.verifying(invalidNino),
       "postcode" -> text.verifying(invalidPostcode))
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
