@@ -36,7 +36,7 @@ select-service.title=Select service
 select-service.header=Which information do you want to access for this individual?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
-select-service.itsa=Ask to view their income and expense updates
+select-service.itsa=Report their income and expenses through software
 select-service.vat=VAT
 
 continue.button=Continue
