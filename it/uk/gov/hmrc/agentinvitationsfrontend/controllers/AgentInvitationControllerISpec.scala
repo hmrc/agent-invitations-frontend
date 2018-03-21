@@ -49,7 +49,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
   val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
   val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "MTDVATID"
+  val identifierVAT = "VRN"
   val validVrn97 = Vrn("101747696")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
