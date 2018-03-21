@@ -33,7 +33,7 @@ class ServiceSpec extends UnitSpec {
     }
 
     "return VAT if given prefix of invitationId is C" in {
-      determineService(InvitationId("CZTW1KY6RTAAT")) shouldBe ValidService("HMRC-MTD-VAT", "HMRC-MTD-VAT", "MTDVATID", "VAT", "vat")
+      determineService(InvitationId("CZTW1KY6RTAAT")) shouldBe ValidService("HMRC-MTD-VAT", "HMRC-MTD-VAT", "VRN", "VAT", "vat")
     }
 
     "return Exception when given invalid invitationId" in {

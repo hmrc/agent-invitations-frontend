@@ -35,7 +35,7 @@ object Services {
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
 
   val HMRCMTDVAT = "HMRC-MTD-VAT"
-  val MTDVATID = "MTDVATID"
+  val VRN = "VRN"
   val VAT = "VAT"
   val messageKeyForVAT = "vat"
 
@@ -43,7 +43,7 @@ object Services {
     invitationId.value.head match {
       case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
       case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
-      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, MTDVATID, VAT, messageKeyForVAT)
+      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VAT, messageKeyForVAT)
       case _ => InvalidService
     }
   }
