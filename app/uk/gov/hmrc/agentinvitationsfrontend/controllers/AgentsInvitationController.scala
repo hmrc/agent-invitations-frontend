@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
-
 import org.joda.time.format.DateTimeFormat
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms._
@@ -28,14 +27,14 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, Invitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.Upstream4xxResponse
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -47,6 +46,9 @@ class AgentsInvitationController @Inject()(
                                             @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
                                             @Named("features.show-personal-income") showPersonalIncome: Boolean,
                                             @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean,
+                                            @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean,
+                                            @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean,
+                                            @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
@@ -91,9 +93,15 @@ class AgentsInvitationController @Inject()(
         },
         userInput => {
           userInput.clientIdentifier match {
-            case Some(clientIdentifier) if userInput.service == HMRCMTDIT => Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-              .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            case Some(_) if userInput.service == HMRCPIR => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
+            case Some(clientIdentifier) if userInput.service == HMRCMTDIT => if (showKfcMtdIt) {
+              Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+                .addingToSession("clientIdentifier" -> clientIdentifier.value)
+            } else {
+              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
+            }
+            case Some(_) if userInput.service == HMRCPIR => if(showKfcPersonalIncome) {
+              throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+            } else createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
         })
@@ -110,16 +118,17 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitVrn: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { (arn, _) =>
       agentInvitationVrnForm.bindFromRequest().fold(
         formWithErrors => {
           Future successful Ok(enter_vrn(formWithErrors))
         },
         userInput => {
           userInput.clientIdentifier match {
-            case Some(clientIdentifier) =>
+            case Some(clientIdentifier) => if (showKfcMtdVat) {
               Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
+            } else createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
           }
         }
@@ -218,8 +227,7 @@ class AgentsInvitationController @Inject()(
     invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)
       .map(invitation => {
         val id = invitation.selfUrl.toString.split("/").toStream.last
-        if (invitation.service == HMRCMTDIT) auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
-        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
+        sendCreateInvitationAudit(invitation,id, arn, service, clientIdentifierType, clientIdentifier)
         Redirect(routes.AgentsInvitationController.invitationSent())
           .addingToSession(
             "invitationId" -> id,
@@ -243,6 +251,22 @@ class AgentsInvitationController @Inject()(
           Future.failed(e)
       }
   }
+
+  private def sendCreateInvitationAudit[A](invitation: Invitation,
+                                        id: String,
+                                        arn: Arn,
+                                        service: String,
+                                        clientIdentifierType: Option[String],
+                                        clientIdentifier: Option[TaxIdentifier])
+                                       (implicit hc: HeaderCarrier, request: Request[A]): Unit = {
+    invitation.service match {
+      case HMRCMTDIT if showKfcMtdIt => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+      case HMRCPIR if showKfcPersonalIncome => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+      case HMRCMTDVAT if showKfcMtdVat => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+      case _ => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
+    }
+  }
+
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
