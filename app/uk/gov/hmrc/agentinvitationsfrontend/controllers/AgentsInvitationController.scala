@@ -18,23 +18,22 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.format.DateTimeFormat
-import play.api.data.{Form, Mapping}
 import play.api.data.Forms._
 import play.api.data.validation._
+import play.api.data.{Form, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -43,12 +42,7 @@ import scala.concurrent.Future
 class AgentsInvitationController @Inject()(
                                             @Named("agent-invitations-frontend.external-url") externalUrl: String,
                                             @Named("agent-services-account-frontend.external-url") asAccUrl: String,
-                                            @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
-                                            @Named("features.show-personal-income") showPersonalIncome: Boolean,
-                                            @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean,
-                                            @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean,
-                                            @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean,
-                                            @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean,
+                                            featureFlags: FeatureFlags,
                                             invitationsService: InvitationsService,
                                             auditService: AuditService,
                                             val messagesApi: play.api.i18n.MessagesApi,
@@ -59,10 +53,10 @@ class AgentsInvitationController @Inject()(
 
   import AgentsInvitationController._
 
-  private val personalIncomeRecord = if (showPersonalIncome)
+  private val personalIncomeRecord = if (featureFlags.showPersonalIncome)
     Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
-  private val mtdItId = if (showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
-  private val vat = if (showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+  private val mtdItId = if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
+  private val vat = if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
 
   private def enabledServices(isWhitelisted:Boolean): Seq[(String,String)] = {
     if(isWhitelisted) {
@@ -92,16 +86,14 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          userInput.clientIdentifier match {
-            case Some(clientIdentifier) if userInput.service == HMRCMTDIT => if (showKfcMtdIt) {
+          (userInput.clientIdentifier, userInput.service) match {
+            case (Some(clientIdentifier), HMRCMTDIT) if featureFlags.showKfcMtdIt =>
               Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            } else {
-              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
-            }
-            case Some(_) if userInput.service == HMRCPIR => if(showKfcPersonalIncome) {
+            case (Some(_), HMRCPIR) if featureFlags.showKfcPersonalIncome =>
               throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-            } else createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode)
+            case (Some(_),_) =>
+              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
         })
@@ -125,7 +117,7 @@ class AgentsInvitationController @Inject()(
         },
         userInput => {
           userInput.clientIdentifier match {
-            case Some(clientIdentifier) => if (showKfcMtdVat) {
+            case Some(clientIdentifier) => if (featureFlags.showKfcMtdVat) {
               Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
             } else createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
@@ -227,7 +219,12 @@ class AgentsInvitationController @Inject()(
     invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)
       .map(invitation => {
         val id = invitation.selfUrl.toString.split("/").toStream.last
-        sendCreateInvitationAudit(invitation,id, arn, service, clientIdentifierType, clientIdentifier)
+        if ((invitation.service == HMRCMTDIT && featureFlags.showKfcMtdIt)
+          | (invitation.service == HMRCPIR && featureFlags.showKfcPersonalIncome)
+          | (invitation.service == HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+          auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
+        }
+        else auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
         Redirect(routes.AgentsInvitationController.invitationSent())
           .addingToSession(
             "invitationId" -> id,
@@ -250,21 +247,7 @@ class AgentsInvitationController @Inject()(
           auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
-  }
 
-  private def sendCreateInvitationAudit[A](invitation: Invitation,
-                                        id: String,
-                                        arn: Arn,
-                                        service: String,
-                                        clientIdentifierType: Option[String],
-                                        clientIdentifier: Option[TaxIdentifier])
-                                       (implicit hc: HeaderCarrier, request: Request[A]): Unit = {
-    invitation.service match {
-      case HMRCMTDIT if showKfcMtdIt => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
-      case HMRCPIR if showKfcPersonalIncome => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
-      case HMRCMTDVAT if showKfcMtdVat => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Success")
-      case _ => auditService.sendAgentInvitationSubmitted(arn, id, service, clientIdentifierType, clientIdentifier, "Not Required")
-    }
   }
 
 
