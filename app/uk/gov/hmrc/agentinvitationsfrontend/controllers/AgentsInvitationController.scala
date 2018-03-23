@@ -79,6 +79,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
+
   val submitNino: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       agentInvitationNinoForm.bindFromRequest().fold(
@@ -86,15 +87,17 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          (userInput.clientIdentifier, userInput.service,
-            featureFlags.showKfcMtdIt, featureFlags.showKfcPersonalIncome) match {
-            case (Some(clientIdentifier), HMRCMTDIT, true, _) =>
+          (userInput,featureFlags) match {
+            case ClientForMtdItWithFlagOn(clientIdentifier) =>
               Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            case (Some(_), HMRCPIR, _, true) =>
+
+            case ClientForPirWithFlagOn(_) =>
               throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-            case (Some(_),_,_,_) =>
+
+            case ClientWithFlagOff(_) =>
               createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
         })
@@ -117,11 +120,14 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_vrn(formWithErrors))
         },
         userInput => {
-          (userInput.clientIdentifier, featureFlags.showKfcMtdVat) match {
-            case (Some(clientIdentifier), true) =>
+          (userInput, featureFlags) match {
+            case ClientForVatWithFlagOn(clientIdentifier) =>
               Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            case (Some(_), false) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+
+            case ClientWithVatFlagOff(_) =>
+              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+
             case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
           }
         }
@@ -375,5 +381,46 @@ object AgentsInvitationController {
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }
+
+  object ClientForMtdItWithFlagOn {
+    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[TaxIdentifier] = arg match {
+      case (AgentInvitationUserInput(HMRCMTDIT, Some(clientIdentifier),_), featureFlags) if featureFlags.showKfcMtdIt =>
+        Some(clientIdentifier)
+      case _ => None
+    }
+  }
+
+  object ClientForPirWithFlagOn {
+    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Boolean] = arg match {
+      case (AgentInvitationUserInput(HMRCPIR, Some(_), _), featureFlags) if featureFlags.showKfcPersonalIncome =>
+        Some(true)
+      case _ => None
+    }
+  }
+
+  object ClientWithFlagOff {
+    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Boolean] = arg match {
+      case (AgentInvitationUserInput(_, Some(_), _), featureFlags) =>
+        Some(true)
+      case _ => None
+    }
+  }
+
+  object ClientForVatWithFlagOn {
+    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)) : Option[TaxIdentifier] = arg match {
+      case (AgentInvitationVatForm(HMRCMTDVAT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdVat =>
+        Some(clientIdentifier)
+      case _ => None
+    }
+  }
+
+  object ClientWithVatFlagOff {
+    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)): Option[Boolean] = arg match {
+      case (AgentInvitationVatForm(_, Some(_), _), featureFlags) =>
+        Some(true)
+      case _ => None
+    }
+  }
+
 }
 
