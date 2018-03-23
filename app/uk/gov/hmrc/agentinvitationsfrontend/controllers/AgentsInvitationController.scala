@@ -86,13 +86,14 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          (userInput.clientIdentifier, userInput.service) match {
-            case (Some(clientIdentifier), HMRCMTDIT) if featureFlags.showKfcMtdIt =>
+          (userInput.clientIdentifier, userInput.service,
+            featureFlags.showKfcMtdIt, featureFlags.showKfcPersonalIncome) match {
+            case (Some(clientIdentifier), HMRCMTDIT, true, _) =>
               Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            case (Some(_), HMRCPIR) if featureFlags.showKfcPersonalIncome =>
+            case (Some(_), HMRCPIR, _, true) =>
               throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-            case (Some(_),_) =>
+            case (Some(_),_,_,_) =>
               createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
           }
@@ -116,11 +117,11 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_vrn(formWithErrors))
         },
         userInput => {
-          userInput.clientIdentifier match {
-            case Some(clientIdentifier) => if (featureFlags.showKfcMtdVat) {
+          (userInput.clientIdentifier, featureFlags.showKfcMtdVat) match {
+            case (Some(clientIdentifier), true) =>
               Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
-            } else createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+            case (Some(_), false) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
           }
         }
@@ -320,7 +321,7 @@ object AgentsInvitationController {
       true
     }
     catch {
-      case _ @ _ => false
+      case _ : Throwable => false
     }
   }
 
