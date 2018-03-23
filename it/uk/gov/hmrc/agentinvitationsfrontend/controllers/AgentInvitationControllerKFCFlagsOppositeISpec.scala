@@ -11,7 +11,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import play.api.test.Helpers._
 
-class AgentInvitationControllerKFCFlagsOffISpec extends BaseISpec {
+class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   override protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
