@@ -211,7 +211,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Success", serviceVAT)
     }
 
     "return 303 when the user supplied VAT registration date doen not match our records" in {
