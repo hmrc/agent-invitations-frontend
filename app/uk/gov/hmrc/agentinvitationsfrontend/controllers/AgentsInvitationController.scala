@@ -391,17 +391,17 @@ object AgentsInvitationController {
   }
 
   object ClientForPirWithFlagOn {
-    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Boolean] = arg match {
+    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Unit] = arg match {
       case (AgentInvitationUserInput(HMRCPIR, Some(_), _), featureFlags) if featureFlags.showKfcPersonalIncome =>
-        Some(true)
+        Some(())
       case _ => None
     }
   }
 
   object ClientWithItsaOrPirFlagOff {
-    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Boolean] = arg match {
+    def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Unit] = arg match {
       case (AgentInvitationUserInput(_, Some(_), _), featureFlags) if !featureFlags.showKfcMtdIt || !featureFlags.showKfcPersonalIncome =>
-        Some(true)
+        Some(())
       case _ => None
     }
   }
@@ -415,9 +415,9 @@ object AgentsInvitationController {
   }
 
   object ClientWithVatFlagOff {
-    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)): Option[Boolean] = arg match {
+    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)): Option[Unit] = arg match {
       case (AgentInvitationVatForm(_, Some(_), _), featureFlags) if !featureFlags.showKfcMtdVat =>
-        Some(true)
+        Some(())
       case _ => None
     }
   }
