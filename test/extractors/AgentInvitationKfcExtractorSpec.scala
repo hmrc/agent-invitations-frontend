@@ -94,19 +94,19 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
   "The ClientWithFlagOff" should {
     "Return true for HMRC-MTD-IT service when details match and KFC feature flag is off" in {
       val args = (AgentInvitationUserInput(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
-      ClientWithFlagOff.unapply(args) shouldBe Some(true)
+      ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(true)
     }
     "Return true for PERSONAL-INCOME-RECORD service when details match and KFC feature flag is off" in {
       val args = (AgentInvitationUserInput(servicePIR, Some(nino), None), featureFlagsAllOff)
-      ClientWithFlagOff.unapply(args) shouldBe Some(true)
+      ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(true)
     }
     "Return None for HMRC-MTD-IT service when details don't match and KFC feature flag is off" in {
       val args = (AgentInvitationUserInput(serviceITSA, None, None), featureFlagsAllOff)
-      ClientWithFlagOff.unapply(args) shouldBe None
+      ClientWithItsaOrPirFlagOff.unapply(args) shouldBe None
     }
     "Return None for PERSONAL-INCOME-RECORD service when details don't match and KFC feature flag is off" in {
       val args = (AgentInvitationUserInput(servicePIR, None, None), featureFlagsAllOff)
-      ClientWithFlagOff.unapply(args) shouldBe None
+      ClientWithItsaOrPirFlagOff.unapply(args) shouldBe None
     }
   }
 

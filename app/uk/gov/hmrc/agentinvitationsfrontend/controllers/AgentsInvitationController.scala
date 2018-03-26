@@ -95,7 +95,7 @@ class AgentsInvitationController @Inject()(
             case ClientForPirWithFlagOn(_) =>
               throw new Exception("KFC flagged as on, not implemented for personal-income-record")
 
-            case ClientWithFlagOff(_) =>
+            case ClientWithItsaOrPirFlagOff(_) =>
               createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
 
             case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
@@ -398,9 +398,9 @@ object AgentsInvitationController {
     }
   }
 
-  object ClientWithFlagOff {
+  object ClientWithItsaOrPirFlagOff {
     def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[Boolean] = arg match {
-      case (AgentInvitationUserInput(_, Some(_), _), featureFlags) =>
+      case (AgentInvitationUserInput(_, Some(_), _), featureFlags) if !featureFlags.showKfcMtdIt || !featureFlags.showKfcPersonalIncome =>
         Some(true)
       case _ => None
     }
@@ -416,7 +416,7 @@ object AgentsInvitationController {
 
   object ClientWithVatFlagOff {
     def unapply(arg: (AgentInvitationVatForm, FeatureFlags)): Option[Boolean] = arg match {
-      case (AgentInvitationVatForm(_, Some(_), _), featureFlags) =>
+      case (AgentInvitationVatForm(_, Some(_), _), featureFlags) if !featureFlags.showKfcMtdVat =>
         Some(true)
       case _ => None
     }
