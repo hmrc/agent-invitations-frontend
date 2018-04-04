@@ -1,11 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http._
 
 class InvitationsConnectorISpec extends BaseISpec {
 
@@ -288,6 +289,46 @@ class InvitationsConnectorISpec extends BaseISpec {
         }
         verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
       }
+    }
+  }
+
+  "Check Vat Registered Client KFC" should {
+    "return Some(true) if DES/ETMP has a matching effectiveRegistrationDate" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      checkVatRegisteredClientStub(validVrn97, suppliedDate, 204)
+
+      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe Some(true)
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+    }
+
+    "return Some(false) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      checkVatRegisteredClientStub(validVrn97, suppliedDate, 403)
+
+      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe Some(false)
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+    }
+
+    "return None if DES/ETMP has no customer VAT information" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      checkVatRegisteredClientStub(validVrn97, suppliedDate, 404)
+
+      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe None
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+    }
+
+    "throws 5xx is DES/ETMP is unavailable" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      checkVatRegisteredClientStub(validVrn97, suppliedDate, 502)
+
+      assertThrows[Upstream5xxResponse]{
+        await(connector.checkVatRegisteredClient(validVrn97, suppliedDate))
+      }
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
     }
   }
 }

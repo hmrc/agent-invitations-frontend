@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
+import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import play.api.data.validation._
@@ -156,12 +157,16 @@ class AgentsInvitationController @Inject()(
       agentInvitationVatRegistrationDateForm.bindFromRequest().fold(
         formWithErrors => Future successful Ok(enter_vat_registration_date(formWithErrors)),
         userInput => {
-          checkVatRegistrationDateMatches(userInput.clientIdentifier
-            .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput")).value,
-            userInput.registrationDate.getOrElse("")) flatMap {
-            case (true, true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
-            case (true, false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
-            case (false, false) => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
+          val suppliedVrn = userInput.clientIdentifier
+            .map(_.value)
+            .map(Vrn.apply)
+            .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput"))
+          val suppliedVatRegDate = LocalDate.parse(userInput.registrationDate.getOrElse(""))
+
+          invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
+            case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+            case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
+            case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
           }
         }
       )
@@ -218,9 +223,6 @@ class AgentsInvitationController @Inject()(
         userInput => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode))
     }
   }
-
-  private def checkVatRegistrationDateMatches(vrn: String, vatRegistrationDate: String) =
-    invitationsService.checkVatRegistrationDateMatches(vrn, vatRegistrationDate)
 
   private def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])(implicit request: Request[_]) = {
     invitationsService.createInvitation(arn, service, clientIdentifierType, clientIdentifier, postcode)

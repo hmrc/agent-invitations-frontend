@@ -55,7 +55,7 @@ class PirRelationshipConnector @Inject()(
   }
 
   def terminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Int] = {
-    monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
+    monitor(s"ConsumedAPI-Get-AfiRelationship-DELETE") {
       val url = craftUrl(location)
       http.DELETE[HttpResponse](url.toString).map(_.status)
         .recover {

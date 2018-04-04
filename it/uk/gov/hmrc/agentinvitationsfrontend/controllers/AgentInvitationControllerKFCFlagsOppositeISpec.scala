@@ -23,7 +23,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,
         "microservice.services.agent-fi-relationship.port" -> wireMockPort,
-        "microservice.services.agent-stubs.port" -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.company-auth-frontend.external-url" -> companyAuthUrl,
@@ -116,7 +115,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
-
+      verifyNoCheckVatRegisteredClientStubAttempt
     }
   }
 
