@@ -1,9 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
+import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 
 trait ACAStubs {
   me: WireMockSupport =>
@@ -260,5 +261,22 @@ trait ACAStubs {
     val identifierEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     verify(1, putRequestedFor(urlEqualTo(s"/agent-client-authorisation/clients/$serviceIdentifier/$identifierEncoded/invitations/received/$invitationIdEncoded/reject")))
+  }
+
+  def checkVatRegisteredClientStub(vrn: Vrn, date: LocalDate, responseStatus: Int) = {
+    stubFor(get(urlEqualTo(s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${date.toString}"))
+      .willReturn(
+        aResponse()
+          .withStatus(responseStatus)))
+  }
+
+  def verifyCheckVatRegisteredClientStubAttempt(vrn: Vrn, date: LocalDate): Unit = {
+    val vrnEncoded = encodePathSegment(vrn.value)
+    val dateEncoded = encodePathSegment(date.toString)
+    verify(1, getRequestedFor(urlEqualTo(s"/agent-client-authorisation/agencies/check-vat-known-fact/$vrnEncoded/registration-date/$dateEncoded")))
+  }
+
+  def verifyNoCheckVatRegisteredClientStubAttempt: Unit = {
+    verify(0, getRequestedFor(urlPathMatching("/agent-client-authorisation/agencies/check-vat-known-fact/.*/registration-date/.*")))
   }
 }

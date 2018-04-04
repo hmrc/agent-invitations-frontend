@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import org.joda.time.LocalDate
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -200,7 +201,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent with valid vrn and known fact check pass to invitation sent page" in {
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      getRegisteredClientStub(validVrn97.value, "2007-07-07")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
 
       val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
       val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
@@ -212,11 +213,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Success", serviceVAT)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
     }
 
-    "return 303 when the user supplied VAT registration date doen not match our records" in {
-
-      getRegisteredClientStub(validVrn97.value, "2007-07-30")
+    "return 303 when the user supplied VAT registration date doesn't not match our records" in {
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 403)
 
       val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
       val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
@@ -224,10 +225,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
     }
 
     "return exception when create invitation fails" in {
-      getRegisteredClientStub(validVrn97.value, "2007-07-07")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
       failedCreateInvitation(arn)
 
       val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-07")))
@@ -235,10 +237,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       an[BadRequestException] should be thrownBy await(result)
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Fail", serviceVAT)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
     }
 
-    "return 303 when client is not registerd for VAT" in {
-      notFoundRegisteredClientStub(validVrn97.value, "2007-07-20")
+    "return 303 when client is not registered for VAT" in {
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-20"), 404)
 
       val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-20")))
       val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
@@ -246,6 +249,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-20"))
     }
   }
 

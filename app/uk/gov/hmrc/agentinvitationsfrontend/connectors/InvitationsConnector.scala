@@ -104,6 +104,9 @@ class InvitationsConnector @Inject() (
   private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
+  private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${registrationDate.toString}")
+
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
@@ -115,6 +118,14 @@ class InvitationsConnector @Inject() (
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
     }
   }
+
+  def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
+      http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map(_ => Some(true))
+    }.recover{
+      case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
+      case _: NotFoundException => None
+    }
 
   object Reads {
 

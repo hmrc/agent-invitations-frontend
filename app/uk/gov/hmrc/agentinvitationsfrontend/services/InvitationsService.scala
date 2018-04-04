@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, AgentStubsConnector, InvitationsConnector}
+import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
@@ -29,8 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
-                                    agentServicesAccountConnector: AgentServicesAccountConnector,
-                                    agentStubsConnector: AgentStubsConnector) {
+                                    agentServicesAccountConnector: AgentServicesAccountConnector) {
 
   def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
@@ -73,12 +72,8 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
       case None => throw new Exception("Agency name not found")
   }
 
-  def checkVatRegistrationDateMatches(vrn: String, userInputRegistrationDate: String): Future[(Boolean,Boolean)] = {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    agentStubsConnector.getVatRegisteredClient(vrn).map {
-      case Some(r) => (true, if (r.registrationDate.equals(userInputRegistrationDate)) true else false)
-      case None => (false, false)
-    }
+  def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(implicit hc: HeaderCarrier): Future[Option[Boolean]] = {
+    invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
   }
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String = {

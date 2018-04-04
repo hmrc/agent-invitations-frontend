@@ -13,7 +13,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with AfiRelationshipStub with DataStreamStubs with AgentStubs {
+abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with AfiRelationshipStub with DataStreamStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -33,7 +33,6 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "microservice.services.company-auth.port" -> wireMockPort,
         "microservice.services.des.port" -> wireMockPort,
         "microservice.services.agent-fi-relationship.port" -> wireMockPort,
-        "microservice.services.agent-stubs.port" -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url" -> wireMockBaseUrlAsString,
         "microservice.services.company-auth-frontend.external-url" -> companyAuthUrl,
