@@ -21,6 +21,8 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-problem.title"), bodyClasses = None, isAgent = false) {
 
+  <h1 class="heading-xlarge">@Messages("client-problem.title")</h1>
+
   @if(messageKey == Services.messageKeyForVAT){
     <p>@Messages("not-signed-up-vat.description")</p>
   }else{
