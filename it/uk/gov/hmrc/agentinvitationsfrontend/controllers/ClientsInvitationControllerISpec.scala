@@ -224,7 +224,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -233,7 +233,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", nino)))
+          Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
@@ -242,7 +242,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("HMRC-NI", "NINO", nino), "50"))
+          Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -314,7 +314,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmInvitation(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-        Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+        Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -323,7 +323,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-        Enrolment("OtherEnrolment", "OtherValue", nino)))
+        Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
@@ -332,7 +332,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-        Enrolment("HMRC-NI", "NINO", nino), "50"))
+        Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -453,7 +453,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmInvitation(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -462,16 +462,35 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", nino)))
+          Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+
+    "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmInvitation(invitationIdVAT)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-VAT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getConfirmTerms(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("OtherEnrolment", "OtherValue", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmInvitation(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("HMRC-NI", "NINO", nino), "50"))
+          Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -515,8 +534,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getConfirmTermsVAT(req)
 
       status(result) shouldBe OK
-      //TODO Update for Content
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.section"))
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet5"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.checkbox", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
@@ -550,7 +576,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -559,16 +585,34 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", nino)))
+          Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+    "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getConfirmTerms(invitationIdVAT)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-VAT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getConfirmTerms(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("OtherEnrolment", "OtherValue", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("HMRC-NI", "NINO", nino), "50"))
+          Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -704,7 +748,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -713,16 +757,35 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", nino)))
+          Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+    "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmTerms(invitationIdVAT)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-VAT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.submitConfirmTerms(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("OtherEnrolment", "OtherValue", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("HMRC-NI", "NINO", nino), "50"))
+          Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -812,7 +875,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdITSA)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
+          Enrolment("OtherEnrolment", "OtherValue", mtdItId.value), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
@@ -821,16 +884,35 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("OtherEnrolment", "OtherValue", nino)))
+          Enrolment("OtherEnrolment", "OtherValue", nino), "Individual"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+    "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getCompletePage(invitationIdVAT)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
+
+    "redirect to /client/not-signed-up if an authenticated user does not have the HMRC-MTD-VAT Enrolment" in {
+      givenUnauthorisedForInsufficientEnrolments()
+      val result = controller.getCompletePage(invitationIdITSA)(
+        authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
+          Enrolment("OtherEnrolment", "OtherValue", validVrn97.value), "Individual"))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
     }
 
     "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdAFI)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
-          Enrolment("HMRC-NI", "NINO", nino), "50"))
+          Enrolment("HMRC-NI", "NINO", nino), "Individual", "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
@@ -850,6 +932,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe FORBIDDEN
       checkHasClientSignOutUrl(result)
     }
+
+    "show not-sign-up page with VAT content" in {
+      val result = controller.notSignedUp(FakeRequest()
+        .withSession("messageKey" -> "vat"))
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up-vat.description"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
   }
 
   "GET /not-authorised/" should {
@@ -859,6 +950,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description"))
       checkHasClientSignOutUrl(result)
+    }
+
+    "show the unauthorised page with VAT content" in {
+     val  result = controller.notAuthorised(FakeRequest()
+       .withSession("messageKey" -> "vat"))
+       .withCookies(Cookie("mdtp", "authToken=Bearer+"))
+      status(result) shouldBe FORBIDDEN
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised-vat.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised-vat.description"))
     }
   }
 

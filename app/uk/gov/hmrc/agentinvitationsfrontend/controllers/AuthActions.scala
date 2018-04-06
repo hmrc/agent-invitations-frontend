@@ -16,21 +16,32 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.{affinityGroup, authorisedEnrolments}
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.mvc.Results._
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthActions extends AuthorisedFunctions {
 
   def withVerifiedPasscode: PasscodeVerification
+
   def externalUrls: ExternalUrls
+
+  val affinityGroupAndEnrolments: Retrieval[~[Option[AffinityGroup], Enrolments]] = affinityGroup and authorisedEnrolments
+
+  private def getEnrolmentValue(enrolments: Enrolments, serviceName: String, identifierKey: String) = for {
+    enrolment <- enrolments.getEnrolment(serviceName)
+    identifier <- enrolment.getIdentifier(identifierKey)
+  } yield identifier.value
+
 
   protected def withAuthorisedAsAgent[A](body: (Arn, Boolean) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode { isWhitelisted =>
@@ -51,6 +62,7 @@ trait AuthActions extends AuthorisedFunctions {
       case _: InsufficientEnrolments =>
         serviceName match {
           case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
+          case Services.HMRCMTDVAT => Redirect(routes.ClientsInvitationController.notSignedUp())
           case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
         }
 
@@ -64,11 +76,7 @@ trait AuthActions extends AuthorisedFunctions {
       Enrolment("HMRC-AS-AGENT")
         and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
-        val id = for {
-          enrolment <- enrolments.getEnrolment("HMRC-AS-AGENT")
-          identifier <- enrolment.getIdentifier("AgentReferenceNumber")
-        } yield identifier.value
-
+        val id = getEnrolmentValue(enrolments, "HMRC-AS-AGENT", "AgentReferenceNumber")
         body(id)
       }
   }
@@ -78,14 +86,14 @@ trait AuthActions extends AuthorisedFunctions {
       Enrolment(serviceName)
         and AuthProviders(GovernmentGateway)
         and ConfidenceLevel.L200
-    )
-      .retrieve(authorisedEnrolments) { enrolments =>
-        val id = for {
-          enrolment <- enrolments.getEnrolment(serviceName)
-          identifier <- enrolment.getIdentifier(identifierKey)
-        } yield identifier.value
-
+    ).retrieve(affinityGroupAndEnrolments) {
+      case Some(Agent) ~ _ =>
+        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+      case Some(Individual) ~ enrolments if enrolments.getEnrolment("HMRC-MTD-VAT").isDefined =>
+        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+      case _ ~ enrolments =>
+        val id = getEnrolmentValue(enrolments, serviceName, identifierKey)
         body(id)
-      }
+    }
   }
 }

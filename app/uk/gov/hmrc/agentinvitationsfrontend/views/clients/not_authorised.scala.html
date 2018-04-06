@@ -16,11 +16,18 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
+@(messageKey: String = "")(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("not-authorised.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages(s"not-authorised.$messageKey.title"), bodyClasses = None, isAgent = false) {
 
+  @if(messageKey == Services.messageKeyForVAT){
+    <h1 class="heading-xlarge">@Messages("not-authorised-vat.title")</h1>
+
+    <p>@Html(Messages("not-authorised-vat.description"))</p>
+  }else {
     <h1 class="heading-xlarge">@Messages("not-authorised.title")</h1>
 
     <p>@Html(Messages("not-authorised.description"))</p>
+  }
 }

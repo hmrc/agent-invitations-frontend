@@ -12,13 +12,13 @@ trait AuthStubs {
 
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
-  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
+  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid), "Individual")
 
-  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId))
+  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId), "Individual")
 
-  def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-MTD-VAT", "VRN", clientId))
+  def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-MTD-VAT", "VRN", clientId), "Organisation")
 
-  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment, confidenceLevel: String = "200"): FakeRequest[A] = {
+  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment, affinityGroup: String, confidenceLevel: String = "200"): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -32,10 +32,11 @@ trait AuthStubs {
            """.stripMargin,
       s"""
          |{
-         |"authorisedEnrolments": [
-         |  { "key":"${enrolment.serviceName}", "identifiers": [
-         |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
-         |  ]}
+         | "affinityGroup":"$affinityGroup",
+         |  "authorisedEnrolments": [
+         |    { "key":"${enrolment.serviceName}", "identifiers": [
+         |      {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
+         |    ]}
          |]}
           """.stripMargin)
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")

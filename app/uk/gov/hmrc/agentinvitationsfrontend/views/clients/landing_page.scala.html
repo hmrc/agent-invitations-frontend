@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 @(invitationId: InvitationId, serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None, isAgent = false) {
@@ -30,14 +31,21 @@
 
     <span class="lede">@Messages(s"landing-page.service.$serviceId.p1")</span>
 
-    <p>@Messages("landing-page.p2") <strong>@Messages("landing-page.p3")</strong> @Messages("landing-page.p4")</p>
+    @if(serviceId == Services.messageKeyForVAT) {
+     <p>@Messages("landing-page.service.vat.p2")</p>
+    }else{
+     <p>@Messages("landing-page.service.p2")</p>
+    }
 
     <br />
 
     <h2 class="heading-medium">@Messages("landing-page.sub-header")</h2>
 
-    <p>@Messages("landing-page.p5")</p>
-
+   @if(serviceId == Services.messageKeyForVAT){
+     <p>@Messages("landing-page.service.vat.p3")</p>
+   }else {
+     <p>@Messages("landing-page.service.p3")</p>
+   }
     <div class="form-group">
         <button class="button" type="submit" id="continue">@Messages("landing-page.accept")</button>
     </div>

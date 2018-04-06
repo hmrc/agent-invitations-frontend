@@ -62,12 +62,12 @@ not-matched.description = The details provided do not match our records.
 landing-page.title=Accept or decline a tax agent''s request for authorisation
 landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
-landing-page.service.vat.p1=You need to authorise your tax agent to act on your behalf with HMRC for VAT.
-landing-page.p2=You will need to create or use a Government Gateway account for an
-landing-page.p3=individual
-landing-page.p4=to continue.
+landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
+landing-page.service.p2=You will need to create or use a Government Gateway account for an <strong>individual</strong> to continue
+landing-page.service.vat.p2=You will need to create or use a Government Gateway account for an organisation to continue.
 landing-page.sub-header=What this means
-landing-page.p5=The tax agent who sent you the request will have access to your income and expense information through software. Sometimes HMRC will contact you as well as the agent, or instead of them.
+landing-page.service.p3=The tax agent who sent you the request will have access to your income and expense information through software. Sometimes HMRC will contact you as well as the agent, or instead of them.
+landing-page.service.vat.p3=The tax agent who sent you the request will have access to your VAT information through software. Sometimes HMRC will contact you as well as the agent, or instead of them.
 landing-page.accept=Accept request
 landing-page.decline=Decline request
 
@@ -80,12 +80,16 @@ invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
 
+invitation-declined-vat.p1=	You have not authorised {0} to report your VAT returns through software.
+invitation-declined-vat.button=Continue to your tax account
+
+
 # Confirm Invitation
 confirm-invitation.title=Confirm Invitation
 confirm-invitation.heading={0} wants to represent you to HMRC
 confirm-invitation.itsa.sub-header=Do you authorise {0} to report your income and expenses through software?
 confirm-invitation.afi.sub-header=Would you like {0} to represent you?
-confirm-invitation.vat.sub-header=Would you like {0} to represent you for VAT?
+confirm-invitation.vat.sub-header=Would you like {0} to report your VAT returns through software?
 confirm-invitation.radio1=Yes
 confirm-invitation.radio2=No
 confirm-invitation.button=Continue
@@ -114,8 +118,15 @@ confirm-terms-afi.bullet4=your PAYE employment start and end dates
 confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my income and expense information
 confirm-terms-afi.checkbox=I understand {0} will be able to view my income record until I remove their authorisation.
 
-confirm-terms-vat.section=YOUR OBLIGATIONS SECTION<TBC>
-confirm-terms-vat.checkbox=I understand that {0} will be granted access to my VAT data
+confirm-terms-vat.title=Terms of participation
+confirm-terms-vat.p1=By taking part in this trial, you agree to:
+confirm-terms-vat.bullet1=use accounting software that supports Making Tax Digital to record your sales and purchases, then to submit your VAT returns
+confirm-terms-vat.bullet2=submit each VAT return within one calendar month and 7 days from the end of your accounting period
+confirm-terms-vat.bullet3=authorise any third party you use (such as your accountant) and be responsible for any information they give to HMRC on your behalf
+confirm-terms-vat.bullet4=tell HMRC if you stop trading and then submit your final VAT return
+confirm-terms-vat.bullet5=tell HMRC if you want to leave this trial
+confirm-terms-vat.p2=These terms aren't contractual and you can stop taking part in the trial at any time.
+confirm-terms-vat.checkbox=I understand {0} will be granted access to my VAT information.
 
 confirm-terms.continue=Authorise tax agent
 confirm-terms.back=Back
@@ -133,6 +144,7 @@ client-complete.title.income=income record
 client-complete.title.agent=as your tax agent for
 client-complete.title.self.assessment=reporting your income and expenses through software
 client-complete.title.vat=VAT
+client-complete.title.vat.notice=reporting your VAT returns through software
 client-complete.sub-header=What to do next
 client-complete.remove-authorisation.p=<strong>Save this link for your records</strong> and use it to deauthorise {0} at any time:
 client-complete.remove-authorisation.url=https://www.tax.service.gov.uk/relationships/individual/manage-your-tax-agents/deauthorise-agent
@@ -144,9 +156,14 @@ client-problem.title=Your authorisation request is no longer valid
 # Not Signed Up
 not-signed-up.description=You have not signed up to report your income and expenses through software.
 
+not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
+
 #Not Authorised
 not-authorised.title=Sorry, you haven''t been authorised to proceed.
 not-authorised.description=Try again with an Individual Government Gateway ID.
+
+not-authorised-vat.title=You're not able to use this service
+not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to report your VAT returns through software.
 
 # Incorrect Invitation
 incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.

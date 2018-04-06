@@ -54,7 +54,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty => Ok(landing_page(invitationId, messageKey))
+      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+        Ok(landing_page(invitationId, messageKey)).addingToSession("messageKey" -> messageKey)
       case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -170,11 +171,17 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_signed_up())
+    request.session.get("messageKey") match {
+      case Some(Services.messageKeyForVAT) => Forbidden(not_signed_up(messageKeyForVAT))
+      case _ => Forbidden(not_signed_up())
+    }
   }
 
   val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_authorised())
+    request.session.get("messageKey") match {
+      case Some(Services.messageKeyForVAT) => Forbidden(not_authorised(messageKeyForVAT))
+      case _ => Forbidden(not_authorised())
+    }
   }
 
   val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
