@@ -23,6 +23,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.{affinityGroup, authorisedEnrolments}
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -34,8 +35,6 @@ trait AuthActions extends AuthorisedFunctions {
   def withVerifiedPasscode: PasscodeVerification
 
   def externalUrls: ExternalUrls
-
-  val affinityGroupAndEnrolments: Retrieval[~[Option[AffinityGroup], Enrolments]] = affinityGroup and authorisedEnrolments
 
   private def getEnrolmentValue(enrolments: Enrolments, serviceName: String, identifierKey: String) = for {
     enrolment <- enrolments.getEnrolment(serviceName)
@@ -62,7 +61,6 @@ trait AuthActions extends AuthorisedFunctions {
       case _: InsufficientEnrolments =>
         serviceName match {
           case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
-          case Services.HMRCMTDVAT => Redirect(routes.ClientsInvitationController.notSignedUp())
           case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
         }
 
@@ -81,19 +79,27 @@ trait AuthActions extends AuthorisedFunctions {
       }
   }
 
+  val affinityGroupForService: String => Predicate = {
+    case Services.HMRCNI => AffinityGroup.Individual
+    case Services.HMRCPIR => AffinityGroup.Individual
+    case Services.HMRCMTDIT => AffinityGroup.Individual or AffinityGroup.Organisation
+    case Services.HMRCMTDVAT => AffinityGroup.Organisation
+  }
+
   protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
       Enrolment(serviceName)
         and AuthProviders(GovernmentGateway)
         and ConfidenceLevel.L200
-    ).retrieve(affinityGroupAndEnrolments) {
-      case Some(Agent) ~ _ =>
-        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
-      case Some(Individual) ~ enrolments if enrolments.getEnrolment("HMRC-MTD-VAT").isDefined =>
-        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
-      case _ ~ enrolments =>
-        val id = getEnrolmentValue(enrolments, serviceName, identifierKey)
+        and affinityGroupForService(serviceName)
+    )
+      .retrieve(authorisedEnrolments) { enrolments =>
+        val id = for {
+          enrolment <- enrolments.getEnrolment(serviceName)
+          identifier <- enrolment.getIdentifier(identifierKey)
+        } yield identifier.value
+
         body(id)
-    }
+      }
   }
 }
