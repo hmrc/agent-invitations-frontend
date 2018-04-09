@@ -162,7 +162,7 @@ not-signed-up-vat.description=You have not signed up to report your VAT returns 
 not-authorised.title=Sorry, you haven''t been authorised to proceed.
 not-authorised.description=Try again with an Individual Government Gateway ID.
 
-not-authorised-vat.title=You're not able to use this service
+not-authorised-vat.title=You''re not able to use this service
 not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to report your VAT returns through software.
 
 # Incorrect Invitation

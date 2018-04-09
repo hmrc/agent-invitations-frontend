@@ -55,7 +55,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
       case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
-        Ok(landing_page(invitationId, messageKey)).addingToSession("messageKey" -> messageKey)
+        Ok(landing_page(invitationId, messageKey))
       case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -171,8 +171,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
-    request.session.get("messageKey") match {
-      case Some(Services.messageKeyForVAT) =>
+    request.session.get("clientService") match {
+      case Some(Services.HMRCMTDVAT) =>
         Forbidden(not_signed_up(Messages("not-signed-up-vat.description")))
       case _ =>
         Forbidden(not_signed_up(Messages("not-signed-up.description")))
@@ -180,8 +180,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
-    request.session.get("messageKey") match {
-      case Some(Services.messageKeyForVAT) =>
+    request.session.get("clientService") match {
+      case Some(Services.HMRCMTDVAT) =>
         Forbidden(not_authorised((Messages("not-authorised-vat.title"), Messages("not-authorised-vat.description"))))
       case _ =>
         Forbidden(not_authorised((Messages("not-authorised.title"), Messages("not-authorised.description"))))

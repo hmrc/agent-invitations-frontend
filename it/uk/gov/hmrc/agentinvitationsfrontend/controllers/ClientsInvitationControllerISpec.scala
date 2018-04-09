@@ -935,7 +935,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "show not-sign-up page with VAT content" in {
       val result = controller.notSignedUp(FakeRequest()
-        .withSession("messageKey" -> "vat"))
+        .withSession("clientService" -> "HMRC-MTD-VAT"))
       status(result) shouldBe FORBIDDEN
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up-vat.description"))
@@ -954,7 +954,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
     "show the unauthorised page with VAT content" in {
      val  result = controller.notAuthorised(FakeRequest()
-       .withSession("messageKey" -> "vat"))
+       .withSession("clientService" -> "HMRC-MTD-VAT"))
        .withCookies(Cookie("mdtp", "authToken=Bearer+"))
       status(result) shouldBe FORBIDDEN
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised-vat.title"))

@@ -58,10 +58,12 @@ trait AuthActions extends AuthorisedFunctions {
     }.recover {
       case _: UnsupportedAffinityGroup =>
         Redirect(routes.ClientsInvitationController.notAuthorised())
+          .addingToSession("clientService" -> serviceName)
       case _: InsufficientEnrolments =>
         serviceName match {
           case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
           case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
+            .addingToSession("clientService" -> serviceName)
         }
       case _: InsufficientConfidenceLevel =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
