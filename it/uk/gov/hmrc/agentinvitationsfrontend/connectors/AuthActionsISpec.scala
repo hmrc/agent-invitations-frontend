@@ -94,7 +94,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"MTDITID", "value": "fooMtdItId" }
@@ -110,7 +109,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"NINO", "value": "fooNINO" }
@@ -126,7 +124,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
@@ -141,7 +138,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
@@ -156,7 +152,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
@@ -171,7 +166,6 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
@@ -189,11 +183,17 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
 
+    "throw UnsupportedAffinityGroup and redirect to not-authorised when client has invalid Affinity Group" in {
+      givenUnauthorisedForUnsupportedAffinityGroup()
+      val result = TestController.withAuthorisedAsClient("HMRC-MTD-VAT", "VRN")
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+    }
+
     "throw InsufficientEnrolments and redirect to not-signed-up page when expected client's identifier missing for VAT" in {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"affinityGroup":"Organisation",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-VAT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }

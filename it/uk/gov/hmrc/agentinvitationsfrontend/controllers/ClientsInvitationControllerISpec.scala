@@ -469,7 +469,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
 
     "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
-      givenUnauthorisedForInsufficientEnrolments()
+      givenUnauthorisedForUnsupportedAffinityGroup()
       val result = controller.submitConfirmInvitation(invitationIdVAT)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
@@ -591,7 +591,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
-      givenUnauthorisedForInsufficientEnrolments()
+      givenUnauthorisedForUnsupportedAffinityGroup()
       val result = controller.getConfirmTerms(invitationIdVAT)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
@@ -763,7 +763,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
-      givenUnauthorisedForInsufficientEnrolments()
+      givenUnauthorisedForUnsupportedAffinityGroup()
       val result = controller.submitConfirmTerms(invitationIdVAT)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))
@@ -890,7 +890,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     }
 
     "redirect to /client/not-authorised if an authenticated user has the HMRC-MTD-VAT Enrolment but not Affinity Group Organisation" in {
-      givenUnauthorisedForInsufficientEnrolments()
+      givenUnauthorisedForUnsupportedAffinityGroup()
       val result = controller.getCompletePage(invitationIdVAT)(
         authenticatedClient(FakeRequest().withSession("agencyName" -> "My Agency"),
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn97.value), "Individual"))

@@ -22,17 +22,19 @@ trait AuthStubs {
     givenAuthorisedFor(
       s"""
          |{
-         |  "authorise": [
+         |  "authorise": [ [
          |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
-         |    { "authProviders": ["GovernmentGateway"] },
-         |    {"confidenceLevel":$confidenceLevel}
+         |    { "authProviders": ["GovernmentGateway"] } ],
+         |    {"confidenceLevel":$confidenceLevel},
+         |    ${if(enrolment.serviceName == "HMRC-NI") s"""{"affinityGroup":"$affinityGroup"}"""
+                else if(enrolment.serviceName == "HMRC-MTD-VAT") s"""{"affinityGroup":"$affinityGroup"}"""
+                else """{"$or": [{"affinityGroup":"Individual"}, {"affinityGroup":"Organisation"}]}"""}
          |  ],
          |  "retrieve":["authorisedEnrolments"]
          |}
            """.stripMargin,
       s"""
          |{
-         | "affinityGroup":"$affinityGroup",
          |  "authorisedEnrolments": [
          |    { "key":"${enrolment.serviceName}", "identifiers": [
          |      {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
@@ -85,6 +87,13 @@ trait AuthStubs {
       .willReturn(aResponse()
         .withStatus(401)
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+  }
+
+  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit = {
+    stubFor(post(urlEqualTo("/auth/authorise"))
+      .willReturn(aResponse()
+        .withStatus(401)
+        .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
   }
 
   def givenUnauthorisedForInsufficientConfidenceLevel(): Unit = {

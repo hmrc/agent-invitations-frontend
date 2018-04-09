@@ -20,12 +20,10 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.{affinityGroup, authorisedEnrolments}
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -58,12 +56,13 @@ trait AuthActions extends AuthorisedFunctions {
       case Some(clientId) => body(clientId)
       case None => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
     }.recover {
+      case _: UnsupportedAffinityGroup =>
+        Redirect(routes.ClientsInvitationController.notAuthorised())
       case _: InsufficientEnrolments =>
         serviceName match {
           case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
           case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
         }
-
       case _: InsufficientConfidenceLevel =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
 

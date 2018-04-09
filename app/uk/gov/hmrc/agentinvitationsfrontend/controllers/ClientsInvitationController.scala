@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
@@ -172,15 +172,19 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
     request.session.get("messageKey") match {
-      case Some(Services.messageKeyForVAT) => Forbidden(not_signed_up(messageKeyForVAT))
-      case _ => Forbidden(not_signed_up())
+      case Some(Services.messageKeyForVAT) =>
+        Forbidden(not_signed_up(Messages("not-signed-up-vat.description")))
+      case _ =>
+        Forbidden(not_signed_up(Messages("not-signed-up.description")))
     }
   }
 
   val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
     request.session.get("messageKey") match {
-      case Some(Services.messageKeyForVAT) => Forbidden(not_authorised(messageKeyForVAT))
-      case _ => Forbidden(not_authorised())
+      case Some(Services.messageKeyForVAT) =>
+        Forbidden(not_authorised((Messages("not-authorised-vat.title"), Messages("not-authorised-vat.description"))))
+      case _ =>
+        Forbidden(not_authorised((Messages("not-authorised.title"), Messages("not-authorised.description"))))
     }
   }
 
