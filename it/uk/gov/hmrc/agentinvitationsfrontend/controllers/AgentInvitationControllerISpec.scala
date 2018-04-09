@@ -546,6 +546,17 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
+      val result = notEnrolled(authorisedAsValidAgent(request, arn.value)
+        .withSession("service" -> "HMRC-MTD-VAT"))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
     behave like anAuthorisedEndpoint(request, notEnrolled)
   }
 

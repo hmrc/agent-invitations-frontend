@@ -10,11 +10,12 @@ nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 #Enter VRN
-enter-vrn.title=Enter a client''s VAT Registration Number
-enter-vrn.header=Enter a client''s VAT Registration Number
-enter-vrn.label=VAT Registration Number
-enter-vrn.invalid-format=You must enter a valid VAT Registration Number
-error.vrn.required=You must enter a valid VAT Registration Number
+enter-vrn.title=What is your client''s VAT registration number?
+enter-vrn.header=What is your client''s VAT registration number?
+enter-vrn.label=This is the 9-digit number they received when they registered for VAT.
+enter-vrn.example=For example, 123456789
+enter-vrn.invalid-format=VAT registration number must be a 9-digit number
+error.vrn.required=Enter the VAT registration number
 
 # Enter Postcode
 enter-postcode.title=We need more information about this individual
@@ -33,11 +34,11 @@ error.vat-registration-date.required = You must enter the client''s VAT registra
 
 # Select Service
 select-service.title=Select service
-select-service.header=Which information do you want to access for this individual?
+select-service.header=What do you want the client to authorise you to do?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
 select-service.itsa=Report their income and expenses through software
-select-service.vat=VAT
+select-service.vat=Report their VAT returns through software
 
 continue.button=Continue
 
@@ -52,6 +53,9 @@ invitation-sent.button=Return to your account
 # Not Enrolled
 not-enrolled.title = This individual has not signed up to report their income and expenses through software
 not-enrolled.description = You cannot get authorisation from an individual until they have signed up.
+
+not-enrolled.vat.title=This individual has not signed up to report their VAT returns through software
+not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
 
 # Not Matched
 not-matched.title = There was a problem
