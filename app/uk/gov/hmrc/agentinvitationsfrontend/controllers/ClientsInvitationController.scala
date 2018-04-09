@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
@@ -54,7 +54,8 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty => Ok(landing_page(invitationId, messageKey))
+      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+        Ok(landing_page(invitationId, messageKey))
       case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
@@ -170,11 +171,21 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_signed_up())
+    request.session.get("clientService") match {
+      case Some(Services.HMRCMTDVAT) =>
+        Forbidden(not_signed_up(Messages("not-signed-up-vat.description")))
+      case _ =>
+        Forbidden(not_signed_up(Messages("not-signed-up.description")))
+    }
   }
 
   val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_authorised())
+    request.session.get("clientService") match {
+      case Some(Services.HMRCMTDVAT) =>
+        Forbidden(not_authorised((Messages("not-authorised-vat.title"), Messages("not-authorised-vat.description"))))
+      case _ =>
+        Forbidden(not_authorised((Messages("not-authorised.title"), Messages("not-authorised.description"))))
+    }
   }
 
   val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>

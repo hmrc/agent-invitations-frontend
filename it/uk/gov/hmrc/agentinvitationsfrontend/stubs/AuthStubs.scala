@@ -12,30 +12,33 @@ trait AuthStubs {
 
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
-  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
+  def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) = authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid), "Individual")
 
-  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId))
+  def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId), "Individual")
 
-  def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-MTD-VAT", "VRN", clientId))
+  def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) = authenticatedClient(request, Enrolment("HMRC-MTD-VAT", "VRN", clientId), "Organisation")
 
-  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment, confidenceLevel: String = "200"): FakeRequest[A] = {
+  def authenticatedClient[A](request: FakeRequest[A], enrolment: Enrolment, affinityGroup: String, confidenceLevel: String = "200"): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
-         |  "authorise": [
+         |  "authorise": [ [
          |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
-         |    { "authProviders": ["GovernmentGateway"] },
-         |    {"confidenceLevel":$confidenceLevel}
+         |    { "authProviders": ["GovernmentGateway"] } ],
+         |    {"confidenceLevel":$confidenceLevel},
+         |    ${if(enrolment.serviceName == "HMRC-NI") s"""{"affinityGroup":"$affinityGroup"}"""
+                else if(enrolment.serviceName == "HMRC-MTD-VAT") s"""{"affinityGroup":"$affinityGroup"}"""
+                else """{"$or": [{"affinityGroup":"Individual"}, {"affinityGroup":"Organisation"}]}"""}
          |  ],
          |  "retrieve":["authorisedEnrolments"]
          |}
            """.stripMargin,
       s"""
          |{
-         |"authorisedEnrolments": [
-         |  { "key":"${enrolment.serviceName}", "identifiers": [
-         |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
-         |  ]}
+         |  "authorisedEnrolments": [
+         |    { "key":"${enrolment.serviceName}", "identifiers": [
+         |      {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
+         |    ]}
          |]}
           """.stripMargin)
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
@@ -84,6 +87,13 @@ trait AuthStubs {
       .willReturn(aResponse()
         .withStatus(401)
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+  }
+
+  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit = {
+    stubFor(post(urlEqualTo("/auth/authorise"))
+      .willReturn(aResponse()
+        .withStatus(401)
+        .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
   }
 
   def givenUnauthorisedForInsufficientConfidenceLevel(): Unit = {
