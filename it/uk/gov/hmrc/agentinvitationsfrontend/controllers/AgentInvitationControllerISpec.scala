@@ -537,13 +537,31 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val notEnrolled = controller.notEnrolled()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
-      val result = notEnrolled(authorisedAsValidAgent(request, arn.value))
+      val result = notEnrolled(authorisedAsValidAgent(request, arn.value)
+        .withSession("service" -> "HMRC-MTD-IT"))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
+    }
+
+    "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
+      val result = notEnrolled(authorisedAsValidAgent(request, arn.value)
+        .withSession("service" -> "HMRC-MTD-VAT"))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
+    "return 5xx for Unsupported service" in {
+      intercept[Exception] {
+        await(notEnrolled(authorisedAsValidAgent(request, arn.value)))
+      }.getMessage shouldBe "Unsupported Service"
     }
 
     behave like anAuthorisedEndpoint(request, notEnrolled)

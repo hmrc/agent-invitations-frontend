@@ -275,7 +275,14 @@ class AgentsInvitationController @Inject()(
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Forbidden(not_enrolled())
+      request.session.get("service") match {
+        case Some(HMRCMTDVAT) =>
+          Future successful Forbidden(not_enrolled(Messages("not-enrolled.vat.title"), Messages("not-enrolled.vat.description")))
+        case Some(HMRCMTDIT) =>
+          Future successful Forbidden(not_enrolled(Messages("not-enrolled.itsa.title"), Messages("not-enrolled.itsa.description")))
+        case _ =>
+          Future failed(throw new Exception("Unsupported Service"))
+      }
     }
   }
 
