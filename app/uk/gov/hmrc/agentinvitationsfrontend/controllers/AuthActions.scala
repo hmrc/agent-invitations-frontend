@@ -80,19 +80,11 @@ trait AuthActions extends AuthorisedFunctions {
       }
   }
 
-  val affinityGroupForService: String => Predicate = {
-    case Services.HMRCNI => AffinityGroup.Individual
-    case Services.HMRCPIR => AffinityGroup.Individual
-    case Services.HMRCMTDIT => AffinityGroup.Individual or AffinityGroup.Organisation
-    case Services.HMRCMTDVAT => AffinityGroup.Organisation
-  }
-
   protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
       Enrolment(serviceName)
         and AuthProviders(GovernmentGateway)
         and ConfidenceLevel.L200
-        and affinityGroupForService(serviceName)
     )
       .retrieve(authorisedEnrolments) { enrolments =>
         val id = for {

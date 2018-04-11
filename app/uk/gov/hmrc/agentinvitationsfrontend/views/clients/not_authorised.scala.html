@@ -16,11 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(message: (String, String))(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(title: String, description: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages(s"not-authorised.title"), bodyClasses = None, isAgent = false) {
 
-    <h1 class="heading-xlarge">@message._1</h1>
+    <h1 class="heading-xlarge">@title</h1>
 
-    <p>@message._2</p>
+    <p>@description</p>
 }
