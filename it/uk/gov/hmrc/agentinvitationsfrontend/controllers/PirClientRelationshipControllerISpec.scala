@@ -39,7 +39,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user has insufficient enrolments" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"), "Agent")))
+      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
       verifyAuthoriseAttempt()
@@ -47,7 +47,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user has insufficient confidence level" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
-      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "Individual", "50")))
+      val result = await(afiDeauthoriseAllStart(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "50")))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
       verifyAuthoriseAttempt()
@@ -86,7 +86,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user has insufficient enrolments" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"), "Individual")))
+      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("OtherEnrolment", "Key", "Value"))))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
       verifyAuthoriseAttempt()
@@ -94,7 +94,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
 
     "verify Unauthorized if user has insufficient confidence level" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
-      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "Individual", "50")))
+      val result = await(submitAfiDeauthoriseAll(authenticatedClient(FakeRequest(), Enrolment("HMRC-NI", "NINO", clientId), "50")))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
       verifyAuthoriseAttempt()

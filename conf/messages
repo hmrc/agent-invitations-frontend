@@ -129,7 +129,7 @@ confirm-terms-vat.bullet2=submit each VAT return within one calendar month and 7
 confirm-terms-vat.bullet3=authorise any third party you use (such as your accountant) and be responsible for any information they give to HMRC on your behalf
 confirm-terms-vat.bullet4=tell HMRC if you stop trading and then submit your final VAT return
 confirm-terms-vat.bullet5=tell HMRC if you want to leave this trial
-confirm-terms-vat.p2=These terms aren't contractual and you can stop taking part in the trial at any time.
+confirm-terms-vat.p2=These terms aren''t contractual and you can stop taking part in the trial at any time.
 confirm-terms-vat.checkbox=I understand {0} will be granted access to my VAT information.
 
 confirm-terms.continue=Authorise tax agent
