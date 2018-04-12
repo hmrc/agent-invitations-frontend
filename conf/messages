@@ -122,7 +122,7 @@ confirm-terms-afi.bullet1=who you have worked for in the past
 confirm-terms-afi.bullet2=taxable benefits like medical insurance and company car
 confirm-terms-afi.bullet3=pensions
 confirm-terms-afi.bullet4=your PAYE employment start and end dates
-confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my income and expense information
+confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my income and expense information.
 confirm-terms-afi.checkbox=I understand {0} will be able to view my income record until I remove their authorisation.
 
 confirm-terms-vat.title=Confirm that you understand
