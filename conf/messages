@@ -10,7 +10,7 @@ nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 #Enter VRN
-enter-vrn.title=What is your client''s VAT registration number?
+enter-vrn.title={0} - {1} - GOV.UK
 enter-vrn.header=What is your client''s VAT registration number?
 enter-vrn.label=This is the 9-digit number they received when they registered for VAT.
 enter-vrn.example=For example, 123456789
@@ -33,7 +33,7 @@ enter-vat-registration-date.hint=This must match our records
 error.vat-registration-date.required = You must enter the client''s VAT registration date
 
 # Select Service
-select-service.title=Select service
+select-service.title={0} - {1} - GOV.UK
 select-service.header=What do you want the client to authorise you to do?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
@@ -51,10 +51,12 @@ invitation-sent.description.advice.pt3=This is the only way your client can auth
 invitation-sent.button=Return to your account
 
 # Not Enrolled
-not-enrolled.itsa.title = This individual has not signed up to report their income and expenses through software
-not-enrolled.itsa.description = You cannot get authorisation from an individual until they have signed up.
+not-enrolled.title={0} - {1} - GOV.UK
 
-not-enrolled.vat.title=This individual has not signed up to report their VAT returns through software
+not-enrolled.itsa.header=This individual has not signed up to report their income and expenses through software
+not-enrolled.itsa.description=You cannot get authorisation from an individual until they have signed up.
+
+not-enrolled.vat.header=This individual has not signed up to report their VAT returns through software
 not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
 
 # Not Matched

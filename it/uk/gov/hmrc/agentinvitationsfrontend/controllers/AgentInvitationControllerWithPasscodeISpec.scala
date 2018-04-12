@@ -80,7 +80,8 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           .withStatus(200)))
       val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
@@ -93,7 +94,8 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           .withStatus(200)))
       val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithoutBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()

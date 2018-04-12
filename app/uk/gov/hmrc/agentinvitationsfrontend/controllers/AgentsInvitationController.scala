@@ -277,9 +277,9 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       request.session.get("service") match {
         case Some(HMRCMTDVAT) =>
-          Future successful Forbidden(not_enrolled(Messages("not-enrolled.vat.title"), Messages("not-enrolled.vat.description")))
+          Future successful Forbidden(not_enrolled(Messages("not-enrolled.vat.header"), Messages("not-enrolled.vat.description")))
         case Some(HMRCMTDIT) =>
-          Future successful Forbidden(not_enrolled(Messages("not-enrolled.itsa.title"), Messages("not-enrolled.itsa.description")))
+          Future successful Forbidden(not_enrolled(Messages("not-enrolled.itsa.header"), Messages("not-enrolled.itsa.description")))
         case _ =>
           Future failed(throw new Exception("Unsupported Service"))
       }

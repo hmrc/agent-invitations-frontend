@@ -86,13 +86,6 @@ trait AuthStubs {
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
   }
 
-  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .willReturn(aResponse()
-        .withStatus(401)
-        .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
-  }
-
   def givenUnauthorisedForInsufficientConfidenceLevel(): Unit = {
     stubFor(post(urlEqualTo("/auth/authorise"))
       .willReturn(aResponse()

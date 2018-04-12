@@ -183,13 +183,6 @@ class AuthActionsISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
 
-    "throw UnsupportedAffinityGroup and redirect to not-authorised when client has invalid Affinity Group" in {
-      givenUnauthorisedForUnsupportedAffinityGroup()
-      val result = TestController.withAuthorisedAsClient("HMRC-MTD-VAT", "VRN")
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
-    }
-
     "throw InsufficientEnrolments and redirect to not-signed-up page when expected client's identifier missing for VAT" in {
       givenAuthorisedFor(
         "{}",
