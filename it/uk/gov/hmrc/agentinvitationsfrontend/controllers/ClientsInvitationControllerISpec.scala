@@ -526,13 +526,11 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.title"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet4"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet5"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.checkbox", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
