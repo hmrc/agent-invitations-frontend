@@ -72,7 +72,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = showVrnForm(authorisedAsValidAgent(request.withSession("service" -> serviceVAT), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.header"))
       checkHasAgentSignOutLink(result)
 
@@ -109,7 +110,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitVrn(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.vrn.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -122,7 +124,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitVrn(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.invalid-format"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -346,7 +349,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = selectService(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("select-service.title"),
+        htmlEscapedMessage("select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")),
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("select-service.itsa"),
         htmlEscapedMessage("select-service.personal-income-viewer"),
@@ -389,7 +392,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("service" -> ""), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
@@ -541,7 +545,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withSession("service" -> "HMRC-MTD-IT"))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "not-enrolled.title", htmlEscapedMessage("not-enrolled.itsa.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -552,7 +557,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withSession("service" -> "HMRC-MTD-VAT"))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "not-enrolled.title", htmlEscapedMessage("not-enrolled.vat.header"), htmlEscapedMessage("app.name")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
