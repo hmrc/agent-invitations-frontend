@@ -807,8 +807,8 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
-//      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
-//      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
+      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
