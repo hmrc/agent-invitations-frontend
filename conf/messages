@@ -142,15 +142,14 @@ invitation-expired.heading=There is a problem
 invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
 
 # Complete
-client-complete.title1=You have confirmed
-client-complete.title2={0}
-client-complete.title.view=to view your
-client-complete.title.income=income record
-client-complete.title.agent=as your tax agent for
-client-complete.title.self.assessment=reporting your income and expenses through software
+client-complete.title=Agent authorisation complete
+client-complete.p.title=What this means
+client-complete.p.afterName= is now confirmed as your tax agent for
+
+client-complete.title.income=income record.
+client-complete.title.self.assessment=reporting your income and expenses through software.
 client-complete.title.vat=VAT
-client-complete.title.vat.notice=reporting your VAT returns through software
-client-complete.sub-header=What to do next
+client-complete.title.vat.notice=reporting your VAT returns through software.
 client-complete.remove-authorisation.p=<strong>Save this link for your records</strong> and use it to deauthorise {0} at any time:
 client-complete.remove-authorisation.url=https://www.tax.service.gov.uk/relationships/individual/manage-your-tax-agents/deauthorise-agent
 client-complete.button.itsa=Continue to your tax account

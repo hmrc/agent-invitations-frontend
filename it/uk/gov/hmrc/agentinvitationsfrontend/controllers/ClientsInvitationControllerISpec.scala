@@ -783,7 +783,6 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result,
         htmlEscapedMessage("client-complete.title1"),
         htmlEscapedMessage("My Agency"),
-        htmlEscapedMessage("client-complete.title.agent"),
         htmlEscapedMessage("client-complete.title.self.assessment"),
         htmlEscapedMessage("client-complete.button.itsa"),
         s"""href="$taxAccountRelativeUrl"""")
@@ -807,11 +806,9 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.view"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.income"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.sub-header"))
-      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
+//      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
+//      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
@@ -829,7 +826,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.agent"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }

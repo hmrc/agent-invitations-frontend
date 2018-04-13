@@ -19,26 +19,19 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agencyName: String, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title1"), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true)) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-complete.title"), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true)) {
 
     <div class="transaction-banner--complete">
-        <p class="heading-24--normal">@Messages("client-complete.title1")</p>
-        <h1 class="transaction-banner__heading">@agencyName</h1>
-        @if(service == Services.messageKeyForAfi) {
-            <p class="heading-24--normal">@Messages("client-complete.title.view")</p>
-            <p class="heading-24--normal"><strong>@Messages("client-complete.title.income")</strong></p>
-        }
-
-        @if(service == Services.messageKeyForITSA) {
-            <p class="heading-24--normal">@Messages("client-complete.title.agent")</p>
-            <p class="heading-24--normal"><strong>@Messages("client-complete.title.self.assessment")</strong></p>
-        }
-
-        @if(service == Services.messageKeyForVAT) {
-            <p class="heading-24--normal">@Messages("client-complete.title.agent")</p>
-            <p class="heading-24--normal"><strong>@Messages("client-complete.title.vat.notice")</strong></p>
-        }
+        <h1 class="transaction-banner__heading">@Messages("client-complete.title")</h1>
     </div>
+
+    <h2 class="heading-medium">@Messages("client-complete.p.title")</h2>
+
+    <p> @agencyName @Messages("client-complete.p.afterName")  @(
+        if(service == Services.messageKeyForAfi)Messages("client-complete.title.income")
+        else if(service == Services.messageKeyForITSA) Messages("client-complete.title.self.assessment")
+        else if(service == Services.messageKeyForVAT) Messages("client-complete.title.vat.notice"))
+    </p>
 
     @if(service == Services.messageKeyForAfi) {
         <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
@@ -49,5 +42,4 @@
     @if(service == Services.messageKeyForITSA) {
         <p><a href="@externalUrls.taxAccountRelativeUrl" class="button" role="button" id="continue">@Messages("client-complete.button.itsa")</a></p>
     }
-
 }
