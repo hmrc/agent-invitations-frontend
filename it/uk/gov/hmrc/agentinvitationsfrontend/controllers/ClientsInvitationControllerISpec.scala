@@ -781,7 +781,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenGetAgencyNameStub(arn)
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("client-complete.title1"),
+        htmlEscapedMessage("client-complete.title"),
         htmlEscapedMessage("My Agency"),
         htmlEscapedMessage("client-complete.title.self.assessment"),
         htmlEscapedMessage("client-complete.button.itsa"),
@@ -804,7 +804,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
       checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
@@ -824,7 +824,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getCompletePageVAT(authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
