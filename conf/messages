@@ -145,7 +145,7 @@ invitation-expired.description=This invitation is no longer available. Contact t
 client-complete.title=Agent authorisation complete
 client-complete.p.title=What this means
 client-complete.p.afterName= is now confirmed as your tax agent for
-
+client-complete.sub-header=What to do next
 client-complete.title.income=income record.
 client-complete.title.self.assessment=reporting your income and expenses through software.
 client-complete.title.vat=VAT
