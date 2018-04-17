@@ -339,7 +339,7 @@ object AgentsInvitationController {
   private val invalidNino =
     validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
   private val invalidVrn =
-    validateVrnField("error.vrn.required", "enter-vrn.invalid-format", "enter-vrn.invalid-value")
+    validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
   private val invalidVatDateFormat =
     validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(vatRegistrationDate => validateDate(vatRegistrationDate))
 
