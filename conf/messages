@@ -142,7 +142,7 @@ invitation-expired.heading=There is a problem
 invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
 
 # Complete
-client-complete.title=Agent authorisation complete
+client-complete.title=Your agent has been authorised
 client-complete.p.title=What this means
 client-complete.p.afterName= is now confirmed as your tax agent for
 client-complete.sub-header=What to do next
