@@ -52,6 +52,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VRN"
   val validVrn97 = Vrn("101747696")
+  val invalidVrn = Vrn("101747692")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
@@ -118,7 +119,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
 
-    "return 200 for authorised Agent with invalid vrn and redisplay form with error message" in {
+    "return 200 for authorised Agent with invalid vrn less than 9 characters and redisplay form with error message" in {
       val form = agentInvitationVrnForm
       val formData = Map("service" -> serviceVAT, "clientIdentifier" -> validNino.value, "postcode" -> "")
       val result = submitVrn(authorisedAsValidAgent(request
@@ -126,7 +127,21 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
         "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.invalid-format"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.regex-failure"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
+    }
+
+    "return 200 for authorised Agent with invalid vrn and redisplay form with error message" in {
+      val form = agentInvitationVrnForm
+      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> invalidVrn.value, "postcode" -> "")
+      val result = submitVrn(authorisedAsValidAgent(request
+        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.checksum-failure"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
