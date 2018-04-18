@@ -313,6 +313,22 @@ object AgentsInvitationController {
     }
   }
 
+  private def validateVrnField(nonEmptyFailure: String,
+                               regexFailure: String,
+                               checksumFailure: String) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if(!fieldValue.matches("[0-9]{9}"))
+          Invalid(ValidationError(regexFailure))
+        else if(!Vrn.isValid(fieldValue.trim.toUpperCase))
+          Invalid(ValidationError(checksumFailure))
+        else
+          Valid
+    }
+  }
+
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.nonEmpty)
       Valid
@@ -323,7 +339,7 @@ object AgentsInvitationController {
   private val invalidNino =
     validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
   private val invalidVrn =
-    validateField("error.vrn.required", "enter-vrn.invalid-format")(vrn => Vrn.isValid(vrn))
+    validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
   private val invalidVatDateFormat =
     validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(vatRegistrationDate => validateDate(vatRegistrationDate))
 

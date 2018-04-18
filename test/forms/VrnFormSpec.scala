@@ -27,11 +27,14 @@ import uk.gov.hmrc.play.test.UnitSpec
 class VrnFormSpec extends UnitSpec {
 
   val validVrn97 = Vrn("101747696")
+  val invalidVrn = Vrn("101747692")
   val validVrn9755 = Vrn("101747641")
   val vrnEmptyMessage: String = "error.vrn.required"
-  val vrnFormatMessage: String = "enter-vrn.invalid-format"
+  val vrnRegexFailure: String = "enter-vrn.regex-failure"
+  val vrnChecksumFailure: String = "enter-vrn.checksum-failure"
   val vrnEmptyFormError: FormError = FormError("clientIdentifier", List(vrnEmptyMessage))
-  val vrnFormatFormError: FormError = FormError("clientIdentifier", List(vrnFormatMessage))
+  val vrnRegexFormError: FormError = FormError("clientIdentifier", List(vrnRegexFailure))
+  val vrnChecksumFormError: FormError = FormError("clientIdentifier", List(vrnChecksumFailure))
 
   "VrnForm" should {
     "return no error message for valid Vrn" in {
@@ -47,9 +50,16 @@ class VrnFormSpec extends UnitSpec {
     }
 
     "return an error message for invalid vrn" in {
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> s"${invalidVrn.value}", "postcode" -> "")
+      val vrnForm = agentInvitationVrnForm.bind(data)
+      vrnForm.errors.contains(vrnChecksumFormError) shouldBe true
+      vrnForm.errors.length shouldBe 1
+    }
+
+    "return an error message for invalid vrn less than 9 digits" in {
       val data = Json.obj("service" -> "someService", "clientIdentifier" -> "12345", "postcode" -> "")
       val vrnForm = agentInvitationVrnForm.bind(data)
-      vrnForm.errors.contains(vrnFormatFormError) shouldBe true
+      vrnForm.errors.contains(vrnRegexFormError) shouldBe true
       vrnForm.errors.length shouldBe 1
     }
 

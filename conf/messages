@@ -14,8 +14,9 @@ enter-vrn.title={0} - {1} - GOV.UK
 enter-vrn.header=What is your client''s VAT registration number?
 enter-vrn.label=This is the 9-digit number they received when they registered for VAT.
 enter-vrn.example=For example, 123456789
-enter-vrn.invalid-format=VAT registration number must be a 9-digit number
+enter-vrn.regex-failure=VAT registration number must be a 9-digit number
 error.vrn.required=Enter the VAT registration number
+enter-vrn.checksum-failure=Enter a valid VAT registration number
 
 # Enter Postcode
 enter-postcode.title=We need more information about this individual
