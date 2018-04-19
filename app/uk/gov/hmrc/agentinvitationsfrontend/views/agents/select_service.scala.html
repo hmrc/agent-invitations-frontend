@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm: Form[AgentInvitationUserInput], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("select-service.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
 

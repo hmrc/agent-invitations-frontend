@@ -59,28 +59,28 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the landing page even if the user is not authenticated" in {
       val result = controller.start(invitationIdITSA)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, hasMessage("landing-page.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
     "show the landing page with ITSA content variant if the invitation ID prefix is 'A'" in {
       val result = controller.start(invitationIdITSA)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, hasMessage("landing-page.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.itsa.p1"))
     }
 
     "show the landing page with AFI content variant if the invitation ID prefix is 'B'" in {
       val result = controller.start(invitationIdAFI)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, hasMessage("landing-page.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.afi.p1"))
     }
 
     "show the landing page with VAT content variant if the invitation ID prefix is 'C'" in {
       val result = controller.start(invitationIdVAT)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, hasMessage("landing-page.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("landing-page.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.vat.p1"))
     }
 
@@ -124,7 +124,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
 
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("invitation-declined.title", htmlEscapedMessage("invitation-declined.header"), htmlEscapedMessage("title.suffix.client")),
+        htmlEscapedMessage("generic.title", htmlEscapedMessage("invitation-declined.header"), htmlEscapedMessage("title.suffix.client")),
         htmlEscapedMessage("invitation-declined-itsa.p1", "My Agency"),
         htmlEscapedMessage("invitation-declined-itsa.button"),
         s"""href="$taxAccountRelativeUrl"""")
@@ -144,7 +144,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
 
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("invitation-declined.title", htmlEscapedMessage("invitation-declined.header"), htmlEscapedMessage("title.suffix.client")),
+        htmlEscapedMessage("generic.title", htmlEscapedMessage("invitation-declined.header"), htmlEscapedMessage("title.suffix.client")),
         htmlEscapedMessage("invitation-declined-afi.p1", "My Agency"),
         htmlEscapedMessage("invitation-declined-afi.button"),
         s"""href="$taxAccountRelativeUrl"""")
@@ -788,7 +788,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       givenGetAgencyNameStub(arn)
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("client-complete.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")),
+        htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")),
         htmlEscapedMessage("My Agency"),
         htmlEscapedMessage("client-complete.title.self.assessment"),
         htmlEscapedMessage("client-complete.button.itsa"),
@@ -811,7 +811,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
       checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
@@ -831,7 +831,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = getCompletePageVAT(authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn97.value))
 
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
@@ -886,7 +886,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show not-sign-up page if user does not have a valid enrolment" in {
       val result = controller.notSignedUp(FakeRequest())
       status(result) shouldBe FORBIDDEN
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -901,7 +901,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       val result = controller.notSignedUp(FakeRequest()
         .withSession("clientService" -> "HMRC-MTD-VAT"))
       status(result) shouldBe FORBIDDEN
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up-vat.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -911,7 +911,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show the unauthorised page" in {
      val  result = controller.notAuthorised(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
       status(result) shouldBe FORBIDDEN
-      checkHtmlResultWithBodyText(result, hasMessage("not-authorised.title", htmlEscapedMessage("not-authorised.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("not-authorised.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description"))
       checkHasClientSignOutUrl(result)
     }
@@ -921,7 +921,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show incorrect page if user accidentally attempted to respond to another client's invitation" in {
       val result = controller.incorrectInvitation(FakeRequest())
       status(result) shouldBe FORBIDDEN
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-invitation.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -937,7 +937,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show not-found page if user responds to an invitation that does not exist" in {
       val result = controller.notFoundInvitation(FakeRequest())
       status(result) shouldBe NOT_FOUND
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -953,7 +953,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
     "show already-responded page if user responds to an invitation that does not have a status Pending" in {
       val result = controller.invitationAlreadyResponded(FakeRequest())
       status(result) shouldBe FORBIDDEN
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-problem.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-problem.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }

@@ -63,7 +63,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
         FakeRequest().withFormUrlEncodedBody("confirmResponse" -> "true"), clientId)))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipEnded.title", htmlEscapedMessage("clientEndsRelationshipEnded.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("clientEndsRelationshipEnded.header"), htmlEscapedMessage("title.suffix.client")))
       checkHasClientSignOutUrl(result)
       checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
     }
@@ -115,7 +115,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       val result = await(controller.getClientDeclinedRelationshipTermination(authorisedAsValidClientAFI(FakeRequest(), clientId)))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientCancelled.title", htmlEscapedMessage("clientCancelled.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("clientCancelled.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientCancelled.p1"))
       checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
     }
@@ -126,7 +126,7 @@ class PirClientRelationshipControllerISpec extends BaseISpec {
       val result = await(controller.getClientEndsRelationshipNoAgentPage(authorisedAsValidClientAFI(FakeRequest(), clientId)))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipNoAgent.title", htmlEscapedMessage("clientEndsRelationshipNoAgent.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("clientEndsRelationshipNoAgent.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("clientEndsRelationshipNoAgent.p1"))
       checkHtmlResultWithBodyText(result, personalTaxAccountUrl)
     }

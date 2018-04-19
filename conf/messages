@@ -2,10 +2,10 @@ app.name=Manage your agent invitations
 
 title.suffix.agents=Agent services account
 title.suffix.client=Manage your tax agents
+generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
 # Enter Nino
-enter-nino.title={0} - {1} - GOV.UK
 enter-nino.header=Enter an individual''s National Insurance number
 enter-nino.label=National Insurance number
 enter-nino.invalid-format=Enter a valid National Insurance number
@@ -13,7 +13,6 @@ nino-example.hint=For example, VO 12 34 56 D
 error.nino.required = You must enter an individual''s number
 
 #Enter VRN
-enter-vrn.title={0} - {1} - GOV.UK
 enter-vrn.header=What is your client''s VAT registration number?
 enter-vrn.label=This is the 9-digit number they received when they registered for VAT.
 enter-vrn.example=For example, 123456789
@@ -22,7 +21,6 @@ error.vrn.required=Enter the VAT registration number
 enter-vrn.checksum-failure=Enter a valid VAT registration number
 
 # Enter Postcode
-enter-postcode.title={0} - {1} - GOV.UK
 enter-postcode.header=We need more information about this individual
 enter-postcode.label=Postcode
 enter-postcode.invalid-format=You can only enter these characters: a-z A-Z 0-9
@@ -30,7 +28,6 @@ postcode.hint=This must match our records
 error.postcode.required = You must enter an individual''s postcode
 
 # Enter Postcode
-enter-vat-registration-date.title={0} - {1} - GOV.UK
 enter-vat-registration-date.header=We need more information about this individual
 enter-vat-registration-date.label=VAT registration date
 enter-vat-registration-date.invalid-format=You must enter the date in the following format: YYYY-MM-DD (eg. 2018-01-20)
@@ -38,7 +35,6 @@ enter-vat-registration-date.hint=This must match our records
 error.vat-registration-date.required = You must enter the client''s VAT registration date
 
 # Select Service
-select-service.title={0} - {1} - GOV.UK
 select-service.header=What do you want the client to authorise you to do?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
@@ -48,7 +44,6 @@ select-service.vat=Report their VAT returns through software
 continue.button=Continue
 
 # Invitation Sent
-invitation-sent-link.title={0} - {1} - GOV.UK
 invitation-sent-link.header=Send your client this link
 invitation-sent.header=What to do next
 invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>. Copy and paste the link into an email.
@@ -57,8 +52,6 @@ invitation-sent.description.advice.pt3=This is the only way your client can auth
 invitation-sent.button=Return to your account
 
 # Not Enrolled
-not-enrolled.title={0} - {1} - GOV.UK
-
 not-enrolled.itsa.header=This individual has not signed up to report their income and expenses through software
 not-enrolled.itsa.description=You cannot get authorisation from an individual until they have signed up.
 
@@ -66,13 +59,11 @@ not-enrolled.vat.header=This individual has not signed up to report their VAT re
 not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
 
 # Not Matched
-not-matched.title={0} - {1} - GOV.UK
 not-matched.header=There was a problem
 not-matched.description = The details provided do not match our records.
 
 # Client Pages
 # Landing Page
-landing-page.title={0} - {1} - GOV.UK
 landing-page.header=Accept or decline a tax agent''s request for authorisation
 landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
@@ -86,7 +77,6 @@ landing-page.accept=Accept request
 landing-page.decline=Decline request
 
 # Invitation Declined
-invitation-declined.title={0} - {1} - GOV.UK
 invitation-declined.header=You have declined this request
 invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
@@ -146,12 +136,10 @@ confirm-terms.continue=Authorise tax agent
 confirm-terms.back=Back
 
 #Invitation Expired
-invitation-expired.title={0} - {1} - GOV.UK
 invitation-expired.heading=Invitation Expired
 invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
 
 # Complete
-client-complete.title={0} - {1} - GOV.UK
 client-complete.header=Your agent has been authorised
 client-complete.p.title=What this means
 client-complete.p.afterName= is now confirmed as your tax agent for
@@ -165,7 +153,6 @@ client-complete.remove-authorisation.url=https://www.tax.service.gov.uk/relation
 client-complete.button.itsa=Continue to your tax account
 
 # Generic Issue Title
-client-problem.title={0} - {1} - GOV.UK
 client-problem.header=Your authorisation request is no longer valid
 
 # Not Signed Up
@@ -174,7 +161,6 @@ not-signed-up.description=You have not signed up to report your income and expen
 not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
 
 #Not Authorised
-not-authorised.title={0} - {1} - GOV.UK
 not-authorised.header=Sorry, you haven''t been authorised to proceed.
 not-authorised.description=Try again with an Individual Government Gateway ID.
 
@@ -212,15 +198,12 @@ global.error.500.message=Please try again in a few minutes.
 #Client ends relationship
 clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
 clientEndsRelationship.header=Do you want to stop a tax agent viewing your income record?
-clientEndsRelationshipEnded.title={0} - {1} - GOV.UK
 clientEndsRelationshipEnded.header=Your income record is no longer visible to tax agents
 clientEndsRelationshipEnded.p1=If you want to allow an agent to view your record, ask them to send you an authorisation request.
-clientEndsRelationshipNoAgent.title={0} - {1} - GOV.UK
 clientEndsRelationshipNoAgent.header=There is no authorised tax agent in our system
 clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your income record so we can''t remove authorisation.
 clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
-clientCancelled.title={0} - {1} - GOV.UK
 clientCancelled.header=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
 error.terminate.500.heading=Sorry, we''re experiencing technical difficulties

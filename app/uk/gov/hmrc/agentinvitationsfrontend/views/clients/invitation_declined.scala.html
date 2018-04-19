@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("invitation-declined.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true)) {
 
   <h1 class="heading-xlarge">@Messages("invitation-declined.header")</h1>
