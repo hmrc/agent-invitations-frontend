@@ -1,8 +1,11 @@
 app.name=Manage your agent invitations
 
+title.suffix.agents=Agent services account
+title.suffix.client=Manage your tax agents
+
 # Agent Pages
 # Enter Nino
-enter-nino.title=Enter an individual''s National Insurance number
+enter-nino.title={0} - {1} - GOV.UK
 enter-nino.header=Enter an individual''s National Insurance number
 enter-nino.label=National Insurance number
 enter-nino.invalid-format=Enter a valid National Insurance number
@@ -19,14 +22,15 @@ error.vrn.required=Enter the VAT registration number
 enter-vrn.checksum-failure=Enter a valid VAT registration number
 
 # Enter Postcode
-enter-postcode.title=We need more information about this individual
+enter-postcode.title={0} - {1} - GOV.UK
+enter-postcode.header=We need more information about this individual
 enter-postcode.label=Postcode
 enter-postcode.invalid-format=You can only enter these characters: a-z A-Z 0-9
 postcode.hint=This must match our records
 error.postcode.required = You must enter an individual''s postcode
 
 # Enter Postcode
-enter-vat-registration-date.title=We need more information about this individual
+enter-vat-registration-date.title={0} - {1} - GOV.UK
 enter-vat-registration-date.header=We need more information about this individual
 enter-vat-registration-date.label=VAT registration date
 enter-vat-registration-date.invalid-format=You must enter the date in the following format: YYYY-MM-DD (eg. 2018-01-20)
@@ -44,7 +48,8 @@ select-service.vat=Report their VAT returns through software
 continue.button=Continue
 
 # Invitation Sent
-invitation-sent-link.title=Send your client this link
+invitation-sent-link.title={0} - {1} - GOV.UK
+invitation-sent-link.header=Send your client this link
 invitation-sent.header=What to do next
 invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>. Copy and paste the link into an email.
 invitation-sent.description.advice.pt2=If your client does not respond in time, you will need to request authorisation again and send them the new link.
@@ -61,12 +66,14 @@ not-enrolled.vat.header=This individual has not signed up to report their VAT re
 not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
 
 # Not Matched
-not-matched.title = There was a problem
+not-matched.title={0} - {1} - GOV.UK
+not-matched.header=There was a problem
 not-matched.description = The details provided do not match our records.
 
 # Client Pages
 # Landing Page
-landing-page.title=Accept or decline a tax agent''s request for authorisation
+landing-page.title={0} - {1} - GOV.UK
+landing-page.header=Accept or decline a tax agent''s request for authorisation
 landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
@@ -79,7 +86,8 @@ landing-page.accept=Accept request
 landing-page.decline=Decline request
 
 # Invitation Declined
-invitation-declined.title=You have declined this request
+invitation-declined.title={0} - {1} - GOV.UK
+invitation-declined.header=You have declined this request
 invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
 invitation-declined-itsa.button=Continue to your tax account
@@ -92,7 +100,7 @@ invitation-declined-vat.button=Continue to your tax account
 
 
 # Confirm Invitation
-confirm-invitation.title=Confirm Invitation
+confirm-invitation.title=Confirm Invitation - {0} - GOV.UK
 confirm-invitation.heading={0} wants to represent you to HMRC
 confirm-invitation.itsa.sub-header=Do you authorise {0} to report your income and expenses through software?
 confirm-invitation.afi.sub-header=Would you like {0} to represent you?
@@ -102,9 +110,9 @@ confirm-invitation.radio2=No
 confirm-invitation.button=Continue
 
 # Confirm Terms
-confirm-terms.itsa.title=Terms of participation
-confirm-terms.afi.title=Are you happy for this tax agent to view your income record?
-confirm-terms.vat.title=Confirm that you understand
+confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
+confirm-terms.afi.title=Are you happy for this tax agent to view your income record? - {0} - GOV.UK
+confirm-terms.vat.title=Confirm that you understand - {0} - GOV.UK
 confirm-terms.itsa.heading=By accepting the invitation, you are agreeing that {0} will
 confirm-terms.afi.heading=Are you happy for {0} to view your income record?
 confirm-terms.bullet1=use accounting software to record your income and expenses, then submit a report once every 3 months from the start of your accounting period
@@ -138,12 +146,13 @@ confirm-terms.continue=Authorise tax agent
 confirm-terms.back=Back
 
 #Invitation Expired
-invitation-expired.title=Invitation Expired
-invitation-expired.heading=There is a problem
+invitation-expired.title={0} - {1} - GOV.UK
+invitation-expired.heading=Invitation Expired
 invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
 
 # Complete
-client-complete.title=Your agent has been authorised
+client-complete.title={0} - {1} - GOV.UK
+client-complete.header=Your agent has been authorised
 client-complete.p.title=What this means
 client-complete.p.afterName= is now confirmed as your tax agent for
 client-complete.sub-header=What to do next
@@ -156,7 +165,8 @@ client-complete.remove-authorisation.url=https://www.tax.service.gov.uk/relation
 client-complete.button.itsa=Continue to your tax account
 
 # Generic Issue Title
-client-problem.title=Your authorisation request is no longer valid
+client-problem.title={0} - {1} - GOV.UK
+client-problem.header=Your authorisation request is no longer valid
 
 # Not Signed Up
 not-signed-up.description=You have not signed up to report your income and expenses through software.
@@ -164,7 +174,8 @@ not-signed-up.description=You have not signed up to report your income and expen
 not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
 
 #Not Authorised
-not-authorised.title=Sorry, you haven''t been authorised to proceed.
+not-authorised.title={0} - {1} - GOV.UK
+not-authorised.header=Sorry, you haven''t been authorised to proceed.
 not-authorised.description=Try again with an Individual Government Gateway ID.
 
 not-authorised-vat.title=You''re not able to use this service
@@ -200,13 +211,17 @@ global.error.500.message=Please try again in a few minutes.
 #Relationships
 #Client ends relationship
 clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
-clientEndsRelationshipEnded.title=Your income record is no longer visible to tax agents
+clientEndsRelationship.header=Do you want to stop a tax agent viewing your income record?
+clientEndsRelationshipEnded.title={0} - {1} - GOV.UK
+clientEndsRelationshipEnded.header=Your income record is no longer visible to tax agents
 clientEndsRelationshipEnded.p1=If you want to allow an agent to view your record, ask them to send you an authorisation request.
-clientEndsRelationshipNoAgent.title=There is no authorised tax agent in our system
+clientEndsRelationshipNoAgent.title={0} - {1} - GOV.UK
+clientEndsRelationshipNoAgent.header=There is no authorised tax agent in our system
 clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your income record so we can''t remove authorisation.
 clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
-clientCancelled.title=Your tax agent can still view your income record
+clientCancelled.title={0} - {1} - GOV.UK
+clientCancelled.header=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
 error.terminate.500.heading=Sorry, we''re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties

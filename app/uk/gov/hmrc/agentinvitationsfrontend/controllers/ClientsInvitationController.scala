@@ -180,7 +180,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   val notAuthorised:Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_authorised(Messages("not-authorised.title"), Messages("not-authorised.description")))
+    Forbidden(not_authorised(Messages("not-authorised.header"), Messages("not-authorised.description")))
   }
 
   val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>

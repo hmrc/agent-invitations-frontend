@@ -19,10 +19,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(personalTaxAccountUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientEndsRelationshipNoAgent.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("clientEndsRelationshipNoAgent.title", Messages("clientEndsRelationshipNoAgent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
     <h1 class="heading-large">
-        @Messages("clientEndsRelationshipNoAgent.title")
+        @Messages("clientEndsRelationshipNoAgent.header")
     </h1>
     <p>
         @Messages("clientEndsRelationshipNoAgent.p1")

@@ -25,7 +25,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationVatForm
 @(agentInvitationsForm : Form[AgentInvitationVatForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-vrn.title", Messages("enter-vrn.header"), Messages("app.name")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("enter-vrn.title", Messages("enter-vrn.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
   @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-vrn"))
 

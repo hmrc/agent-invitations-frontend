@@ -74,7 +74,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showVrnForm(authorisedAsValidAgent(request.withSession("service" -> serviceVAT), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.header"))
       checkHasAgentSignOutLink(result)
 
@@ -112,7 +112,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.vrn.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -126,7 +126,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.regex-failure"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -140,7 +140,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("app.name")))
+        "enter-vrn.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.checksum-failure"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -157,7 +157,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = showNinoForm(authorisedAsValidAgent(request.withSession("service" -> serviceITSA), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, hasMessage("enter-nino.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHasAgentSignOutLink(result)
 
@@ -167,7 +167,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with PERSONAL-INCOME-RECORD enrolment" in {
       val result = showNinoForm(authorisedAsValidAgent(request.withSession("service" -> servicePIR), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, hasMessage("enter-nino.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHasAgentSignOutLink(result)
 
@@ -190,7 +190,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = showVatRegistrationDateForm(authorisedAsValidAgent(request.withSession("clientIdentifier" -> validVrn97.value, "service" -> serviceVAT), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
       checkHasAgentSignOutLink(result)
 
@@ -325,7 +325,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "", "postcode" -> ""), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, hasMessage("enter-nino.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.nino.required"))
       checkHasAgentSignOutLink(result)
@@ -336,7 +336,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB", "postcode" -> ""), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, hasMessage("enter-nino.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.invalid-format"))
       checkHasAgentSignOutLink(result)
@@ -348,7 +348,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+      checkHtmlResultWithBodyText(result, hasMessage("enter-nino.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
@@ -364,7 +364,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = selectService(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")),
+        htmlEscapedMessage("select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("select-service.itsa"),
         htmlEscapedMessage("select-service.personal-income-viewer"),
@@ -408,7 +408,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
+        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
@@ -424,7 +424,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = showPostcodeForm(authorisedAsValidAgent(request.withSession("clientIdentifier" -> validNino.value, "service" -> serviceITSA), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title", htmlEscapedMessage("enter-postcode.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
@@ -463,7 +463,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title", htmlEscapedMessage("enter-postcode.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.postcode.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -476,7 +476,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(ninoData).data.toSeq: _*), arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.title", htmlEscapedMessage("enter-postcode.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -530,7 +530,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent-link.title", htmlEscapedMessage("invitation-sent-link.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
@@ -561,7 +561,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "not-enrolled.title", htmlEscapedMessage("not-enrolled.itsa.header"), htmlEscapedMessage("app.name")))
+        "not-enrolled.title", htmlEscapedMessage("not-enrolled.itsa.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -573,7 +573,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "not-enrolled.title", htmlEscapedMessage("not-enrolled.vat.header"), htmlEscapedMessage("app.name")))
+        "not-enrolled.title", htmlEscapedMessage("not-enrolled.vat.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -596,7 +596,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.title"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.title", htmlEscapedMessage("not-matched.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.description"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

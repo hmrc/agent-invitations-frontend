@@ -23,12 +23,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(confirmForm: Form[RadioConfirm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("clientEndsRelationship.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("clientEndsRelationship.title", Messages("clientEndsRelationship.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
     @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("confirmForm"))
 
 
-    <h1 class="heading-large">@Messages("clientEndsRelationship.title")</h1>
+    <h1 class="heading-large">@Messages("clientEndsRelationship.header")</h1>
 
     @form(routes.PirClientRelationshipController.submitDeauthoriseAll()) {
         @inputRadioGroup(

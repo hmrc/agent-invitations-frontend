@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(title: String, description: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages(s"not-authorised.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages(s"not-authorised.title", Messages("not-authorised.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
     <h1 class="heading-xlarge">@title</h1>
 
