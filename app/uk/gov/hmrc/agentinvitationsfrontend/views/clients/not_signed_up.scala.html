@@ -18,9 +18,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(message: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("client-problem.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-problem.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
-  <h1 class="heading-xlarge">@Messages("client-problem.title")</h1>
+  <h1 class="heading-xlarge">@Messages("client-problem.header")</h1>
 
     <p>@message</p>
 

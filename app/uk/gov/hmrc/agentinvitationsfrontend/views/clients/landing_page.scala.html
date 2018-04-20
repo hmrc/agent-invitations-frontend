@@ -23,9 +23,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 @(invitationId: InvitationId, serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("landing-page.title"), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("landing-page.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
-  <h1 class="heading-xlarge">@Messages("landing-page.title")</h1>
+  <h1 class="heading-xlarge">@Messages("landing-page.header")</h1>
 
  @form(routes.ClientsInvitationController.submitStart(invitationId)) {
 

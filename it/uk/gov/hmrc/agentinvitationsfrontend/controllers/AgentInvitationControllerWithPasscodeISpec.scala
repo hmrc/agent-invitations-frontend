@@ -81,7 +81,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
+        "generic.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
@@ -95,7 +95,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "select-service.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("app.name")))
+        "generic.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithoutBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
@@ -154,6 +154,6 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/enter-nino").withSession("service" -> "HMRC-MTD-IT")
     val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))
     status(result) shouldBe 200
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.title"))
+    checkHtmlResultWithBodyText(result, hasMessage("generic.title",  htmlEscapedMessage("enter-nino.header"),  htmlEscapedMessage("title.suffix.agents")))
   }
 }
