@@ -28,10 +28,10 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.Upstream4xxResponse
@@ -59,8 +59,8 @@ class AgentsInvitationController @Inject()(
   private val mtdItId = if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
   private val vat = if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
 
-  private def enabledServices(isWhitelisted:Boolean): Seq[(String,String)] = {
-    if(isWhitelisted) {
+  private def enabledServices(isWhitelisted: Boolean): Seq[(String, String)] = {
+    if (isWhitelisted) {
       personalIncomeRecord ++ mtdItId ++ vat
     } else {
       mtdItId ++ vat
@@ -74,7 +74,7 @@ class AgentsInvitationController @Inject()(
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       request.session.get("service") match {
-        case Some(service) => Future successful Ok (enter_nino (agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
+        case Some(service) => Future successful Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
         case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
@@ -88,7 +88,7 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          (userInput,featureFlags) match {
+          (userInput, featureFlags) match {
             case ClientForMtdItWithFlagOn(clientIdentifier) =>
               Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
                 .addingToSession("clientIdentifier" -> clientIdentifier.value)
@@ -175,27 +175,39 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+      val fastTrack = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation].service)
+      fastTrack match {
+        case Some(serviceOp) => serviceOp match {
+          case Some(service) => Future successful Redirect(routes.AgentsInvitationController.submitService()).addingToSession("service" -> service)
+          case _ => Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+        }
+        case _=>
+          Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+      }
     }
   }
 
   val submitService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
       val allowedServices = enabledServices(isWhitelisted)
-      agentInvitationServiceForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future successful Ok(select_service(formWithErrors, allowedServices))
-        },
-        userInput => {
-          userInput.service match {
-            case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-              .addingToSession("service" -> HMRCMTDVAT)
-            case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-              .addingToSession("service" -> service)
-            case _ => Future successful BadRequest
-          }
-        }
-      )
+      request.session.get("service") match {
+        case Some(fastTrackService) =>
+          agentInvitationServiceForm.fill(AgentInvitationUserInput(fastTrackService, None, None)).bindFromRequest().fold(
+            formWithErrors => {
+              Future successful Ok(select_service(formWithErrors, allowedServices))
+            },
+            userInput => {
+              userInput.service match {
+                case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+                  .addingToSession("service" -> HMRCMTDVAT)
+                case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+                  .addingToSession("service" -> service)
+                case _ => Future successful BadRequest
+              }
+            }
+          )
+        case _ => Future successful BadRequest
+      }
     }
   }
 
@@ -238,7 +250,7 @@ class AgentsInvitationController @Inject()(
           .addingToSession(
             "invitationId" -> id,
             "deadline" -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY"))
-        )
+          )
       })
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
@@ -281,7 +293,7 @@ class AgentsInvitationController @Inject()(
         case Some(HMRCMTDIT) =>
           Future successful Forbidden(not_enrolled(Messages("not-enrolled.itsa.header"), Messages("not-enrolled.itsa.description")))
         case _ =>
-          Future failed(throw new Exception("Unsupported Service"))
+          Future failed (throw new Exception("Unsupported Service"))
       }
     }
   }
@@ -291,6 +303,24 @@ class AgentsInvitationController @Inject()(
       Future successful Forbidden(not_matched())
     }
   }
+
+  //  def agentFastTrack(arn: Arn) = Action.async { implicit request =>
+  //    withAuthorisedAsAgent{ (arn, _) =>
+  //
+  //      val fastTrackInvitation = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation])
+  //
+  //      fastTrackInvitation match {
+  //        case Some(fastTrack) => {
+  //
+  //        }
+  //        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+  //      }
+  //    }
+  //  }
+
+  //  private def suppliedService() = {
+  //
+  //  }
 }
 
 object AgentsInvitationController {
@@ -320,9 +350,9 @@ object AgentsInvitationController {
       case i: Invalid =>
         i
       case Valid =>
-        if(!fieldValue.matches("[0-9]{9}"))
+        if (!fieldValue.matches("[0-9]{9}"))
           Invalid(ValidationError(regexFailure))
-        else if(!Vrn.isValid(fieldValue.trim.toUpperCase))
+        else if (!Vrn.isValid(fieldValue.trim.toUpperCase))
           Invalid(ValidationError(checksumFailure))
         else
           Valid
@@ -343,7 +373,7 @@ object AgentsInvitationController {
   private val invalidVatDateFormat =
     validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(vatRegistrationDate => validateDate(vatRegistrationDate))
 
-  private def validateDate(value: String): Boolean =  if (parseDate(value)) true else false
+  private def validateDate(value: String): Boolean = if (parseDate(value)) true else false
 
   private def parseDate(date: String): Boolean = {
     import org.joda.time.format.DateTimeFormat
@@ -352,7 +382,7 @@ object AgentsInvitationController {
       true
     }
     catch {
-      case _ : Throwable => false
+      case _: Throwable => false
     }
   }
 
@@ -360,6 +390,7 @@ object AgentsInvitationController {
     validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
 
   import play.api.data.format.Formats.stringFormat
+
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
@@ -377,7 +408,7 @@ object AgentsInvitationController {
       "clientIdentifier" -> normalizedText.verifying(invalidVrn),
       "registrationDate" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationVatForm(service, Some(Vrn(clientIdentifier)), None) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate))}))
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate)) }))
   }
 
   val agentInvitationVatRegistrationDateForm: Form[AgentInvitationVatForm] = {
@@ -407,9 +438,21 @@ object AgentsInvitationController {
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }
 
+  val agentFastTrackInvitationService: Form[FastTrackInvitation] = {
+    Form(mapping(
+      "service" -> optional(text.verifying(serviceChoice)),
+      "clientIdentifierType"-> optional(text),
+      "clientIdentifier" -> optional(normalizedText),
+      "postcode" -> optional(normalizedText),
+      "clientVatRegDate" -> optional(text))
+    ({ (service, _, _, _, _) =>
+      FastTrackInvitation(service, None, None, None, None)})
+    ({ user => Some((user.service, None, None, None, None )) }))
+  }
+
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[TaxIdentifier] = arg match {
-      case (AgentInvitationUserInput(HMRCMTDIT, Some(clientIdentifier),_), featureFlags) if featureFlags.showKfcMtdIt =>
+      case (AgentInvitationUserInput(HMRCMTDIT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdIt =>
         Some(clientIdentifier)
       case _ => None
     }
@@ -432,7 +475,7 @@ object AgentsInvitationController {
   }
 
   object ClientForVatWithFlagOn {
-    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)) : Option[TaxIdentifier] = arg match {
+    def unapply(arg: (AgentInvitationVatForm, FeatureFlags)): Option[TaxIdentifier] = arg match {
       case (AgentInvitationVatForm(HMRCMTDVAT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdVat =>
         Some(clientIdentifier)
       case _ => None
