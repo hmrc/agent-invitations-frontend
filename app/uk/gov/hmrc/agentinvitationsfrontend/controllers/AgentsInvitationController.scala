@@ -17,19 +17,18 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
-
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import play.api.data.validation._
 import play.api.data.{Form, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, Request}
+import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -177,36 +176,27 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      val fastTrack = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation].service)
-      fastTrack match {
-        case Some(serviceOp) => serviceOp match {
-          case Some(service) => Future successful Redirect(routes.AgentsInvitationController.submitService()).addingToSession("service" -> service)
-          case _ => Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
-        }
-        case _=>
-          Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
-      }
+      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
     }
   }
 
   val submitService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
       val allowedServices = enabledServices(isWhitelisted)
-      val fastTrackService = request.session.get("service").getOrElse("")
-          agentInvitationServiceForm.fill(AgentInvitationUserInput(fastTrackService, None, None)).bindFromRequest().fold(
-            formWithErrors => {
-              Future successful Ok(select_service(formWithErrors, allowedServices))
-            },
-            userInput => {
-              userInput.service match {
-                case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-                  .addingToSession("service" -> HMRCMTDVAT)
-                case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-                  .addingToSession("service" -> service)
-                case _ => Future successful BadRequest
-              }
-            }
-          )
+      agentInvitationServiceForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(select_service(formWithErrors, allowedServices))
+        },
+        userInput => {
+          userInput.service match {
+            case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+              .addingToSession("service" -> HMRCMTDVAT)
+            case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+              .addingToSession("service" -> service)
+            case _ => Future successful BadRequest
+          }
+        }
+      )
     }
   }
 
@@ -303,56 +293,45 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def agentFastTrack(arn: Arn) = Action.async { implicit request =>
-      withAuthorisedAsAgent{ (arn, _) =>
-
-        val fastTrackInvitation = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation])
-        processFastTrack(fastTrackInvitation)
-        Future successful Ok()
-
-      }
+  val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, _) =>
+      val fastTrackInvitation = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation])
+      processFastTrack(arn, fastTrackInvitation)
+    }
   }
 
-    private def processFastTrack(arn: Arn, fastTrackInvitation: Option[FastTrackInvitation]) = {
-      fastTrackInvitation match {
-        case Some(invitation) => {
-          invitation match {
-            case FastTrackInvitationComplete(completeInvitation) =>
-              createInvitation(arn, completeInvitation.service.getOrElse(""), invitation.clientIdentifierType, completeInvitation.clientIdentifier, completeInvitation.knownFact)
+  private def processFastTrack(arn: Arn, fastTrackInvitation: Option[FastTrackInvitation])(implicit request: Request[_]): Future[Result] = {
+    fastTrackInvitation match {
+      case Some(invitation) => {
+        invitation match {
+          case FastTrackInvitationVatComplete(completeVatInvitation) =>
+            createInvitation(arn, HMRCMTDVAT, completeVatInvitation.clientIdentifierType, completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)), None)
+          case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
+            val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
+            createInvitation(arn, HMRCMTDIT, completeItsaInvitation.clientIdentifierType, ninoOpt, completeItsaInvitation.postcode)
+          case FastTrackInvitationIRVComplete(completeIRVInvitation) =>
+            val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
+            createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
+          case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+            case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+              .addingToSession("service" -> HMRCMTDVAT)
+            case Some(service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+              .addingToSession("service" -> service)
           }
-          if(invitation.service.isEmpty) {
-            Future successful Redirect(routes.AgentsInvitationController.selectService())
-          }
-          else if(invitation.clientIdentifier.isEmpty) {
-            invitation.service match {
-              case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-              case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+          case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
+            (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
+              case (Some(HMRCMTDVAT), Some(clientIdentifier)) =>
+                Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+                  .addingToSession("clientIdentifier" -> clientIdentifier, "service" -> HMRCMTDVAT)
+              case (Some(HMRCMTDIT), Some(clientIdentifier)) =>
+                Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+                  .addingToSession("clientIdentifier" -> clientIdentifier, "service" -> HMRCMTDIT)
               case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
             }
-          }
-          else {
-            invitation.service match {
-              case Some(HMRCMTDVAT) => {
-                if(invitation.clientVatRegDate.isEmpty)
-                  Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-                else Future successful Redirect(routes.AgentsInvitationController.selectService())
-              }
-              case Some(_) => {
-                if(invitation.postcode.isEmpty)
-                  Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-                else Future successful Redirect(routes.AgentsInvitationController.selectService())
-              }
-              case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
-            }
-          }
+          case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
-    }
-
-  private def suppliedSerivce(serviceOpt: Option[String]) = {
-    serviceOpt match {
-      case Some(HMRCMTDVAT) =>
+      case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
     }
   }
 }
@@ -472,16 +451,6 @@ object AgentsInvitationController {
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }
 
-  val agentFastTrackInvitationService: Form[FastTrackInvitation] = {
-    Form(mapping(
-      "service" -> optional(text.verifying(serviceChoice)),
-      "clientIdentifier" -> optional(normalizedText),
-      "knownfact" -> optional(normalizedText))
-    ({ (service, _, _) =>
-      FastTrackInvitation(service, None, None)})
-    ({ user => Some((user.service, None, None)) }))
-  }
-
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (AgentInvitationUserInput, FeatureFlags)): Option[TaxIdentifier] = arg match {
       case (AgentInvitationUserInput(HMRCMTDIT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdIt =>
@@ -522,34 +491,54 @@ object AgentsInvitationController {
     }
   }
 
-  object FastTrackInvitationComplete {
+  object FastTrackInvitationItsaComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), Some(knownFact)) =>
-        Some(FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), Some(knownFact)))
+      case FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), _) =>
+        Some(FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), None))
+      case _ => None
+    }
+  }
+
+  object FastTrackInvitationIRVComplete {
+    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
+      case FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None) =>
+        Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None))
+      case _ => None
+    }
+  }
+
+  object FastTrackInvitationVatComplete {
+    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
+      case FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), _, Some(vatRegDate)) =>
+        Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), None, Some(vatRegDate)))
       case _ => None
     }
   }
 
   object FastTrackInvitationMissingService {
-    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(_, Some(clientIdentifierType), Some(clientIdentifier), _)  =>
-        Some(FastTrackInvitation(None, Some(clientIdentifierType), Some(clientIdentifier), None))
-      case _ => None
-    }
+    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = None
   }
 
-  object FastTrackInvitationMissingClientIdentifier {
+  object FastTrackInvitationInvalidClientIdentifier {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(service), _, _, _) =>
-        Some(FastTrackInvitation(Some(service), None, None, None))
+      case FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), _, _) =>
+        (service, clientIdentifierType) match {
+          case (HMRCMTDVAT, "vrn") if !Vrn.isValid(clientIdentifier) =>
+            Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), None, None, None))
+          case (_, "ni") if !Nino.isValid(clientIdentifier) =>
+            Some(FastTrackInvitation(Some(service), Some("ni"), None, None, None))
+          case _ => None
+        }
+      case FastTrackInvitation(Some(service), _, _, _, _) =>
+        Some(FastTrackInvitation(Some(service), None, None, None, None))
       case _ => None
     }
   }
 
   object FastTrackInvitationMissingKnownFact {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), _)  =>
-        Some(FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), None))
+      case FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), None, None) =>
+        Some(FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), None, None))
       case _ => None
     }
   }

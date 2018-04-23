@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{JsPath, Json, Reads}
-import uk.gov.hmrc.domain.TaxIdentifier
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Json, Reads}
 
 case class FastTrackInvitation (service: Option[String],
                                 clientIdentifierType: Option[String],
                                 clientIdentifier: Option[String],
-                                knownFact: Option[String])
+                                postcode: Option[String],
+                                vatRegDate: Option[String])
 
 object FastTrackInvitation {
   implicit val format = Json.format[FastTrackInvitation]
@@ -33,21 +33,7 @@ object FastTrackInvitation {
         (JsPath \ "service").readNullable[String] and
         (JsPath \ "clientIdentifierType").readNullable[String] and
         (JsPath \ "clientIdentifier").readNullable[String] and
-        (JsPath \ "knownFact").readNullable[String])(FastTrackInvitation.apply _)
+        (JsPath \ "postcode").readNullable[String] and
+        (JsPath \ "vatRegDate").readNullable[String])(FastTrackInvitation.apply _)
   }
-}
-
-trait KnownFact {
-  val value: String
-}
-
-case class Postcode(value: String) extends KnownFact
-case class VatRegDate(value: String) extends KnownFact
-
-object Postcode {
-  implicit val format = Json.format[Postcode]
-}
-
-object VatRegDate {
-  implicit val format = Json.format[VatRegDate]
 }

@@ -20,6 +20,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import org.joda.time.LocalDate
+import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -44,7 +45,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   private val validNinoSpace = Nino("AB 12 34 56 A")
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
-  val validPostcode = "BN12 6BX"
+  val validPostcode = "DH14EJ"
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
 
@@ -603,6 +604,100 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     behave like anAuthorisedEndpoint(request, notMatched)
+  }
+
+  "POST /agents/fast-track" should {
+    val request = FakeRequest("POST", "/agents/fast-track")
+    val fastTrack = controller.agentFastTrack()
+
+    val jsonFastTrackUnSupportedService = Json.parse(s"""{"service":"HMRC-AGENT-AGENT","clientIdentifierType":"ni","clientIdentifier":"AB123456A","postcode":null,"vatRegDate":null}""")
+
+    val jsonFastTrackItsa = Json.parse(s"""{"service":"HMRC-MTD-IT","clientIdentifierType":"ni","clientIdentifier":"AB123456A","postcode":"DH14EJ","vatRegDate":null}""")
+    val jsonFastTrackIrv = Json.parse(s"""{"service":"PERSONAL-INCOME-RECORD","clientIdentifierType":"ni","clientIdentifier":"AB123456A","postcode":null,"vatRegDate":null}""")
+    val jsonFastTrackInvalidNino = Json.parse(s"""{"service":"HMRC-MTD-IT","clientIdentifierType":"ni","clientIdentifier":"OF990044Y","postcode":null,"vatRegDate":null}""")
+    val jsonFastTrackNoNino = Json.parse(s"""{"service":"PERSONAL-INCOME-RECORD","clientIdentifierType":"ni","clientIdentifier":null,"postcode":null,"vatRegDate":null}""")
+    val jsonFastTrackNoPostcode = Json.parse(s"""{"service":"HMRC-MTD-IT","clientIdentifierType":"ni","clientIdentifier":"AB123456A","postcode":null,"vatRegDate":null}""")
+
+    val jsonFastTrackVat = Json.parse(s"""{"service":"HMRC-MTD-VAT","clientIdentifierType":"vrn","clientIdentifier":"101747696","postcode":null,"vatRegDate":"2014-01-03"}""")
+    val jsonFastTrackInvalidVrn = Json.parse(s"""{"service":"HMRC-MTD-VAT","clientIdentifierType":"vrn","clientIdentifier":"101747692","postcode":null,"vatRegDate":null}""")
+    val jsonFastTrackNoVrn = Json.parse(s"""{"service":"HMRC-MTD-VAT","clientIdentifierType":"vrn","clientIdentifier":null,"postcode":null,"vatRegDate":null}""")
+    val jsonFastTrackNoVatRegDate = Json.parse(s"""{"service":"HMRC-MTD-VAT","clientIdentifierType":"vrn","clientIdentifier":"101747696","postcode":null,"vatRegDate":null}""")
+
+    "return 303 invitation-sent if service calling fast-track is correct for ITSA" in {
+      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", validPostcode)
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackItsa), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+    }
+
+    "return 303 invitation-sent if service calling fast-track is correct for VAT" in {
+      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, "VRN")
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackVat), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+    }
+
+    "return 303 invitation-sent if service calling fast-track is correct for IRV" in {
+      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackIrv), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+    }
+
+    "return 303 select-service if service calling fast-track does not have supported service in payload" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackUnSupportedService), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
+    }
+
+    "return 303 enter-nino if service calling fast-track for ITSA / IRV contains invalid nino" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackInvalidNino), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
+    }
+
+    "return 303 enter-nino if service calling fast-track for ITSA / IRV does not contain nino" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackNoNino), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
+    }
+
+    "return 303 enter-vrn if service calling fast-track for VAT contains invalid vrn" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackInvalidVrn), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVrnForm().url
+    }
+
+    "return 303 enter-vrn if service calling fast-track for VAT does not contain vrn" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackNoVrn), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVrnForm().url
+    }
+
+    "return 303 enter-postcode if service calling fast-track for does not contain postcode for ITSA" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackNoPostcode), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showPostcodeForm().url
+    }
+
+    "return 303 enter-vat-reg-date if service calling fast-track for does not contain vat-reg-date for VAT" in {
+      val result = fastTrack(authorisedAsValidAgent(request.withJsonBody(jsonFastTrackNoVatRegDate), arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVatRegistrationDateForm().url
+    }
   }
 
   def checkHasAgentSignOutLink(result: Future[Result]) = {
