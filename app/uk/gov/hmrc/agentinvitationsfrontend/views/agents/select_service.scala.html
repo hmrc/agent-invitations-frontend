@@ -31,16 +31,17 @@
   action = routes.AgentsInvitationController.submitService(),
   'class -> "form js-form") {
 
-  <div class="form-group">
+
   @inputRadioGroup(
    agentInvitationsForm("service"),
    services,
    '_label -> Messages("select-service.label"),
-   '_legendClass -> "h2-heading",
+   '_legend -> Messages("select-service.header"),
+   '_legendClass -> "visuallyhidden",
    '_groupDivClass -> "form-group soft--ends",
    '_fieldsetAttributes -> Html("""id='service'""")
   )
-  </div>
+
 
   <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
