@@ -25,19 +25,15 @@
 
  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
 
- <h1 class="heading-xlarge">@Messages("select-service.header")</h1>
-
  @form(
   action = routes.AgentsInvitationController.submitService(),
   'class -> "form js-form") {
-
 
   @inputRadioGroup(
    agentInvitationsForm("service"),
    services,
    '_label -> Messages("select-service.label"),
-   '_legend -> Messages("select-service.header"),
-   '_legendClass -> "visuallyhidden",
+   '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("select-service.header") + """</h1>"""),
    '_groupDivClass -> "form-group soft--ends",
    '_fieldsetAttributes -> Html("""id='service'""")
   )
