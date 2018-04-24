@@ -293,17 +293,27 @@ class AgentsInvitationController @Inject()(
     }
   }
 
+  val startFastTrack: Action[AnyContent] = ActionWithMdc {
+    Redirect(routes.AgentsInvitationController.agentFastTrack())
+  }
+
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      val fastTrackInvitation = request.body.asJson.map(invitation => invitation.as[FastTrackInvitation])
-      processFastTrack(arn, fastTrackInvitation)
+      val service = request.session.get("service")
+      val clientIdentifierType = request.session.get("clientIdentifierType")
+      val clientIdentifier = request.session.get("clientIdentifier")
+      val postcode = request.session.get("postcode")
+      val vatRegDate = request.session.get("vatRegDate")
+
+      agentFastTrackForm.fill(FastTrackInvitation(service, clientIdentifierType, clientIdentifier, postcode, vatRegDate)).fold(
+        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+        validData => processFastTrack(arn, validData)
+      )
     }
   }
 
-  private def processFastTrack(arn: Arn, fastTrackInvitation: Option[FastTrackInvitation])(implicit request: Request[_]): Future[Result] = {
+  private def processFastTrack(arn: Arn, fastTrackInvitation: FastTrackInvitation)(implicit request: Request[_]): Future[Result] = {
     fastTrackInvitation match {
-      case Some(invitation) => {
-        invitation match {
           case FastTrackInvitationVatComplete(completeVatInvitation) =>
             createInvitation(arn, HMRCMTDVAT, completeVatInvitation.clientIdentifierType, completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)), None)
           case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
@@ -330,9 +340,6 @@ class AgentsInvitationController @Inject()(
             }
           case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-      }
-      case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
-    }
   }
 }
 
@@ -449,6 +456,17 @@ object AgentsInvitationController {
       "postcode" -> text.verifying(invalidPostcode))
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
+  }
+
+  val agentFastTrackForm: Form[FastTrackInvitation] = {
+    Form(mapping(
+      "service" -> optional(text),
+      "clientIdentifierType" -> optional(text),
+      "clientIdentifier" -> optional(text),
+      "postcode" -> optional(text),
+      "vatRegDate" -> optional(text))
+    ({(service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate)})
+    ({fastTrack => Some(fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)}))
   }
 
   object ClientForMtdItWithFlagOn {
