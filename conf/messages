@@ -197,7 +197,6 @@ global.error.500.message=Please try again in a few minutes.
 #Relationships
 #Client ends relationship
 clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
-clientEndsRelationship.header=Do you want to stop a tax agent viewing your income record?
 clientEndsRelationshipEnded.header=Your income record is no longer visible to tax agents
 clientEndsRelationshipEnded.p1=If you want to allow an agent to view your record, ask them to send you an authorisation request.
 clientEndsRelationshipNoAgent.header=There is no authorised tax agent in our system
