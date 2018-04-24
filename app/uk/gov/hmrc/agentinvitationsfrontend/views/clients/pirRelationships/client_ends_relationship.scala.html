@@ -27,15 +27,11 @@
 
     @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("confirmForm"))
 
-
-    <h1 class="heading-large">@Messages("clientEndsRelationship.header")</h1>
-
     @form(routes.PirClientRelationshipController.submitDeauthoriseAll()) {
         @inputRadioGroup(
             confirmForm("confirmResponse"),
             Seq(("true", Messages("clientEndsRelationship.yes")), ("false", Messages("clientEndsRelationship.no"))),
-            '_legend -> Messages("clientEndsRelationship.title"),
-            '_legendClass -> "visuallyhidden",
+            '_legend -> Html("""<h1 class="heading-large">""" + Messages("clientEndsRelationship.title") + """</h1>"""),
             '_groupClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmResponse'""")
         )
