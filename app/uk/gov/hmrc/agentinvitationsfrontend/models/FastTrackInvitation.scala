@@ -26,6 +26,8 @@ case class FastTrackInvitation (service: Option[String],
                                 vatRegDate: Option[String])
 
 object FastTrackInvitation {
+  def newInstance = FastTrackInvitation(None, None, None, None, None)
+
   implicit val format = Json.format[FastTrackInvitation]
 
   implicit val reads: Reads[FastTrackInvitation] = {

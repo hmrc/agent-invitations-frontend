@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
@@ -29,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackKeyStoreCache, InvitationsCache, InvitationsService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -41,15 +42,15 @@ import scala.concurrent
 import scala.concurrent.Future
 
 @Singleton
-class AgentsInvitationController @Inject()(
-                                            @Named("agent-invitations-frontend.external-url") externalUrl: String,
-                                            @Named("agent-services-account-frontend.external-url") asAccUrl: String,
-                                            featureFlags: FeatureFlags,
-                                            invitationsService: InvitationsService,
-                                            auditService: AuditService,
-                                            val messagesApi: play.api.i18n.MessagesApi,
-                                            val authConnector: AuthConnector,
-                                            val withVerifiedPasscode: PasscodeVerification)
+class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.external-url") externalUrl: String,
+                                           @Named("agent-services-account-frontend.external-url") asAccUrl: String,
+                                           featureFlags: FeatureFlags,
+                                           invitationsService: InvitationsService,
+                                           auditService: AuditService,
+                                           cache: FastTrackKeyStoreCache,
+                                           val messagesApi: play.api.i18n.MessagesApi,
+                                           val authConnector: AuthConnector,
+                                           val withVerifiedPasscode: PasscodeVerification)
                                           (implicit val configuration: Configuration, val externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
@@ -72,11 +73,48 @@ class AgentsInvitationController @Inject()(
     Redirect(routes.AgentsInvitationController.selectService())
   }
 
+  val selectService: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, isWhitelisted) =>
+      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+    }
+  }
+
+  val submitService: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, isWhitelisted) =>
+      val allowedServices = enabledServices(isWhitelisted)
+      agentInvitationServiceForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(select_service(formWithErrors, allowedServices))
+        },
+        userInput => {
+          val updateAggregate = cache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(service = Some(userInput.service)))
+
+          updateAggregate.flatMap(updateFastTrack =>
+            cache.save(updateFastTrack)).map(_ =>
+            userInput.service match {
+              case HMRCMTDVAT => Redirect(routes.AgentsInvitationController.showVrnForm())
+              case service if allowedServices.exists(_._1 == service) => Redirect(routes.AgentsInvitationController.showNinoForm())
+              case _ => BadRequest
+            }
+          )
+        }
+      )
+    }
+  }
+
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      request.session.get("service") match {
-        case Some(service) => Future successful Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
-        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      cache.fetchAndGetEntry().map {
+        case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier) match {
+          case (Some(_), Some(clientIdentifier)) if Nino.isValid(clientIdentifier) =>
+            Redirect(routes.AgentsInvitationController.showPostcodeForm())
+          case (Some(service), _) =>
+            Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
+          case _ =>
+            Redirect(routes.AgentsInvitationController.selectService())
+        }
       }
     }
   }
@@ -89,28 +127,40 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          (userInput, featureFlags) match {
-            case ClientForMtdItWithFlagOn(clientIdentifier) =>
-              Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-                .addingToSession("clientIdentifier" -> clientIdentifier.value)
+          val updatedAggregate = cache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(nino => nino.value)))
 
-            case ClientForPirWithFlagOn(_) =>
-              throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+          updatedAggregate.map( updatedInvitation =>
+            cache.save(updatedInvitation)).flatMap { _ =>
+              (userInput, featureFlags) match {
+                case ClientForMtdItWithFlagOn(_) =>
+                  Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
 
-            case ClientWithItsaOrPirFlagOff(_) =>
-              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+                case ClientForPirWithFlagOn(_) =>
+                  throw new Exception("KFC flagged as on, not implemented for personal-income-record")
 
-            case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
-          }
+                case ClientWithItsaOrPirFlagOff(_) =>
+                  createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+
+                case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
+              }
+            }
         })
     }
   }
 
   val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      request.session.get("service") match {
-        case Some(service) => Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, None))))
-        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      cache.fetchAndGetEntry().map {
+        case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier) match {
+          case (Some(_), Some(clientIdentifier)) if Vrn.isValid(clientIdentifier) =>
+            Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+          case (Some(service), _) =>
+            Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, None))))
+          case _ =>
+            Redirect(routes.AgentsInvitationController.selectService())
+        }
       }
     }
   }
@@ -122,16 +172,22 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(enter_vrn(formWithErrors))
         },
         userInput => {
-          (userInput, featureFlags) match {
-            case ClientForVatWithFlagOn(clientIdentifier) =>
-              Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-                .addingToSession("clientIdentifier" -> clientIdentifier.value)
+          val updatedAggregate = cache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(vrn => vrn.value)))
 
-            case ClientWithVatFlagOff(_) =>
-              createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+          updatedAggregate.map( updatedInvitation =>
+            cache.save(updatedInvitation)).flatMap(_ =>
+            (userInput, featureFlags) match {
+              case ClientForVatWithFlagOn(clientIdentifier) =>
+                Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
 
-            case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
-          }
+              case ClientWithVatFlagOff(_) =>
+                createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+
+              case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
+            }
+          )
         }
       )
     }
@@ -168,32 +224,6 @@ class AgentsInvitationController @Inject()(
             case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
             case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
             case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
-          }
-        }
-      )
-    }
-  }
-
-  val selectService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, isWhitelisted) =>
-      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
-    }
-  }
-
-  val submitService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, isWhitelisted) =>
-      val allowedServices = enabledServices(isWhitelisted)
-      agentInvitationServiceForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future successful Ok(select_service(formWithErrors, allowedServices))
-        },
-        userInput => {
-          userInput.service match {
-            case HMRCMTDVAT => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-              .addingToSession("service" -> HMRCMTDVAT)
-            case service if allowedServices.exists(_._1 == service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-              .addingToSession("service" -> service)
-            case _ => Future successful BadRequest
           }
         }
       )
@@ -462,7 +492,7 @@ object AgentsInvitationController {
     Form(mapping(
       "service" -> optional(text),
       "clientIdentifierType" -> optional(text),
-      "clientIdentifier" -> optional(text),
+      "clientIdentifier" -> optional(normalizedText),
       "postcode" -> optional(text),
       "vatRegDate" -> optional(text))
     ({(service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate)})
