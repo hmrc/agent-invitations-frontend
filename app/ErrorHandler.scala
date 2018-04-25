@@ -66,9 +66,10 @@ class ErrorHandler @Inject() ( val env: Environment,
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     auditServerError(request, exception)
     val response = exception match {
-      case _: NoActiveSession => toGGLogin(
-        if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}"
-        else s"$authenticationRedirect${request.uri}")
+      case _: NoActiveSession =>
+        val isDevEnv = if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
+
+        toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
       case _: InsufficientEnrolments =>
         Forbidden(error_template(
           Messages("global.error.403.title"),
