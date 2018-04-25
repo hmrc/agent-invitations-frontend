@@ -75,7 +75,13 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+      cache.fetchAndGetEntry().map {
+        case Some(aggregate) => (aggregate.service) match {
+          case Some(HMRCMTDVAT) => Redirect(routes.AgentsInvitationController.showVrnForm())
+          case Some(_) => Redirect(routes.AgentsInvitationController.showNinoForm())
+        }
+        case None => Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+      }
     }
   }
 
@@ -115,6 +121,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           case _ =>
             Redirect(routes.AgentsInvitationController.selectService())
         }
+        case None => Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -131,21 +138,21 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             .map(_.getOrElse(FastTrackInvitation.newInstance))
             .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(nino => nino.value)))
 
-          updatedAggregate.map( updatedInvitation =>
+          updatedAggregate.map(updatedInvitation =>
             cache.save(updatedInvitation)).flatMap { _ =>
-              (userInput, featureFlags) match {
-                case ClientForMtdItWithFlagOn(_) =>
-                  Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            (userInput, featureFlags) match {
+              case ClientForMtdItWithFlagOn(_) =>
+                Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
 
-                case ClientForPirWithFlagOn(_) =>
-                  throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+              case ClientForPirWithFlagOn(_) =>
+                throw new Exception("KFC flagged as on, not implemented for personal-income-record")
 
-                case ClientWithItsaOrPirFlagOff(_) =>
-                  createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+              case ClientWithItsaOrPirFlagOff(_) =>
+                createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
 
-                case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
-              }
+              case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
             }
+          }
         })
     }
   }
@@ -176,10 +183,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             .map(_.getOrElse(FastTrackInvitation.newInstance))
             .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(vrn => vrn.value)))
 
-          updatedAggregate.map( updatedInvitation =>
+          updatedAggregate.map(updatedInvitation =>
             cache.save(updatedInvitation)).flatMap(_ =>
             (userInput, featureFlags) match {
-              case ClientForVatWithFlagOn(clientIdentifier) =>
+              case ClientForVatWithFlagOn(_) =>
                 Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
 
               case ClientWithVatFlagOff(_) =>
@@ -194,17 +201,18 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   }
 
   val showVatRegistrationDateForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      val maybeVrn = request.session.get("clientIdentifier")
-      val maybeService = request.session.get("service")
-      (maybeVrn, maybeService) match {
-        case (Some(vrn), Some(service)) =>
-          Future successful
-            Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(service, Some(Vrn(vrn)), None))))
-        case (None, Some(service)) =>
-          Future successful Redirect(routes.AgentsInvitationController.showVrnForm()).addingToSession("service" -> service)
-        case _ =>
-          Future successful Redirect(routes.AgentsInvitationController.selectService())
+    withAuthorisedAsAgent { (arn, _) =>
+      cache.fetchAndGetEntry().flatMap {
+        case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier, aggregate.vatRegDate) match {
+          case (Some(service), Some(clientId), Some(vatRegDate)) =>
+            isValidVatRegDate(AgentInvitationVatForm(service, Some(Vrn(clientId)), Some(vatRegDate)), arn)
+          case (Some(service), Some(clientId), _) =>
+            Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(service, Some(Vrn(clientId)), None))))
+          case (Some(_), _, _) =>
+            Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+          case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+        }
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -214,33 +222,42 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       agentInvitationVatRegistrationDateForm.bindFromRequest().fold(
         formWithErrors => Future successful Ok(enter_vat_registration_date(formWithErrors)),
         userInput => {
-          val suppliedVrn = userInput.clientIdentifier
-            .map(_.value)
-            .map(Vrn.apply)
-            .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput"))
-          val suppliedVatRegDate = LocalDate.parse(userInput.registrationDate.getOrElse(""))
+          val updatedAggregate = cache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(vatRegDate = userInput.registrationDate))
 
-          invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
-            case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
-            case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
-            case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
-          }
-        }
-      )
+          updatedAggregate.map(updatedInvitation =>
+            cache.save(updatedInvitation)).flatMap(_ =>
+            isValidVatRegDate(userInput, arn))
+        })
+    }
+  }
+
+  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn) = {
+    val suppliedVrn = userInput.clientIdentifier
+      .map(_.value)
+      .map(Vrn.apply)
+      .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput"))
+    val suppliedVatRegDate = LocalDate.parse(userInput.registrationDate.getOrElse(""))
+    invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
+      case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+      case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
+      case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
     }
   }
 
   val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      val maybeNino = request.session.get("clientIdentifier")
-      val maybeService = request.session.get("service")
-      (maybeNino, maybeService) match {
-        case (Some(nino), Some(service)) =>
-          Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(service, Some(Nino(nino)), None))))
-        case (Some(nino), None) =>
-          Future successful Redirect(routes.AgentsInvitationController.selectService())
-        case _ =>
-          Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+    withAuthorisedAsAgent { (arn, _) =>
+      cache.fetchAndGetEntry().flatMap {
+        case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier, aggregate.postcode) match {
+          case (Some(service), Some(nino), Some(postcode)) =>
+            createInvitation(arn, service, aggregate.clientIdentifierType, Some(Nino(nino)), Some(postcode))
+          case (Some(service), Some(nino), None) =>
+            Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(AgentInvitationUserInput(service, Some(Nino(nino)), None))))
+          case _ =>
+            Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+        }
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -251,7 +268,15 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         formWithErrors => {
           Future successful Ok(enter_postcode(formWithErrors))
         },
-        userInput => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode))
+        userInput => {
+          val updatedAggregate = cache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(postcode = userInput.postcode))
+
+          updatedAggregate.map(updatedInvitation =>
+            cache.save(updatedInvitation)).flatMap(_ =>
+            createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, userInput.postcode))
+        })
     }
   }
 
@@ -298,7 +323,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
           Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
-            .removingFromSession("clientIdentifier", "service", "invitationId", "deadline")
         case _ => throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
@@ -329,47 +353,42 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      val service = request.session.get("service")
-      val clientIdentifierType = request.session.get("clientIdentifierType")
-      val clientIdentifier = request.session.get("clientIdentifier")
-      val postcode = request.session.get("postcode")
-      val vatRegDate = request.session.get("vatRegDate")
-
-      agentFastTrackForm.fill(FastTrackInvitation(service, clientIdentifierType, clientIdentifier, postcode, vatRegDate)).fold(
-        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-        validData => processFastTrack(arn, validData)
-      )
+      cache.fetchAndGetEntry().map(_.getOrElse(FastTrackInvitation.newInstance)).flatMap(fastTrackInvitation =>
+        agentFastTrackForm.fill(fastTrackInvitation).fold(
+          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+          validData => processFastTrack(arn, validData)
+        ))
     }
   }
 
   private def processFastTrack(arn: Arn, fastTrackInvitation: FastTrackInvitation)(implicit request: Request[_]): Future[Result] = {
     fastTrackInvitation match {
-          case FastTrackInvitationVatComplete(completeVatInvitation) =>
-            createInvitation(arn, HMRCMTDVAT, completeVatInvitation.clientIdentifierType, completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)), None)
-          case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
-            val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
-            createInvitation(arn, HMRCMTDIT, completeItsaInvitation.clientIdentifierType, ninoOpt, completeItsaInvitation.postcode)
-          case FastTrackInvitationIRVComplete(completeIRVInvitation) =>
-            val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
-            createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
-          case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
-            case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-              .addingToSession("service" -> HMRCMTDVAT)
-            case Some(service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-              .addingToSession("service" -> service)
-          }
-          case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
-            (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
-              case (Some(HMRCMTDVAT), Some(clientIdentifier)) =>
-                Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-                  .addingToSession("clientIdentifier" -> clientIdentifier, "service" -> HMRCMTDVAT)
-              case (Some(HMRCMTDIT), Some(clientIdentifier)) =>
-                Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-                  .addingToSession("clientIdentifier" -> clientIdentifier, "service" -> HMRCMTDIT)
-              case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
-            }
+      case FastTrackInvitationVatComplete(completeVatInvitation) =>
+        createInvitation(arn, HMRCMTDVAT, completeVatInvitation.clientIdentifierType, completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)), None)
+
+      case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
+        val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
+        createInvitation(arn, HMRCMTDIT, completeItsaInvitation.clientIdentifierType, ninoOpt, completeItsaInvitation.postcode)
+
+      case FastTrackInvitationIRVComplete(completeIRVInvitation) =>
+        val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
+        createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
+
+      case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+        case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+      }
+
+      case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
+        (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
+          case (Some(HMRCMTDVAT), Some(_)) =>
+            Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+          case (Some(HMRCMTDIT), Some(_)) =>
+            Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
           case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
+      case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+    }
   }
 }
 
@@ -495,8 +514,8 @@ object AgentsInvitationController {
       "clientIdentifier" -> optional(normalizedText),
       "postcode" -> optional(text),
       "vatRegDate" -> optional(text))
-    ({(service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate)})
-    ({fastTrack => Some(fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)}))
+    ({ (service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate) })
+    ({ fastTrack => Some(fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate) }))
   }
 
   object ClientForMtdItWithFlagOn {
