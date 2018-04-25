@@ -57,6 +57,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-fi-relationship")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+    bindBaseUrl("cachable.session-cache")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -68,6 +69,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
     bindServiceProperty("agent-subscription-frontend.external-url")
+    bindServiceProperty("cachable.session-cache.domain")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
