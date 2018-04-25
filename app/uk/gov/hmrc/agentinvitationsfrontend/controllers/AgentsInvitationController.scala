@@ -28,14 +28,14 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, HMRCNI}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackKeyStoreCache, InvitationsCache, InvitationsService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.Upstream4xxResponse
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent
@@ -47,7 +47,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            featureFlags: FeatureFlags,
                                            invitationsService: InvitationsService,
                                            auditService: AuditService,
-                                           cache: FastTrackKeyStoreCache,
+                                           cache: InvitationsCache,
                                            val messagesApi: play.api.i18n.MessagesApi,
                                            val authConnector: AuthConnector,
                                            val withVerifiedPasscode: PasscodeVerification)
@@ -114,7 +114,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     withAuthorisedAsAgent { (_, _) =>
       cache.fetchAndGetEntry().map {
         case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier) match {
-          case (Some(_), Some(clientIdentifier)) if Nino.isValid(clientIdentifier) =>
+          case (Some(HMRCMTDIT), Some(clientIdentifier)) if Nino.isValid(clientIdentifier) =>
             Redirect(routes.AgentsInvitationController.showPostcodeForm())
           case (Some(service), _) =>
             Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
@@ -233,7 +233,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
-  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn) = {
+  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
     val suppliedVrn = userInput.clientIdentifier
       .map(_.value)
       .map(Vrn.apply)
@@ -374,11 +374,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
         createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
 
-      case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
-        case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-      }
-
       case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
         (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
           case (Some(HMRCMTDVAT), Some(_)) =>
@@ -387,6 +382,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
           case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
+
+      case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+        case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
       case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
     }
   }
@@ -592,12 +593,12 @@ object AgentsInvitationController {
         (service, clientIdentifierType) match {
           case (HMRCMTDVAT, "vrn") if !Vrn.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), None, None, None))
-          case (_, "ni") if !Nino.isValid(clientIdentifier) =>
-            Some(FastTrackInvitation(Some(service), Some("ni"), None, None, None))
+          case (HMRCMTDIT, "ni") if !Nino.isValid(clientIdentifier) =>
+            Some(FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), None, None, None))
+          case (HMRCPIR, "ni") if !Nino.isValid(clientIdentifier) =>
+            Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), None, None, None))
           case _ => None
         }
-      case FastTrackInvitation(Some(service), _, _, _, _) =>
-        Some(FastTrackInvitation(Some(service), None, None, None, None))
       case _ => None
     }
   }
