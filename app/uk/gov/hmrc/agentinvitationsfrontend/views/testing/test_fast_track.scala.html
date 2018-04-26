@@ -21,16 +21,38 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @(fastTrackForm: Form[FastTrackInvitation])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Create a relationship", isAgent = true) {
-  <h1>Test Only: Create a relationship</h1>
-  @form(routes.TestEndpointsController.submitCreateRelationship()) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Fast Track Invitation", isAgent = true) {
+  <h1>Test Only: Fast Track Invitation</h1>
+  @form(routes.TestEndpointsController.submitFastTrackForm()) {
     <fieldset class="form-field-group">
-      <div  class="form-group">
+      <div class="form-group">
         @input(
-        fastTrackForm("clientIdentifier"),
-        '_label -> Messages("enter-nino.label"),
-        '_inputClass -> "input--medium input--cleared"
-      )
+          fastTrackForm("service"),
+          '_label -> "Enter Service",
+          '_inputClass -> "input--medium input--cleared"
+        )
+        @input(
+          fastTrackForm("clientIdentifierType"),
+          '_label -> "Enter Id Type",
+          '_inputClass -> "input--medium input--cleared"
+        )
+        @input(
+          fastTrackForm("clientIdentifier"),
+          '_label -> "Enter Id",
+          '_inputClass -> "input--medium input--cleared"
+        )
+
+        @input(
+          fastTrackForm("postcode"),
+          '_label -> "Enter Postcode",
+          '_inputClass -> "input--medium input--cleared"
+        )
+
+        @input(
+          fastTrackForm("vatRegDate"),
+          '_label -> "Enter Vat Reg Date",
+          '_inputClass -> "input--medium input--cleared"
+        )
       </div>
     </fieldset>
     <div class="form-group">
