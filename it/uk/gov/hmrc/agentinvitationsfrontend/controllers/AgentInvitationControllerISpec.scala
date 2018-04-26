@@ -26,12 +26,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments}
+import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -39,6 +41,7 @@ import scala.concurrent.duration._
 class AgentInvitationControllerISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val cache: FastTrackKeyStoreCache = app.injector.instanceOf[FastTrackKeyStoreCache]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
@@ -58,6 +61,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val validVrn9755 = Vrn("101747641")
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
+
+
   "GET /agents/" should {
     "redirect to /agent/select-service" in {
       val result = controller.agentsRoot(FakeRequest())
@@ -68,11 +74,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
   }
 
   "GET /agents/enter-vrn" should {
+    val cache = FastTrackInvitation(Some(serviceVAT), None, None, None, None)
     val request = FakeRequest("GET", "/agents/enter-vrn")
     val showVrnForm = controller.showVrnForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = showVrnForm(authorisedAsValidAgent(request.withSession("service" -> serviceVAT), arn.value))
+      val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
         "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
@@ -156,7 +163,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val showNinoForm = controller.showNinoForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = showNinoForm(authorisedAsValidAgent(request.withSession("service" -> serviceITSA), arn.value))
+
+      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))

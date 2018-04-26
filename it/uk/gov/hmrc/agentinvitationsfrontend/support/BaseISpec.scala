@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
+import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -8,6 +9,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -50,12 +52,14 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "features.show-kfc-personal-income" -> false,
         "features.show-kfc-mtd-vat" -> true,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl"
-      )
+      ).overrides(new TestGuiceModule)
   }
 
   def commonStubs(): Unit = {
     givenAuditConnector()
   }
+
+  protected lazy val sessionKeyStore = new TestFastTrackInvitationsCache
 
   protected implicit val materializer = app.materializer
 
@@ -63,6 +67,17 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
+  }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    sessionKeyStore.clear()
+  }
+
+  private class TestGuiceModule extends AbstractModule {
+    override def configure(): Unit = {
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(sessionKeyStore)
+    }
   }
 
   protected def checkHtmlResultWithoutBodyText(result: Result, expectedSubstrings: String*): Unit = {
