@@ -349,11 +349,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      fastTrackCache.fetchAndGetEntry().map(_.getOrElse(FastTrackInvitation.newInstance)).flatMap(fastTrackInvitation =>
-        agentFastTrackForm.fill(fastTrackInvitation).fold(
-          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-          validData => processFastTrack(arn, validData)
-        ))
+      agentFastTrackForm.bindFromRequest().fold(
+        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+        validData => processFastTrack(arn, validData)
+      )
     }
   }
 

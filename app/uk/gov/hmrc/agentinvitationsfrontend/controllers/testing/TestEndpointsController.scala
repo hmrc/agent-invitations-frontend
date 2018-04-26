@@ -80,21 +80,16 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
     }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAsAgent{ (_, _) =>
-
       Future successful Ok(test_fast_track(testAgentFastTrackForm))
         .addingToSession("X-Session-ID" -> s"session-${UUID.randomUUID()}")
-//    }
   }
 
   def submitFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAsAgent { (_, _) =>
       testAgentFastTrackForm.bindFromRequest().fold(
         _ => Future successful Ok(test_fast_track(testAgentFastTrackForm)),
         validData => fastTrackKeyStoreCache.save(validData)
           .map(_ => Redirect(agentRoutes.AgentsInvitationController.agentFastTrack()))
       )
-//    }
   }
 
 }

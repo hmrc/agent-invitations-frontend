@@ -611,110 +611,136 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val fastTrack = controller.agentFastTrack()
 
     "return 303 invitation-sent if service calling fast-track is correct for ITSA" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None))
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", validPostcode)
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
     "return 303 invitation-sent if service calling fast-track is correct for VAT" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
+      val formData = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, "VRN")
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
     "return 303 invitation-sent if service calling fast-track is correct for IRV" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+      val formData = FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
     "return 303 select-service if service calling fast-track does not have supported service in payload" in {
-      sessionKeyStore.save(FastTrackInvitation(Some("INVALID_SERVICE"), None, None, None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some("INVALID_SERVICE"), None, None, None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
 
     "return 303 enter-nino if service calling fast-track for ITSA / IRV contains invalid nino" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some("INVALID_NINO"), None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some("INVALID_NINO"), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
     }
 
     "return 303 enter-nino if service calling fast-track for ITSA / IRV does not contain nino" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some(serviceITSA), None, None, None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
     }
 
     "return 303 enter-vrn if service calling fast-track for VAT contains invalid vrn" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), None, Some("INVALID_VRN"), None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData =FastTrackInvitation(Some(serviceVAT), None, Some("INVALID_VRN"), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVrnForm().url
     }
 
     "return 303 enter-vrn if service calling fast-track for VAT does not contain vrn" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), None, None, None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some(serviceVAT), None, None, None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVrnForm().url
     }
 
     "return 303 enter-postcode if service calling fast-track for does not contain postcode for ITSA" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showPostcodeForm().url
     }
 
     "return 303 enter-vat-reg-date if service calling fast-track for does not contain vat-reg-date for VAT" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVatRegistrationDateForm().url
     }
 
     "return 303 select-service if there is no service but all other fields are valid for ITSA" in {
-      sessionKeyStore.save(FastTrackInvitation(None, Some("ni"), Some(validNino.value), Some(validPostcode), None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(None, Some("ni"), Some(validNino.value), Some(validPostcode), None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
 
     "return 303 select-service if there is no service but all other fields are valid for IRV" in {
-      sessionKeyStore.save(FastTrackInvitation(None, Some("ni"), Some(validNino.value), None, None))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(None, Some("ni"), Some(validNino.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
 
     "return 303 select-service if there is no service but all other fields are valid for VAT" in {
-      sessionKeyStore.save(FastTrackInvitation(None, Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
-      val result = fastTrack(authorisedAsValidAgent(request, arn.value))
+      val formData = FastTrackInvitation(None, Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
