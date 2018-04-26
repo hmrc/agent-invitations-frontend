@@ -167,6 +167,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           case _ =>
             Redirect(routes.AgentsInvitationController.selectService())
         }
+        case None => Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -373,20 +374,20 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
         createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
 
+      case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+        case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+        case Some(service) if Services.isSupportedService(service) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
+
       case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
         (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
           case (Some(HMRCMTDVAT), Some(_)) =>
             Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-          case (Some(HMRCMTDIT), Some(_)) =>
+          case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
             Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
           case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-
-      case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
-        case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
-        case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
-      }
       case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
     }
   }
@@ -582,22 +583,20 @@ object AgentsInvitationController {
     }
   }
 
-  object FastTrackInvitationMissingService {
-    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = None
-  }
-
   object FastTrackInvitationInvalidClientIdentifier {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(service), Some(clientIdentifierType), Some(clientIdentifier), _, _) =>
-        (service, clientIdentifierType) match {
-          case (HMRCMTDVAT, "vrn") if !Vrn.isValid(clientIdentifier) =>
+      case FastTrackInvitation(Some(service), _, Some(clientIdentifier), _, _) =>
+        service match {
+          case (HMRCMTDVAT) if !Vrn.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), None, None, None))
-          case (HMRCMTDIT, "ni") if !Nino.isValid(clientIdentifier) =>
+          case (HMRCMTDIT) if !Nino.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), None, None, None))
-          case (HMRCPIR, "ni") if !Nino.isValid(clientIdentifier) =>
+          case (HMRCPIR) if !Nino.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), None, None, None))
           case _ => None
         }
+      case FastTrackInvitation(Some(service), _, _, _, _) =>
+        Some(FastTrackInvitation(Some(service), None, None, None, None))
       case _ => None
     }
   }
