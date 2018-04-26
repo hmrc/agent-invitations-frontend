@@ -21,11 +21,12 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{FrontendAuthConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.FrontendAuthConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FrontendPasscodeVerification, PasscodeVerification}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.cache.client.SessionCache
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -46,6 +47,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindProperty("appName")
 
+    bind(classOf[SessionCache]).to(classOf[InvitationsSessionCache])
     bind(classOf[HttpGet]).to(classOf[HttpVerbs])
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
@@ -57,6 +59,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-fi-relationship")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
+    bindBaseUrl("cachable.session-cache")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -68,6 +71,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
     bindServiceProperty("agent-subscription-frontend.external-url")
+    bindServiceProperty("cachable.session-cache.domain")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
@@ -118,4 +122,14 @@ class HttpVerbs @Inject() (val auditConnector: AuditConnector, @Named("appName")
   extends HttpGet with HttpPost with HttpPut with HttpPatch with HttpDelete with WSHttp
   with HttpAuditing {
   override val hooks = Seq(AuditingHook)
+}
+
+@Singleton
+class InvitationsSessionCache @Inject()(val http: HttpVerbs,
+                                                  @Named("appName") val appName: String,
+                                                  @Named("cachable.session-cache-baseUrl") val baseUrl: URL,
+                                                  @Named("cachable.session-cache.domain") val domain: String
+                                                 ) extends SessionCache {
+  override lazy val defaultSource = appName
+  override lazy val baseUri = baseUrl.toExternalForm
 }

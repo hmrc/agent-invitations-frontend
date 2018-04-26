@@ -1,15 +1,21 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{header, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationVrnForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
@@ -40,7 +46,18 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "features.show-kfc-personal-income" -> true,
         "features.show-kfc-mtd-vat" -> false,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl"
-      )
+      ).overrides(new TestGuiceModule)
+  }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    sessionKeyStore.clear()
+  }
+
+  private class TestGuiceModule extends AbstractModule {
+    override def configure(): Unit = {
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(sessionKeyStore)
+    }
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
@@ -62,17 +79,19 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   val validVrn9755 = Vrn("101747641")
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
+
   "POST /agents/enter-nino" should {
     val request = FakeRequest("POST", "/agents/enter-nino")
     val submitNino = controller.submitNino()
 
     "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT" in {
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), None))
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)
-        .withSession("service" -> serviceITSA), arn.value))
+      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -88,6 +107,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "throw an exception when  feature flag show-kfc-personal-income is on " +
       "for authorised Agent with valid nino and Personal Income Record service" in {
+      sessionKeyStore.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
@@ -105,6 +126,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitVrn = controller.submitVrn()
 
     "return 303 for authorised Agent with valid vrn and redirected to the invitation sent page" in {
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
+
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
