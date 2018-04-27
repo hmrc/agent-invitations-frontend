@@ -18,12 +18,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Json, Reads}
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.domain.Nino
 
 case class FastTrackInvitation (service: Option[String],
                                 clientIdentifierType: Option[String],
                                 clientIdentifier: Option[String],
                                 postcode: Option[String],
-                                vatRegDate: Option[String])
+                                vatRegDate: Option[String]) {
+
+
+  val clientIdentifierTypeConversion: Option[String] = clientIdentifier match {
+    case Some(clientId) =>{
+      if(Nino.isValid(clientId)) Some("ni")
+      else if (Vrn.isValid(clientId)) Some("vrn")
+      else None
+    }
+    case _ => None
+  }
+}
 
 object FastTrackInvitation {
   def newInstance = FastTrackInvitation(None, None, None, None, None)

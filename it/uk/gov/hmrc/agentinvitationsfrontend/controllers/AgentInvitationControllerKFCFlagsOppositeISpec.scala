@@ -5,7 +5,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{header, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentInvitationNinoForm, agentInvitationVrnForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -139,6 +139,45 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
       verifyNoCheckVatRegisteredClientStubAttempt
+    }
+  }
+
+  "POST /agents/fast-track" should {
+    val request = FakeRequest("POST", "/agents/fast-track")
+    val fastTrack = controller.agentFastTrack()
+
+    "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+    }
+
+    "return 303 invitation-sent when service and valid vrn are provided and kfc flag is off for VAT service" in {
+      val formData = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+    }
+
+    "throw an exception when service and valid nino are provided and kfc flag is on for PIR service" in {
+      val formData = FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+      an[Exception] shouldBe thrownBy(
+        await(fastTrack(authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))))
     }
   }
 

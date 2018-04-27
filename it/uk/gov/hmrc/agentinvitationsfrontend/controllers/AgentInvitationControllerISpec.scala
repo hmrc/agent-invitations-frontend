@@ -89,6 +89,15 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment with a valid vrn" in {
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
+      val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVatRegistrationDateForm().url
+
+      verifyAuthoriseAttempt()
+    }
+
     "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
       val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -106,10 +115,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 enter-vat-reg-date for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
       val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
       val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVatRegistrationDateForm().url
 
       verifyAuthoriseAttempt()
     }
@@ -177,8 +184,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 to enter-postcode for an Agent with HMRC-AS-AGENT enrolment for ITSA service with valid nino" in {
       sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.header"))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showPostcodeForm().url
 
       verifyAuthoriseAttempt()
     }
@@ -226,6 +233,19 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
       checkHasAgentSignOutLink(result)
+
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 redirect to invitation-sent for an Agent with HMRC-AS-AGENT enrolment with a valid vrn and vat-reg-date" in {
+      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
+
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
+      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
 
       verifyAuthoriseAttempt()
     }
@@ -448,6 +468,18 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-postcode.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 redirect to invitation-sent for an Agent with HMRC-AS-AGENT enrolment with a valid nino and postcode" in {
+      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", validPostcode)
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
+
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None))
+      val result = showPostcodeForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+
       verifyAuthoriseAttempt()
     }
 
@@ -678,7 +710,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
 
-    "return 303 enter-nino if service calling fast-track for ITSA / IRV contains invalid nino" in {
+    "return 303 enter-nino if service calling fast-track for ITSA contains invalid nino" in {
       val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some("INVALID_NINO"), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request, arn.value)
@@ -688,7 +720,17 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
     }
 
-    "return 303 enter-nino if service calling fast-track for ITSA / IRV does not contain nino" in {
+    "return 303 enter-nino if service calling fast-track for PIR contains invalid nino" in {
+      val formData = FastTrackInvitation(Some(servicePIR), Some("ni"), Some("INVALID_NINO"), None, None)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request, arn.value)
+        .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
+    }
+
+    "return 303 enter-nino if service calling fast-track for ITSA does not contain nino" in {
       val formData = FastTrackInvitation(Some(serviceITSA), None, None, None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request, arn.value)
@@ -728,7 +770,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showPostcodeForm().url
     }
 
-    "return 303 enter-vat-reg-date if service calling fast-track for does not contain vat-reg-date for VAT" in {
+    "return 303 enter-vat-reg-date if service calling fast-track does not contain vat-reg-date for VAT" in {
       val formData = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request, arn.value)
