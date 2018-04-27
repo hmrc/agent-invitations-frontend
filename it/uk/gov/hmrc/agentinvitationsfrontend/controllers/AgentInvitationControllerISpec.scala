@@ -103,12 +103,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitVrn = controller.submitVrn()
     val submitVatRegistrationDate = controller.submitVatRegistrationDate()
 
-    "return 303 for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
+    "return 200 enter-vat-reg-date for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
       val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
       val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/enter-vat-registration-date")
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
 
       verifyAuthoriseAttempt()
     }
@@ -173,6 +174,15 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 200 to enter-postcode for an Agent with HMRC-AS-AGENT enrolment for ITSA service with valid nino" in {
+      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
+      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.header"))
+
+      verifyAuthoriseAttempt()
+    }
+
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for PERSONAL-INCOME-RECORD service" in {
       sessionKeyStore.save(FastTrackInvitation(Some(servicePIR), None, None, None, None))
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
@@ -180,6 +190,18 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
       checkHasAgentSignOutLink(result)
+
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 redirect invitation-sent for an Agent with HMRC-AS-AGENT enrolment for PERSONAL-INCOME-RECORD service with valid nino" in {
+      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      sessionKeyStore.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
 
       verifyAuthoriseAttempt()
     }

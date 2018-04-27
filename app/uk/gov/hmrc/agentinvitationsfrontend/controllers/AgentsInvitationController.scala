@@ -74,13 +74,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      fastTrackCache.fetchAndGetEntry().map {
-        case Some(aggregate) => (aggregate.service) match {
-          case Some(HMRCMTDVAT) => Redirect(routes.AgentsInvitationController.showVrnForm())
-          case Some(_) => Redirect(routes.AgentsInvitationController.showNinoForm())
-        }
-        case None => Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
-      }
+      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
     }
   }
 
@@ -110,17 +104,20 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   }
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().map {
+    withAuthorisedAsAgent { (arn, _) =>
+      fastTrackCache.fetchAndGetEntry().flatMap {
         case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier) match {
           case (Some(HMRCMTDIT), Some(clientIdentifier)) if Nino.isValid(clientIdentifier) =>
-            Redirect(routes.AgentsInvitationController.showPostcodeForm())
-          case (Some(service), _) =>
-            Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
+            val convertItsaForm = AgentInvitationUserInput(HMRCMTDIT, Some(Nino(clientIdentifier)), aggregate.postcode)
+            kfcFlagsItsaOrIrv(convertItsaForm, featureFlags, arn)
+          case (Some(HMRCPIR), Some(clientIdentifier)) if Nino.isValid(clientIdentifier) =>
+            createInvitation(arn, HMRCPIR, aggregate.clientIdentifierType, Some(Nino(clientIdentifier)), None)
+          case (Some(service), _) if Services.isSupportedService(service) =>
+            Future successful Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, None))))
           case _ =>
-            Redirect(routes.AgentsInvitationController.selectService())
+            Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-        case None => Redirect(routes.AgentsInvitationController.selectService())
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -139,35 +136,25 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.map(updatedInvitation =>
             fastTrackCache.save(updatedInvitation)).flatMap { _ =>
-            (userInput, featureFlags) match {
-              case ClientForMtdItWithFlagOn(_) =>
-                Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-
-              case ClientForPirWithFlagOn(_) =>
-                throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-
-              case ClientWithItsaOrPirFlagOff(_) =>
-                createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
-
-              case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
-            }
+            kfcFlagsItsaOrIrv(userInput, featureFlags, arn)
           }
         })
     }
   }
 
   val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().map {
+    withAuthorisedAsAgent { (arn, _) =>
+      fastTrackCache.fetchAndGetEntry().flatMap {
         case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier) match {
-          case (Some(_), Some(clientIdentifier)) if Vrn.isValid(clientIdentifier) =>
-            Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+          case (Some(HMRCMTDVAT), Some(clientIdentifier)) if Vrn.isValid(clientIdentifier) =>
+            val convertVatForm = AgentInvitationVatForm(HMRCMTDVAT, Some(Vrn(clientIdentifier)), aggregate.vatRegDate)
+            kfcFlagsVat(convertVatForm, featureFlags, arn)
           case (Some(service), _) =>
-            Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, None))))
+            Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, None))))
           case _ =>
-            Redirect(routes.AgentsInvitationController.selectService())
+            Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-        case None => Redirect(routes.AgentsInvitationController.selectService())
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
@@ -185,15 +172,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.map(updatedInvitation =>
             fastTrackCache.save(updatedInvitation)).flatMap(_ =>
-            (userInput, featureFlags) match {
-              case ClientForVatWithFlagOn(_) =>
-                Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-
-              case ClientWithVatFlagOff(_) =>
-                createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
-
-              case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm))
-            }
+            kfcFlagsVat(userInput, featureFlags, arn)
           )
         }
       )
@@ -230,19 +209,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             fastTrackCache.save(updatedInvitation)).flatMap(_ =>
             isValidVatRegDate(userInput, arn))
         })
-    }
-  }
-
-  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
-    val suppliedVrn = userInput.clientIdentifier
-      .map(_.value)
-      .map(Vrn.apply)
-      .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput"))
-    val suppliedVatRegDate = LocalDate.parse(userInput.registrationDate.getOrElse(""))
-    invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
-      case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
-      case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
-      case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
     }
   }
 
@@ -351,7 +317,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     withAuthorisedAsAgent { (arn, _) =>
       agentFastTrackForm.bindFromRequest().fold(
         _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-        validData => processFastTrack(arn, validData)
+        validData =>
+          fastTrackCache.save(validData).flatMap(_ =>
+            processFastTrack(arn, validData)
+          )
       )
     }
   }
@@ -367,7 +336,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
       case FastTrackInvitationIRVComplete(completeIRVInvitation) =>
         val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
-        createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
+        if(featureFlags.showKfcPersonalIncome) throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+        else createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
 
       case FastTrackInvitationInvalidClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
         case Some(HMRCMTDVAT) => Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
@@ -378,15 +348,60 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
         (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
           case (Some(HMRCMTDVAT), Some(_)) =>
-            Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+            if(featureFlags.showKfcMtdVat) Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+            else createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
+
           case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
-            Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            if(featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            else createInvitation(arn, HMRCMTDIT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Nino(_)), None)
+
           case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
+
       case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
     }
   }
-}
+
+  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
+    val suppliedVrn = userInput.clientIdentifier
+      .map(_.value)
+      .map(Vrn.apply)
+      .getOrElse(throw new IllegalStateException(s"ClientIdentifier missing. form data: $userInput"))
+    val suppliedVatRegDate = LocalDate.parse(userInput.registrationDate.getOrElse(""))
+    invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
+      case Some(true) => createInvitation(arn, userInput.service, userInput.clientIdentifierType, userInput.clientIdentifier, None)
+      case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
+      case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
+    }
+  }
+
+  private def kfcFlagsVat(vatForm: AgentInvitationVatForm, featureFlags: FeatureFlags, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
+    (vatForm, featureFlags) match {
+      case ClientForVatWithFlagOn(_) =>
+        Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(vatForm)))
+
+      case ClientWithVatFlagOff(_) =>
+        createInvitation(arn, HMRCMTDVAT, vatForm.clientIdentifierType, vatForm.clientIdentifier, None)
+
+      case _ => Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(vatForm)))
+    }
+  }
+
+  private def kfcFlagsItsaOrIrv(itsaForm: AgentInvitationUserInput, featureFlags: FeatureFlags, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
+    (itsaForm, featureFlags) match {
+      case ClientForMtdItWithFlagOn(_) =>
+        Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+
+      case ClientForPirWithFlagOn(_) =>
+        throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+
+      case ClientWithItsaOrPirFlagOff(_) =>
+        createInvitation(arn, itsaForm.service, itsaForm.clientIdentifierType, itsaForm.clientIdentifier, None)
+
+      case _ => Future successful Ok(enter_nino(agentInvitationNinoForm))
+      }
+    }
+  }
 
 object AgentsInvitationController {
 

@@ -16,14 +16,14 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.{routes => agentRoutes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @(fastTrackForm: Form[FastTrackInvitation])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Fast Track Invitation", isAgent = true) {
   <h1>Test Only: Fast Track Invitation</h1>
-  @form(routes.TestEndpointsController.submitFastTrackForm()) {
+  @form(agentRoutes.AgentsInvitationController.agentFastTrack()) {
     <fieldset class="form-field-group">
       <div class="form-group">
         @input(

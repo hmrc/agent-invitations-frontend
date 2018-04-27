@@ -17,4 +17,3 @@ GET         /invitations/test-only/relationships/delete                @uk.gov.h
 POST        /invitations/test-only/relationships/delete                @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.submitDeleteRelationship()
 
 GET          /invitations/test-only/fast-track                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getFastTrackForm()
-POST         /invitations/test-only/fast-track                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.submitFastTrackForm()
