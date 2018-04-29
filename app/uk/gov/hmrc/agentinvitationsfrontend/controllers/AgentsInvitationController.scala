@@ -184,7 +184,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       fastTrackCache.fetchAndGetEntry().flatMap {
         case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier, aggregate.vatRegDate) match {
           case (Some(service), Some(clientId), Some(vatRegDate)) =>
-            isValidVatRegDate(AgentInvitationVatForm(service, Some(Vrn(clientId)), Some(vatRegDate)), arn)
+            validateAndCreateRegDate(AgentInvitationVatForm(service, Some(Vrn(clientId)), Some(vatRegDate)), arn)
           case (Some(service), Some(clientId), _) =>
             Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(service, Some(Vrn(clientId)), None))))
           case (_, _, _) =>
@@ -207,7 +207,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.map(updatedInvitation =>
             fastTrackCache.save(updatedInvitation)).flatMap(_ =>
-            isValidVatRegDate(userInput, arn))
+            validateAndCreateRegDate(userInput, arn))
         })
     }
   }
@@ -317,10 +317,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     withAuthorisedAsAgent { (arn, _) =>
       agentFastTrackForm.bindFromRequest().fold(
         _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-        validData => {
-          val updated = validData.copy(clientIdentifierType = validData.clientIdentifierTypeConversion)
-          fastTrackCache.save(updated).flatMap { _ =>
-            processFastTrack(arn, updated)
+        fastTrackInvitation => {
+          val updatedWithClientType = fastTrackInvitation.copy(clientIdentifierType = fastTrackInvitation.clientIdentifierTypeConversion)
+          fastTrackCache.save(updatedWithClientType).flatMap { _ =>
+            processFastTrack(arn, updatedWithClientType)
           }
         }
       )
@@ -374,7 +374,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
-  private def isValidVatRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
+  private def validateAndCreateRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
     val suppliedVrn = userInput.clientIdentifier
       .map(_.value)
       .map(Vrn.apply)
