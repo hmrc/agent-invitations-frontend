@@ -330,7 +330,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   private def processFastTrack(arn: Arn, fastTrackInvitation: FastTrackInvitation)(implicit request: Request[_]): Future[Result] = {
     fastTrackInvitation match {
       case FastTrackInvitationVatComplete(completeVatInvitation) =>
-        createInvitation(arn, HMRCMTDVAT, completeVatInvitation.clientIdentifierType, completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)), None)
+        val convertToAgentInvitationVatForm = AgentInvitationVatForm(
+          HMRCMTDVAT,
+          completeVatInvitation.clientIdentifier.map(vrn => Vrn(vrn)),
+          completeVatInvitation.vatRegDate)
+
+        validateRegDateAndCreate(convertToAgentInvitationVatForm, arn)
 
       case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
         val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
@@ -356,9 +361,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case FastTrackInvitationMissingKnownFact(invitationNeedsKnownFact) =>
         (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
           case (Some(HMRCMTDVAT), Some(_)) =>
-            if(featureFlags.showKfcMtdVat) {
+            if(featureFlags.showKfcMtdVat)
               Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-            }
             else createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
 
           case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
@@ -583,7 +587,8 @@ object AgentsInvitationController {
 
   object FastTrackInvitationItsaComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), _) =>
+      case FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), _)
+        if Nino.isValid(clientIdentifier) && postcode.matches(postcodeRegex) =>
         Some(FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), None))
       case _ => None
     }
@@ -591,7 +596,8 @@ object AgentsInvitationController {
 
   object FastTrackInvitationIRVComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None) =>
+      case FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None)
+        if Nino.isValid(clientIdentifier) =>
         Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None))
       case _ => None
     }
@@ -599,7 +605,8 @@ object AgentsInvitationController {
 
   object FastTrackInvitationVatComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), _, Some(vatRegDate)) =>
+      case FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), _, Some(vatRegDate))
+        if Vrn.isValid(clientIdentifier) =>
         Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), None, Some(vatRegDate)))
       case _ => None
     }
@@ -609,11 +616,11 @@ object AgentsInvitationController {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
       case FastTrackInvitation(Some(service), _, Some(clientIdentifier), _, _) =>
         service match {
-          case (HMRCMTDVAT) if !Vrn.isValid(clientIdentifier) =>
+          case HMRCMTDVAT if !Vrn.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), None, None, None))
-          case (HMRCMTDIT) if !Nino.isValid(clientIdentifier) =>
+          case HMRCMTDIT if !Nino.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), None, None, None))
-          case (HMRCPIR) if !Nino.isValid(clientIdentifier) =>
+          case HMRCPIR if !Nino.isValid(clientIdentifier) =>
             Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), None, None, None))
           case _ => None
         }
