@@ -49,7 +49,8 @@ Start Page for Agents:
 GET   	/invitations/agents/
 ```
 
-Fast Track Invitation API:
+Fast Track Invitation:
+
 API to create a fast-track invitation.
 
 ```
