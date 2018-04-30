@@ -184,7 +184,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       fastTrackCache.fetchAndGetEntry().flatMap {
         case Some(aggregate) => (aggregate.service, aggregate.clientIdentifier, aggregate.vatRegDate) match {
           case (Some(service), Some(clientId), Some(vatRegDate)) =>
-            validateAndCreateRegDate(AgentInvitationVatForm(service, Some(Vrn(clientId)), Some(vatRegDate)), arn)
+            validateRegDateAndCreate(AgentInvitationVatForm(service, Some(Vrn(clientId)), Some(vatRegDate)), arn)
           case (Some(service), Some(clientId), _) =>
             Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(service, Some(Vrn(clientId)), None))))
           case (_, _, _) =>
@@ -207,7 +207,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.map(updatedInvitation =>
             fastTrackCache.save(updatedInvitation)).flatMap(_ =>
-            validateAndCreateRegDate(userInput, arn))
+            validateRegDateAndCreate(userInput, arn))
         })
     }
   }
@@ -374,7 +374,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
-  private def validateAndCreateRegDate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
+  private def validateRegDateAndCreate(userInput: AgentInvitationVatForm, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
     val suppliedVrn = userInput.clientIdentifier
       .map(_.value)
       .map(Vrn.apply)
