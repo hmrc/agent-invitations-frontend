@@ -49,6 +49,23 @@ Start Page for Agents:
 GET   	/invitations/agents/
 ```
 
+Fast Track Invitation API:
+API to create a fast-track invitation.
+
+```
+POST   /invitations/agents/fast-track
+```
+
+The following are the supported services and relevant mandatory fields required to create a fast-track invitation:
+
+|service|clientIdentifierType|clientIdentifier|postcode|vatRegDate|
+|--------|---------|-------|-------|-------|
+|HMRC-MTD-IT|ni|Valid Nino|Valid code|N/A|
+|PERSONAL-INCOME-RECORD|ni|Valid Nino|N/A|N/A|
+|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|N/A|Date of Client's VAT Registration|
+
+Note: clientIdentifierType is optional and will be provided by the app.
+
 ### For Clients
 
 Start Page for Clients:
