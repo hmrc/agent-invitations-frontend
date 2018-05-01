@@ -12,18 +12,18 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session1234356")))
 
-  val fastTrack = FastTrackInvitation(Some("service"), Some("clientIdentifierType"), Some("clientIdentifier"), Some("postcode"), Some("vatRegDate"))
+  val fastTrackInvitation = FastTrackInvitation(Some("service"), Some("clientIdentifierType"), Some("clientIdentifier"), Some("postcode"), Some("vatRegDate"))
 
   "FastTrackKeyStoreCache" should {
     "store and fetch saved fast-track invitation from keystore" in {
-      await(sessionKeyStore.save(fastTrack))
-      val result = await(sessionKeyStore.fetchAndGetEntry())
+      await(fastTrackKeyStoreCache.save(fastTrackInvitation))
+      val result = await(fastTrackKeyStoreCache.fetchAndGetEntry())
 
-      result shouldBe Some(fastTrack)
+      result shouldBe Some(fastTrackInvitation)
     }
 
     "return nothing if no fast-track invitation was stored in keystore" in {
-      val result = await(sessionKeyStore.fetchAndGetEntry())
+      val result = await(fastTrackKeyStoreCache.fetchAndGetEntry())
       result shouldBe None
     }
   }

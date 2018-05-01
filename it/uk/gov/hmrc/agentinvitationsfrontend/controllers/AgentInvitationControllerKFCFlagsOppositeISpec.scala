@@ -51,12 +51,12 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    sessionKeyStore.clear()
+    fastTrackKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(sessionKeyStore)
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
     }
   }
 
@@ -86,7 +86,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitNino = controller.submitNino()
 
     "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -107,7 +107,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "throw an exception when  feature flag show-kfc-personal-income is on " +
       "for authorised Agent with valid nino and Personal Income Record service" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
 
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
@@ -126,7 +126,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitVrn = controller.submitVrn()
 
     "return 303 for authorised Agent with valid vrn and redirected to the invitation sent page" in {
-      sessionKeyStore.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
 
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")

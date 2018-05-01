@@ -65,12 +65,12 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    sessionKeyStore.clear()
+    fastTrackKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(sessionKeyStore)
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
     }
   }
 
@@ -169,7 +169,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   }
 
   "GET /agents/enter-nino not be restricted by whitelisting" in {
-    sessionKeyStore.save(FastTrackInvitation(Some("HMRC-MTD-IT"), None, None, None, None))
+    fastTrackKeyStoreCache.save(FastTrackInvitation(Some("HMRC-MTD-IT"), None, None, None, None))
 
     val request = FakeRequest("GET", "/agents/enter-nino")
     val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))

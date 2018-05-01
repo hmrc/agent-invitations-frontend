@@ -6,7 +6,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestFastTrackInvitationsCache extends FastTrackKeyStoreCache(null) {
+class TestFastTrackKeyStoreCache extends FastTrackKeyStoreCache(null) {
 
   class Session (var fastTrackInvitation: Option[FastTrackInvitation] = None)
 

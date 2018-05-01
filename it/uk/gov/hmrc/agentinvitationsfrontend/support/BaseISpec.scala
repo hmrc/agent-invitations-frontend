@@ -59,7 +59,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     givenAuditConnector()
   }
 
-  protected lazy val sessionKeyStore = new TestFastTrackInvitationsCache
+  protected lazy val fastTrackKeyStoreCache = new TestFastTrackKeyStoreCache
 
   protected implicit val materializer = app.materializer
 
@@ -71,19 +71,19 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    sessionKeyStore.clear()
+    fastTrackKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(sessionKeyStore)
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
     }
   }
 
   protected def checkHtmlResultWithoutBodyText(result: Result, expectedSubstrings: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
-    expectedSubstrings.foreach(s => bodyOf(result) should not include(s))
+    expectedSubstrings.foreach(s => bodyOf(result) should not include s)
   }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]
