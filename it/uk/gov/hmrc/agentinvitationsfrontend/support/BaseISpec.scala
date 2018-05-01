@@ -49,7 +49,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "features.show-kfc-mtd-it"-> true,
         "features.show-kfc-personal-income" -> false,
         "features.show-kfc-mtd-vat" -> true,
-        "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl"
+        "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )
   }
 
@@ -81,4 +82,3 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
 }
-

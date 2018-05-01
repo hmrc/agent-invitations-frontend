@@ -33,7 +33,8 @@ class ExternalUrls @Inject()
   @Named("survey.feedbackSurveyURNWithoutOriginToken") val invitationExitSurvey: String,
   @Named("survey.originTokenIdentifier.agent") val agentOriginTokenIdentifier: String,
   @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
-  @Named("agent-subscription-frontend.external-url") val subscriptionURL:String
+  @Named("agent-subscription-frontend.external-url") val subscriptionURL:String,
+  @Named("agent-client-management-frontend.external-url") val agentClientManagementUrl: String
 
 ) {
   private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier

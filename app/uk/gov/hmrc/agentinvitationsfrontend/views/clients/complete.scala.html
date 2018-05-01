@@ -27,19 +27,20 @@
 
     <h2 class="heading-medium">@Messages("client-complete.p.title")</h2>
 
-    <p> @agencyName @Messages("client-complete.p.afterName")  @(
-        if(service == Services.messageKeyForAfi)Messages("client-complete.title.income")
-        else if(service == Services.messageKeyForITSA) Messages("client-complete.title.self.assessment")
-        else if(service == Services.messageKeyForVAT) Messages("client-complete.title.vat.notice"))
-    </p>
+    <p>@Messages(s"client-complete.${service}.p1", agencyName)</p>
 
-    @if(service == Services.messageKeyForAfi) {
-        <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
-        <p>@Html(Messages("client-complete.remove-authorisation.p", agencyName))</p>
-        <p>@Messages("client-complete.remove-authorisation.url")</p>
-    }
+    <br />
 
-    @if(service == Services.messageKeyForITSA) {
-        <p><a href="@externalUrls.taxAccountRelativeUrl" class="button" role="button" id="continue">@Messages("client-complete.button.itsa")</a></p>
-    }
+    <h2 class="heading-medium">@Messages("client-complete.sub-header")</h2>
+
+    <p>@Messages("client-complete.whatHappensNext.p1")</p>
+
+    <ul class="list-bullet">
+        <li>@Messages("client-complete.whatHappensNext.l1")</li>
+        <li>@Messages("client-complete.whatHappensNext.l2")</li>
+    </ul>
+
+    <p><a href="@externalUrls.agentClientManagementUrl" class="button" role="button" id="continue">@Messages("client-complete.button.mta")</a></p>
+
+
 }
