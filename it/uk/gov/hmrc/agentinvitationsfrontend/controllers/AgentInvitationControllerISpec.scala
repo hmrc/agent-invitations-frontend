@@ -98,7 +98,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
@@ -213,7 +213,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 redirect to select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
+    "return 303 redirect to select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
@@ -250,13 +250,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
     }
 
-    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is available but clientIdentifier(vrn) not available in session" in {
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is available but clientIdentifier(vrn) not available" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceVAT), None, None, None, None))
       val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -388,7 +388,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for an authorised Agent if service is not found in session" in {
+    "return 200 for an authorised Agent if service is not found" in {
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput("", Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
@@ -483,7 +483,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 for an Agent with HMRC-AS-AGENT enrolment when nino is not available in session" in {
+    "return 303 for an Agent with HMRC-AS-AGENT enrolment when nino is not available" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
       val result = showPostcodeForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -600,7 +600,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return exception when no invitation id and deadline found in session" in {
+    "return exception when no invitation id and deadline found" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       an[RuntimeException] should be thrownBy await(result)
