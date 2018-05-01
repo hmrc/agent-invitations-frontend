@@ -89,7 +89,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 200 for an Agent with HMRC-AS-AGENT enrolment with a valid vrn" in {
+    "return 303 redirect to reg-date-form for an Agent with HMRC-AS-AGENT enrolment with a valid vrn" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
       val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -112,7 +112,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val submitVrn = controller.submitVrn()
     val submitVatRegistrationDate = controller.submitVatRegistrationDate()
 
-    "return 200 enter-vat-reg-date for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
+    "return 303 redirect to enter-vat-reg-date for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
       val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
       val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
       status(result) shouldBe 303
@@ -181,7 +181,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 200 to enter-postcode for an Agent with HMRC-AS-AGENT enrolment for ITSA service with valid nino" in {
+    "return 303 redirect to enter-postcode for an Agent with HMRC-AS-AGENT enrolment for ITSA service with valid nino" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -213,7 +213,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
+    "return 303 redirect to select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available in session" in {
       val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
@@ -406,7 +406,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val selectService = controller.selectService()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val result = selectService(authorisedAsValidAgent(request.withSession("nino" -> validNino.value), arn.value))
+      val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
         htmlEscapedMessage("generic.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")),
@@ -530,10 +530,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val ninoData = Map("nino" -> validNino.value, "postcode" -> "AB")
       val result = submitPostcode(authorisedAsValidAgent(request
         .withFormUrlEncodedBody(form.bind(ninoData).data.toSeq: _*), arn.value))
+
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-postcode.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-postcode.invalid-format"))
       checkHasAgentSignOutLink(result)
+
       verifyAuthoriseAttempt()
       verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
     }
@@ -594,6 +596,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
+
       verifyAuthoriseAttempt()
     }
 
@@ -611,8 +614,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val notEnrolled = controller.notEnrolled()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
-      val result = notEnrolled(authorisedAsValidAgent(request, arn.value)
-        .withSession("service" -> "HMRC-MTD-IT"))
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
+      val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
@@ -623,8 +627,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
-      val result = notEnrolled(authorisedAsValidAgent(request, arn.value)
-        .withSession("service" -> "HMRC-MTD-VAT"))
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceVAT), None, None, None, None))
+      val vrnForm = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, None, None))
+      val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(
@@ -635,9 +640,18 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 5xx for Unsupported service" in {
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some("UNSUPPORTED"), None, None, None, None))
+      val unsupportedForm = agentInvitationVrnForm.fill(AgentInvitationVatForm("UNSUPPORTED", None, None))
+
+      intercept[Exception] {
+        await(notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))
+      }.getMessage shouldBe "Unsupported Service"
+    }
+
+    "return 5xx when there is nothing in the cache" in {
       intercept[Exception] {
         await(notEnrolled(authorisedAsValidAgent(request, arn.value)))
-      }.getMessage shouldBe "Unsupported Service"
+      }.getMessage shouldBe "Empty Cache"
     }
 
     behave like anAuthorisedEndpoint(request, notEnrolled)

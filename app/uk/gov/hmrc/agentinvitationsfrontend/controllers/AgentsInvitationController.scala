@@ -296,13 +296,16 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      request.session.get("service") match {
-        case Some(HMRCMTDVAT) =>
-          Future successful Forbidden(not_enrolled(Messages("not-enrolled.vat.header"), Messages("not-enrolled.vat.description")))
-        case Some(HMRCMTDIT) =>
-          Future successful Forbidden(not_enrolled(Messages("not-enrolled.itsa.header"), Messages("not-enrolled.itsa.description")))
-        case _ =>
-          Future failed (throw new Exception("Unsupported Service"))
+      fastTrackCache.fetchAndGetEntry().map {
+        case Some(aggregate) => (aggregate.service) match {
+          case Some(HMRCMTDVAT) =>
+            Forbidden(not_enrolled(Messages("not-enrolled.vat.header"), Messages("not-enrolled.vat.description")))
+          case Some(HMRCMTDIT) =>
+            Forbidden(not_enrolled(Messages("not-enrolled.itsa.header"), Messages("not-enrolled.itsa.description")))
+          case _ =>
+            throw new Exception("Unsupported Service")
+        }
+        case None => throw new Exception("Empty Cache")
       }
     }
   }
