@@ -542,7 +542,7 @@ object AgentsInvitationController {
       "postcode" -> optional(text),
       "vatRegDate" -> optional(text))
     ({ (service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate) })
-    ({ fastTrack => Some(fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate) }))
+    ({ fastTrack => Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)) }))
   }
 
   object ClientForMtdItWithFlagOn {
