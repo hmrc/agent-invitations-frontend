@@ -24,7 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
@@ -61,10 +61,10 @@ class InvitationsConnector @Inject() (
     }
   }
 
-  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[Invitation] = {
+  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[StoredInvitation] = {
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
-      http.GET[Invitation](url.toString)
+      http.GET[StoredInvitation](url.toString)
     }
   }
 
@@ -134,7 +134,7 @@ class InvitationsConnector @Inject() (
     import uk.gov.hmrc.domain.SimpleObjectReads
     import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
 
-    implicit val reads: Reads[Invitation] = {
+    implicit val reads: Reads[StoredInvitation] = {
       implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(baseUrl,s))
       (
         (JsPath \ "arn").read[Arn] and
@@ -144,7 +144,7 @@ class InvitationsConnector @Inject() (
           (JsPath \ "created").read[DateTime] and
           (JsPath \ "lastUpdated").read[DateTime] and
           (JsPath \ "expiryDate").read[LocalDate] and
-          (JsPath \ "_links" \ "self").read[URL])(Invitation.apply _)
+          (JsPath \ "_links" \ "self").read[URL])(StoredInvitation.apply _)
     }
   }
 }

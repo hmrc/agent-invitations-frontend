@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
@@ -217,7 +217,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
     }
   }
 
-  private def checkInvitationIsPending(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+  private def checkInvitationIsPending(f: StoredInvitation => Future[Result]): StoredInvitation => Future[Result] = {
     case invitation if invitation.status.contains("Pending") =>
       f(invitation)
     case invitation if invitation.status.contains("Expired") =>
@@ -226,7 +226,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
   }
 
-  private def checkInvitationIsAccepted(f: Invitation => Future[Result]): Invitation => Future[Result] = {
+  private def checkInvitationIsAccepted(f: StoredInvitation => Future[Result]): StoredInvitation => Future[Result] = {
     case invitation if invitation.status.contains("Accepted") =>
       f(invitation)
     case _ =>
@@ -234,7 +234,7 @@ class ClientsInvitationController @Inject()(invitationsService: InvitationsServi
   }
 
   private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)
-                                    (body: Invitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+                                    (body: StoredInvitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     invitationsService.getClientInvitation(clientId, invitationId, apiIdentifier)
       .flatMap(body)
       .recover {

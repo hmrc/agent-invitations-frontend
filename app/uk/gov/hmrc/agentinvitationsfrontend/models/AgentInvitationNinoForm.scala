@@ -31,7 +31,7 @@ trait AgentInvitationForm {
   }
 }
 
-case class AgentInvitationUserInput(override val service: String, override val clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
+case class AgentInvitationNinoForm(override val service: String, override val clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
   extends AgentInvitationForm
 
 case class AgentInvitationVatForm(override val service: String, override val clientIdentifier: Option[TaxIdentifier], registrationDate: Option[String])

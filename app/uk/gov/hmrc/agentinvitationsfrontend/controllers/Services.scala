@@ -39,9 +39,9 @@ object Services {
   val VAT = "VAT"
   val messageKeyForVAT = "vat"
 
-  val supportedServices = List(HMRCMTDIT, HMRCMTDVAT, HMRCPIR)
-
-  def isSupportedService(service: String): Boolean = supportedServices.contains(service)
+//  val supportedServices = List(HMRCMTDIT, HMRCMTDVAT, HMRCPIR)
+//
+//  def isSupportedService(service: String): Boolean = supportedServices.contains(service)
 
   def determineService(invitationId: InvitationId): Service = {
     invitationId.value.head match {

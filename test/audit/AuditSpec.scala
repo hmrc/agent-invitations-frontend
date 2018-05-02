@@ -23,7 +23,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationNinoForm
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -48,7 +48,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val agentInvitaitonUserInput: AgentInvitationUserInput = AgentInvitationUserInput("serviceName", Some(Nino("WM123456C")), Some("AA1 1AA"))
+      val agentInvitaitonUserInput: AgentInvitationNinoForm = AgentInvitationNinoForm("serviceName", Some(Nino("WM123456C")), Some("AA1 1AA"))
       val invitationId: String = "1"
       val result: String = "Success"
 

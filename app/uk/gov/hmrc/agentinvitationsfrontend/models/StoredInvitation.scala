@@ -21,7 +21,7 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class Invitation(
+case class StoredInvitation(
   arn: Arn,
   service: String,
   clientId: String,
