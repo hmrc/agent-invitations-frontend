@@ -2,42 +2,36 @@
 
 [![Build Status](https://travis-ci.org/hmrc/agent-invitations-frontend.svg)](https://travis-ci.org/hmrc/agent-invitations-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/agent-invitations-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/agent-invitations-frontend/_latestVersion)
 
+## What the service does
 This is a frontend microservice for Agent Client Authorisation.
  
 Invitations service currently provides these functions:
  - Agent can create an invitation to represent a client for specific tax regime.
  - Client can accept or decline agent's invitation.
 
-Note: Currently this service supports ITSA invitations only.
+Currently this service supports ITSA, PIR and VAT invitations.
+
+Feature flags exist for each service and for requirement of known facts.
 
 ## Features
 
+### Running the tests
 
-## Running Tests
-```
     sbt test it:test
-```
- 
 
-## Running the app locally requires a number of services using this profile
+### Running the tests with coverage
 
-```
+    sbt clean coverageOn test it:test coverageReport
+
+### Running the app locally
+
     sm --start AGENT_MTD -f
-```
-
-or to run by itself
-```
+    sm --stop AGENT_INVITATIONS_FRONTEND
     sbt run
-```
 
-It should run at port 9448
+It should then be listening on port 9448
 
-## Stop local upstream services
-
-```
-sm --stop AGENT_MTD
-```
-
+    browse http://localhost:9448/invitations/agents
 
 ## Endpoints
 All Endpoints require Authentication.
@@ -45,9 +39,8 @@ All Endpoints require Authentication.
 ### For Agents
 
 Start Page for Agents:
-```
-GET   	/invitations/agents/
-```
+
+    GET   	/invitations/agents/
 
 Fast Track Invitation:
 
@@ -70,9 +63,9 @@ Note: clientIdentifierType is optional and will be provided by the app. If any i
 ### For Clients
 
 Start Page for Clients:
-```
-GET     /invitations/{invitationId}
-```
+
+    GET     /invitations/{invitationId}
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")

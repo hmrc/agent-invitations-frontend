@@ -787,13 +787,19 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
       givenGetAgencyNameStub(arn)
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
-      checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")),
-        htmlEscapedMessage("My Agency"),
-        htmlEscapedMessage("client-complete.title.self.assessment"),
-        htmlEscapedMessage("client-complete.button.itsa"),
-        s"""href="$taxAccountRelativeUrl"""")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
+      checkHtmlResultWithBodyText(result, hasMessage("client-complete.itsa.p1", "My Agency"))
+       checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("client-complete.sub-header"),
+        htmlEscapedMessage("client-complete.whatHappensNext.p1"),
+        htmlEscapedMessage("client-complete.whatHappensNext.l1"),
+        htmlEscapedMessage("client-complete.whatHappensNext.l2"),
+        htmlEscapedMessage("client-complete.button.mta"),
+        "someAgentClientManagementFrontendExternalUrl"
+      )
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
+
     }
 
     "return exception when agency name retrieval fails for ITSA" in {
@@ -813,9 +819,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
-      checkHtmlResultWithBodyText(result, hasMessage("client-complete.remove-authorisation.p", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.remove-authorisation.url"))
+      checkHtmlResultWithBodyText(result, hasMessage("client-complete.afi.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result,
+          htmlEscapedMessage("client-complete.sub-header"),
+          htmlEscapedMessage("client-complete.whatHappensNext.p1"),
+          htmlEscapedMessage("client-complete.whatHappensNext.l1"),
+          htmlEscapedMessage("client-complete.whatHappensNext.l2"),
+          htmlEscapedMessage("client-complete.button.mta"),
+          "someAgentClientManagementFrontendExternalUrl"
+      )
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
@@ -833,8 +845,15 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("client-complete.header"), htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.p.afterName"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.title.vat"))
+      checkHtmlResultWithBodyText(result, hasMessage("client-complete.vat.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result,
+          htmlEscapedMessage("client-complete.sub-header"),
+          htmlEscapedMessage("client-complete.whatHappensNext.p1"),
+          htmlEscapedMessage("client-complete.whatHappensNext.l1"),
+          htmlEscapedMessage("client-complete.whatHappensNext.l2"),
+          htmlEscapedMessage("client-complete.button.mta"),
+          "someAgentClientManagementFrontendExternalUrl"
+      )
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
     }
 
