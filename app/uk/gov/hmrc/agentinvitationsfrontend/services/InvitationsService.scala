@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Invitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -32,7 +32,7 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector) {
 
   def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
-                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
+                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
     val agentInvitation = AgentInvitation(service,
       clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
       clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), postcode)
@@ -62,7 +62,7 @@ class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
   def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectVATInvitation(vrn, invitationId)
 
-  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Invitation] = {
+  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
   }
 

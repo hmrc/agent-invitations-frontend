@@ -20,22 +20,30 @@ import javax.inject.Inject
 
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.{mapping, text}
+import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{routes => agentRoutes}
+import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackKeyStoreCache, InvitationsCache}
+import uk.gov.hmrc.auth.core.AuthConnector
+import java.util.UUID
 
 import scala.concurrent.Future
 
 class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesApi,
-                                        rsConnector: PirRelationshipConnector
-                                       )(implicit val configuration: Configuration, externalUrls: ExternalUrls)
-  extends FrontendController with I18nSupport {
+                                        rsConnector: PirRelationshipConnector,
+                                        fastTrackKeyStoreCache: InvitationsCache[FastTrackInvitation],
+                                        val authConnector: AuthConnector,
+                                        val withVerifiedPasscode: PasscodeVerification
+                                       )(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
+  extends FrontendController with I18nSupport with AuthActions {
 
   import TestEndpointsController._
 
@@ -70,6 +78,12 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
         }
       )
     }
+
+  def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent{(_, _) =>
+      Future successful Ok(test_fast_track(testAgentFastTrackForm))
+    }
+  }
 }
 
 object TestEndpointsController {
@@ -86,5 +100,16 @@ object TestEndpointsController {
     })({
       dr: Relationship => Some((dr.arn.value, dr.service, dr.clientId))
     }))
+  }
+
+  val testAgentFastTrackForm: Form[FastTrackInvitation] = {
+    Form(mapping(
+      "service" -> optional(text),
+      "clientIdentifierType" -> optional(text),
+      "clientIdentifier" -> optional(normalizedText),
+      "postcode" -> optional(text),
+      "vatRegDate" -> optional(text))
+    ({ (service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate) })
+    ({ fastTrack => Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)) }))
   }
 }

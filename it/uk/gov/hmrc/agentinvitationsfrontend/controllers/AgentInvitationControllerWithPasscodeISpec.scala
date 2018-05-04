@@ -17,21 +17,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  */
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, stubFor, urlEqualTo}
+import com.google.inject.AbstractModule
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.HMRCPIR
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.select_service
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
-import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
@@ -56,8 +60,22 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         "features.show-hmrc-mtd-it" -> true,
         "features.show-personal-income" -> true,
         "passcodeAuthentication.enabled" -> true
-      )
+      ).overrides(new TestGuiceModule)
   }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    fastTrackKeyStoreCache.clear()
+  }
+
+  private class TestGuiceModule extends AbstractModule {
+    override def configure(): Unit = {
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+    }
+  }
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
+
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   private val arn = Arn("TARN0000001")
@@ -118,7 +136,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-nino"
         verifyAuthoriseAttempt()
       }
+
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
+        fastTrackKeyStoreCache.save(FastTrackInvitation(None, None, None, None, None))
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -151,7 +171,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   }
 
   "GET /agents/enter-nino not be restricted by whitelisting" in {
-    val request = FakeRequest("GET", "/agents/enter-nino").withSession("service" -> "HMRC-MTD-IT")
+    fastTrackKeyStoreCache.save(FastTrackInvitation(Some("HMRC-MTD-IT"), None, None, None, None))
+
+    val request = FakeRequest("GET", "/agents/enter-nino")
     val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))
     status(result) shouldBe 200
     checkHtmlResultWithBodyText(result, hasMessage("generic.title",  htmlEscapedMessage("enter-nino.header"),  htmlEscapedMessage("title.suffix.agents")))

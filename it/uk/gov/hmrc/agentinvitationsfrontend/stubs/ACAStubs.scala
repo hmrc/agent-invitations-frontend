@@ -276,7 +276,7 @@ trait ACAStubs {
     verify(1, getRequestedFor(urlEqualTo(s"/agent-client-authorisation/agencies/check-vat-known-fact/$vrnEncoded/registration-date/$dateEncoded")))
   }
 
-  def verifyNoCheckVatRegisteredClientStubAttempt: Unit = {
+  def verifyNoCheckVatRegisteredClientStubAttempt(): Unit = {
     verify(0, getRequestedFor(urlPathMatching("/agent-client-authorisation/agencies/check-vat-known-fact/.*/registration-date/.*")))
   }
 }

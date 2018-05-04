@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
+import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -8,6 +9,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -51,12 +53,14 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "features.show-kfc-mtd-vat" -> true,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
-      )
+      ).overrides(new TestGuiceModule)
   }
 
   def commonStubs(): Unit = {
     givenAuditConnector()
   }
+
+  protected lazy val fastTrackKeyStoreCache = new TestFastTrackKeyStoreCache
 
   protected implicit val materializer = app.materializer
 
@@ -66,10 +70,21 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    fastTrackKeyStoreCache.clear()
+  }
+
+  private class TestGuiceModule extends AbstractModule {
+    override def configure(): Unit = {
+      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+    }
+  }
+
   protected def checkHtmlResultWithoutBodyText(result: Result, expectedSubstrings: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
-    expectedSubstrings.foreach(s => bodyOf(result) should not include(s))
+    expectedSubstrings.foreach(s => bodyOf(result) should not include s)
   }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]

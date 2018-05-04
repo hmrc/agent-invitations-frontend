@@ -93,4 +93,15 @@ class TestEndpointsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "Test Only: Create a relationship")
     }
   }
+
+  "getFastTrackForm" should {
+    "show create fast-track page" in {
+      val request = FakeRequest("GET", "/test-only/fast-track")
+      val getFastTrackForm = controller.getFastTrackForm()
+      val result = await(getFastTrackForm(authorisedAsValidAgent(request, arn.value)))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Test Only: Fast Track Invitation")
+    }
+  }
 }

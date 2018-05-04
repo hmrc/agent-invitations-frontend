@@ -40,7 +40,8 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], result: String, failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], result: String, failure: Option[String] = None)
+                                  (implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
     auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
         "factCheck" -> result,
@@ -54,7 +55,7 @@ class AuditService @Inject() (val auditConnector: AuditConnector) {
   }
 
   def sendAgentInvitationResponse(invitationId: String, arn: Arn, clientResponse: String, clientIdType: String, clientId: String, service: String, agencyName:String)
-                                 (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+                                 (implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
     auditEvent(AgentInvitationEvent.AgentClientInvitationResponse, "agent-client-invitation-response",
       Seq(
         "invitationId" -> invitationId,
