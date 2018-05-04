@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.HMRCPIR
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationNinoForm, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.select_service
@@ -129,7 +129,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
             .withStatus(200)))
 
         val request = FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationNinoForm("PERSONAL-INCOME-RECORD", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
@@ -140,7 +140,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
         fastTrackKeyStoreCache.save(FastTrackInvitation(None, None, None, None, None))
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationNinoForm("PERSONAL-INCOME-RECORD", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 400
@@ -150,7 +150,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationNinoForm("HMRC-MTD-IT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("HMRC-MTD-IT", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
@@ -161,7 +161,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationNinoForm("HMRC-MTD-VAT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput("HMRC-MTD-VAT", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303

@@ -15,13 +15,13 @@
  *@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationNinoForm
+@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import play.api.Configuration
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[AgentInvitationNinoForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[AgentInvitationUserInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =   error_prefix(agentInvitationsForm) + Messages("generic.title",  Messages("enter-postcode.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 

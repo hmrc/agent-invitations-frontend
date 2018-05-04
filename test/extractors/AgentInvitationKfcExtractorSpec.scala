@@ -17,7 +17,7 @@
 package extractors
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationNinoForm, AgentInvitationVatForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -48,30 +48,30 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientForMtdItWithFlagOn extractor" should {
     "Return a client identifier for HMRC-MTD-IT service when details match and KFC feature flag is on" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, Some(mtdItId), None), featureFlagsAllOn)
+      val args = (AgentInvitationUserInput(serviceITSA, Some(mtdItId), None), featureFlagsAllOn)
       ClientForMtdItWithFlagOn.unapply(args) shouldBe Some(mtdItId)
     }
     "Return None for HMRC-MTD-IT service when KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
       ClientForMtdItWithFlagOn.unapply(args) shouldBe None
     }
     "Return None for HMRC-MTD-IT service when details don't match and KFC feature flag is on" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, None, None), featureFlagsAllOn)
+      val args = (AgentInvitationUserInput(serviceITSA, None, None), featureFlagsAllOn)
       ClientForMtdItWithFlagOn.unapply(args) shouldBe None
     }
   }
 
   "The ClientForPirWithFlagOn extractor" should {
     "Return true for PERSONAL-INCOME-RECORD service when details match and KFC feature flag is on" in {
-      val args = (AgentInvitationNinoForm(servicePIR, Some(nino), None), featureFlagsAllOn)
+      val args = (AgentInvitationUserInput(servicePIR, Some(nino), None), featureFlagsAllOn)
       ClientForPirWithFlagOn.unapply(args) shouldBe Some(())
     }
     "Return None for PERSONAL-INCOME-RECORD service when KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(servicePIR, None, None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(servicePIR, None, None), featureFlagsAllOff)
       ClientForPirWithFlagOn.unapply(args) shouldBe None
     }
     "Return None for PERSONAL-INCOME-RECORD service when details don't match and KFC feature flag is on" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, None, None), featureFlagsAllOn)
+      val args = (AgentInvitationUserInput(serviceITSA, None, None), featureFlagsAllOn)
       ClientForPirWithFlagOn.unapply(args) shouldBe None
     }
   }
@@ -93,19 +93,19 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientWithFlagOff" should {
     "Return true for HMRC-MTD-IT service when details match and KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(())
     }
     "Return true for PERSONAL-INCOME-RECORD service when details match and KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(servicePIR, Some(nino), None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(servicePIR, Some(nino), None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(())
     }
     "Return None for HMRC-MTD-IT service when details don't match and KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(serviceITSA, None, None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(serviceITSA, None, None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe None
     }
     "Return None for PERSONAL-INCOME-RECORD service when details don't match and KFC feature flag is off" in {
-      val args = (AgentInvitationNinoForm(servicePIR, None, None), featureFlagsAllOff)
+      val args = (AgentInvitationUserInput(servicePIR, None, None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe None
     }
   }

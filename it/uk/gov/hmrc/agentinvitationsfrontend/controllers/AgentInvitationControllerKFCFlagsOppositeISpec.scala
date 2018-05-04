@@ -6,7 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{header, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationNinoForm, AgentInvitationVatForm, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -90,7 +90,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationNinoForm(serviceITSA, Some(validNino), None))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -112,7 +112,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationNinoForm(servicePIR, Some(validNino), None))
+      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(servicePIR, Some(validNino), None))
 
       intercept[Exception] {
         await(submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)

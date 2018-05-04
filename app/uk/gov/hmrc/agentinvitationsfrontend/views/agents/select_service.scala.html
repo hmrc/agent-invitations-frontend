@@ -16,10 +16,10 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationNinoForm
+@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm: Form[AgentInvitationNinoForm], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[AgentInvitationUserInput], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
