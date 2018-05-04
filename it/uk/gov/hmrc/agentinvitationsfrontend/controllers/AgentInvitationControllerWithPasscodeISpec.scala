@@ -59,6 +59,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         "auditing.consumer.baseUri.port" -> wireMockPort,
         "features.show-hmrc-mtd-it" -> true,
         "features.show-personal-income" -> true,
+        "features.show-hmrc-mtd-vat" -> true,
         "passcodeAuthentication.enabled" -> true
       ).overrides(new TestGuiceModule)
   }
