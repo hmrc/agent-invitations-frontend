@@ -49,9 +49,6 @@ class FrontendPasscodeVerification @Inject()(configuration: Configuration,
 
   def loginUrl[A](queryParam: String) = s"$verificationURL/otac/login$queryParam"
 
-  def tokenQueryParam[A](implicit request: Request[A]): Option[String] =
-    request.getQueryString(tokenParam).map(token => s"?$tokenParam=$token")
-
   def throwConfigNotFound(configKey: String) = throw new PasscodeVerificationException(s"The value for the key '$configKey' should be setup in the config file.")
 
   def addRedirectUrl[A](token: String)(implicit request: Request[A]): Result => Result = e =>
