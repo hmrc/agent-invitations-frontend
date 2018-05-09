@@ -373,34 +373,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
     }
   }
-
-  private def kfcFlagsVat(vatForm: AgentInvitationVatForm, featureFlags: FeatureFlags, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
-    (vatForm, featureFlags) match {
-      case ClientForVatWithFlagOn(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-
-      case ClientWithVatFlagOff(_) =>
-        createInvitation(arn, HMRCMTDVAT, vatForm.clientIdentifierType, vatForm.clientIdentifier, None)
-
-      case _ => Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(vatForm)))
-    }
-  }
-
-  private def kfcFlagsItsaOrIrv(itsaForm: AgentInvitationUserInput, featureFlags: FeatureFlags, arn: Arn)(implicit request: Request[_], hc: HeaderCarrier) = {
-    (itsaForm, featureFlags) match {
-      case ClientForMtdItWithFlagOn(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-
-      case ClientForPirWithFlagOn(_) =>
-        throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-
-      case ClientWithItsaOrPirFlagOff(_) =>
-        createInvitation(arn, itsaForm.service, itsaForm.clientIdentifierType, itsaForm.clientIdentifier, None)
-
-      case _ => Future successful Ok(enter_nino(agentInvitationNinoForm.fill(itsaForm)))
-      }
-    }
-  }
+}
 
 object AgentsInvitationController {
 

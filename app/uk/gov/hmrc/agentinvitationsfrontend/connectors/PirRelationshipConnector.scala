@@ -17,19 +17,18 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.models.PirRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class PirRelationshipConnector @Inject()(
@@ -38,31 +37,6 @@ class PirRelationshipConnector @Inject()(
                                           metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
-
-  def getClientRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[List[PirRelationship]]] = {
-    getRelationshipList(deauthServiceClientIdUrl(service, clientId))
-  }
-
-  def terminateAllClientIdRelationships(service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    terminateAllClientRelationships(deauthServiceClientIdUrl(service, clientId))
-  }
-
-  def getRelationshipList(location: String)(implicit hc: HeaderCarrier): Future[Option[List[PirRelationship]]] = {
-    monitor(s"ConsumedAPI-Get-AfiRelationship-GET") {
-      val url = craftUrl(location)
-      http.GET[Option[List[PirRelationship]]](url.toString)
-    }
-  }
-
-  def terminateAllClientRelationships(location: String)(implicit hc: HeaderCarrier): Future[Int] = {
-    monitor(s"ConsumedAPI-Get-AfiRelationship-DELETE") {
-      val url = craftUrl(location)
-      http.DELETE[HttpResponse](url.toString).map(_.status)
-        .recover {
-          case _: Upstream5xxResponse => 500
-        }
-    }
-  }
 
   def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
@@ -88,9 +62,6 @@ class PirRelationshipConnector @Inject()(
 
   private def createAndDeleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
     s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"
-
-  private def deauthServiceClientIdUrl(service: String, clientId: String): String =
-    s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"
 
   private def craftUrl(location: String) = new URL(baseUrl, location)
 }
