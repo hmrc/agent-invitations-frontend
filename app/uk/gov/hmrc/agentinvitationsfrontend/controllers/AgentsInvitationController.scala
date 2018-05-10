@@ -300,7 +300,9 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
         fastTrackInvitation => {
           fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-            redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+            showServiceSwitch(fastTrackInvitation,featureFlags) {
+              redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+            }
           }
         }
       )
@@ -324,6 +326,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           else if(isSupportedWhitelistedService(HMRCPIR, isWhitelisted))
             createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
           else
+            Logger.warn("User is not whitelisted to create IRV Invitation")
             Future successful BadRequest
 
         case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
@@ -347,13 +350,30 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
               if (featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
               else createInvitation(arn, HMRCMTDIT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Nino(_)), None)
 
-            case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
+            case _ =>
+              Future successful Redirect(routes.AgentsInvitationController.selectService())
           }
 
         case _ => //Resetting FastTrackInvitation due mix data.
+          Logger.warn("Resetting due to mix data in session")
           fastTrackCache.save(FastTrackInvitation.newInstance).map(_ =>
           Redirect(routes.AgentsInvitationController.selectService()))
       }
+  }
+
+  private def showServiceSwitch(fastTrackInvitation: FastTrackInvitation, featureFlags: FeatureFlags)(body: => Future[Result]): Future[Result] = {
+    fastTrackInvitation.service match {
+      case Some(HMRCMTDVAT) if !featureFlags.showHmrcMtdVat =>
+        Logger.warn(s"Service: $HMRCMTDVAT is feature flagged off")
+        Future successful BadRequest
+      case Some(HMRCMTDIT) if !featureFlags.showHmrcMtdIt =>
+        Logger.warn(s"Service: $HMRCMTDIT is feature flagged off")
+        Future successful BadRequest
+      case Some(HMRCPIR) if !featureFlags.showPersonalIncome =>
+        Logger.warn(s"Service: $HMRCPIR is feature flagged off")
+        Future successful BadRequest
+      case _ => body
+    }
   }
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
