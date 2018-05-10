@@ -92,7 +92,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updateAggregate.flatMap(updateFastTrack =>
             fastTrackCache.save(updateFastTrack).flatMap(_ =>
-              showServiceSwitch(updateFastTrack, featureFlags, isWhitelisted) {
+              ifShouldShowService(updateFastTrack, featureFlags, isWhitelisted) {
                 redirectFastTrack(arn, updateFastTrack, isWhitelisted)
               }
             ))
@@ -300,7 +300,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
         fastTrackInvitation => {
           fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-            showServiceSwitch(fastTrackInvitation, featureFlags, isWhitelisted) {
+            ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
               redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
             }
           }
@@ -360,7 +360,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
-  private def showServiceSwitch(fastTrackInvitation: FastTrackInvitation, featureFlags: FeatureFlags, isWhitelisted: Boolean)
+  private def ifShouldShowService(fastTrackInvitation: FastTrackInvitation, featureFlags: FeatureFlags, isWhitelisted: Boolean)
                                (body: => Future[Result]): Future[Result] = {
     fastTrackInvitation.service match {
       case Some(HMRCPIR) if !isWhitelisted =>
