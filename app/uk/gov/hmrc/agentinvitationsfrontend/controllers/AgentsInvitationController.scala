@@ -323,8 +323,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             throw new Exception("KFC flagged as on, not implemented for personal-income-record")
           else if(isSupportedWhitelistedService(HMRCPIR, isWhitelisted))
             createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
-          else
+          else {
+            Logger.warn("A non white-listed user attempted to create an IRV Invitation")
             Future successful BadRequest
+          }
 
         case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
           case Some(HMRCMTDVAT) =>
