@@ -57,7 +57,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val invalidVrn = Vrn("101747692")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
-  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -522,8 +521,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/invitation-sent")
     val invitationSent = controller.invitationSent()
 
-    "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false)" in {
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"), arn.value))
+    "return 200 for authorised Agent successfully created invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value, "deadline" -> "27 December 2017"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("invitation-sent-link.header"), htmlEscapedMessage("title.suffix.agents")))
@@ -531,7 +530,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
@@ -618,12 +617,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString
     val continueUrl = URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
-  }
-
-  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]) = {
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, continueUrl)
   }
 
   def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {

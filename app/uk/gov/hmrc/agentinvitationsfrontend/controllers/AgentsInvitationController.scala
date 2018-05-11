@@ -30,7 +30,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsCache, InvitationsService}
+import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -46,9 +47,11 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            featureFlags: FeatureFlags,
                                            invitationsService: InvitationsService,
                                            auditService: AuditService,
-                                           fastTrackCache: InvitationsCache[FastTrackInvitation],
+                                           fastTrackCache: FastTrackKeyStoreCache,
+                                           continueUrlStoreService: ContinueUrlStoreService,
                                            val messagesApi: play.api.i18n.MessagesApi,
                                            val authConnector: AuthConnector,
+                                           val continueUrlActions: ContinueUrlActions,
                                            val withVerifiedPasscode: PasscodeVerification)
                                           (implicit val configuration: Configuration, val externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
@@ -266,8 +269,13 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
-        case _ => throw new RuntimeException("User attempted to browse to invitationSent")
+          continueUrlStoreService.fetchContinueUrl.map {
+              case Some(contUrl) =>
+                Ok(invitation_sent(invitationUrl, deadline, continueUrl = contUrl.url))
+              case None => Ok(invitation_sent(invitationUrl, deadline, continueUrl = "/agent-services-account"))
+          }
+        case _ =>
+          throw new RuntimeException("User attempted to browse to invitationSent")
       }
     }
   }
@@ -294,16 +302,19 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
+  import continueUrlActions._
+
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentFastTrackForm.bindFromRequest().fold(
-        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-        fastTrackInvitation => {
-          fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-            redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+        agentFastTrackForm.bindFromRequest().fold(
+          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+          fastTrackInvitation => {
+            withMaybeContinueUrlCached {
+            fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
+              redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+            }
           }
-        }
-      )
+      })
     }
   }
 

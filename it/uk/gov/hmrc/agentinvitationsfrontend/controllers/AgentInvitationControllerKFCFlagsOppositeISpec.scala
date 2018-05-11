@@ -11,9 +11,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackKeyStoreCache}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -53,11 +54,13 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     fastTrackKeyStoreCache.clear()
+    continueUrlKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
     }
   }
 
@@ -78,7 +81,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   val validVrn97 = Vrn("101747696")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
-  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -148,6 +150,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val fastTrack = controller.agentFastTrack()
 
     "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
+
       val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")

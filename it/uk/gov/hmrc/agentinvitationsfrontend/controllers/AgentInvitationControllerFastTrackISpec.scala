@@ -34,7 +34,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   val invalidVrn = Vrn("101747692")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
-  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 

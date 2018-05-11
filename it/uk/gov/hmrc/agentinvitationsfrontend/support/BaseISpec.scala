@@ -1,5 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
@@ -9,11 +12,13 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackKeyStoreCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
+
+import scala.concurrent.Future
 
 abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with AfiRelationshipStub with DataStreamStubs {
 
@@ -24,6 +29,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
+  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
@@ -62,6 +68,8 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   protected lazy val fastTrackKeyStoreCache = new TestFastTrackKeyStoreCache
 
+  protected lazy val continueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
+
   protected implicit val materializer = app.materializer
 
   protected def checkHtmlResultWithBodyText(result: Result, expectedSubstrings: String*): Unit = {
@@ -73,11 +81,13 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     fastTrackKeyStoreCache.clear()
+    continueUrlKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
     }
   }
 
@@ -96,4 +106,10 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
 
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
+
+  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, continueUrl)
+  }
 }

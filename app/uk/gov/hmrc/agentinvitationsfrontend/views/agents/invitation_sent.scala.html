@@ -16,21 +16,27 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(invitationUrl: String, agentServicesAcUrl: String, deadline: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+@import uk.gov.hmrc.agentinvitationsfrontend.connectors
+@import uk.gov.hmrc.play.binders.ContinueUrl
+@(invitationUrl: String, deadline: String, continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
-  <div class="transaction-banner--complete">
-    <h1 class="transaction-banner__heading">
-    @Messages("invitation-sent-link.header")
-    </h1>
-    <strong id="invitationUrl" class="word-wrap">@invitationUrl</strong>
-  </div>
+    <div class="transaction-banner--complete">
+        <h1 class="transaction-banner__heading">
+        @Messages("invitation-sent-link.header")
+        </h1>
+        <strong id="invitationUrl" class="word-wrap">@invitationUrl</strong>
+    </div>
 
-  <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
-  <p>@Html(Messages("invitation-sent.description.advice.pt1", deadline))</p>
-  <p>@Html(Messages("invitation-sent.description.advice.pt2"))</p>
-  <p>@Html(Messages("invitation-sent.description.advice.pt3"))</p>
+    <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
+    <p>@Html(Messages("invitation-sent.description.advice.pt1", deadline))</p>
+    <p>@Html(Messages("invitation-sent.description.advice.pt2"))</p>
+    <p>@Html(Messages("invitation-sent.description.advice.pt3"))</p>
 
-  <a href="@agentServicesAcUrl/agent-services-account" class="button" id="continue" role="button">@Messages("invitation-sent.button")</a>
+
+    @defining(if(continueUrl == "/agent-services-account") "continueToASAccount" else "continueJourney") { continueMsg =>
+        <a href="@continueUrl" class="button" id="continue" role="button">@Messages(s"invitation-sent.$continueMsg.button")</a>
+    }
 }
