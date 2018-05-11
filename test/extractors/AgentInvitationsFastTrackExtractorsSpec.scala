@@ -141,7 +141,7 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
       }
 
       "the service is not HMRC-MTD-VAT" in {
-        val vatInvitation = FastTrackInvitation(None, Some("vrn"), Some(vrn.value), None, Some(validRegDateForVrn97))
+        val vatInvitation = FastTrackInvitation(Some(serviceITSA), Some("vrn"), Some(vrn.value), None, Some(validRegDateForVrn97))
         FastTrackInvitationVatComplete.unapply(vatInvitation) shouldBe None
       }
 
@@ -276,5 +276,33 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
         FastTrackInvitationNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe None
       }
     }
+  }
+
+  "The FastTrackInvitationNeedsService extractor" should {
+    "return Some" when {
+
+      "there is no service but the details are for ITSA" in {
+        val itsaInvitation = FastTrackInvitation(None, Some("ni"), Some(nino.value), Some(validPostcode), None)
+        FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe Some(itsaInvitation)
+      }
+
+      "there is no service but the details are for IRV" in {
+        val irvInvitation = FastTrackInvitation(None, Some("ni"), Some(nino.value), None, None)
+        FastTrackInvitationNeedsService.unapply(irvInvitation) shouldBe Some(irvInvitation)
+      }
+
+      "there is no service but the details are for VAT" in {
+        val vatInvitation = FastTrackInvitation(None, Some("vrn"), Some(vrn.value), None, Some(validRegDateForVrn97))
+        FastTrackInvitationNeedsService.unapply(vatInvitation) shouldBe Some(vatInvitation)
+      }
+    }
+
+    "return None" when {
+      "there is no service and no clientIdentifier" in {
+        val itsaInvitation = FastTrackInvitation(None, None, None, None, None)
+        FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe None
+      }
+    }
+
   }
 }
