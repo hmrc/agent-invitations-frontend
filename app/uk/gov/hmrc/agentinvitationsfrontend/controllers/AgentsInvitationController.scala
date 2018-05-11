@@ -89,18 +89,16 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(select_service(formWithErrors, allowedServices))
         },
         userInput => {
-          if(allowedServices.exists(_._1 == userInput.service)) {
-            val updateAggregate = fastTrackCache.fetchAndGetEntry()
-              .map(_.getOrElse(FastTrackInvitation.newInstance))
-              .map(_.copy(service = Some(userInput.service)))
+          val updateAggregate = fastTrackCache.fetchAndGetEntry()
+            .map(_.getOrElse(FastTrackInvitation.newInstance))
+            .map(_.copy(service = Some(userInput.service)))
 
-            updateAggregate.flatMap(updateFastTrack =>
-              fastTrackCache.save(updateFastTrack).flatMap(_ =>
+          updateAggregate.flatMap(updateFastTrack =>
+            fastTrackCache.save(updateFastTrack).flatMap(_ =>
+              ifShouldShowService(updateFastTrack, featureFlags, isWhitelisted) {
                 redirectFastTrack(arn, updateFastTrack, isWhitelisted)
-              ))
-          } else {
-            Future successful BadRequest
-          }
+              }
+            ))
         }
       )
     }
@@ -132,8 +130,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.flatMap(updatedInvitation =>
             fastTrackCache.save(updatedInvitation).flatMap { _ =>
-            redirectFastTrack(arn, updatedInvitation, isWhitelisted)
-          })
+              redirectFastTrack(arn, updatedInvitation, isWhitelisted)
+            })
         })
     }
   }
@@ -163,7 +161,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.flatMap(updatedInvitation =>
             fastTrackCache.save(updatedInvitation).flatMap(_ =>
-            redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
+              redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
         }
       )
     }
@@ -193,7 +191,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.flatMap(updatedInvitation =>
             fastTrackCache.save(updatedInvitation).flatMap(_ =>
-            redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
+              redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
         })
     }
   }
@@ -223,7 +221,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
           updatedAggregate.flatMap(updatedInvitation =>
             fastTrackCache.save(updatedInvitation).flatMap(_ =>
-            redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
+              redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
         })
     }
   }
@@ -264,7 +262,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   }
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { (_, _) =>
       Logger.info(s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
@@ -306,12 +304,14 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        agentFastTrackForm.bindFromRequest().fold(
-          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-          fastTrackInvitation => {
+      agentFastTrackForm.bindFromRequest().fold(
+        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+        fastTrackInvitation => {
+          fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
             withMaybeContinueUrlCached {
-            fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-              redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+              ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
+                redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+              }
             }
           }
       })
@@ -321,50 +321,71 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   private[controllers] def redirectFastTrack(arn: Arn, fastTrackInvitation: FastTrackInvitation, isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] = {
     val updatedInvitationWithClientType = fastTrackInvitation.copy(clientIdentifierType = fastTrackInvitation.clientIdentifierTypeConversion)
     updatedInvitationWithClientType match {
-        case FastTrackInvitationVatComplete(completeVatInvitation) =>
-          validateRegDateAndCreate(completeVatInvitation, arn)
+      case FastTrackInvitationVatComplete(completeVatInvitation) =>
+        validateRegDateAndCreate(completeVatInvitation, arn)
 
-        case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
-          val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
-          createInvitation(arn, HMRCMTDIT, completeItsaInvitation.clientIdentifierType, ninoOpt, completeItsaInvitation.postcode)
+      case FastTrackInvitationItsaComplete(completeItsaInvitation) =>
+        val ninoOpt = completeItsaInvitation.clientIdentifier.map(nino => Nino(nino))
+        createInvitation(arn, HMRCMTDIT, completeItsaInvitation.clientIdentifierType, ninoOpt, completeItsaInvitation.postcode)
 
-        case FastTrackInvitationIrvComplete(completeIRVInvitation) =>
-          val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
-          if (featureFlags.showKfcPersonalIncome)
-            throw new Exception("KFC flagged as on, not implemented for personal-income-record")
-          else if(isSupportedWhitelistedService(HMRCPIR, isWhitelisted))
-            createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
-          else
-            Future successful BadRequest
+      case FastTrackInvitationIrvComplete(completeIRVInvitation) =>
+        val ninoOpt = completeIRVInvitation.clientIdentifier.map(nino => Nino(nino))
+        if (featureFlags.showKfcPersonalIncome)
+          throw new Exception("KFC flagged as on, not implemented for personal-income-record")
+        else
+          createInvitation(arn, HMRCPIR, completeIRVInvitation.clientIdentifierType, ninoOpt, completeIRVInvitation.postcode)
 
-        case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
-          case Some(HMRCMTDVAT) =>
-            Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
-          case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+      case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+        case Some(HMRCMTDVAT) =>
+          Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+        case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
+          Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
+        case _ =>
+          Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
+
+      case FastTrackInvitationNeedsKnownFact(invitationNeedsKnownFact) =>
+        (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
+          case (Some(HMRCMTDVAT), Some(_)) =>
+            if (featureFlags.showKfcMtdVat)
+              Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+            else
+              createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
+
+          case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
+            if (featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            else createInvitation(arn, HMRCMTDIT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Nino(_)), None)
+
           case _ =>
             Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
+      case FastTrackInvitationNeedsService(_) =>
+        Future successful Redirect(routes.AgentsInvitationController.selectService())
 
-        case FastTrackInvitationNeedsKnownFact(invitationNeedsKnownFact) =>
-          (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
-            case (Some(HMRCMTDVAT), Some(_)) =>
-              if (featureFlags.showKfcMtdVat)
-                Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
-              else
-                createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
-
-            case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
-              if (featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
-              else createInvitation(arn, HMRCMTDIT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Nino(_)), None)
-
-            case _ => Future successful Redirect(routes.AgentsInvitationController.selectService())
-          }
-
-        case _ => //Resetting FastTrackInvitation due mix data.
-          fastTrackCache.save(FastTrackInvitation.newInstance).map(_ =>
+      case _ =>
+        Logger.warn("Resetting due to mix data in session")
+        fastTrackCache.save(FastTrackInvitation.newInstance).map(_ =>
           Redirect(routes.AgentsInvitationController.selectService()))
-      }
+    }
+  }
+
+  private def ifShouldShowService(fastTrackInvitation: FastTrackInvitation, featureFlags: FeatureFlags, isWhitelisted: Boolean)
+                               (body: => Future[Result]): Future[Result] = {
+    fastTrackInvitation.service match {
+      case Some(HMRCPIR) if !isWhitelisted =>
+        Logger.warn(s"User is not whitelisted to create $HMRCPIR invitation")
+        Future successful BadRequest
+      case Some(HMRCMTDVAT) if !featureFlags.showHmrcMtdVat =>
+        Logger.warn(s"Service: $HMRCMTDVAT feature flagged is switched off")
+        Future successful BadRequest
+      case Some(HMRCMTDIT) if !featureFlags.showHmrcMtdIt =>
+        Logger.warn(s"Service: $HMRCMTDIT feature flagged is switched off")
+        Future successful BadRequest
+      case Some(HMRCPIR) if !featureFlags.showPersonalIncome =>
+        Logger.warn(s"Service: $HMRCPIR feature flagged is switched off")
+        Future successful BadRequest
+      case _ => body
+    }
   }
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
@@ -563,7 +584,7 @@ object AgentsInvitationController {
 
   object FastTrackInvitationIrvComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
-      case FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None)
+      case FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), _, _)
         if Nino.isValid(clientIdentifier) =>
         Some(FastTrackInvitation(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), None, None))
       case _ => None
@@ -607,6 +628,15 @@ object AgentsInvitationController {
 
       case FastTrackInvitation(Some(service), Some(_), Some(_), _, _) if service != Services.HMRCPIR =>
         Some(fastTrackInvitation.copy(postcode = None, vatRegDate = None))
+
+      case _ => None
+    }
+  }
+
+  object FastTrackInvitationNeedsService {
+    def unapply(fastTrackInvitation: FastTrackInvitation): Option[FastTrackInvitation] = fastTrackInvitation match {
+      case FastTrackInvitation(_, _, Some(_), _, _) =>
+        Some(fastTrackInvitation.copy(service = None))
 
       case _ => None
     }
