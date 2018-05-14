@@ -32,6 +32,7 @@ import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -545,6 +546,24 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     behave like anAuthorisedEndpoint(request, invitationSent)
+  }
+
+  "GET /agents/invitation-sent-continue" should {
+    val request = FakeRequest("GET", "/agents/invitation-sent-continue")
+    val continueAfter = controller.continueAfterInvitationSent
+
+    "redirect to where ever user came from" in {
+      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("/tax-history/select-service"))
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe "/tax-history/select-service"
+    }
+
+    "redirect to agent-services-account" in {
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe "/agent-services-account"
+    }
   }
 
   "GET /agents/not-enrolled" should {

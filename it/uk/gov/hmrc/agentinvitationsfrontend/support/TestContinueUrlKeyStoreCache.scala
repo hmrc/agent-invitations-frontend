@@ -32,4 +32,8 @@ class TestContinueUrlKeyStoreCache extends ContinueUrlStoreService(null) {
   override def cacheContinueUrl(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     Future successful(currentSession.continueUrl = Some(continueUrl))
 
+  override def remove()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = Future {
+    sessions.remove(sessionKey)
+  }
+
 }

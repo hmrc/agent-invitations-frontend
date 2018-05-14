@@ -37,6 +37,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -268,10 +269,21 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          showInvitationSentWithMaybeContinueUrl(invitationUrl, deadline)
+          continueUrlStoreService.fetchContinueUrl.map( continue =>
+            Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
+          )
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }
+    }
+  }
+
+  val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      for {
+        continue <- continueUrlStoreService.fetchContinueUrl.map(continue => continue.getOrElse(ContinueUrl("/agent-services-account")))
+        _ <- continueUrlStoreService.remove()
+      } yield Redirect(continue.url)
     }
   }
 
@@ -406,15 +418,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case None => block
       case Some(url) => continueUrlStoreService.cacheContinueUrl(url).flatMap(_ => block)
     }
-
-  private def showInvitationSentWithMaybeContinueUrl[A](invitationUrl: String, deadline: String)(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] = {
-    continueUrlStoreService.fetchContinueUrl.map {
-      case Some(contUrl) =>
-        Ok(invitation_sent(invitationUrl, deadline, continueUrl = contUrl.url))
-      case None =>
-        Ok(invitation_sent(invitationUrl, deadline, continueUrl = "/agent-services-account"))
-    }
-  }
 }
 
 object AgentsInvitationController {

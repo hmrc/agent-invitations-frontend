@@ -16,10 +16,8 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
-@import uk.gov.hmrc.agentinvitationsfrontend.connectors
-@import uk.gov.hmrc.play.binders.ContinueUrl
-@(invitationUrl: String, deadline: String, continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@(invitationUrl: String, deadline: String, hasContinueUrl: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
@@ -36,7 +34,7 @@
     <p>@Html(Messages("invitation-sent.description.advice.pt3"))</p>
 
 
-    @defining(if(continueUrl == "/agent-services-account") "continueToASAccount" else "continueJourney") { continueMsg =>
-        <a href="@continueUrl" class="button" id="continue" role="button">@Messages(s"invitation-sent.$continueMsg.button")</a>
+    @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
+        <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button" id="continue" role="button">@Messages(s"invitation-sent.$continueMsg.button")</a>
     }
 }
