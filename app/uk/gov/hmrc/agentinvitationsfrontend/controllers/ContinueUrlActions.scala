@@ -17,17 +17,22 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.Logger
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, HostnameWhiteListService}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.invitation_sent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import play.api.mvc.{Action, AnyContent, Request, Result}
+
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
+
 
 @Singleton
 class ContinueUrlActions @Inject()(
@@ -67,12 +72,5 @@ class ContinueUrlActions @Inject()(
     val continueUrl: Future[Option[ContinueUrl]] = extractContinueUrl
     continueUrl.flatMap(block(_))
   }
-
-  def withMaybeContinueUrlCached[A](block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    withMaybeContinueUrl {
-      case None => block
-      case Some(url) =>
-        continueUrlStoreService.cacheContinueUrl(url).flatMap(_ => block)
-    }
 
 }

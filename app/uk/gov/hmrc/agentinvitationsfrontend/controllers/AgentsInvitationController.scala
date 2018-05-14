@@ -57,6 +57,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
+  import continueUrlActions._
 
   private val personalIncomeRecord = if (featureFlags.showPersonalIncome)
     Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
@@ -267,11 +268,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          continueUrlStoreService.fetchContinueUrl.map {
-              case Some(contUrl) =>
-                Ok(invitation_sent(invitationUrl, deadline, continueUrl = contUrl.url))
-              case None => Ok(invitation_sent(invitationUrl, deadline, continueUrl = "/agent-services-account"))
-          }
+          showInvitationSentWithMaybeContinueUrl(invitationUrl, deadline)
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }
@@ -299,8 +296,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       Future successful Forbidden(not_matched())
     }
   }
-
-  import continueUrlActions._
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
@@ -403,6 +398,21 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case Some(true) => createInvitation(arn, service, fastTrackInvitation.clientIdentifierType, Some(suppliedVrn), None)
       case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
       case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
+    }
+  }
+
+  private def withMaybeContinueUrlCached[A](block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
+    withMaybeContinueUrl {
+      case None => block
+      case Some(url) => continueUrlStoreService.cacheContinueUrl(url).flatMap(_ => block)
+    }
+
+  private def showInvitationSentWithMaybeContinueUrl[A](invitationUrl: String, deadline: String)(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] = {
+    continueUrlStoreService.fetchContinueUrl.map {
+      case Some(contUrl) =>
+        Ok(invitation_sent(invitationUrl, deadline, continueUrl = contUrl.url))
+      case None =>
+        Ok(invitation_sent(invitationUrl, deadline, continueUrl = "/agent-services-account"))
     }
   }
 }
