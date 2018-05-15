@@ -413,8 +413,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       .getOrElse(throw new IllegalStateException(s"Service missing. form data: $fastTrackInvitation"))
     invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
       case Some(true) => createInvitation(arn, service, fastTrackInvitation.clientIdentifierType, Some(suppliedVrn), None)
-      case Some(false) => Future successful Redirect(routes.AgentsInvitationController.notMatched())
-      case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
+      case Some(false) => fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = fastTrackInvitation.service)).map { _ =>
+        Redirect(routes.AgentsInvitationController.notMatched())
+      }
+      case None => fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = fastTrackInvitation.service)).map { _ =>
+        Redirect(routes.AgentsInvitationController.notEnrolled())
+      }
     }
   }
 
