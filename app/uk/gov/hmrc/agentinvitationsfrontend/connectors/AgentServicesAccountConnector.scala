@@ -23,6 +23,7 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ContinueUrlActions
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -41,6 +42,7 @@ object AgencyName {
 class AgentServicesAccountConnector @Inject() (
                                                 @Named("agent-services-account-baseUrl") baseUrl: URL,
                                                 http: HttpGet,
+                                                continueUrlActions: ContinueUrlActions,
                                                 metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry

@@ -30,12 +30,14 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsCache, InvitationsService}
+import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -46,14 +48,17 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            featureFlags: FeatureFlags,
                                            invitationsService: InvitationsService,
                                            auditService: AuditService,
-                                           fastTrackCache: InvitationsCache[FastTrackInvitation],
+                                           fastTrackCache: FastTrackKeyStoreCache,
+                                           continueUrlStoreService: ContinueUrlStoreService,
                                            val messagesApi: play.api.i18n.MessagesApi,
                                            val authConnector: AuthConnector,
+                                           val continueUrlActions: ContinueUrlActions,
                                            val withVerifiedPasscode: PasscodeVerification)
                                           (implicit val configuration: Configuration, val externalUrls: ExternalUrls)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
+  import continueUrlActions._
 
   private val personalIncomeRecord = if (featureFlags.showPersonalIncome)
     Seq(HMRCPIR -> Messages("select-service.personal-income-viewer")) else Seq.empty
@@ -268,11 +273,22 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          fastTrackCache.save(FastTrackInvitation.newInstance).flatMap { _ =>
-            Future successful Ok(invitation_sent(invitationUrl, asAccUrl.toString, deadline))
-          }
-        case _ => throw new RuntimeException("User attempted to browse to invitationSent")
+          for {
+            _ <- fastTrackCache.save(FastTrackInvitation.newInstance)
+            continue <- continueUrlStoreService.fetchContinueUrl
+          } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
+        case _ =>
+          throw new RuntimeException("User attempted to browse to invitationSent")
       }
+    }
+  }
+
+  val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      for {
+        continue <- continueUrlStoreService.fetchContinueUrl.map(continue => continue.getOrElse(ContinueUrl("/agent-services-account")))
+        _ <- continueUrlStoreService.remove()
+      } yield Redirect(continue.url)
     }
   }
 
@@ -304,12 +320,13 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
         fastTrackInvitation => {
           fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-            ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
-              redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+            withMaybeContinueUrlCached {
+              ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
+                redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+              }
             }
           }
-        }
-      )
+      })
     }
   }
 
@@ -400,6 +417,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case None => Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
     }
   }
+
+  private def withMaybeContinueUrlCached[A](block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
+    withMaybeContinueUrl {
+      case None => block
+      case Some(url) => continueUrlStoreService.cacheContinueUrl(url).flatMap(_ => block)
+    }
 }
 
 object AgentsInvitationController {

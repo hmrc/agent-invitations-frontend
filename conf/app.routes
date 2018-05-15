@@ -13,6 +13,7 @@ GET         /agents/enter-postcode                              @uk.gov.hmrc.age
 POST        /agents/enter-vat-registration-date                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitVatRegistrationDate
 POST        /agents/enter-postcode                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitPostcode
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
+GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.continueAfterInvitationSent
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
 POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
 
