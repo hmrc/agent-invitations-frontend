@@ -439,6 +439,37 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
       await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
     }
+
+    "return 303 not-matched if vrn and vat-reg-date does not match for VAT" in {
+      val invitation = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
+      fastTrackKeyStoreCache.save(invitation)
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 403)
+
+      val form = agentFastTrackForm.fill(invitation)
+      val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      header("Set-Cookie", result) shouldBe None
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceVAT), None, None, None, None)
+    }
+
+    "return 303 not-enrolled if Agent attempted to invite a client for VAT" in {
+      val invitation = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
+      fastTrackKeyStoreCache.save(invitation)
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 404)
+
+      val form = agentFastTrackForm.fill(invitation)
+      val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      header("Set-Cookie", result) shouldBe None
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceVAT), None, None, None, None)
+
+    }
   }
 
   def verifyAgentClientInvitationSubmittedEvent(arn: String, clientId: String, clientIdType: String, result: String, service: String): Unit = {
