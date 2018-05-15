@@ -40,7 +40,8 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/invitation-sent")
     val invitationSent = controller.invitationSent()
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
-      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("/someITSA/Url"))
+      val continueUrl = ContinueUrl("/someITSA/Url")
+      continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
       val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value, "deadline" -> "27 December 2017"), arn.value))
 
       status(result) shouldBe 200
@@ -56,10 +57,12 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
+      await(continueUrlKeyStoreCache.fetchContinueUrl).get shouldBe continueUrl
     }
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
-      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("http://localhost:9996/tax-history/select-client"))
+      val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
+      continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
       val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdPIR.value, "deadline" -> "27 December 2017", "sessionId" -> "session12345"), arn.value))
 
       status(result) shouldBe 200
@@ -75,10 +78,12 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
+      await(continueUrlKeyStoreCache.fetchContinueUrl).get shouldBe continueUrl
     }
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
-      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("/someVat/Url"))
+      val continueUrl = ContinueUrl("/someVat/Url")
+      continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
       val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdVAT.value, "deadline" -> "27 December 2017"), arn.value))
 
       status(result) shouldBe 200
@@ -94,6 +99,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
+      await(continueUrlKeyStoreCache.fetchContinueUrl).get shouldBe continueUrl
     }
 
   }
@@ -107,12 +113,14 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       val result = continueAfter(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe "/tax-history/select-service"
+      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
     }
 
-    "redirect to agent-services-account" in {
+    "redirect to agent-services-account if no continue-url is stored in cache" in {
       val result = continueAfter(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe "/agent-services-account"
+      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
     }
   }
 }

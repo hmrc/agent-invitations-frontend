@@ -273,9 +273,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
-          continueUrlStoreService.fetchContinueUrl.map( continue =>
-            Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
-          )
+          for {
+            _ <- fastTrackCache.save(FastTrackInvitation.newInstance)
+            continue <- continueUrlStoreService.fetchContinueUrl
+          } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }
