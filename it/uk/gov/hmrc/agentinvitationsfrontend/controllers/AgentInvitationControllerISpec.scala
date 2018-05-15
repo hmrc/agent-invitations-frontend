@@ -477,12 +477,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent when client registration not found " in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      failedCreateInvitationForNotEnrolled(arn)
+      val invitation = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      fastTrackKeyStoreCache.save(invitation)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
+      failedCreateInvitationForNotEnrolled(arn)
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
 
@@ -492,12 +493,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent when postcode does not match " in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      failedCreateInvitationFoInvalidPostcode(arn)
+      val invitation = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      fastTrackKeyStoreCache.save(invitation)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
+      failedCreateInvitationFoInvalidPostcode(arn)
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
 
