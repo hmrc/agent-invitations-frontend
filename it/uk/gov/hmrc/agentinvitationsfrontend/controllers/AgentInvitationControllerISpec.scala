@@ -488,6 +488,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
     }
 
     "return 303 for authorised Agent when postcode does not match " in {
@@ -502,6 +503,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
     }
 
     "return exception when create invitation fails" in {
@@ -537,6 +539,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation.newInstance
+
     }
 
     "return exception when no invitation id and deadline found" in {
