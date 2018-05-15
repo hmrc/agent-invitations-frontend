@@ -477,31 +477,35 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent when client registration not found " in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      failedCreateInvitationForNotEnrolled(arn)
+      val invitation = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      fastTrackKeyStoreCache.save(invitation)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
+      failedCreateInvitationForNotEnrolled(arn)
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
     }
 
     "return 303 for authorised Agent when postcode does not match " in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      failedCreateInvitationFoInvalidPostcode(arn)
+      val invitation = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      fastTrackKeyStoreCache.save(invitation)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
+      failedCreateInvitationFoInvalidPostcode(arn)
       val form = agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
     }
 
     "return exception when create invitation fails" in {
@@ -523,8 +527,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val invitationSent = controller.invitationSent()
 
     "return 200 for authorised Agent successfully created invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value, "deadline" -> "27 December 2017"), arn.value))
+      val invitation = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      fastTrackKeyStoreCache.save(invitation)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("invitation-sent-link.header"), htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
@@ -537,6 +544,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation.newInstance
     }
 
     "return exception when no invitation id and deadline found" in {

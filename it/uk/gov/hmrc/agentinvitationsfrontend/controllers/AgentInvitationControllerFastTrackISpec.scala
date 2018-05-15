@@ -11,6 +11,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -404,6 +405,54 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
+
+    "return 303 not-matched if nino and postcode does not match for ITSA" in {
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      fastTrackKeyStoreCache.save(formData)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe formData
+      failedCreateInvitationFoInvalidPostcode(arn)
+
+      val form = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+
+      verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
+    }
+
+    "return 303 not-enrolled if Agent attempts to invite client who does not have an ITSA enrolment" in {
+      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      fastTrackKeyStoreCache.save(formData)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe formData
+      failedCreateInvitationForNotEnrolled(arn)
+
+      val form = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+
+      verifyAuthoriseAttempt()
+      verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
+      await(fastTrackKeyStoreCache.fetchAndGetEntry()).get shouldBe FastTrackInvitation(Some(serviceITSA), None, None, None, None)
+    }
   }
 
+  def verifyAgentClientInvitationSubmittedEvent(arn: String, clientId: String, clientIdType: String, result: String, service: String): Unit = {
+    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
+      detail = Map(
+        "factCheck" -> result,
+        "agentReferenceNumber" -> arn,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "service" -> service
+      ),
+      tags = Map(
+        "transactionName" -> "Agent client service authorisation request created"
+      )
+    )
+  }
 }
