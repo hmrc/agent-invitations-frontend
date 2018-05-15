@@ -1,12 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
+import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
+import play.api.test.Helpers._
+
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -49,6 +52,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
@@ -67,6 +71,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdPIR)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
@@ -85,11 +90,30 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdVAT)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
     }
 
+  }
+
+  "GET /agents/invitation-sent-continue" should {
+    val request = FakeRequest("GET", "/agents/invitation-sent-continue")
+    val continueAfter = controller.continueAfterInvitationSent
+
+    "redirect to where ever user came from" in {
+      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("/tax-history/select-service"))
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe "/tax-history/select-service"
+    }
+
+    "redirect to agent-services-account" in {
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe "/agent-services-account"
+    }
   }
 }
 

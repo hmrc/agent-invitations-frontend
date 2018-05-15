@@ -548,24 +548,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
     behave like anAuthorisedEndpoint(request, invitationSent)
   }
 
-  "GET /agents/invitation-sent-continue" should {
-    val request = FakeRequest("GET", "/agents/invitation-sent-continue")
-    val continueAfter = controller.continueAfterInvitationSent
-
-    "redirect to where ever user came from" in {
-      continueUrlKeyStoreCache.cacheContinueUrl(ContinueUrl("/tax-history/select-service"))
-      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe "/tax-history/select-service"
-    }
-
-    "redirect to agent-services-account" in {
-      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe "/agent-services-account"
-    }
-  }
-
   "GET /agents/not-enrolled" should {
     val request = FakeRequest("GET", "/agents/not-enrolled")
     val notEnrolled = controller.notEnrolled()
