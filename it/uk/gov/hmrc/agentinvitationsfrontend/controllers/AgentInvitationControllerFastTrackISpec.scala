@@ -409,6 +409,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 not-matched if nino and postcode does not match for ITSA" in {
       val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      fastTrackKeyStoreCache.save(formData)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe formData
       failedCreateInvitationFoInvalidPostcode(arn)
 
       val form = agentFastTrackForm.fill(formData)
@@ -424,6 +426,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 not-enrolled if Agent attempts to invite client who does not have an ITSA enrolment" in {
       val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      fastTrackKeyStoreCache.save(formData)
+      fastTrackKeyStoreCache.currentSession.fastTrackInvitation.get shouldBe formData
       failedCreateInvitationForNotEnrolled(arn)
 
       val form = agentFastTrackForm.fill(formData)
