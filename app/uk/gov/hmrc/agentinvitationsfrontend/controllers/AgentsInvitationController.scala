@@ -25,7 +25,7 @@ import play.api.data.validation._
 import play.api.data.{Form, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
@@ -51,6 +51,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            fastTrackCache: FastTrackKeyStoreCache,
                                            continueUrlStoreService: ContinueUrlStoreService,
                                            val messagesApi: play.api.i18n.MessagesApi,
+                                           val env: Environment,
                                            val authConnector: AuthConnector,
                                            val continueUrlActions: ContinueUrlActions,
                                            val withVerifiedPasscode: PasscodeVerification)
@@ -72,6 +73,9 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       mtdItId ++ vat
     }
   }
+
+  private[controllers] val isDevEnv = if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
+  private[controllers] val agentServicesAccountUrl: String = if(isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
@@ -286,7 +290,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        continue <- continueUrlStoreService.fetchContinueUrl.map(continue => continue.getOrElse(ContinueUrl("/agent-services-account")))
+        continue <- continueUrlStoreService.fetchContinueUrl.map(continue => continue.getOrElse(ContinueUrl(agentServicesAccountUrl)))
         _ <- continueUrlStoreService.remove()
       } yield Redirect(continue.url)
     }
