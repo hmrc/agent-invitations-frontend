@@ -3,17 +3,17 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm}
+import play.api.test.Helpers._
 
-class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
+class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
   override protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
@@ -35,13 +35,13 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         "auditing.enabled" -> true,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,
-        "features.show-hmrc-mtd-it" -> false,
-        "features.show-personal-income" -> false,
-        "features.show-hmrc-mtd-vat" -> false,
+        "features.show-hmrc-mtd-it" -> true,
+        "features.show-personal-income" -> true,
+        "features.show-hmrc-mtd-vat" -> true,
         "features.show-kfc-mtd-it" -> false,
-        "features.show-kfc-personal-income" -> true,
+        "features.show-kfc-personal-income" -> false,
         "features.show-kfc-mtd-vat" -> false,
-        "features.enable-fast-track" -> true,
+        "features.enable-fast-track" -> false,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       ).overrides(new TestGuiceModule)
@@ -78,7 +78,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
     }
   }
 
-  "Show Feature Flags are switched off" should {
+  "Show Fast Track flag is switched off" should {
     val request = FakeRequest("POST", "/agents/fast-track")
     val fastTrack = controller.agentFastTrack()
 
@@ -111,31 +111,6 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         status(result) shouldBe BAD_REQUEST
       }
     }
-
-    "through select-service, return 400 and prevent agents" when {
-      val request = FakeRequest("POST", "/agents/select-service")
-      val submitService = controller.submitService()
-
-      "creating an ITSA invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
-        val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-        status(result) shouldBe BAD_REQUEST
-
-      }
-      "creating an IRV invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(servicePIR, None, None))
-        val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-        status(result) shouldBe BAD_REQUEST
-
-      }
-      "creating an VAT invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceVAT, None, None))
-        val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-        status(result) shouldBe BAD_REQUEST
-      }
-    }
   }
+
 }
