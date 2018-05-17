@@ -24,4 +24,5 @@ class FeatureFlags @Inject()(@Named("features.show-hmrc-mtd-it") val showHmrcMtd
                              @Named("features.show-hmrc-mtd-vat") val showHmrcMtdVat: Boolean,
                              @Named("features.show-kfc-mtd-it") val showKfcMtdIt: Boolean,
                              @Named("features.show-kfc-personal-income") val showKfcPersonalIncome: Boolean,
-                             @Named("features.show-kfc-mtd-vat") val showKfcMtdVat: Boolean)
+                             @Named("features.show-kfc-mtd-vat") val showKfcMtdVat: Boolean,
+                             @Named("features.show-fast-track") val showFastTrack: Boolean)

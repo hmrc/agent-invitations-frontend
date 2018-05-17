@@ -57,6 +57,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
         "features.show-kfc-mtd-it"-> true,
         "features.show-kfc-personal-income" -> false,
         "features.show-kfc-mtd-vat" -> true,
+        "features.show-fast-track" -> true,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       ).overrides(new TestGuiceModule)

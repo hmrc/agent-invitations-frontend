@@ -46,6 +46,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "features.show-kfc-mtd-it" -> false,
         "features.show-kfc-personal-income" -> true,
         "features.show-kfc-mtd-vat" -> false,
+        "features.show-fast-track" -> true,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       ).overrides(new TestGuiceModule)

@@ -60,6 +60,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         "features.show-hmrc-mtd-it" -> true,
         "features.show-personal-income" -> true,
         "features.show-hmrc-mtd-vat" -> true,
+        "features.show-fast-track" -> true,
         "passcodeAuthentication.enabled" -> true
       ).overrides(new TestGuiceModule)
   }

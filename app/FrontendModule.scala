@@ -86,6 +86,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-kfc-mtd-it")
     bindBooleanProperty("features.show-kfc-personal-income")
     bindBooleanProperty("features.show-kfc-mtd-vat")
+    bindBooleanProperty("features.show-fast-track")
   }
 
   private def bindBaseUrl(serviceName: String) =

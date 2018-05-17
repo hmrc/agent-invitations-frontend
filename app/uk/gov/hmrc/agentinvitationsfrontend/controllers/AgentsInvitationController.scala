@@ -320,17 +320,22 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentFastTrackForm.bindFromRequest().fold(
-        _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
-        fastTrackInvitation => {
-          fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
-            withMaybeContinueUrlCached {
-              ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
-                redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+      if(featureFlags.showFastTrack){
+        agentFastTrackForm.bindFromRequest().fold(
+          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+          fastTrackInvitation => {
+            fastTrackCache.save(fastTrackInvitation).flatMap { _ =>
+              withMaybeContinueUrlCached {
+                ifShouldShowService(fastTrackInvitation, featureFlags, isWhitelisted) {
+                  redirectFastTrack(arn, fastTrackInvitation, isWhitelisted)
+                }
               }
             }
-          }
-      })
+          })
+      } else{
+        Logger.info("Fast-Track feature flag is switched off")
+        Future successful BadRequest
+      }
     }
   }
 
