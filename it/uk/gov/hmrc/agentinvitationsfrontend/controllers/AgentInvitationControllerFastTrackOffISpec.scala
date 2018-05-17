@@ -41,7 +41,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
         "features.show-kfc-mtd-it" -> false,
         "features.show-kfc-personal-income" -> false,
         "features.show-kfc-mtd-vat" -> false,
-        "features.show-fast-track" -> false,
+        "features.enable-fast-track" -> false,
         "microservice.services.agent-subscription-frontend.external-url" -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       ).overrides(new TestGuiceModule)

@@ -31,7 +31,7 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
                                                    showKfcMtdIt           = true,
                                                    showKfcPersonalIncome  = true,
                                                    showKfcMtdVat          = true,
-                                                   showFastTrack          = true)
+                                                   enableFastTrack          = true)
 
   private val featureFlagsAllOff = new FeatureFlags(showHmrcMtdIt          = true,
                                                     showPersonalIncome     = true,
@@ -39,7 +39,7 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
                                                     showKfcMtdIt           = false,
                                                     showKfcPersonalIncome  = false,
                                                     showKfcMtdVat          = false,
-                                                    showFastTrack          = false)
+                                                    enableFastTrack          = false)
 
   private val serviceITSA = "HMRC-MTD-IT"
   private val servicePIR = "PERSONAL-INCOME-RECORD"
