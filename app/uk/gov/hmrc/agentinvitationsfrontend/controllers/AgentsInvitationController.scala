@@ -333,7 +333,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
             }
           })
       } else{
-        Logger.info("Fast-Track feature flag is switched off")
+        Logger.warn("Fast-Track feature flag is switched off")
         Future successful BadRequest
       }
     }
