@@ -286,6 +286,16 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
         FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe Some(itsaInvitation)
       }
 
+      "there is no service but there is a Nino" in {
+        val itsaInvitation = FastTrackInvitation(None, None, Some(nino.value), None, None)
+        FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe Some(itsaInvitation)
+      }
+
+      "there is no service but there is a Postcode" in {
+        val itsaInvitation = FastTrackInvitation(None, None, None, Some(validPostcode), None)
+        FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe Some(itsaInvitation)
+      }
+
       "there is no service but the details are for IRV" in {
         val irvInvitation = FastTrackInvitation(None, Some("ni"), Some(nino.value), None, None)
         FastTrackInvitationNeedsService.unapply(irvInvitation) shouldBe Some(irvInvitation)
@@ -295,14 +305,16 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
         val vatInvitation = FastTrackInvitation(None, Some("vrn"), Some(vrn.value), None, Some(validRegDateForVrn97))
         FastTrackInvitationNeedsService.unapply(vatInvitation) shouldBe Some(vatInvitation)
       }
-    }
 
-    "return None" when {
-      "there is no service and no clientIdentifier" in {
-        val itsaInvitation = FastTrackInvitation(None, None, None, None, None)
-        FastTrackInvitationNeedsService.unapply(itsaInvitation) shouldBe None
+      "there is no service but there is a VRN" in{
+        val vatInvitation = FastTrackInvitation(None, None, Some(vrn.value), None, None)
+        FastTrackInvitationNeedsService.unapply(vatInvitation) shouldBe Some(vatInvitation)
+      }
+
+      "there is no service but there is VatReg" in {
+        val vatInvitation = FastTrackInvitation(None, None, None, None, Some(validRegDateForVrn97))
+        FastTrackInvitationNeedsService.unapply(vatInvitation) shouldBe Some(vatInvitation)
       }
     }
-
   }
 }
