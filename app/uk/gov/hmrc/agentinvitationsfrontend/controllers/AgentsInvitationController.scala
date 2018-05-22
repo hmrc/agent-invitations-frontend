@@ -665,12 +665,7 @@ object AgentsInvitationController {
   }
 
   object FastTrackInvitationNeedsService {
-    def unapply(fastTrackInvitation: FastTrackInvitation): Option[FastTrackInvitation] = fastTrackInvitation match {
-      case FastTrackInvitation(_, _, Some(_), _, _) =>
-        Some(fastTrackInvitation.copy(service = None))
-
-      case _ => None
-    }
+    def unapply(fastTrackInvitation: FastTrackInvitation): Option[FastTrackInvitation] = Some(fastTrackInvitation.copy(service = None))
   }
 
 }
