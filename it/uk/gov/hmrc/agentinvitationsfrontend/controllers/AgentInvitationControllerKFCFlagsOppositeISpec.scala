@@ -5,7 +5,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{header, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm, agentInvitationIdentifyClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -143,6 +143,27 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
       verifyNoCheckVatRegisteredClientStubAttempt
+    }
+  }
+
+  "GET /agents/identify-client" when {
+    val request = FakeRequest("GET", "/agents/identify-client")
+
+    "not show a postcode entry field if service is ITSA" in {
+      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
+
+      val form = agentInvitationIdentifyClientForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
+      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+
+      status(resultFuture) shouldBe 200
+      checkHtmlResultWithBodyMsgs(resultFuture,
+        "identify-client.header",
+        "identify-client.nino.label",
+        "identify-client.nino.hint")
+
+      val result = await(resultFuture)
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.label")
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.hint")
     }
   }
 

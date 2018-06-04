@@ -79,6 +79,18 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  protected def checkHtmlResultWithBodyMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+    expectedMessageKeys.foreach{ messageKey =>
+      withClue(s"Message key '$messageKey' exists:") {
+        Messages.isDefinedAt(messageKey) shouldBe true
+      }
+    }
+    val expectedSubstrings = expectedMessageKeys.map(htmlEscapedMessage(_))
+    checkHtmlResultWithBodyText(result, expectedSubstrings:_*)
+
+    expectedSubstrings.foreach(s => bodyOf(result) should include(s))
+  }
+
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     fastTrackKeyStoreCache.clear()

@@ -4,6 +4,8 @@
 
 # Agent Endpoints
 GET         /agents/                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
+GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showIdentifyClientForm
+POST        /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitIdentifyClient
 GET         /agents/enter-nino                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showNinoForm
 POST        /agents/enter-nino                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitNino
 GET         /agents/enter-vrn                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showVrnForm

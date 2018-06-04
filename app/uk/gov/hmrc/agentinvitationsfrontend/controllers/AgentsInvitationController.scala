@@ -110,6 +110,42 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
+  val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
+    val fastrackToIdentifyClientForm = (fastrackDetails: FastTrackInvitation) => {
+      val service = fastrackDetails.service.getOrElse("")
+      val clientId = fastrackDetails.clientIdentifier.map(Nino.apply)
+      agentInvitationIdentifyClientForm.fill(AgentInvitationUserInput(service, clientId, fastrackDetails.postcode))
+    }
+
+    withAuthorisedAsAgent { (_, _) =>
+      fastTrackCache.fetchAndGetEntry().map {
+        case Some(inviteDetails) =>
+          Ok(identify_client(fastrackToIdentifyClientForm(inviteDetails)))
+        case None =>
+          Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
+  val submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      agentInvitationIdentifyClientForm.bindFromRequest().fold(
+        formWithErrors => {
+          Future successful Ok(identify_client(formWithErrors))
+        },
+        userInput => for {
+          maybeCachedInvitation <- fastTrackCache.fetchAndGetEntry()
+          invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation.newInstance).copy(
+            clientIdentifier = userInput.clientIdentifier.map(_.value),
+            postcode = userInput.postcode
+          )
+          _ <- fastTrackCache.save(invitationWithClientDetails)
+          redirectResult <- redirectFastTrack(arn, invitationWithClientDetails, isWhitelisted)
+        } yield redirectResult
+      )
+    }
+  }
+
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetchAndGetEntry().flatMap {
@@ -359,6 +395,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
         case Some(HMRCMTDVAT) =>
           Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+        case Some(HMRCMTDIT) if isSupportedWhitelistedService(HMRCMTDIT, isWhitelisted) =>
+          Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
         case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
           Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
         case _ =>
@@ -374,7 +412,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
               createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
 
           case (Some(HMRCMTDIT), Some(clientId)) if Nino.isValid(clientId) =>
-            if (featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showPostcodeForm())
+            if (featureFlags.showKfcMtdIt) Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
             else createInvitation(arn, HMRCMTDIT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Nino(_)), None)
 
           case _ =>
@@ -481,8 +519,8 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.service.required"))
   }
 
-  private val invalidNino =
-    validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
+  private def invalidNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
+    validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
   private val invalidVrn =
     validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
   private val invalidVatDateFormat =
@@ -501,17 +539,26 @@ object AgentsInvitationController {
     }
   }
 
-  private val invalidPostcode =
-    validateField("error.postcode.required", "enter-postcode.invalid-format")(postcode => postcode.matches(postcodeRegex))
+  private def invalidPostcode(nonEmptyFailure: String = "error.postcode.required", invalidFailure: String = "enter-postcode.invalid-format") =
+    validateField(nonEmptyFailure, invalidFailure)(postcode => postcode.matches(postcodeRegex))
 
   import play.api.data.format.Formats.stringFormat
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
+  val agentInvitationIdentifyClientForm: Form[AgentInvitationUserInput] = {
+    Form(mapping(
+      "service" -> text,
+      "clientIdentifier" -> normalizedText.verifying(invalidNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
+      "postcode" -> text.verifying(invalidPostcode("identify-client.postcode.required", "identify-client.postcode.invalid-format")))
+    ({ (service, clientIdentifier, postcode) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), Some(postcode)) })
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
+  }
+
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
     Form(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(invalidNino),
+      "clientIdentifier" -> normalizedText.verifying(invalidNino()),
       "postcode" -> optional(text))
     ({ (service, clientIdentifier, _) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
@@ -548,7 +595,7 @@ object AgentsInvitationController {
     Form(mapping(
       "service" -> text,
       "clientIdentifier" -> normalizedText,
-      "postcode" -> text.verifying(invalidPostcode))
+      "postcode" -> text.verifying(invalidPostcode()))
     ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
   }

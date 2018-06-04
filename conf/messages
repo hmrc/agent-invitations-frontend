@@ -5,6 +5,18 @@ title.suffix.client=Manage your tax agents
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
+# Identify Client
+identify-client.header=Enter your client''s details
+identify-client.p1=This will help us match their details against information we hold.
+identify-client.nino.label=National Insurance number
+identify-client.nino.hint=For example, VO 12 34 56 D
+identify-client.nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D
+identify-client.nino.required=Enter your client''s National Insurance number
+identify-client.postcode.label=Postcode
+identify-client.postcode.hint=This is the postcode of your client''s registered address
+identify-client.postcode.invalid-format=Enter a valid postcode, like AA1 1AA
+identify-client.postcode.required=Enter your client''s postcode
+
 # Enter Nino
 enter-nino.header=Enter an individual''s National Insurance number
 enter-nino.label=National Insurance number

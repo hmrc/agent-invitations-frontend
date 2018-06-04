@@ -93,13 +93,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitService()
 
-    "return 303 for authorised Agent with valid ITSA service, redirect to enter nino page" in {
+    "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
       val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/enter-nino")
+      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
       verifyAuthoriseAttempt()
     }
 
@@ -216,20 +216,131 @@ class AgentInvitationControllerISpec extends BaseISpec {
     behave like anAuthorisedEndpoint(request, submitVrn)
   }
 
-  "GET /agents/enter-nino" should {
-    val request = FakeRequest("GET", "/agents/enter-nino")
-    val showNinoForm = controller.showNinoForm()
+  "GET /agents/identify-client" should {
+    val request = FakeRequest("GET", "/agents/identify-client")
+    val showIdentifyClientForm = controller.showIdentifyClientForm()
+
+    behave like anAuthorisedEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for ITSA service" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), None, None, None, None))
-      val result = showNinoForm(authorisedAsValidAgent(request, arn.value))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, hasMessage("generic.title", htmlEscapedMessage("enter-nino.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-nino.header"))
-      checkHasAgentSignOutLink(result)
 
-      verifyAuthoriseAttempt()
+      checkHtmlResultWithBodyText(result,
+        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+
+      checkHtmlResultWithBodyMsgs(result,
+        "identify-client.header",
+        "identify-client.p1",
+        "identify-client.nino.label",
+        "identify-client.nino.hint",
+        "identify-client.postcode.label",
+        "identify-client.postcode.hint"
+      )
+
+      checkHasAgentSignOutLink(result)
     }
+
+    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+    }
+  }
+
+  "POST /agents/identify-client" when {
+    val request = FakeRequest("POST", "/agents/identify-client")
+    val submitIdentifyClient = controller.submitIdentifyClient()
+
+    behave like anAuthorisedEndpoint(request, submitIdentifyClient)
+
+    "service is HMRC-MTD-IT" should {
+
+      "redirect to /agents/invitation-sent when a valid NINO and postcode are submitted" in {
+        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "HMRC-MTD-IT", "NI",validPostcode)
+        getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+
+        fastTrackKeyStoreCache.save(FastTrackInvitation(
+          Some("HMRC-MTD-IT"),
+          None,
+          Some(validNino.value),
+          Some(validPostcode),
+          None))
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "postcode" -> validPostcode)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+      }
+
+      "redisplay page with errors when an empty NINO is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-IT",
+          "clientIdentifier" -> "",
+          "postcode" -> validPostcode)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.nino.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid NINO is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-IT",
+          "clientIdentifier" -> "invalid",
+          "postcode" -> validPostcode)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.nino.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an empty postcode is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "postcode" -> "")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.postcode.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid postcode is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "postcode" -> "invalid")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.postcode.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redirect to /agents/select-service if service is missing" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "",
+          "clientIdentifier" -> validNino.value,
+          "postcode" -> validPostcode)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      }
+    }
+  }
+
+  "GET /agents/enter-nino" should {
+    val request = FakeRequest("GET", "/agents/enter-nino")
+    val showNinoForm = controller.showNinoForm()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for PERSONAL-INCOME-RECORD service" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(servicePIR), None, None, None, None))
@@ -257,13 +368,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/enter-nino")
     val submitNino = controller.submitNino()
 
-    "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT, redirected to enter postcode page" in {
+    "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT, redirected to identify-client page" in {
       fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/enter-postcode")
+      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
 
     "return 303 for authorised Agent with valid nino and Personal Income Record service, redirect to invitation sent page" in {
