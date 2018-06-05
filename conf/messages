@@ -67,13 +67,20 @@ invitation-sent.continueJourney.button=Continue
 # Not Enrolled
 not-enrolled.itsa.header=This individual has not signed up to report their income and expenses through software
 not-enrolled.itsa.description=You cannot get authorisation from an individual until they have signed up.
+not-enrolled.itsa.button=Back to your account
 
 not-enrolled.vat.header=This individual has not signed up to report their VAT returns through software
 not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
+not-enrolled.vat.button=Back to your account
 
 # Not Matched
-not-matched.header=There was a problem
-not-matched.description = The details provided do not match our records.
+not-matched.itsa.header=There is a problem
+not-matched.itsa.description = We could not find any records that match the details you entered.
+not-matched.itsa.button = Try again
+
+not-matched.vat.header=There is a problem
+not-matched.vat.description = We could not find any records that match the details you entered.
+not-matched.vat.button = Try again
 
 # Client Pages
 # Landing Page

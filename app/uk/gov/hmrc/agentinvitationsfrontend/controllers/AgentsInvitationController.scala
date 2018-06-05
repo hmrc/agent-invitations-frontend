@@ -48,7 +48,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            featureFlags: FeatureFlags,
                                            invitationsService: InvitationsService,
                                            auditService: AuditService,
-                                           fastTrackCache: FastTrackKeyStoreCache,
+                                           fastTrackCache: FastTrackCache,
                                            continueUrlStoreService: ContinueUrlStoreService,
                                            val messagesApi: play.api.i18n.MessagesApi,
                                            val env: Environment,
@@ -95,8 +95,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(select_service(formWithErrors, allowedServices))
         },
         userInput => {
-          val updateAggregate = fastTrackCache.fetchAndGetEntry()
-            .map(_.getOrElse(FastTrackInvitation.newInstance))
+          val updateAggregate = fastTrackCache.fetch()
+            .map(_.getOrElse(FastTrackInvitation()))
             .map(_.copy(service = Some(userInput.service)))
 
           updateAggregate.flatMap(updateFastTrack =>
@@ -111,16 +111,16 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   }
 
   val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
-    val fastrackToIdentifyClientForm = (fastrackDetails: FastTrackInvitation) => {
-      val service = fastrackDetails.service.getOrElse("")
-      val clientId = fastrackDetails.clientIdentifier.map(Nino.apply)
-      agentInvitationIdentifyClientForm.fill(AgentInvitationUserInput(service, clientId, fastrackDetails.postcode))
+    val fastTrackToIdentifyClientForm = (fastTrackDetails: FastTrackInvitation) => {
+      val service = fastTrackDetails.service.getOrElse("")
+      val clientId = fastTrackDetails.clientIdentifier.map(Nino.apply)
+      agentInvitationIdentifyClientForm.fill(AgentInvitationUserInput(service, clientId, fastTrackDetails.postcode))
     }
 
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().map {
+      fastTrackCache.fetch().map {
         case Some(inviteDetails) =>
-          Ok(identify_client(fastrackToIdentifyClientForm(inviteDetails)))
+          Ok(identify_client(fastTrackToIdentifyClientForm(inviteDetails)))
         case None =>
           Redirect(routes.AgentsInvitationController.selectService())
       }
@@ -134,8 +134,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(identify_client(formWithErrors))
         },
         userInput => for {
-          maybeCachedInvitation <- fastTrackCache.fetchAndGetEntry()
-          invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation.newInstance).copy(
+          maybeCachedInvitation <- fastTrackCache.fetch()
+          invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation()).copy(
             clientIdentifier = userInput.clientIdentifier.map(_.value),
             postcode = userInput.postcode
           )
@@ -148,7 +148,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().flatMap {
+      fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           val service = aggregate.service.getOrElse("")
           Future successful Ok(enter_nino(agentInvitationNinoForm.fill(AgentInvitationUserInput(service, None, aggregate.postcode))))
@@ -166,8 +166,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(enter_nino(formWithErrors))
         },
         userInput => {
-          val updatedAggregate = fastTrackCache.fetchAndGetEntry()
-            .map(_.getOrElse(FastTrackInvitation.newInstance))
+          val updatedAggregate = fastTrackCache.fetch()
+            .map(_.getOrElse(FastTrackInvitation()))
             .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(nino => nino.value)))
 
           updatedAggregate.flatMap(updatedInvitation =>
@@ -180,7 +180,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().flatMap {
+      fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           val service = aggregate.service.getOrElse("")
           Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(AgentInvitationVatForm(service, None, aggregate.vatRegDate))))
@@ -197,8 +197,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(enter_vrn(formWithErrors))
         },
         userInput => {
-          val updatedAggregate = fastTrackCache.fetchAndGetEntry()
-            .map(_.getOrElse(FastTrackInvitation.newInstance))
+          val updatedAggregate = fastTrackCache.fetch()
+            .map(_.getOrElse(FastTrackInvitation()))
             .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(vrn => vrn.value)))
 
           updatedAggregate.flatMap(updatedInvitation =>
@@ -211,7 +211,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val showVatRegistrationDateForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().flatMap {
+      fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           val service = aggregate.service.getOrElse("")
           val vrn = aggregate.clientIdentifier.map(vrn => Vrn(vrn))
@@ -227,8 +227,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       agentInvitationVatRegistrationDateForm.bindFromRequest().fold(
         formWithErrors => Future successful Ok(enter_vat_registration_date(formWithErrors)),
         userInput => {
-          val updatedAggregate = fastTrackCache.fetchAndGetEntry()
-            .map(_.getOrElse(FastTrackInvitation.newInstance))
+          val updatedAggregate = fastTrackCache.fetch()
+            .map(_.getOrElse(FastTrackInvitation()))
             .map(_.copy(vatRegDate = userInput.registrationDate))
 
           updatedAggregate.flatMap(updatedInvitation =>
@@ -240,7 +240,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().flatMap {
+      fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           val service = aggregate.service.getOrElse("")
           val nino = aggregate.clientIdentifier.map(nino => Nino(nino))
@@ -257,8 +257,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
           Future successful Ok(enter_postcode(formWithErrors))
         },
         userInput => {
-          val updatedAggregate = fastTrackCache.fetchAndGetEntry()
-            .map(_.getOrElse(FastTrackInvitation.newInstance))
+          val updatedAggregate = fastTrackCache.fetch()
+            .map(_.getOrElse(FastTrackInvitation()))
             .map(_.copy(postcode = userInput.postcode))
 
           updatedAggregate.flatMap(updatedInvitation =>
@@ -288,16 +288,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
           auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
-          fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = Some(service))).map { _ =>
-            Redirect(routes.AgentsInvitationController.notEnrolled())
-          }
+          Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
           Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
           auditService.sendAgentInvitationSubmitted(arn, "", service, clientIdentifierType, clientIdentifier, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
-          fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = Some(service))).map { _ =>
-            Redirect(routes.AgentsInvitationController.notMatched())
-          }
+          Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
           Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
@@ -314,7 +310,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String = s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
           for {
-            _ <- fastTrackCache.save(FastTrackInvitation.newInstance)
+            _ <- fastTrackCache.save(FastTrackInvitation())
             continue <- continueUrlStoreService.fetchContinueUrl
           } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
         case _ =>
@@ -334,12 +330,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndGetEntry().map {
+      fastTrackCache.fetchAndClear().map {
         case Some(aggregate) => aggregate.service match {
           case Some(HMRCMTDVAT) =>
-            Forbidden(not_enrolled(Messages("not-enrolled.vat.header"), Messages("not-enrolled.vat.description")))
+            Forbidden(not_enrolled("vat"))
           case Some(HMRCMTDIT) =>
-            Forbidden(not_enrolled(Messages("not-enrolled.itsa.header"), Messages("not-enrolled.itsa.description")))
+            Forbidden(not_enrolled("itsa"))
           case _ =>
             throw new Exception("Unsupported Service")
         }
@@ -350,7 +346,19 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Forbidden(not_matched())
+      fastTrackCache.fetch().flatMap {
+        case Some(aggregate) => aggregate.service match {
+          case Some(HMRCMTDVAT) =>
+            fastTrackCache.save(FastTrackInvitation(HMRCMTDVAT)).map(_ =>
+              Forbidden(not_matched("vat"))
+            )
+          case Some(HMRCMTDIT) =>
+            Future successful Forbidden(not_matched("itsa"))
+          case _ =>
+            throw new Exception("Unsupported Service")
+        }
+        case None => throw new Exception("Empty Cache")
+      }
     }
   }
 
@@ -423,7 +431,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
       case _ =>
         Logger.warn("Resetting due to mix data in session")
-        fastTrackCache.save(FastTrackInvitation.newInstance).map(_ =>
+        fastTrackCache.save(FastTrackInvitation()).map(_ =>
           Redirect(routes.AgentsInvitationController.selectService()))
     }
   }
@@ -460,10 +468,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       .getOrElse(throw new IllegalStateException(s"Service missing. form data: $fastTrackInvitation"))
     invitationsService.checkVatRegistrationDateMatches(suppliedVrn, suppliedVatRegDate) flatMap {
       case Some(true) => createInvitation(arn, service, fastTrackInvitation.clientIdentifierType, Some(suppliedVrn), None)
-      case Some(false) => fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = fastTrackInvitation.service)).map { _ =>
+      case Some(false) => fastTrackCache.save(FastTrackInvitation().copy(service = fastTrackInvitation.service)).map { _ =>
         Redirect(routes.AgentsInvitationController.notMatched())
       }
-      case None => fastTrackCache.save(FastTrackInvitation.newInstance.copy(service = fastTrackInvitation.service)).map { _ =>
+      case None => fastTrackCache.save(FastTrackInvitation().copy(service = fastTrackInvitation.service)).map { _ =>
         Redirect(routes.AgentsInvitationController.notEnrolled())
       }
     }
@@ -691,7 +699,7 @@ object AgentsInvitationController {
           case _ => None
         }
       case FastTrackInvitation(Some(service), _, None, _, _) =>
-        Some(FastTrackInvitation(Some(service), None, None, None, None))
+        Some(FastTrackInvitation(service))
       case _ => None
     }
   }

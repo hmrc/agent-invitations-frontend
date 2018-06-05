@@ -6,7 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, FastTrackInvitation}
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackCache, FastTrackKeyStoreCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -69,12 +69,12 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    fastTrackKeyStoreCache.clear()
+    testFastTrackCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
     }
   }
 

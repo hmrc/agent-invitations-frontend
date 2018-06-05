@@ -16,12 +16,14 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(heading: String, description: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", heading, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-enrolled.$serviceId.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-  <h1 class="heading-xlarge">@heading</h1>
+  <h1 class="heading-xlarge">@Messages(s"not-enrolled.$serviceId.header")</h1>
 
-  <p>@description</p>
+  <p>@Messages(s"not-enrolled.$serviceId.description")</p>
+
+  <a href="@{externalUrls.agentServicesAccountUrl}/agent-services-account" class="button">@Messages(s"not-enrolled.$serviceId.button")</a>
 
 }
