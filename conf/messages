@@ -65,12 +65,12 @@ invitation-sent.continueToASAccount.button=Return to your Agent Services account
 invitation-sent.continueJourney.button=Continue
 
 # Not Enrolled
-not-enrolled.itsa.header=This individual has not signed up to report their income and expenses through software
-not-enrolled.itsa.description=You cannot get authorisation from an individual until they have signed up.
+not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
+not-enrolled.itsa.description=You cannot ask for authorisation to represent them until they have signed up.
 not-enrolled.itsa.button=Back to your account
 
-not-enrolled.vat.header=This individual has not signed up to report their VAT returns through software
-not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
+not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
+not-enrolled.vat.description=You cannot ask for authorisation to represent them until they have signed up.
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
