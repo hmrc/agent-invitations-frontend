@@ -333,9 +333,9 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       fastTrackCache.fetchAndClear().map {
         case Some(aggregate) => aggregate.service match {
           case Some(HMRCMTDVAT) =>
-            Forbidden(not_enrolled("vat"))
+            Forbidden(not_enrolled(Services.messageKeyForVAT))
           case Some(HMRCMTDIT) =>
-            Forbidden(not_enrolled("itsa"))
+            Forbidden(not_enrolled(Services.messageKeyForITSA))
           case _ =>
             throw new Exception("Unsupported Service")
         }
@@ -350,10 +350,10 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         case Some(aggregate) => aggregate.service match {
           case Some(HMRCMTDVAT) =>
             fastTrackCache.save(FastTrackInvitation(HMRCMTDVAT)).map(_ =>
-              Forbidden(not_matched("vat"))
+              Forbidden(not_matched(Services.messageKeyForVAT))
             )
           case Some(HMRCMTDIT) =>
-            Future successful Forbidden(not_matched("itsa"))
+            Future successful Forbidden(not_matched(Services.messageKeyForITSA))
           case _ =>
             throw new Exception("Unsupported Service")
         }
