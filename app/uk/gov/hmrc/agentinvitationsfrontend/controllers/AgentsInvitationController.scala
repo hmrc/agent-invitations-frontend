@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
-
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
@@ -28,6 +27,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationIdentifyClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -76,6 +76,12 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   private[controllers] val isDevEnv = if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
   private[controllers] val agentServicesAccountUrl: String = if(isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
+
+  val agentInvitationIdentifyClientForm: Form[AgentInvitationUserInput] =
+    AgentsInvitationController.agentInvitationIdentifyClientForm(featureFlags)
+
+  val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] =
+    AgentsInvitationController.agentInvitationPostCodeForm(featureFlags)
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
@@ -520,6 +526,13 @@ object AgentsInvitationController {
     }
   }
 
+  private def validateFieldEmptyOrCondition(failure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    if (fieldValue.isEmpty || condition(fieldValue.trim.toUpperCase))
+      Valid
+    else
+      Invalid(ValidationError(failure))
+  }
+
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.nonEmpty)
       Valid
@@ -547,20 +560,29 @@ object AgentsInvitationController {
     }
   }
 
-  private def invalidPostcode(nonEmptyFailure: String = "error.postcode.required", invalidFailure: String = "enter-postcode.invalid-format") =
-    validateField(nonEmptyFailure, invalidFailure)(postcode => postcode.matches(postcodeRegex))
+  private def invalidPostcode(failure: String) =
+    validateFieldEmptyOrCondition(failure)(postcode => postcode.matches(postcodeRegex))
 
   import play.api.data.format.Formats.stringFormat
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
-  val agentInvitationIdentifyClientForm: Form[AgentInvitationUserInput] = {
-    Form(mapping(
+  def verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags: FeatureFlags, failure: String) = (Constraint[AgentInvitationUserInput]{ (input:AgentInvitationUserInput) =>
+    if(input.service==HMRCMTDIT && featureFlags.showKfcMtdIt && input.postcode.isEmpty) Invalid(ValidationError(failure))
+    else Valid
+  }, Map(failure -> "postcode"))
+
+  def agentInvitationIdentifyClientForm(featureFlags: FeatureFlags): Form[AgentInvitationUserInput] = {
+    Form(MappingOps.errorAwareMapping(mapping(
       "service" -> text,
       "clientIdentifier" -> normalizedText.verifying(invalidNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
-      "postcode" -> text.verifying(invalidPostcode("identify-client.postcode.required", "identify-client.postcode.invalid-format")))
-    ({ (service, clientIdentifier, postcode) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), Some(postcode)) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
+      "postcode" -> optional(text.verifying(invalidPostcode("identify-client.postcode.invalid-format"))))
+    ({ (service, clientIdentifier, postcode) => AgentInvitationUserInput(service, Some(Nino(clientIdentifier.trim.toUpperCase())), postcode) })
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+        .verifyingWithErrorMap(
+          verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags, "identify-client.postcode.required")
+        )
+    )
   }
 
   val agentInvitationNinoForm: Form[AgentInvitationUserInput] = {
@@ -599,13 +621,16 @@ object AgentsInvitationController {
     ({ user => Some((user.service, None, None)) }))
   }
 
-  val agentInvitationPostCodeForm: Form[AgentInvitationUserInput] = {
-    Form(mapping(
+  def agentInvitationPostCodeForm(featureFlags: FeatureFlags): Form[AgentInvitationUserInput] = {
+    Form(MappingOps.errorAwareMapping(mapping(
       "service" -> text,
       "clientIdentifier" -> normalizedText,
-      "postcode" -> text.verifying(invalidPostcode()))
-    ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), Some(postcode)) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode.getOrElse(""))) }))
+      "postcode" -> optional(text.verifying(invalidPostcode("enter-postcode.invalid-format"))))
+    ({ (service, nino, postcode) => AgentInvitationUserInput(service, Some(Nino(nino.trim.toUpperCase())), postcode) })
+    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+      .verifyingWithErrorMap(
+        verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags, "error.postcode.required")
+      ))
   }
 
   val agentFastTrackForm: Form[FastTrackInvitation] = {

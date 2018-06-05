@@ -18,7 +18,7 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationIdentifyClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AgentsInvitationController, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
@@ -26,6 +26,10 @@ import uk.gov.hmrc.play.test.UnitSpec
 class AgentInvitationIdentifyClientFormSpec extends UnitSpec {
 
   "IdentifyClientForm" when {
+
+    val featureFlags = FeatureFlags()
+    val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientForm(featureFlags)
+
     "service is ITSA" should {
       val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
 
