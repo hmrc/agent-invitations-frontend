@@ -18,11 +18,11 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
+@(agentInvitationsForm : Form[UserInputVrnAndRegDate])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitch(featureName: String)(content: Html) = {
     @if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
@@ -44,10 +44,10 @@
          <div class="form-group">
              @input(
                  agentInvitationsForm("clientIdentifier"),
-                 '_label -> Messages("enter-vrn.label"),
+                 '_label -> Messages("identify-client.vrn.label"),
                  '_inputClass -> "input--medium input--cleared",
                  '_labelTextClass -> "h2-heading",
-                 '_inputHint -> Messages("enter-vrn.example"),
+                 '_inputHint -> Messages("identify-client.vrn.hint"),
                  '_labelClass -> "soft--ends"
              )
          </div>
@@ -56,10 +56,10 @@
          <div class="form-group">
          @input(
              agentInvitationsForm("registrationDate"),
-             '_label -> Messages("enter-vat-registration-date.label"),
+             '_label -> Messages("identify-client.vat-registration-date.label"),
              '_inputClass -> "input--medium input--cleared input--small",
              '_labelTextClass -> "h2-heading",
-             '_inputHint -> Messages("enter-vat-registration-date.hint"),
+             '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
              '_labelClass -> "soft--ends"
          )
          </div>

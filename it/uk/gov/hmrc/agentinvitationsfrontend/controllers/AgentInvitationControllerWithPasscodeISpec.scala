@@ -163,7 +163,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-vrn"
+        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
       }
     }
   }

@@ -152,7 +152,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a postcode entry field if service is ITSA" in {
       testFastTrackCache.save(FastTrackInvitation(serviceITSA))
 
-      val form = controller.agentInvitationIdentifyClientForm.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+      val form = controller.agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200

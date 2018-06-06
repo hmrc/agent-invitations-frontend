@@ -77,7 +77,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   private[controllers] val isDevEnv = if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
   private[controllers] val agentServicesAccountUrl: String = if(isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
 
-  val agentInvitationIdentifyClientForm: Form[UserInputNinoAndPostcode] =
+  val agentInvitationIdentifyClientFormItsa: Form[UserInputNinoAndPostcode] =
     AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
 
   val agentInvitationPostCodeForm: Form[UserInputNinoAndPostcode] =
@@ -122,17 +122,16 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
   private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: FastTrackInvitation) => {
     val service = fastTrackDetails.service.getOrElse("")
     val clientId = fastTrackDetails.clientIdentifier.map(Nino.apply)
-    agentInvitationIdentifyClientForm.fill(UserInputNinoAndPostcode(service, clientId, fastTrackDetails.postcode))
+    agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(service, clientId, fastTrackDetails.postcode))
   }
 
   private val fastTrackToIdentifyClientFormVat = (fastTrackDetails: FastTrackInvitation) => {
     val service = fastTrackDetails.service.getOrElse("")
     val clientId = fastTrackDetails.clientIdentifier.map(Vrn.apply)
-    agentInvitationIdentifyClientForm.fill(UserInputNinoAndPostcode(service, clientId, fastTrackDetails.vatRegDate))
+    agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(service, clientId, fastTrackDetails.vatRegDate))
   }
 
   val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
-
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
         case Some(inviteDetails) =>
@@ -150,21 +149,48 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   val submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentInvitationIdentifyClientForm.bindFromRequest().fold(
+      serviceNameForm.bindFromRequest().fold(
+        _ =>
+          Future successful Redirect(routes.AgentsInvitationController.selectService()),
+        {
+          case HMRCMTDIT => identifyItsaClient(arn, isWhitelisted)
+          case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
+          case _ =>  Future successful Redirect(routes.AgentsInvitationController.selectService())
+        })
+    }
+  }
+
+  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) = {
+    agentInvitationIdentifyClientFormItsa.bindFromRequest().fold(
+    formWithErrors => {
+      Future successful Ok(identify_client_itsa(formWithErrors))
+    },
+    userInput => for {
+      maybeCachedInvitation <- fastTrackCache.fetch()
+      invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation()).copy(
+        clientIdentifier = userInput.clientIdentifier.map(_.value),
+        postcode = userInput.postcode
+      )
+      _ <- fastTrackCache.save(invitationWithClientDetails)
+      redirectResult <- redirectFastTrack(arn, invitationWithClientDetails, isWhitelisted)
+    } yield redirectResult
+  )}
+
+  def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) = {
+      agentInvitationIdentifyClientFormVat.bindFromRequest().fold(
         formWithErrors => {
-          Future successful Ok(identify_client_itsa(formWithErrors))
+          Future successful Ok(identify_client_vat(formWithErrors))
         },
         userInput => for {
           maybeCachedInvitation <- fastTrackCache.fetch()
           invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation()).copy(
             clientIdentifier = userInput.clientIdentifier.map(_.value),
-            postcode = userInput.postcode
+            vatRegDate = userInput.registrationDate
           )
           _ <- fastTrackCache.save(invitationWithClientDetails)
           redirectResult <- redirectFastTrack(arn, invitationWithClientDetails, isWhitelisted)
         } yield redirectResult
       )
-    }
   }
 
   val showNinoForm: Action[AnyContent] = Action.async { implicit request =>
@@ -423,7 +449,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
       case FastTrackInvitationNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
         case Some(HMRCMTDVAT) =>
-          Future successful Redirect(routes.AgentsInvitationController.showVrnForm())
+          Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
         case Some(HMRCMTDIT) if isSupportedWhitelistedService(HMRCMTDIT, isWhitelisted) =>
           Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
         case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
@@ -436,7 +462,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         (invitationNeedsKnownFact.service, invitationNeedsKnownFact.clientIdentifier) match {
           case (Some(HMRCMTDVAT), Some(_)) =>
             if (featureFlags.showKfcMtdVat)
-              Future successful Redirect(routes.AgentsInvitationController.showVatRegistrationDateForm())
+              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
             else
               createInvitation(arn, HMRCMTDVAT, invitationNeedsKnownFact.clientIdentifierType, invitationNeedsKnownFact.clientIdentifier.map(Vrn(_)), None)
 
@@ -581,6 +607,8 @@ object AgentsInvitationController {
   import play.api.data.format.Formats.stringFormat
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
+
+  val serviceNameForm: Form[String] = Form(mapping("service"->text)(identity)(Some(_)))
 
   def verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags: FeatureFlags, failure: String) = (Constraint[UserInputNinoAndPostcode]{ (input:UserInputNinoAndPostcode) =>
     if(input.service==HMRCMTDIT && featureFlags.showKfcMtdIt && input.postcode.isEmpty) Invalid(ValidationError(failure))
