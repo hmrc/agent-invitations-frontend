@@ -3,18 +3,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{header, redirectLocation}
+import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationIdentifyClientFormItsa, agentInvitationNinoForm, agentInvitationVrnForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, UserInputVrnAndRegDate, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache, FastTrackKeyStoreCache}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -122,27 +120,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         await(submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)
           .withSession("clientIdentifier" -> validNino.value, "service" -> servicePIR), arn.value)))
       }.getMessage shouldBe "KFC flagged as on, not implemented for personal-income-record"
-    }
-  }
-
-  "POST /agents/enter-vrn" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVrn = controller.submitVrn()
-
-    "return 303 for authorised Agent with valid vrn and redirected to the invitation sent page" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
-
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      val form = agentInvitationVrnForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn97), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-
-      verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
-      verifyNoCheckVatRegisteredClientStubAttempt
     }
   }
 

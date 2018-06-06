@@ -70,10 +70,16 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           registrationDateForm.errors shouldBe Seq(FormError("registrationDate", List("error.vat-registration-date.required")))
         }
 
-        "VRN is invalid" in {
+        "VRN is invalid for regex" in {
           val dataWithInvalidVrn = validData + ("clientIdentifier" -> JsString("12345"))
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
           vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.regex-failure")))
+        }
+
+        "VRN is invalid for checksum" in {
+          val dataWithInvalidVrn = validData + ("clientIdentifier" -> JsString("101747697"))
+          val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
+          vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.checksum-failure")))
         }
 
         "VRN is empty" in {

@@ -137,85 +137,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
     behave like anAuthorisedEndpoint(request, submitService)
   }
 
-  "GET /agents/enter-vrn" should {
-    val request = FakeRequest("GET", "/agents/enter-vrn")
-    val showVrnForm = controller.showVrnForm()
-
-    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      testFastTrackCache.save(FastTrackInvitation(serviceVAT))
-      val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.header"))
-      checkHasAgentSignOutLink(result)
-
-      verifyAuthoriseAttempt()
-    }
-
-    behave like noKeyStoreCacheFound(request, showVrnForm)
-    behave like anAuthorisedEndpoint(request, showVrnForm)
-  }
-
-  "POST /agents/enter-vrn" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVrn = controller.submitVrn()
-
-    "return 303 redirect to identify-client for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, None))
-      val form = agentInvitationVrnForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
-
-      verifyAuthoriseAttempt()
-    }
-
-    "return 200 for authorised Agent with no vrn submitted and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> "", "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.vrn.required"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    "return 200 for authorised Agent with invalid vrn less than 9 characters and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> validNino.value, "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.regex-failure"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    "return 200 for authorised Agent with invalid vrn and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> invalidVrn.value, "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.checksum-failure"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    behave like anAuthorisedEndpoint(request, submitVrn)
-  }
-
   "GET /agents/identify-client" should {
     val request = FakeRequest("GET", "/agents/identify-client")
     val showIdentifyClientForm = controller.showIdentifyClientForm()
@@ -538,93 +459,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  "GET /agents/enter-vat-registration-date" should {
-    val request = FakeRequest("GET", "/agents/enter-vat-registration-date")
-    val showVatRegistrationDateForm = controller.showVatRegistrationDateForm()
-
-    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, None))
-      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
-      checkHasAgentSignOutLink(result)
-
-      verifyAuthoriseAttempt()
-    }
-
-    behave like anAuthorisedEndpoint(request, showVatRegistrationDateForm)
-    behave like noKeyStoreCacheFound(request, showVatRegistrationDateForm)
-
-  }
-
-  "POST /agents/enter-vat-registration-date" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVatRegistrationDate = controller.submitVatRegistrationDate()
-
-    "return 303 for authorised Agent with valid vrn and known fact check pass to invitation sent page" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, Some(validRegistrationDate)))
-      createInvitationStubForNoKnownFacts(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn), Some(validRegistrationDate)))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include(s"invitationId=${invitationIdVAT.value}")
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-
-      verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn.value, "vrn", "Success", serviceVAT)
-      verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
-    }
-
-    "return 303 when the user supplied VAT registration date doesn't not match our records" in {
-      val invitation = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, Some(validRegistrationDate))
-      testFastTrackCache.save(invitation)
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 403)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn), Some(validRegistrationDate)))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
-      verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
-      await(testFastTrackCache.fetch()).get shouldBe FastTrackInvitation(serviceVAT)
-
-    }
-
-    "return exception when create invitation fails" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, Some(validRegistrationDate)))
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
-      failedCreateInvitation(arn)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn), Some("2007-07-07")))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      an[BadRequestException] should be thrownBy await(result)
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn.value, "vrn", "Fail", serviceVAT)
-      verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
-    }
-
-    "return 303 when client is not registered for VAT" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, Some(validRegistrationDate)))
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-20"), 404)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn), Some("2007-07-20")))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
-      verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-20"))
-      await(testFastTrackCache.fetch()).get shouldBe FastTrackInvitation(serviceVAT)
-    }
-  }
-
   "GET /agents/enter-postcode" should {
     val request = FakeRequest("GET", "/agents/enter-postcode")
     val showPostcodeForm = controller.showPostcodeForm()
@@ -775,6 +609,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
   "GET /agents/not-enrolled" should {
     val request = FakeRequest("GET", "/agents/not-enrolled")
     val notEnrolled = controller.notEnrolled()
+    val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
       testFastTrackCache.save(FastTrackInvitation(serviceITSA))
@@ -794,7 +629,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
       testFastTrackCache.save(FastTrackInvitation(serviceVAT))
-      val vrnForm = agentInvitationVrnForm.fill(UserInputVrnAndRegDate(serviceVAT, None, None))
+      val vrnForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(serviceVAT, None, None))
       val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
@@ -809,7 +644,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 5xx for Unsupported service" in {
       testFastTrackCache.save(FastTrackInvitation("UNSUPPORTED"))
-      val unsupportedForm = agentInvitationVrnForm.fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
+      val unsupportedForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
 
       intercept[Exception] {
         await(notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))

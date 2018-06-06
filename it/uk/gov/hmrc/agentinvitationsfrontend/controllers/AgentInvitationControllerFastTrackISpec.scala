@@ -148,66 +148,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   }
 
-  "POST /agents/enter-vrn" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVrn = controller.submitVrn()
-
-    "return 303 for authorised Agent with valid VAT service and KnownFact, then entered valid vrn, redirect to invitation-sent" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), None, None, None, validRegDateForVrn97))
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, "VRN")
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-      val vrnForm = agentInvitationVrnForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn97), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for authorised Agent with KnownFact, then entered valid vrn, redirect to select-service" in {
-      testFastTrackCache.save(FastTrackInvitation(None, None, None, None, validRegDateForVrn97))
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, "VRN")
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-      val vrnForm = agentInvitationVrnForm.fill(UserInputVrnAndRegDate("", Some(validVrn97), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
-      verifyAuthoriseAttempt()
-    }
-  }
-
-  "POST /agents/enter-vat-registration-date" should {
-    val request = FakeRequest("POST", "/agents/enter-vat-registration-date")
-    val submitVatRegDate = controller.submitVatRegistrationDate()
-
-    "return 303 for authorised Agent with valid VAT service and vrn, then entered KnownFact: Vat-Reg-Date, redirect to invitation-sent" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, "VRN")
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-      val vatRegDateForm = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(serviceVAT, Some(validVrn97), validRegDateForVrn97))
-      val result = submitVatRegDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(vatRegDateForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for authorised Agent with valid vrn, then entered KnownFact: Vat-Reg-Date, redirect to select-service" in {
-      testFastTrackCache.save(FastTrackInvitation(None, Some("vrn"), Some(validVrn97.value), None, None))
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-      val vatRegDateForm = agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate("", Some(validVrn97), validRegDateForVrn97))
-      val result = submitVatRegDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(vatRegDateForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
-      verifyAuthoriseAttempt()
-    }
-  }
-
   "POST /agents/enter-postcode" should {
     val request = FakeRequest("POST", "/agents/enter-postcode")
     val submitPostcode = controller.submitPostcode()

@@ -225,66 +225,6 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     }
   }
 
-  val showVrnForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch().flatMap {
-        case Some(aggregate) =>
-          val service = aggregate.service.getOrElse("")
-          Future successful Ok(enter_vrn(agentInvitationVrnForm.fill(UserInputVrnAndRegDate(service, None, aggregate.vatRegDate))))
-        case None =>
-          Future successful Redirect(routes.AgentsInvitationController.selectService())
-      }
-    }
-  }
-
-  val submitVrn: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentInvitationVrnForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future successful Ok(enter_vrn(formWithErrors))
-        },
-        userInput => {
-          val updatedAggregate = fastTrackCache.fetch()
-            .map(_.getOrElse(FastTrackInvitation()))
-            .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(vrn => vrn.value)))
-
-          updatedAggregate.flatMap(updatedInvitation =>
-            fastTrackCache.save(updatedInvitation).flatMap(_ =>
-              redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
-        }
-      )
-    }
-  }
-
-  val showVatRegistrationDateForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch().flatMap {
-        case Some(aggregate) =>
-          val service = aggregate.service.getOrElse("")
-          val vrn = aggregate.clientIdentifier.map(vrn => Vrn(vrn))
-          Future successful Ok(enter_vat_registration_date(agentInvitationVatRegistrationDateForm.fill(UserInputVrnAndRegDate(service, vrn, None))))
-        case None =>
-          Future successful Redirect(routes.AgentsInvitationController.selectService())
-      }
-    }
-  }
-
-  val submitVatRegistrationDate: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentInvitationVatRegistrationDateForm.bindFromRequest().fold(
-        formWithErrors => Future successful Ok(enter_vat_registration_date(formWithErrors)),
-        userInput => {
-          val updatedAggregate = fastTrackCache.fetch()
-            .map(_.getOrElse(FastTrackInvitation()))
-            .map(_.copy(vatRegDate = userInput.registrationDate))
-
-          updatedAggregate.flatMap(updatedInvitation =>
-            fastTrackCache.save(updatedInvitation).flatMap(_ =>
-              redirectFastTrack(arn, updatedInvitation, isWhitelisted)))
-        })
-    }
-  }
-
   val showPostcodeForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().flatMap {
@@ -653,24 +593,6 @@ object AgentsInvitationController {
       "postcode" -> optional(text))
     ({ (service, clientIdentifier, _) => UserInputNinoAndPostcode(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
-  }
-
-  val agentInvitationVrnForm: Form[UserInputVrnAndRegDate] = {
-    Form(mapping(
-      "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
-      "registrationDate" -> optional(text))
-    ({ (service, clientIdentifier, _) => UserInputVrnAndRegDate(service, Some(Vrn(clientIdentifier)), None) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate)) }))
-  }
-
-  val agentInvitationVatRegistrationDateForm: Form[UserInputVrnAndRegDate] = {
-    Form(mapping(
-      "service" -> text,
-      "clientIdentifier" -> normalizedText,
-      "registrationDate" -> text.verifying(invalidVatDateFormat))
-    ({ (service, clientIdentifier, registrationDate) => UserInputVrnAndRegDate(service, Some(Vrn(clientIdentifier)), Some(registrationDate)) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate.getOrElse(""))) }))
   }
 
   val agentInvitationServiceForm: Form[UserInputNinoAndPostcode] = {
