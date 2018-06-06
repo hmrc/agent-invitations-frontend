@@ -19,6 +19,7 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationPostCodeForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AgentsInvitationController, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
@@ -33,6 +34,10 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
   val servicePIR = "PERSONAL-INCOME-RECORD"
 
   "PostCodeForm" should {
+
+    val featureFlags = FeatureFlags()
+    val agentInvitationPostCodeForm = AgentsInvitationController.agentInvitationPostCodeForm(featureFlags)
+
     "return no error message for valid postcode" in {
       val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12 7TQ")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)

@@ -267,12 +267,12 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
       }
 
       "there is invalid service" in {
-        val invalidClientIdVatBasedInvitation = FastTrackInvitation(Some("Invalid_Service"), None, None, None, None)
+        val invalidClientIdVatBasedInvitation = FastTrackInvitation("Invalid_Service")
         FastTrackInvitationNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe None
       }
 
       "the service is PERSONAL-INCOME-RECORD" in {
-        val invalidClientIdVatBasedInvitation = FastTrackInvitation(Some(servicePIR), None, None, None, None)
+        val invalidClientIdVatBasedInvitation = FastTrackInvitation(servicePIR)
         FastTrackInvitationNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe None
       }
     }

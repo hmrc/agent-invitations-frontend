@@ -12,7 +12,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackKeyStoreCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache, FastTrackKeyStoreCache, InvitationsCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -67,7 +67,7 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     givenAuditConnector()
   }
 
-  protected lazy val fastTrackKeyStoreCache = new TestFastTrackKeyStoreCache
+  protected lazy val testFastTrackCache = new TestFastTrackCache
 
   protected lazy val continueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
 
@@ -79,15 +79,27 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  protected def checkHtmlResultWithBodyMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+    expectedMessageKeys.foreach{ messageKey =>
+      withClue(s"Message key '$messageKey' exists:") {
+        Messages.isDefinedAt(messageKey) shouldBe true
+      }
+    }
+    val expectedSubstrings = expectedMessageKeys.map(htmlEscapedMessage(_))
+    checkHtmlResultWithBodyText(result, expectedSubstrings:_*)
+
+    expectedSubstrings.foreach(s => bodyOf(result) should include(s))
+  }
+
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    fastTrackKeyStoreCache.clear()
+    testFastTrackCache.clear()
     continueUrlKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
       bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
     }
   }

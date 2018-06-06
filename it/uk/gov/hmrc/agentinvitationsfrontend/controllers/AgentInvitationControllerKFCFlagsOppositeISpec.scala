@@ -5,13 +5,13 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{header, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm, agentInvitationVrnForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationIdentifyClientForm, agentInvitationNinoForm, agentInvitationVrnForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackKeyStoreCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache, FastTrackKeyStoreCache}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
@@ -54,13 +54,13 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    fastTrackKeyStoreCache.clear()
+    testFastTrackCache.clear()
     continueUrlKeyStoreCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackKeyStoreCache]).toInstance(fastTrackKeyStoreCache)
+      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
       bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
     }
   }
@@ -90,7 +90,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitNino = controller.submitNino()
 
     "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT" in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
+      testFastTrackCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -111,7 +111,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "throw an exception when  feature flag show-kfc-personal-income is on " +
       "for authorised Agent with valid nino and Personal Income Record service" in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+      testFastTrackCache.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
 
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
@@ -130,7 +130,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitVrn = controller.submitVrn()
 
     "return 303 for authorised Agent with valid vrn and redirected to the invitation sent page" in {
-      fastTrackKeyStoreCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
+      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
 
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
@@ -143,6 +143,27 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Not Required", serviceVAT)
       verifyNoCheckVatRegisteredClientStubAttempt
+    }
+  }
+
+  "GET /agents/identify-client" when {
+    val request = FakeRequest("GET", "/agents/identify-client")
+
+    "not show a postcode entry field if service is ITSA" in {
+      testFastTrackCache.save(FastTrackInvitation(serviceITSA))
+
+      val form = controller.agentInvitationIdentifyClientForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
+      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+
+      status(resultFuture) shouldBe 200
+      checkHtmlResultWithBodyMsgs(resultFuture,
+        "identify-client.header",
+        "identify-client.nino.label",
+        "identify-client.nino.hint")
+
+      val result = await(resultFuture)
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.label")
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.hint")
     }
   }
 

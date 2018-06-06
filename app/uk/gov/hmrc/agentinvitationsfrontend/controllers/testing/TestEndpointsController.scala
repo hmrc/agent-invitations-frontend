@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
 import javax.inject.Inject
-
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
@@ -26,20 +25,19 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
-import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackKeyStoreCache, InvitationsCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
-import java.util.UUID
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
 class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesApi,
-                                        rsConnector: PirRelationshipConnector,
-                                        fastTrackKeyStoreCache: InvitationsCache[FastTrackInvitation],
+                                        pirRelationshipConnector: PirRelationshipConnector,
+                                        fastTrackCache: FastTrackCache,
                                         val authConnector: AuthConnector,
                                         val withVerifiedPasscode: PasscodeVerification
                                        )(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
@@ -55,7 +53,7 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
     testRelationshipForm.bindFromRequest().fold(
       formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
       validFormData => {
-        rsConnector.deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
+        pirRelationshipConnector.deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
           case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
           case _ => Redirect(agentRoutes.AgentsInvitationController.notMatched())
         }
@@ -71,7 +69,7 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
     testRelationshipForm.bindFromRequest().fold(
         formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
         validFormData => {
-          rsConnector.createRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
+          pirRelationshipConnector.createRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
             case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
             case _ => Redirect(agentRoutes.AgentsInvitationController.notMatched())
           }

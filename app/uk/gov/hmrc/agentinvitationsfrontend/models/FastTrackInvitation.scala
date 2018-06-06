@@ -39,7 +39,9 @@ case class FastTrackInvitation (service: Option[String],
 }
 
 object FastTrackInvitation {
-  def newInstance = FastTrackInvitation(None, None, None, None, None)
+
+  def apply(): FastTrackInvitation = FastTrackInvitation(None, None, None, None, None)
+  def apply(service: String): FastTrackInvitation = FastTrackInvitation(Some(service),None,None,None,None)
 
   implicit val format = Json.format[FastTrackInvitation]
 
@@ -49,6 +51,6 @@ object FastTrackInvitation {
         (JsPath \ "clientIdentifierType").readNullable[String] and
         (JsPath \ "clientIdentifier").readNullable[String] and
         (JsPath \ "postcode").readNullable[String] and
-        (JsPath \ "vatRegDate").readNullable[String])(FastTrackInvitation.apply _)
+        (JsPath \ "vatRegDate").readNullable[String])((a,b,c,d,e) => FastTrackInvitation(a,b,c,d,e))
   }
 }

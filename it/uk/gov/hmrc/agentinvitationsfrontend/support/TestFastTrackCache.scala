@@ -1,12 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackKeyStoreCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestFastTrackKeyStoreCache extends FastTrackKeyStoreCache(null) {
+class TestFastTrackCache extends FastTrackCache {
 
   class Session (var fastTrackInvitation: Option[FastTrackInvitation] = None)
 
@@ -29,11 +29,18 @@ class TestFastTrackKeyStoreCache extends FastTrackKeyStoreCache(null) {
     sessions.isEmpty
   }
 
-  override def fetchAndGetEntry()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[FastTrackInvitation]] = {
+  override def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[FastTrackInvitation]] = {
     Future successful currentSession.fastTrackInvitation
+  }
+
+  override def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[FastTrackInvitation]] = {
+    val entry = currentSession.fastTrackInvitation
+    currentSession.fastTrackInvitation = Some(FastTrackInvitation())
+    Future successful entry
   }
 
   override def save(fastTrackInvitation: FastTrackInvitation)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
     Future successful(currentSession.fastTrackInvitation = Some(fastTrackInvitation))
   }
+
 }

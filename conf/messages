@@ -5,6 +5,18 @@ title.suffix.client=Manage your tax agents
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
+# Identify Client
+identify-client.header=Enter your client''s details
+identify-client.p1=This will help us match their details against information we hold.
+identify-client.nino.label=National Insurance number
+identify-client.nino.hint=For example, VO 12 34 56 D
+identify-client.nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D
+identify-client.nino.required=Enter your client''s National Insurance number
+identify-client.postcode.label=Postcode
+identify-client.postcode.hint=This is the postcode of your client''s registered address
+identify-client.postcode.invalid-format=Enter a valid postcode, like AA1 1AA
+identify-client.postcode.required=Enter your client''s postcode
+
 # Enter Nino
 enter-nino.header=Enter an individual''s National Insurance number
 enter-nino.label=National Insurance number
@@ -53,15 +65,22 @@ invitation-sent.continueToASAccount.button=Return to your Agent Services account
 invitation-sent.continueJourney.button=Continue
 
 # Not Enrolled
-not-enrolled.itsa.header=This individual has not signed up to report their income and expenses through software
-not-enrolled.itsa.description=You cannot get authorisation from an individual until they have signed up.
+not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
+not-enrolled.itsa.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.itsa.button=Back to your account
 
-not-enrolled.vat.header=This individual has not signed up to report their VAT returns through software
-not-enrolled.vat.description=You cannot get authorisation from this individual until they have signed up.
+not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
+not-enrolled.vat.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.vat.button=Back to your account
 
 # Not Matched
-not-matched.header=There was a problem
-not-matched.description = The details provided do not match our records.
+not-matched.itsa.header=There is a problem
+not-matched.itsa.description = We could not find any records that match the details you entered.
+not-matched.itsa.button = Try again
+
+not-matched.vat.header=There is a problem
+not-matched.vat.description = We could not find any records that match the details you entered.
+not-matched.vat.button = Try again
 
 # Client Pages
 # Landing Page
