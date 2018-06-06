@@ -15,14 +15,14 @@
  *@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import play.api.Configuration
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationVatForm
-@(agentInvitationsForm : Form[AgentInvitationVatForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
+@(agentInvitationsForm : Form[UserInputVrnAndRegDate])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =   error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("enter-vat-registration-date.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 

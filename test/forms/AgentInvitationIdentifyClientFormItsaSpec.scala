@@ -19,16 +19,16 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AgentsInvitationController, FeatureFlags}
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AgentInvitationIdentifyClientFormSpec extends UnitSpec {
+class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
   "IdentifyClientForm" when {
 
     val featureFlags = FeatureFlags()
-    val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientForm(featureFlags)
+    val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
 
     "service is ITSA" should {
       val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
@@ -60,7 +60,7 @@ class AgentInvitationIdentifyClientFormSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            AgentInvitationUserInput("HMRC-MTD-IT", Some(Nino("AE123456C")), Some("AA1 1AA"))
+            UserInputNinoAndPostcode("HMRC-MTD-IT", Some(Nino("AE123456C")), Some("AA1 1AA"))
           )
           unboundForm("postcode") shouldBe "AA1 1AA"
           unboundForm("clientIdentifier") shouldBe "AE123456C"
