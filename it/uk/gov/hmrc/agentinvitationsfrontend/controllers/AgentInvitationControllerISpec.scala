@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationUserInput, AgentInvitationVatForm, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, UserInputVrnAndRegDate, FastTrackInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthorisationException
@@ -53,9 +53,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
   val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VRN"
-  val validVrn97 = Vrn("101747696")
+  val validVrn = Vrn("101747696")
   val invalidVrn = Vrn("101747692")
-  val validRegDateForVrn97 = Some("2007-07-07")
+  val validRegistrationDate = "2007-07-07"
   val validVrn9755 = Vrn("101747641")
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
@@ -95,7 +95,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
       testFastTrackCache.save(FastTrackInvitation(serviceITSA))
-      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -105,7 +105,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to enter nino" in {
       testFastTrackCache.save(FastTrackInvitation(servicePIR))
-      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(servicePIR, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(servicePIR, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -113,13 +113,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    "return 303 for authorised Agent with valid VAT service, redirect to enter vrn" in {
+    "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
       testFastTrackCache.save(FastTrackInvitation(serviceVAT))
-      val serviceForm = agentInvitationServiceForm.fill(AgentInvitationUserInput(serviceVAT, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceVAT, None, None))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/enter-vrn")
+      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
       verifyAuthoriseAttempt()
     }
 
@@ -135,85 +135,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
     behave like anAuthorisedEndpoint(request, submitService)
-  }
-
-  "GET /agents/enter-vrn" should {
-    val request = FakeRequest("GET", "/agents/enter-vrn")
-    val showVrnForm = controller.showVrnForm()
-
-    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      testFastTrackCache.save(FastTrackInvitation(serviceVAT))
-      val result = showVrnForm(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.header"))
-      checkHasAgentSignOutLink(result)
-
-      verifyAuthoriseAttempt()
-    }
-
-    behave like noKeyStoreCacheFound(request, showVrnForm)
-    behave like anAuthorisedEndpoint(request, showVrnForm)
-  }
-
-  "POST /agents/enter-vrn" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVrn = controller.submitVrn()
-
-    "return 303 redirect to enter-vat-reg-date for authorised Agent with valid vrn and redirected to the registration date known fact page" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
-      val form = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), None))
-      val result = submitVrn(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showVatRegistrationDateForm().url
-
-      verifyAuthoriseAttempt()
-    }
-
-    "return 200 for authorised Agent with no vrn submitted and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> "", "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.vrn.required"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    "return 200 for authorised Agent with invalid vrn less than 9 characters and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> validNino.value, "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.regex-failure"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    "return 200 for authorised Agent with invalid vrn and redisplay form with error message" in {
-      val form = agentInvitationVrnForm
-      val formData = Map("service" -> serviceVAT, "clientIdentifier" -> invalidVrn.value, "postcode" -> "")
-      val result = submitVrn(authorisedAsValidAgent(request
-        .withFormUrlEncodedBody(form.bind(formData).data.toSeq: _*), arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", hasMessage("enter-vrn.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vrn.checksum-failure"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      verifyAuditRequestNotSent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated)
-    }
-
-    behave like anAuthorisedEndpoint(request, submitVrn)
   }
 
   "GET /agents/identify-client" should {
@@ -241,8 +162,27 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHasAgentSignOutLink(result)
     }
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment for VAT service" in {
+      testFastTrackCache.save(FastTrackInvitation(serviceVAT))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
 
-    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+      checkHtmlResultWithBodyText(result,
+        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+
+      checkHtmlResultWithBodyMsgs(result,
+        "identify-client.header",
+        "identify-client.p1",
+        "identify-client.vrn.label",
+        "identify-client.vrn.hint",
+        "identify-client.vat-registration-date.label",
+        "identify-client.vat-registration-date.hint"
+      )
+
+      checkHasAgentSignOutLink(result)
+    }
+
+  "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
@@ -258,7 +198,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "service is HMRC-MTD-IT" should {
 
       "redirect to /agents/invitation-sent when a valid NINO and postcode are submitted" in {
-        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "HMRC-MTD-IT", "NI",validPostcode)
+        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "HMRC-MTD-IT", "NI", Some(validPostcode))
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(FastTrackInvitation(
@@ -336,6 +276,93 @@ class AgentInvitationControllerISpec extends BaseISpec {
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
       }
     }
+
+    "service is HMRC-MTD-VAT" should {
+
+      "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
+        createInvitationStubForNoKnownFacts(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+        getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+        checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
+
+        testFastTrackCache.save(FastTrackInvitation(
+          Some("HMRC-MTD-VAT"),
+          None,
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          None))
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate.year" -> "2007",
+          "registrationDate.month" -> "7",
+          "registrationDate.day" -> "7")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+      }
+
+      "redisplay page with errors when an empty VRN is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> "",
+          "registrationDate" -> validRegistrationDate)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.vrn.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid VRN is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> "invalid",
+          "registrationDate" -> validRegistrationDate)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vrn.regex-failure")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an empty registrationDate is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate" -> "")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.vat-registration-date.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid registrationDate is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate.year" -> "INVALID",
+          "registrationDate.month" -> "INVALID",
+          "registrationDate.day" -> "INVALID")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vat-registration-date.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redirect to /agents/select-service if service is missing" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "",
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate" -> validRegistrationDate)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      }
+    }
   }
 
   "GET /agents/enter-nino" should {
@@ -370,7 +397,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT, redirected to identify-client page" in {
       testFastTrackCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), None))
+      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -381,7 +408,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       testFastTrackCache.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(servicePIR, Some(validNino), None))
+      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(servicePIR, Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -395,7 +422,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(servicePIR, Some(validNinoSpace), None))
+      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(servicePIR, Some(validNinoSpace), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -427,99 +454,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
 
     "return 303 for an authorised Agent if service is not found" in {
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput("", Some(validNino), None))
+      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode("", Some(validNino), None))
       val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
       verifyAuthoriseAttempt()
-    }
-  }
-
-  "GET /agents/enter-vat-registration-date" should {
-    val request = FakeRequest("GET", "/agents/enter-vat-registration-date")
-    val showVatRegistrationDateForm = controller.showVatRegistrationDateForm()
-
-    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None))
-      val result = showVatRegistrationDateForm(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("enter-vat-registration-date.header"), htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("enter-vat-registration-date.header"))
-      checkHasAgentSignOutLink(result)
-
-      verifyAuthoriseAttempt()
-    }
-
-    behave like anAuthorisedEndpoint(request, showVatRegistrationDateForm)
-    behave like noKeyStoreCacheFound(request, showVatRegistrationDateForm)
-
-  }
-
-  "POST /agents/enter-vat-registration-date" should {
-    val request = FakeRequest("POST", "/agents/enter-vrn")
-    val submitVatRegistrationDate = controller.submitVatRegistrationDate()
-
-    "return 303 for authorised Agent with valid vrn and known fact check pass to invitation sent page" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
-      createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe defined
-      header("Set-Cookie", result).get should include(s"invitationId=${invitationIdVAT.value}")
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-
-      verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Success", serviceVAT)
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
-    }
-
-    "return 303 when the user supplied VAT registration date doesn't not match our records" in {
-      val invitation = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
-      testFastTrackCache.save(invitation)
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 403)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), validRegDateForVrn97))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
-      await(testFastTrackCache.fetch()).get shouldBe FastTrackInvitation(serviceVAT)
-
-    }
-
-    "return exception when create invitation fails" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-07"), 204)
-      failedCreateInvitation(arn)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-07")))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      an[BadRequestException] should be thrownBy await(result)
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validVrn97.value, "vrn", "Fail", serviceVAT)
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
-    }
-
-    "return 303 when client is not registered for VAT" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97))
-      checkVatRegisteredClientStub(validVrn97, LocalDate.parse("2007-07-20"), 404)
-
-      val form = agentInvitationVatRegistrationDateForm.fill(AgentInvitationVatForm(serviceVAT, Some(validVrn97), Some("2007-07-20")))
-      val result = submitVatRegistrationDate(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-20"))
-      await(testFastTrackCache.fetch()).get shouldBe FastTrackInvitation(serviceVAT)
     }
   }
 
@@ -547,10 +487,10 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid nino and redirected to invitations-sent page" in {
       testFastTrackCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", validPostcode)
+      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "MTDITID", Some(validPostcode))
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
 
-      val form = controller.agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some(validPostcode)))
+      val form = controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino), Some(validPostcode)))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
@@ -596,7 +536,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       testFastTrackCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
       failedCreateInvitationForNotEnrolled(arn)
-      val form = controller.agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
+      val form = controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
@@ -612,7 +552,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       testFastTrackCache.currentSession.fastTrackInvitation.get shouldBe invitation
 
       failedCreateInvitationFoInvalidPostcode(arn)
-      val form = controller.agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
+      val form = controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
@@ -626,7 +566,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       testFastTrackCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       failedCreateInvitation(arn)
 
-      val form = controller.agentInvitationPostCodeForm.fill(AgentInvitationUserInput(serviceITSA, Some(validNino), Some("AB101AB")))
+      val form = controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino), Some("AB101AB")))
       val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       an[BadRequestException] should be thrownBy await(result)
@@ -673,10 +613,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
   "GET /agents/not-enrolled" should {
     val request = FakeRequest("GET", "/agents/not-enrolled")
     val notEnrolled = controller.notEnrolled()
+    val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
       testFastTrackCache.save(FastTrackInvitation(serviceITSA))
-      val ninoForm = agentInvitationNinoForm.fill(AgentInvitationUserInput(serviceITSA, None, None))
+      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
       val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
@@ -692,7 +633,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
       testFastTrackCache.save(FastTrackInvitation(serviceVAT))
-      val vrnForm = agentInvitationVrnForm.fill(AgentInvitationVatForm(serviceVAT, None, None))
+      val vrnForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(serviceVAT, None, None))
       val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
@@ -707,7 +648,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 5xx for Unsupported service" in {
       testFastTrackCache.save(FastTrackInvitation("UNSUPPORTED"))
-      val unsupportedForm = agentInvitationVrnForm.fill(AgentInvitationVatForm("UNSUPPORTED", None, None))
+      val unsupportedForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
 
       intercept[Exception] {
         await(notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))

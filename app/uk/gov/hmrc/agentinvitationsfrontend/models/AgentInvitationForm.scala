@@ -22,8 +22,9 @@ import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 trait AgentInvitationForm {
 
-  val service: String
-  val clientIdentifier: Option[TaxIdentifier]
+  def service: String
+  def clientIdentifier: Option[TaxIdentifier]
+
   val clientIdentifierType: Option[String] = clientIdentifier match {
     case Some(_:Nino) => Some("ni")
     case Some(_:Vrn) => Some("vrn")
@@ -31,8 +32,8 @@ trait AgentInvitationForm {
   }
 }
 
-case class AgentInvitationUserInput(override val service: String, override val clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
+case class UserInputNinoAndPostcode(service: String, clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
   extends AgentInvitationForm
 
-case class AgentInvitationVatForm(override val service: String, override val clientIdentifier: Option[TaxIdentifier], registrationDate: Option[String])
+case class UserInputVrnAndRegDate(service: String, clientIdentifier: Option[TaxIdentifier], registrationDate: Option[String])
   extends AgentInvitationForm

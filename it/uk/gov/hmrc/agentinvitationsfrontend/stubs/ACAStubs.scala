@@ -9,16 +9,15 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStubWithKnownFacts(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, service: String, serviceIdentifier: String, postcode: String): Unit = {
+  def createInvitationStubWithKnownFacts(arn: Arn, clientId: String, invitationId: InvitationId, suppliedClientId: String, service: String, serviceIdentifier: String, postcode: Option[String]): Unit = {
     stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")).withRequestBody(
       equalToJson(s"""
          |{
          |   "service": "$service",
          |   "clientIdType": "ni",
-         |   "clientId":"$suppliedClientId",
-         |   "clientPostcode":"$postcode"
-         |}
-           """.stripMargin)
+         |   "clientId":"$suppliedClientId"
+         |   ${postcode.map(p => s""", "clientPostcode":"$p" """).getOrElse("")}
+         |}""".stripMargin)
     ).willReturn(
         aResponse()
           .withStatus(201)

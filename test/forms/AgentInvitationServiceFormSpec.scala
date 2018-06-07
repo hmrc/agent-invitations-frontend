@@ -19,7 +19,7 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitationUserInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
@@ -59,13 +59,13 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
     }
 
     "return no errors when unbinding the form" in {
-      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(serviceITSA, Some(Nino("AE123456C")), None))
+      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some(Nino("AE123456C")), None))
       unboundFormITSA("service") shouldBe serviceITSA
 
-      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(servicePIR, Some(Nino("AE123456C")), None))
+      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(servicePIR, Some(Nino("AE123456C")), None))
       unboundFormAFI("service") shouldBe servicePIR
 
-      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(AgentInvitationUserInput(serviceVAT, Some(Vrn("101747696")), None))
+      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceVAT, Some(Vrn("101747696")), None))
       unboundFormVAT("service") shouldBe serviceVAT
     }
   }
