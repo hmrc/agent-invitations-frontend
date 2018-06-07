@@ -25,16 +25,16 @@
 @fieldsetClasses = @{if(formItem(fieldName).hasErrors) "form-field--error" else "" }
 
 <div class="form-group @fieldsetClasses soft--ends">
-    <fieldset class="form-date" id="@fieldName-fieldset">
+    <fieldset class="form-date" id="@fieldName">
 
         <legend class="@args.toMap.get('_legendClass).map { legendClass => @legendClass}">
-            @formItem(fieldName).errors.map { error => <span class="error-notification">@Messages(error.message)</span>}
             <span class="@args.toMap.get('_legendSpanClass).map { legendSpanClass => @legendSpanClass}">
                 @args.toMap.get('_legend).map { legend => @legend}
             </span>
             @args.toMap.get('_inputHint).map { hint =>
                 <span class="form-hint">@hint</span>
             }
+            @formItem(fieldName).errors.map { error => <span class="error-notification">@Messages(error.message)</span>}
         </legend>
 
         @input(
@@ -43,7 +43,9 @@
             '_labelClass -> "form-group form-group-day",
             '_inputClass -> "form-control input--xsmall",
             '_emptyValueText -> " ",
-            '_type -> "tel"
+            '_type -> "tel",
+            '_maxlength -> "2"
+
         )
         @input(
             formItem(s"${fieldName}.month"),
@@ -51,7 +53,8 @@
             '_labelClass -> "form-group form-group-month",
             '_inputClass -> "form-control input--xsmall",
             '_emptyValueText -> " ",
-            '_type -> "tel"
+            '_type -> "tel",
+            '_maxlength -> "2"
         )
         @input(
             formItem(s"${fieldName}.year"),
@@ -59,7 +62,8 @@
             '_labelClass -> "form-group form-group-year",
             '_inputClass -> "form-control input--xsmall",
             '_emptyValueText -> " ",
-            '_type -> "tel"
+            '_type -> "tel",
+            '_maxlength -> "4"
         )
 
     </fieldset>

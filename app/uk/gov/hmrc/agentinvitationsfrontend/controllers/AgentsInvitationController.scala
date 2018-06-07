@@ -27,11 +27,9 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationIdentifyClientFormItsa
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -42,6 +40,7 @@ import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
+import play.api.data.format.Formats._
 
 @Singleton
 class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.external-url") externalUrl: String,
@@ -476,45 +475,6 @@ object AgentsInvitationController {
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
-  private def nonEmpty(failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
-    if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
-  }
-
-  private def validateField(nonEmptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
-    nonEmpty(nonEmptyFailure)(fieldValue) match {
-      case i: Invalid =>
-        i
-      case Valid =>
-        if (condition(fieldValue.trim.toUpperCase))
-          Valid
-        else
-          Invalid(ValidationError(invalidFailure))
-    }
-  }
-
-  private def validateVrnField(nonEmptyFailure: String,
-                               regexFailure: String,
-                               checksumFailure: String) = Constraint[String] { fieldValue: String =>
-    nonEmpty(nonEmptyFailure)(fieldValue) match {
-      case i: Invalid =>
-        i
-      case Valid =>
-        if (!fieldValue.matches("[0-9]{9}"))
-          Invalid(ValidationError(regexFailure))
-        else if (!Vrn.isValid(fieldValue.trim.toUpperCase))
-          Invalid(ValidationError(checksumFailure))
-        else
-          Valid
-    }
-  }
-
-  private def validateFieldEmptyOrCondition(failure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
-    if (fieldValue.isEmpty || condition(fieldValue.trim.toUpperCase))
-      Valid
-    else
-      Invalid(ValidationError(failure))
-  }
-
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.nonEmpty)
       Valid
@@ -522,49 +482,17 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.service.required"))
   }
 
-  private def invalidNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
-    validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
-  private val invalidVrn =
-    validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
-  private val invalidVatDateFormat =
-    validateFieldEmptyOrCondition("enter-vat-registration-date.invalid-format")(vatRegistrationDate => validateDate(vatRegistrationDate))
+  private def validNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
+    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
 
-  private def validateDate(value: String): Boolean = if (parseDate(value)) true else false
+  private val validVrn =
+    ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
 
-  val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-
-  def parseDate(date: String): Boolean = {
-    try {
-     dateTimeFormat.parseDateTime(date)
-      true
-    }
-    catch {
-      case _: Throwable => false
-    }
-  }
-
-  def parseDateIntoFields(date: String):Option[(Int,Int,Int)] = {
-    try {
-      val l = dateTimeFormat.parseLocalDate(date)
-      Some((l.getYear, l.getMonthOfYear, l.getDayOfMonth))
-    }
-    catch {
-      case NonFatal(_) => None
-    }
-  }
-
-  val formatDateFromFields: (Int, Int, Int) => String = {
-    case (y,m,d) => dateTimeFormat.print(new LocalDate(y,m,d))
-  }
 
   private def invalidPostcode(failure: String) =
-    validateFieldEmptyOrCondition(failure)(postcode => postcode.matches(postcodeRegex))
-
-  import play.api.data.format.Formats.stringFormat
+    ValidateHelper.validateFieldEmptyOr(postcode => postcode.matches(postcodeRegex), failure)
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
-
-  val dateFieldsMapping = optional(mapping("year"->number, "month"->number(1,12,true), "day"->number(1,31,true))(formatDateFromFields)(parseDateIntoFields))
 
   val serviceNameForm: Form[String] = Form(mapping("service"->text)(identity)(Some(_)))
 
@@ -576,7 +504,7 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormItsa(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] = {
     Form(MappingOps.errorAwareMapping(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(invalidNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
+      "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
       "postcode" -> optional(text.verifying(invalidPostcode("identify-client.postcode.invalid-format"))))
     ({ (service, clientIdentifier, postcode) => UserInputNinoAndPostcode(service, Some(Nino(clientIdentifier.trim.toUpperCase())), postcode) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
@@ -594,8 +522,8 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormVat(featureFlags: FeatureFlags): Form[UserInputVrnAndRegDate] = {
     Form(MappingOps.errorAwareMapping(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(invalidVrn),
-      "registrationDate" -> dateFieldsMapping)
+      "clientIdentifier" -> normalizedText.verifying(validVrn),
+      "registrationDate" -> DateFieldHelper.dateFieldsMapping)
     ({ (service, clientIdentifier, registrationDate) => UserInputVrnAndRegDate(service, Some(Vrn(clientIdentifier.trim.toUpperCase())), registrationDate) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate)) }))
       .verifyingWithErrorMap(
@@ -607,7 +535,7 @@ object AgentsInvitationController {
   val agentInvitationNinoForm: Form[UserInputNinoAndPostcode] = {
     Form(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(invalidNino()),
+      "clientIdentifier" -> normalizedText.verifying(validNino()),
       "postcode" -> optional(text))
     ({ (service, clientIdentifier, _) => UserInputNinoAndPostcode(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
@@ -706,7 +634,7 @@ object AgentsInvitationController {
   object FastTrackInvitationVatComplete {
     def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
       case FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), _, Some(vatRegDate))
-        if Vrn.isValid(clientIdentifier) && validateDate(vatRegDate) =>
+        if Vrn.isValid(clientIdentifier) && DateFieldHelper.validateDate(vatRegDate) =>
         Some(FastTrackInvitation(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), None, Some(vatRegDate)))
       case _ => None
     }
@@ -732,7 +660,7 @@ object AgentsInvitationController {
 
   object FastTrackInvitationNeedsKnownFact {
     def unapply(fastTrackInvitation: FastTrackInvitation): Option[FastTrackInvitation] = fastTrackInvitation match {
-      case FastTrackInvitation(Some(HMRCMTDVAT), Some(_), Some(_), _, Some(vatRegDate)) if !validateDate(vatRegDate) =>
+      case FastTrackInvitation(Some(HMRCMTDVAT), Some(_), Some(_), _, Some(vatRegDate)) if !DateFieldHelper.validateDate(vatRegDate) =>
         Some(fastTrackInvitation.copy(vatRegDate = None))
 
       case FastTrackInvitation(Some(HMRCMTDIT), Some(_), Some(_), Some(postcode), _) if !postcode.matches(postcodeRegex) =>
@@ -751,3 +679,87 @@ object AgentsInvitationController {
 
 }
 
+object DateFieldHelper {
+
+  def validateDate(value: String): Boolean = if (parseDate(value)) true else false
+
+  val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+
+  def parseDate(date: String): Boolean = {
+    try {
+      dateTimeFormat.parseDateTime(date)
+      true
+    }
+    catch {
+      case _: Throwable => false
+    }
+  }
+
+  def parseDateIntoFields(date: String):Option[(String,String,String)] = {
+    try {
+      val l = dateTimeFormat.parseLocalDate(date)
+      Some((l.getYear.toString, l.getMonthOfYear.toString, l.getDayOfMonth.toString))
+    }
+    catch {
+      case NonFatal(_) => None
+    }
+  }
+
+  val formatDateFromFields: (String,String,String) => String = {
+    case (y,m,d) =>
+      val month = if(m.length==1) "0"+m else m
+      val day = if(d.length==1) "0"+d else d
+      s"$y-$month-$day"
+  }
+
+  val validVatDateFormat =
+    ValidateHelper.validateFieldEmptyOr(vatRegistrationDate => validateDate(vatRegistrationDate), "enter-vat-registration-date.invalid-format")
+
+  val dateFieldsMapping: Mapping[Option[String]] = optional(mapping("year"->text, "month"->text, "day"->text)(formatDateFromFields)(parseDateIntoFields).verifying(validVatDateFormat))
+
+
+}
+
+
+object ValidateHelper {
+
+  def nonEmpty(failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
+  }
+
+  def validateField(nonEmptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if (condition(fieldValue.trim.toUpperCase))
+          Valid
+        else
+          Invalid(ValidationError(invalidFailure))
+    }
+  }
+
+  def validateVrnField(nonEmptyFailure: String,
+                               regexFailure: String,
+                               checksumFailure: String) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if (!fieldValue.matches("[0-9]{9}"))
+          Invalid(ValidationError(regexFailure))
+        else if (!Vrn.isValid(fieldValue.trim.toUpperCase))
+          Invalid(ValidationError(checksumFailure))
+        else
+          Valid
+    }
+  }
+
+  def validateFieldEmptyOr(condition: String => Boolean, failure: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.isEmpty || condition(fieldValue.trim.toUpperCase))
+      Valid
+    else
+      Invalid(ValidationError(failure))
+  }
+
+}
