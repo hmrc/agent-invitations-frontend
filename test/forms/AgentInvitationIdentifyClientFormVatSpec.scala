@@ -20,6 +20,8 @@ import play.api.data.FormError
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AgentsInvitationController, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.formatDateFromFields
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.parseDateIntoFields
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -87,6 +89,18 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn)
           vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
         }
+      }
+    }
+
+    "parseDateIntoFields" should {
+      "Convert a date string into it's day, month and year fields" in {
+        parseDateIntoFields("2000-01-01") shouldBe Some(2000, 1, 1)
+      }
+    }
+
+    "formatDateFromFields" should {
+      "Convert a date in fields to a string" in {
+        formatDateFromFields(2000, 1, 1) shouldBe ("2000-01-01")
       }
     }
   }

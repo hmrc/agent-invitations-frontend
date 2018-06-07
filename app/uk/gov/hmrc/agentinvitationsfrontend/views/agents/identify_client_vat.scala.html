@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInline}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
@@ -27,7 +27,6 @@
 @featureSwitch(featureName: String)(content: Html) = {
     @if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
 }
-
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -45,31 +44,28 @@
              @input(
                  agentInvitationsForm("clientIdentifier"),
                  '_label -> Messages("identify-client.vrn.label"),
-                 '_inputClass -> "input--medium input--cleared",
-                 '_labelTextClass -> "h2-heading",
+                 '_inputClass -> "form-control",
+                 '_labelTextClass -> "heading-medium",
                  '_inputHint -> Messages("identify-client.vrn.hint"),
                  '_labelClass -> "soft--ends"
              )
          </div>
 
      @featureSwitch("features.show-kfc-mtd-vat") {
-         <div class="form-group">
-         @input(
-             agentInvitationsForm("registrationDate"),
-             '_label -> Messages("identify-client.vat-registration-date.label"),
-             '_inputClass -> "input--medium input--cleared input--small",
-             '_labelTextClass -> "h2-heading",
+         @dateFieldsHelper(agentInvitationsForm, "registrationDate",
+             '_legend -> Messages("identify-client.vat-registration-date.label"),
              '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
-             '_labelClass -> "soft--ends"
-         )
-         </div>
+             '_legendSpanClass -> "heading-medium",
+             '_legendClass -> "flush--ends")
      }
+
 
      <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
      <div class="form-group">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
      </div>
+
  }
 
  }

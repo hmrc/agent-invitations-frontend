@@ -41,6 +41,7 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 @Singleton
 class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.external-url") externalUrl: String,
@@ -530,15 +531,30 @@ object AgentsInvitationController {
 
   private def validateDate(value: String): Boolean = if (parseDate(value)) true else false
 
-  private def parseDate(date: String): Boolean = {
-    import org.joda.time.format.DateTimeFormat
+  val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+
+  def parseDate(date: String): Boolean = {
     try {
-      DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(date)
+     dateTimeFormat.parseDateTime(date)
       true
     }
     catch {
       case _: Throwable => false
     }
+  }
+
+  def parseDateIntoFields(date: String):Option[(Int,Int,Int)] = {
+    try {
+      val l = dateTimeFormat.parseLocalDate(date)
+      Some((l.getYear, l.getMonthOfYear, l.getDayOfMonth))
+    }
+    catch {
+      case NonFatal(_) => None
+    }
+  }
+
+  val formatDateFromFields: (Int, Int, Int) => String = {
+    case (y,m,d) => dateTimeFormat.print(new LocalDate(y,m,d))
   }
 
   private def invalidPostcode(failure: String) =
@@ -547,6 +563,8 @@ object AgentsInvitationController {
   import play.api.data.format.Formats.stringFormat
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
+
+  val dateFieldsMapping = optional(mapping("year"->number, "month"->number(1,12,true), "day"->number(1,31,true))(formatDateFromFields)(parseDateIntoFields))
 
   val serviceNameForm: Form[String] = Form(mapping("service"->text)(identity)(Some(_)))
 
@@ -577,7 +595,7 @@ object AgentsInvitationController {
     Form(MappingOps.errorAwareMapping(mapping(
       "service" -> text,
       "clientIdentifier" -> normalizedText.verifying(invalidVrn),
-      "registrationDate" -> optional(text.verifying(invalidVatDateFormat)))
+      "registrationDate" -> dateFieldsMapping)
     ({ (service, clientIdentifier, registrationDate) => UserInputVrnAndRegDate(service, Some(Vrn(clientIdentifier.trim.toUpperCase())), registrationDate) })
     ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate)) }))
       .verifyingWithErrorMap(
