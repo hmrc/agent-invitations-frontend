@@ -59,13 +59,13 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
     }
 
     "return no errors when unbinding the form" in {
-      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some(Nino("AE123456C")), None))
+      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some("AE123456C"), None))
       unboundFormITSA("service") shouldBe serviceITSA
 
-      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(servicePIR, Some(Nino("AE123456C")), None))
+      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(servicePIR, Some("AE123456C"), None))
       unboundFormAFI("service") shouldBe servicePIR
 
-      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceVAT, Some(Vrn("101747696")), None))
+      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceVAT, Some("101747696"), None))
       unboundFormVAT("service") shouldBe serviceVAT
     }
   }

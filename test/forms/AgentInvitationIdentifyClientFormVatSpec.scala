@@ -49,7 +49,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputVrnAndRegDate("HMRC-MTD-VAT", Some(Vrn("101747696")), Some("2000-01-01"))
+            UserInputVrnAndRegDate("HMRC-MTD-VAT", Some("101747696"), Some("2000-01-01"))
           )
           unboundForm("registrationDate.year") shouldBe "2000"
           unboundForm("registrationDate.month") shouldBe "1"
@@ -99,7 +99,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
     "parseDateIntoFields" should {
       "Convert a date string into it's day, month and year fields" in {
-        DateFieldHelper.parseDateIntoFields("2000-01-01") shouldBe Some("2000", "1", "1")
+        DateFieldHelper.parseDateIntoFields("2000-01-01") shouldBe Some(("2000", "1", "1"))
       }
 
       "Return None when date cannot be converted" in {

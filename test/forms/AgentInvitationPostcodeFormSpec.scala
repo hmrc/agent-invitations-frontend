@@ -71,7 +71,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
     }
 
     "return no errors when unbinding the form" in {
-      val unboundForm = agentInvitationPostCodeForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some(Nino("AE123456C")), Some("AA1 1AA")))
+      val unboundForm = agentInvitationPostCodeForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some("AE123456C"), Some("AA1 1AA")))
       unboundForm("postcode") shouldBe "AA1 1AA"
     }
   }

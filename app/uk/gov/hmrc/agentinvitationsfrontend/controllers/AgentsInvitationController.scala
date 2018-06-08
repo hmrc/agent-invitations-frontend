@@ -121,13 +121,13 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
 
   private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: FastTrackInvitation) => {
     val service = fastTrackDetails.service.getOrElse("")
-    val clientId = fastTrackDetails.clientIdentifier.map(Nino.apply)
+    val clientId = fastTrackDetails.clientIdentifier
     agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(service, clientId, fastTrackDetails.postcode))
   }
 
   private val fastTrackToIdentifyClientFormVat = (fastTrackDetails: FastTrackInvitation) => {
     val service = fastTrackDetails.service.getOrElse("")
-    val clientId = fastTrackDetails.clientIdentifier.map(Vrn.apply)
+    val clientId = fastTrackDetails.clientIdentifier
     agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(service, clientId, fastTrackDetails.vatRegDate))
   }
 
@@ -168,7 +168,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
     userInput => for {
       maybeCachedInvitation <- fastTrackCache.fetch()
       invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation()).copy(
-        clientIdentifier = userInput.clientIdentifier.map(_.value),
+        clientIdentifier = userInput.clientIdentifier,
         postcode = userInput.postcode
       )
       _ <- fastTrackCache.save(invitationWithClientDetails)
@@ -184,7 +184,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         userInput => for {
           maybeCachedInvitation <- fastTrackCache.fetch()
           invitationWithClientDetails = maybeCachedInvitation.getOrElse(FastTrackInvitation()).copy(
-            clientIdentifier = userInput.clientIdentifier.map(_.value),
+            clientIdentifier = userInput.clientIdentifier,
             vatRegDate = userInput.registrationDate
           )
           _ <- fastTrackCache.save(invitationWithClientDetails)
@@ -215,7 +215,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         userInput => {
           val updatedAggregate = fastTrackCache.fetch()
             .map(_.getOrElse(FastTrackInvitation()))
-            .map(_.copy(clientIdentifier = userInput.clientIdentifier.map(nino => nino.value)))
+            .map(_.copy(clientIdentifier = userInput.clientIdentifier))
 
           updatedAggregate.flatMap(updatedInvitation =>
             fastTrackCache.save(updatedInvitation).flatMap { _ =>
@@ -230,7 +230,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
       fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           val service = aggregate.service.getOrElse("")
-          val nino = aggregate.clientIdentifier.map(nino => Nino(nino))
+          val nino = aggregate.clientIdentifier
           Future successful Ok(enter_postcode(agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(service, nino, None))))
         case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
       }
@@ -506,8 +506,8 @@ object AgentsInvitationController {
       "service" -> text,
       "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
       "postcode" -> optional(text.verifying(invalidPostcode("identify-client.postcode.invalid-format"))))
-    ({ (service, clientIdentifier, postcode) => UserInputNinoAndPostcode(service, Some(Nino(clientIdentifier.trim.toUpperCase())), postcode) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+    ({ (service, clientIdentifier, postcode) => UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), postcode) })
+    ({ user => Some((user.service, user.clientIdentifier.getOrElse(""), user.postcode)) }))
         .verifyingWithErrorMap(
           verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags, "identify-client.postcode.required")
         )
@@ -524,8 +524,8 @@ object AgentsInvitationController {
       "service" -> text,
       "clientIdentifier" -> normalizedText.verifying(validVrn),
       "registrationDate" -> DateFieldHelper.dateFieldsMapping)
-    ({ (service, clientIdentifier, registrationDate) => UserInputVrnAndRegDate(service, Some(Vrn(clientIdentifier.trim.toUpperCase())), registrationDate) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.registrationDate)) }))
+    ({ (service, clientIdentifier, registrationDate) => UserInputVrnAndRegDate(service, Some(clientIdentifier.trim.toUpperCase()), registrationDate) })
+    ({ user => Some((user.service, user.clientIdentifier.getOrElse(""), user.registrationDate)) }))
       .verifyingWithErrorMap(
         verifyVatRegDateNonEmptyIfVatKnownFactsSwitchedOn(featureFlags, "error.vat-registration-date.required")
       )
@@ -537,8 +537,8 @@ object AgentsInvitationController {
       "service" -> text,
       "clientIdentifier" -> normalizedText.verifying(validNino()),
       "postcode" -> optional(text))
-    ({ (service, clientIdentifier, _) => UserInputNinoAndPostcode(service, Some(Nino(clientIdentifier.trim.toUpperCase())), None) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), None)) }))
+    ({ (service, clientIdentifier, _) => UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), None) })
+    ({ user => Some((user.service, user.clientIdentifier.getOrElse(""), None)) }))
   }
 
   val agentInvitationServiceForm: Form[UserInputNinoAndPostcode] = {
@@ -555,8 +555,8 @@ object AgentsInvitationController {
       "service" -> text,
       "clientIdentifier" -> normalizedText,
       "postcode" -> optional(text.verifying(invalidPostcode("enter-postcode.invalid-format"))))
-    ({ (service, nino, postcode) => UserInputNinoAndPostcode(service, Some(Nino(nino.trim.toUpperCase())), postcode) })
-    ({ user => Some((user.service, user.clientIdentifier.map(_.value).getOrElse(""), user.postcode)) }))
+    ({ (service, nino, postcode) => UserInputNinoAndPostcode(service, Some(nino.trim.toUpperCase()), postcode) })
+    ({ user => Some((user.service, user.clientIdentifier.getOrElse(""), user.postcode)) }))
       .verifyingWithErrorMap(
         verifyPostcodeNonEmptyIfItsaKnownFactsSwitchedOn(featureFlags, "error.postcode.required")
       ))
@@ -574,7 +574,7 @@ object AgentsInvitationController {
   }
 
   object ClientForMtdItWithFlagOn {
-    def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[TaxIdentifier] = arg match {
+    def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {
       case (UserInputNinoAndPostcode(HMRCMTDIT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdIt =>
         Some(clientIdentifier)
       case _ => None
@@ -598,7 +598,7 @@ object AgentsInvitationController {
   }
 
   object ClientForVatWithFlagOn {
-    def unapply(arg: (UserInputVrnAndRegDate, FeatureFlags)): Option[TaxIdentifier] = arg match {
+    def unapply(arg: (UserInputVrnAndRegDate, FeatureFlags)): Option[String] = arg match {
       case (UserInputVrnAndRegDate(HMRCMTDVAT, Some(clientIdentifier), _), featureFlags) if featureFlags.showKfcMtdVat =>
         Some(clientIdentifier)
       case _ => None
