@@ -7,7 +7,8 @@ generic.title={0} - {1} - GOV.UK
 # Agent Pages
 # Identify Client
 identify-client.header=Enter your client''s details
-identify-client.p1=This will help us match their details against information we hold.
+identify-client.itsa.p1=This will help us match their details against information we hold.
+identify-client.vat.p1=What is your client's VAT registration number?
 
 identify-client.nino.label=National Insurance number
 identify-client.nino.hint=For example, VO 12 34 56 D

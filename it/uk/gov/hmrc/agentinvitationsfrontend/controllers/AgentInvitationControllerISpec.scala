@@ -153,7 +153,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHtmlResultWithBodyMsgs(result,
         "identify-client.header",
-        "identify-client.p1",
+        "identify-client.itsa.p1",
         "identify-client.nino.label",
         "identify-client.nino.hint",
         "identify-client.postcode.label",
@@ -172,7 +172,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHtmlResultWithBodyMsgs(result,
         "identify-client.header",
-        "identify-client.p1",
+        "identify-client.vat.p1",
         "identify-client.vrn.label",
         "identify-client.vrn.hint",
         "identify-client.vat-registration-date.label",
