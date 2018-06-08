@@ -45,7 +45,6 @@ import scala.util.control.NonFatal
 @Singleton
 class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.external-url") externalUrl: String,
                                            @Named("agent-services-account-frontend.external-url") asAccUrl: String,
-                                           featureFlags: FeatureFlags,
                                            invitationsService: InvitationsService,
                                            auditService: AuditService,
                                            fastTrackCache: FastTrackCache,
@@ -55,7 +54,7 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
                                            val authConnector: AuthConnector,
                                            val continueUrlActions: ContinueUrlActions,
                                            val withVerifiedPasscode: PasscodeVerification)
-                                          (implicit val configuration: Configuration, val externalUrls: ExternalUrls)
+                                          (implicit val configuration: Configuration, val externalUrls: ExternalUrls, featureFlags: FeatureFlags)
   extends FrontendController with I18nSupport with AuthActions {
 
   import AgentsInvitationController._
@@ -613,10 +612,10 @@ object AgentsInvitationController {
   }
 
   object FastTrackInvitationItsaComplete {
-    def unapply(arg: FastTrackInvitation): Option[FastTrackInvitation] = arg match {
+    def unapply(arg: FastTrackInvitation)(implicit featureFlags: FeatureFlags): Option[FastTrackInvitation] = arg match {
       case FastTrackInvitation(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), Some(postcode), _)
         if Nino.isValid(clientIdentifier) && postcode.matches(postcodeRegex) =>
-        Some(arg.copy(vatRegDate = None))
+        Some(arg.copy(vatRegDate = None, postcode = if(featureFlags.showKfcMtdIt) Some(postcode) else None))
       case _ => None
     }
   }
@@ -773,7 +772,7 @@ case class OptionalMappingIf[T](isOn: Boolean, wrapped: Mapping[T], val constrai
     this.copy(constraints = constraints ++ addConstraints.toSeq)
   }
 
-  def bind(data: Map[String, String]): Either[Seq[FormError], Option[T]] = {
+  def bind(data: Map[String, String]): Either[Seq[FormError], Option[T]] = if(isOn) {
     data.keys.filter(p => p == key || p.startsWith(key + ".") || p.startsWith(key + "["))
       .map(k => data
         .get(k)
@@ -782,9 +781,9 @@ case class OptionalMappingIf[T](isOn: Boolean, wrapped: Mapping[T], val constrai
       .map { _ =>
         wrapped.bind(data).right.map(Some(_))
       }.getOrElse {
-      if(isOn) Right(None) else wrapped.bind(data ++ Map(key -> "")).right.map(Some(_))
+        wrapped.bind(data ++ Map(key -> "")).right.map(Some(_))
     }.right.flatMap(applyConstraints)
-  }
+  } else Right(None)
 
   def unbind(value: Option[T]): Map[String, String] = {
     value.map(wrapped.unbind).getOrElse(Map.empty)

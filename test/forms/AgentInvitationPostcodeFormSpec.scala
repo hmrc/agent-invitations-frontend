@@ -31,7 +31,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
 
-  "PostCodeForm" should {
+  "PostCodeForm with KFC flags on" should {
 
     val featureFlags = FeatureFlags()
     val agentInvitationPostCodeForm = AgentsInvitationController.agentInvitationPostCodeForm(featureFlags)
@@ -72,5 +72,29 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
       val unboundForm = agentInvitationPostCodeForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some("AE123456C"), Some("AA1 1AA")))
       unboundForm("postcode") shouldBe "AA1 1AA"
     }
+  }
+
+  "PostcodeForm with Kfc flags off" should {
+    val featureFlags = FeatureFlags().copy(showKfcMtdIt = false)
+    val agentInvitationPostCodeForm = AgentsInvitationController.agentInvitationPostCodeForm(featureFlags)
+
+    "return no errors when postcode is valid" in {
+      val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12 7TQ")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
+    "return no errors when postcode is invalid" in {
+      val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "INVALID")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
+    "return no errors when postcode is empty" in {
+      val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.isEmpty shouldBe true
+    }
+
   }
 }

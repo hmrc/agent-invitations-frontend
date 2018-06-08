@@ -17,6 +17,7 @@
 package extractors
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -33,7 +34,7 @@ class AgentInvitationsFastTrackExtractorsSpec extends UnitSpec {
   private val validPostcode = "DH14EJ"
   val validRegDateForVrn97 = "2007-07-07"
 
-
+  implicit val featureFlags = (FeatureFlags())
 
   "The FastTrackInvitationItsaComplete extractor" should {
     "return Some" when {
