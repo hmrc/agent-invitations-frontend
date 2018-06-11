@@ -77,5 +77,5 @@ case class FastTrackPirInvitation (clientIdentifier: Nino) extends FastTrackInvi
 case class FastTrackVatInvitation (clientIdentifier: Vrn, vatRegDate: Option[String]) extends FastTrackInvitation[Vrn] {
   val service = Services.HMRCMTDVAT
   val clientIdentifierType = "vrn"
-  val knownFact = vatRegDate
+  val knownFact = None
 }

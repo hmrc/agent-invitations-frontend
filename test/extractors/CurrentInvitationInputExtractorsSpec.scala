@@ -43,7 +43,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.knownFact) shouldBe Some(validPostcode)
+        fti.flatMap(_.postcode) shouldBe Some(validPostcode)
       }
     }
 
@@ -55,7 +55,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.postcode) shouldBe None
       }
 
       "the service is HMRC-MTD-IT and there is a valid Nino and invalid Postcode" in {
@@ -65,7 +65,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.postcode) shouldBe None
       }
 
       "the service is HMRC-MTD-IT and there is a valid Nino and empty Postcode" in {
@@ -75,7 +75,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.postcode) shouldBe None
       }
 
       "the service is HMRC-MTD-IT and there is a valid Nino and missing Postcode" in {
@@ -85,7 +85,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.postcode) shouldBe None
       }
     }
 
@@ -190,7 +190,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.knownFact) shouldBe Some(validRegDateForVrn97)
+        fti.flatMap(_.vatRegDate) shouldBe Some(validRegDateForVrn97)
       }
     }
 
@@ -202,7 +202,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.knownFact) shouldBe Some(validRegDateForVrn97)
+        fti.flatMap(_.vatRegDate) shouldBe Some(validRegDateForVrn97)
       }
 
       "the service is HMRC-MTD-VAT and there is a valid Vrn and invalid VatRegDate" in {
@@ -212,7 +212,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.vatRegDate) shouldBe None
       }
 
       "the service is HMRC-MTD-VAT and there is a valid Vrn and empty VatRegDate" in {
@@ -222,7 +222,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.vatRegDate) shouldBe None
       }
 
       "the service is HMRC-MTD-VAT and there is a valid Vrn and missing VatRegDate" in {
@@ -232,7 +232,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.knownFact) shouldBe None
+        fti.flatMap(_.vatRegDate) shouldBe None
       }
     }
 

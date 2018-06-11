@@ -288,8 +288,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
           Some("HMRC-MTD-VAT"),
           None,
           Some(validVrn.value),
-          Some(validRegistrationDate),
-          None))
+          None,
+          Some(validRegistrationDate)
+        ))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service" -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
