@@ -19,15 +19,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 
 @Singleton
-case class FeatureFlags @Inject()(@Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean,
-                                  @Named("features.show-personal-income") showPersonalIncome: Boolean,
-                                  @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean,
-                                  @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean,
-                                  @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean,
-                                  @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean,
-                                  @Named("features.enable-fast-track") enableFastTrack: Boolean)
+case class FeatureFlags @Inject()(@Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean = true,
+                                  @Named("features.show-personal-income") showPersonalIncome: Boolean = true,
+                                  @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean = true,
+                                  @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean = true,
+                                  @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean = true,
+                                  @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean = true,
+                                  @Named("features.enable-fast-track") enableFastTrack: Boolean = true)
 
 
 object FeatureFlags {
-  def apply(): FeatureFlags = new FeatureFlags(true,true,true, true, true, true, true)
+  def apply(): FeatureFlags = new FeatureFlags()
 }

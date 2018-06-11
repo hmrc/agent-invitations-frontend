@@ -68,7 +68,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
         "registrationDate is partially empty" in {
           val dataWithEmptyRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "", "registrationDate.day" -> "1")
           val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-          registrationDateForm.errors shouldBe Seq(FormError("registrationDate", List("enter-vat-registration-date.invalid-format")))
+          registrationDateForm.errors shouldBe Seq(FormError("registrationDate", List("error.vat-registration-date.required")))
         }
 
         "registrationDate is empty" in {

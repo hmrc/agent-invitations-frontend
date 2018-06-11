@@ -6,7 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -88,7 +88,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitNino = controller.submitNino()
 
     "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
+      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -109,7 +109,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "throw an exception when  feature flag show-kfc-personal-income is on " +
       "for authorised Agent with valid nino and Personal Income Record service" in {
-      testFastTrackCache.save(FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
+      testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
 
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
@@ -127,7 +127,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/identify-client")
 
     "not show a postcode entry field if service is ITSA" in {
-      testFastTrackCache.save(FastTrackInvitation(serviceITSA))
+      testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
 
       val form = controller.agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
@@ -150,7 +150,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
-      val formData = FastTrackInvitation(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      val formData = CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
@@ -162,7 +162,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 invitation-sent when service and valid vrn are provided and kfc flag is off for VAT service" in {
-      val formData = FastTrackInvitation(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
+      val formData = CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
@@ -174,7 +174,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "throw an exception when service and valid nino are provided and kfc flag is on for PIR service" in {
-      val formData = FastTrackInvitation(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
+      val formData = CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request, arn.value)
         .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))

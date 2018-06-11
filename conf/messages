@@ -52,7 +52,7 @@ error.postcode.required = You must enter an individual''s postcode
 # Enter VatRegDate
 enter-vat-registration-date.header=We need more information about this individual
 enter-vat-registration-date.label=VAT registration date
-enter-vat-registration-date.invalid-format=You must enter the date in the following format: YYYY-MM-DD (eg. 2018-01-20)
+enter-vat-registration-date.invalid-format=You must enter a valid registration date
 enter-vat-registration-date.hint=This must match our records
 error.vat-registration-date.required = You must enter the client''s VAT registration date
 

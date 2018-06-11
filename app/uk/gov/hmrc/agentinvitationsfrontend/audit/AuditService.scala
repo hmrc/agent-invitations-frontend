@@ -17,10 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationForm, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitationForm, FastTrackInvitation, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,16 +39,16 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject() (val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted(arn: Arn, invitationId: String, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], result: String, failure: Option[String] = None)
+  def sendAgentInvitationSubmitted[T <: TaxIdentifier](arn: Arn, invitationId: String, fti: FastTrackInvitation[T], result: String, failure: Option[String] = None)
                                   (implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
     auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
       Seq(
         "factCheck" -> result,
         "invitationId" -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType" -> clientIdentifierType.getOrElse(throw new IllegalStateException("Missing clientIdType")),
-        "clientId" -> clientIdentifier.map(_.value).getOrElse(throw new IllegalStateException("No clientId present")),
-        "service" -> service
+        "clientIdType" -> fti.clientIdentifierType,
+        "clientId" -> fti.clientIdentifier.value,
+        "service" -> fti.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
   }

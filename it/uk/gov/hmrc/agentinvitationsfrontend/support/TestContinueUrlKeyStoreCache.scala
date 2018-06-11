@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import uk.gov.hmrc.agentinvitationsfrontend.services.ContinueUrlStoreService
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
