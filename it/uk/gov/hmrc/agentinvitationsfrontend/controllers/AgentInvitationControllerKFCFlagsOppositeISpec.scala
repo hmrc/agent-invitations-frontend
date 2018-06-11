@@ -6,7 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationIdentifyClientFormIrv}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -101,6 +101,23 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val result = await(resultFuture)
       bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.label")
       bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.hint")
+    }
+
+    "not show a vat registration date entry field if service is VAT" in {
+      testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
+
+      val form = controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(serviceVAT, None, None))
+      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+
+      status(resultFuture) shouldBe 200
+      checkHtmlResultWithBodyMsgs(resultFuture,
+        "identify-client.header",
+        "identify-client.vrn.label",
+        "identify-client.vrn.hint")
+
+      val result = await(resultFuture)
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.label")
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.hint")
     }
   }
 

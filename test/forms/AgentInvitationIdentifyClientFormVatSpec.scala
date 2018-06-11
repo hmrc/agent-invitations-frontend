@@ -26,10 +26,10 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
   "agentInvitationIdentifyClientFormVat" when {
 
-    val featureFlags = FeatureFlags()
-    val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
+    "featureFlags are on" when {
 
-    "service is VAT" should {
+      val featureFlags = FeatureFlags()
+      val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
       val validData: Map[String, String] = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
 
       "return no error message" when {
@@ -101,6 +101,44 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           val dataWithEmptyVrn = Map("clientIdentifier" -> "", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn)
           vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
+        }
+      }
+    }
+
+    "feature flags are off" when {
+      val featureFlags = FeatureFlags().copy(showKfcMtdVat = false)
+      val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
+      val validData: Map[String, String] = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
+
+      "return no error message" when {
+        "VRN and vat registration date are valid" in {
+          agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
+        }
+
+        "VRN is valid but vat registration date is not" in {
+          val dataWithInvalidRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "13", "registrationDate.day" -> "1")
+          agentInvitationIdentifyClientForm.bind(dataWithInvalidRegistrationDate).errors.isEmpty shouldBe true
+        }
+
+        "VRN is valid and vat registration date is empty" in {
+          val dataWithEmptyRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "", "registrationDate.month" -> "", "registrationDate.day" -> "")
+          agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate).errors.isEmpty shouldBe true
+        }
+
+        "VRN is valid and vat registration date is missing" in {
+          val dataWithMissingRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
+          agentInvitationIdentifyClientForm.bind(dataWithMissingRegistrationDate).errors.isEmpty shouldBe true
+        }
+      }
+
+      "return an error message" when {
+        "VRN is invalid" in {
+          val dataWithInvalidVrn = Map("clientIdentifier" -> "12345", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
+          agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn).errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.regex-failure")))
+        }
+        "VRN is empty" in {
+          val dataWithEmptyVrn = Map("clientIdentifier" -> "", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
+          agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn).errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
         }
       }
     }

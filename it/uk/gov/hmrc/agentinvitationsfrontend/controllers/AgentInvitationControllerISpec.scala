@@ -162,6 +162,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHasAgentSignOutLink(result)
     }
+
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for VAT service" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
@@ -177,6 +178,23 @@ class AgentInvitationControllerISpec extends BaseISpec {
         "identify-client.vrn.hint",
         "identify-client.vat-registration-date.label",
         "identify-client.vat-registration-date.hint"
+      )
+
+      checkHasAgentSignOutLink(result)
+    }
+
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment for IRV service" in {
+      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result,
+        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+
+      checkHtmlResultWithBodyMsgs(result,
+        "identify-client.irv.header",
+        "identify-client.itsa.p1",
+        "identify-client.nino.hint"
       )
 
       checkHasAgentSignOutLink(result)
@@ -360,6 +378,60 @@ class AgentInvitationControllerISpec extends BaseISpec {
           "service" -> "",
           "clientIdentifier" -> validVrn.value,
           "registrationDate" -> validRegistrationDate)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      }
+    }
+
+    "service is PERSONAL-INCOME-RECORD" should {
+
+      "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
+        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, servicePIR, "NI", None)
+        getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+        testFastTrackCache.save(CurrentInvitationInput(
+          Some(servicePIR),
+          None,
+          Some(validNino.value),
+          None,
+          None))
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> servicePIR,
+          "clientIdentifier" -> validNino.value)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+      }
+
+      "redisplay page with errors when an empty NINO is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> servicePIR,
+          "clientIdentifier" -> "")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "identify-client.nino.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid NINO is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> servicePIR,
+          "clientIdentifier" -> "invalid")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "identify-client.nino.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redirect to /agents/select-service if service is missing" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "",
+          "clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
