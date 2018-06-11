@@ -392,7 +392,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       header("Set-Cookie", result) shouldBe None
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
       verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceVAT)
+      await(testFastTrackCache.fetch()).get shouldBe invitation
     }
 
     "return 303 not-enrolled if Agent attempted to invite a client for VAT" in {
@@ -407,7 +407,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       header("Set-Cookie", result) shouldBe None
       redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
       verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceVAT)
+      await(testFastTrackCache.fetch()).get shouldBe invitation
 
     }
   }

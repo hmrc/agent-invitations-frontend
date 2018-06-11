@@ -43,17 +43,33 @@
         <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
 
-    <logger name="com.google.inject" level="INFO"/>
+    <logger name="application" level="ERROR"/>
 
     <logger name="uk.gov" level="INFO"/>
 
-    <logger name="application" level="DEBUG"/>
+    <logger name="play" level="INFO"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="uk.gov.hmrc.audit" level="ERROR"/>
+
+    <logger name="uk.gov.hmrc.agentinvitationsfrontend" level="INFO"/>
+
+    <logger name="uk.gov.hmrc.agentinvitationsfrontend.repository" level="ERROR"/>
+
+    <logger name="akka" level="ERROR"/>
+
+    <logger name="reactivemongo" level="ERROR"/>
+
+    <logger name="org.asynchttpclient" level="ERROR"/>
+
+    <logger name="org.eclipse.jetty" level="ERROR"/>
+
+    <logger name="com.google.inject" level="ERROR"/>
+
+    <logger name="connector" level="ERROR">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="WARN">
+    <root level="ERROR">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>
