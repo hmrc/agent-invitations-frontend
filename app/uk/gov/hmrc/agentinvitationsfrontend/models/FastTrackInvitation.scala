@@ -18,15 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Json, Reads}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
-case class FastTrackInvitation (service: Option[String],
-                                clientIdentifierType: Option[String],
-                                clientIdentifier: Option[String],
-                                postcode: Option[String],
-                                vatRegDate: Option[String]) {
-
+case class CurrentInvitationInput(service: Option[String],
+                                  clientIdentifierType: Option[String],
+                                  clientIdentifier: Option[String],
+                                  postcode: Option[String],
+                                  vatRegDate: Option[String]) {
 
   val clientIdentifierTypeConversion: Option[String] = clientIdentifier match {
     case Some(clientId) =>{
@@ -38,19 +38,44 @@ case class FastTrackInvitation (service: Option[String],
   }
 }
 
-object FastTrackInvitation {
+object CurrentInvitationInput {
 
-  def apply(): FastTrackInvitation = FastTrackInvitation(None, None, None, None, None)
-  def apply(service: String): FastTrackInvitation = FastTrackInvitation(Some(service),None,None,None,None)
+  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, None)
+  def apply(service: String): CurrentInvitationInput = CurrentInvitationInput(Some(service),None,None,None,None)
 
-  implicit val format = Json.format[FastTrackInvitation]
+  implicit val format = Json.format[CurrentInvitationInput]
 
-  implicit val reads: Reads[FastTrackInvitation] = {
+  implicit val reads: Reads[CurrentInvitationInput] = {
     (
-        (JsPath \ "service").readNullable[String] and
+      (JsPath \ "service").readNullable[String] and
         (JsPath \ "clientIdentifierType").readNullable[String] and
         (JsPath \ "clientIdentifier").readNullable[String] and
         (JsPath \ "postcode").readNullable[String] and
-        (JsPath \ "vatRegDate").readNullable[String])((a,b,c,d,e) => FastTrackInvitation(a,b,c,d,e))
+        (JsPath \ "vatRegDate").readNullable[String])((a,b,c,d,e) => CurrentInvitationInput(a,b,c,d,e))
   }
+}
+
+trait FastTrackInvitation[T <: TaxIdentifier] {
+  def service: String
+  def clientIdentifier: T
+  def clientIdentifierType: String
+  def knownFact: Option[String]
+}
+
+case class FastTrackItsaInvitation (clientIdentifier: Nino, postcode: Option[String]) extends FastTrackInvitation[Nino] {
+  val service = Services.HMRCMTDIT
+  val clientIdentifierType = "ni"
+  val knownFact = postcode
+}
+
+case class FastTrackPirInvitation (clientIdentifier: Nino) extends FastTrackInvitation[Nino] {
+  val service = Services.HMRCPIR
+  val clientIdentifierType = "ni"
+  val knownFact = None
+}
+
+case class FastTrackVatInvitation (clientIdentifier: Vrn, vatRegDate: Option[String]) extends FastTrackInvitation[Vrn] {
+  val service = Services.HMRCMTDVAT
+  val clientIdentifierType = "vrn"
+  val knownFact = None
 }

@@ -23,7 +23,8 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.CurrentInvitationInputItsaReady
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -48,16 +49,19 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val agentInvitaitonUserInput: UserInputNinoAndPostcode = UserInputNinoAndPostcode("serviceName", Some(Nino("WM123456C")), Some("AA1 1AA"))
+      val agentInvitaitonUserInput: UserInputNinoAndPostcode = UserInputNinoAndPostcode("serviceName", Some("WM123456C"), Some("AA1 1AA"))
       val invitationId: String = "1"
       val result: String = "Success"
 
       await(service.sendAgentInvitationSubmitted(
         arn,
         invitationId,
-        agentInvitaitonUserInput.service,
-        agentInvitaitonUserInput.clientIdentifierType,
-        agentInvitaitonUserInput.clientIdentifier,
+        new FastTrackInvitation[Nino] {
+          val service: String = agentInvitaitonUserInput.service
+          val clientIdentifier: Nino = Nino("WM123456C")
+          val clientIdentifierType: String = "ni"
+          val knownFact: Option[String] = None
+        },
         result)(
         hc,
         FakeRequest("GET", "/path")))

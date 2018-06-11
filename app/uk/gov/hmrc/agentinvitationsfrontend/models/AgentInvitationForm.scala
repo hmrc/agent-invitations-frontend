@@ -16,24 +16,16 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-
 
 trait AgentInvitationForm {
 
   def service: String
-  def clientIdentifier: Option[TaxIdentifier]
+  def clientIdentifier: Option[String]
 
-  val clientIdentifierType: Option[String] = clientIdentifier match {
-    case Some(_:Nino) => Some("ni")
-    case Some(_:Vrn) => Some("vrn")
-    case _ => None
-  }
 }
 
-case class UserInputNinoAndPostcode(service: String, clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
+case class UserInputNinoAndPostcode(service: String, clientIdentifier: Option[String], postcode: Option[String])
   extends AgentInvitationForm
 
-case class UserInputVrnAndRegDate(service: String, clientIdentifier: Option[TaxIdentifier], registrationDate: Option[String])
+case class UserInputVrnAndRegDate(service: String, clientIdentifier: Option[String], registrationDate: Option[String])
   extends AgentInvitationForm

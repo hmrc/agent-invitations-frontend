@@ -26,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -100,14 +100,14 @@ object TestEndpointsController {
     }))
   }
 
-  val testAgentFastTrackForm: Form[FastTrackInvitation] = {
+  val testAgentFastTrackForm: Form[CurrentInvitationInput] = {
     Form(mapping(
       "service" -> optional(text),
       "clientIdentifierType" -> optional(text),
       "clientIdentifier" -> optional(normalizedText),
       "postcode" -> optional(text),
       "vatRegDate" -> optional(text))
-    ({ (service, clientIdType, clientId, postcode, vatRegDate) => FastTrackInvitation(service, clientIdType, clientId, postcode, vatRegDate) })
+    ({ (service, clientIdType, clientId, postcode, vatRegDate) => CurrentInvitationInput(service, clientIdType, clientId, postcode, vatRegDate) })
     ({ fastTrack => Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)) }))
   }
 }

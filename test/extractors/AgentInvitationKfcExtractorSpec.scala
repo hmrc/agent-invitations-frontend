@@ -50,11 +50,11 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientForMtdItWithFlagOn extractor" should {
     "Return a client identifier for HMRC-MTD-IT service when details match and KFC feature flag is on" in {
-      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId), None), featureFlagsAllOn)
-      ClientForMtdItWithFlagOn.unapply(args) shouldBe Some(mtdItId)
+      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId.value), None), featureFlagsAllOn)
+      ClientForMtdItWithFlagOn.unapply(args) shouldBe Some(mtdItId.value)
     }
     "Return None for HMRC-MTD-IT service when KFC feature flag is off" in {
-      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
+      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId.value), None), featureFlagsAllOff)
       ClientForMtdItWithFlagOn.unapply(args) shouldBe None
     }
     "Return None for HMRC-MTD-IT service when details don't match and KFC feature flag is on" in {
@@ -65,7 +65,7 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientForPirWithFlagOn extractor" should {
     "Return true for PERSONAL-INCOME-RECORD service when details match and KFC feature flag is on" in {
-      val args = (UserInputNinoAndPostcode(servicePIR, Some(nino), None), featureFlagsAllOn)
+      val args = (UserInputNinoAndPostcode(servicePIR, Some(nino.value), None), featureFlagsAllOn)
       ClientForPirWithFlagOn.unapply(args) shouldBe Some(())
     }
     "Return None for PERSONAL-INCOME-RECORD service when KFC feature flag is off" in {
@@ -80,11 +80,11 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientForVatWithFlagOn extractor" should {
     "Return a client identifier for HMRC-MTD-VAT service when details match and KFC feature flag is on" in {
-      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn), None), featureFlagsAllOn)
-      ClientForVatWithFlagOn.unapply(args) shouldBe Some(vrn)
+      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn.value), None), featureFlagsAllOn)
+      ClientForVatWithFlagOn.unapply(args) shouldBe Some(vrn.value)
     }
     "Return None for HMRC-MTD-VAT service when KFC feature flag is off" in {
-      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn), None), featureFlagsAllOff)
+      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn.value), None), featureFlagsAllOff)
       ClientForVatWithFlagOn.unapply(args) shouldBe None
     }
     "Return None for HMRC-MTD-VAT service when details don't match and KFC feature flag is on" in {
@@ -95,11 +95,11 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientWithFlagOff" should {
     "Return true for HMRC-MTD-IT service when details match and KFC feature flag is off" in {
-      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId), None), featureFlagsAllOff)
+      val args = (UserInputNinoAndPostcode(serviceITSA, Some(mtdItId.value), None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(())
     }
     "Return true for PERSONAL-INCOME-RECORD service when details match and KFC feature flag is off" in {
-      val args = (UserInputNinoAndPostcode(servicePIR, Some(nino), None), featureFlagsAllOff)
+      val args = (UserInputNinoAndPostcode(servicePIR, Some(nino.value), None), featureFlagsAllOff)
       ClientWithItsaOrPirFlagOff.unapply(args) shouldBe Some(())
     }
     "Return None for HMRC-MTD-IT service when details don't match and KFC feature flag is off" in {
@@ -114,7 +114,7 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
   "The ClientWithVatFlagOff" should {
     "Return true for HMRC-MTD-VAT service when details match and KFC feature flag is off" in {
-      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn), None), featureFlagsAllOff)
+      val args = (UserInputVrnAndRegDate(serviceVAT, Some(vrn.value), None), featureFlagsAllOff)
       ClientWithVatFlagOff.unapply(args) shouldBe Some(())
     }
     "Return None for HMRC-MTD-VAT service when details don't match and KFC feature flag is off" in {

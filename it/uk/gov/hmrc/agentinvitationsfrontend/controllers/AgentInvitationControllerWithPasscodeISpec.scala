@@ -23,7 +23,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, FastTrackInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, CurrentInvitationInput}
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -136,7 +136,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        testFastTrackCache.save(FastTrackInvitation(None, None, None, None, None))
+        testFastTrackCache.save(CurrentInvitationInput(None, None, None, None, None))
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode("PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -169,7 +169,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   }
 
   "GET /agents/enter-nino not be restricted by whitelisting" in {
-    testFastTrackCache.save(FastTrackInvitation("HMRC-MTD-IT"))
+    testFastTrackCache.save(CurrentInvitationInput("HMRC-MTD-IT"))
 
     val request = FakeRequest("GET", "/agents/enter-nino")
     val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))

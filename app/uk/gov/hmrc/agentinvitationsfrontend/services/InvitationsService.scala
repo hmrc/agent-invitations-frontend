@@ -31,11 +31,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
                                     agentServicesAccountConnector: AgentServicesAccountConnector) {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: Option[String], clientIdentifier: Option[TaxIdentifier], postcode: Option[String])
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: String, clientIdentifier: TaxIdentifier, postcode: Option[String])
                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
     val agentInvitation = AgentInvitation(service,
-      clientIdentifierType.getOrElse(throw new IllegalStateException("clientIdentifierType is Missing")),
-      clientIdentifier.map(_.value).getOrElse(throw new Exception("clientIdentifier is missing")), postcode)
+      clientIdentifierType,
+      clientIdentifier.value, postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

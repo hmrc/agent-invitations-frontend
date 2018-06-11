@@ -60,7 +60,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputNinoAndPostcode("HMRC-MTD-IT", Some(Nino("AE123456C")), Some("AA1 1AA"))
+            UserInputNinoAndPostcode("HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
           )
           unboundForm("postcode") shouldBe "AA1 1AA"
           unboundForm("clientIdentifier") shouldBe "AE123456C"

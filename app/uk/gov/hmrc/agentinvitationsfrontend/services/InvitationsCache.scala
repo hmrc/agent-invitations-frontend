@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.SessionCache
 
@@ -30,26 +30,26 @@ trait InvitationsCache[T] {
 
   def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
-  def save(fastTrackInvitation: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
+  def save(currentInvitationInput: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
 }
 
 @ImplementedBy(classOf[FastTrackKeyStoreCache])
-trait FastTrackCache extends InvitationsCache[FastTrackInvitation]
+trait FastTrackCache extends InvitationsCache[CurrentInvitationInput]
 
 @Singleton
 class FastTrackKeyStoreCache @Inject()(session: SessionCache) extends FastTrackCache {
 
   val id = "fast-track-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[FastTrackInvitation]] = {
-    session.fetchAndGetEntry[FastTrackInvitation](id)
+  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] = {
+    session.fetchAndGetEntry[CurrentInvitationInput](id)
   }
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[FastTrackInvitation]] = for {
-    entry <- session.fetchAndGetEntry[FastTrackInvitation](id)
-    _ <- session.cache(id, FastTrackInvitation())
+  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] = for {
+    entry <- session.fetchAndGetEntry[CurrentInvitationInput](id)
+    _ <- session.cache(id, CurrentInvitationInput())
   } yield entry
 
-  def save(invitation: FastTrackInvitation)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def save(invitation: CurrentInvitationInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     session.cache(id, invitation).map(_ => ())
 }
