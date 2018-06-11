@@ -24,10 +24,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@featureSwitch(featureName: String)(content: Html) = {
-@if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
-}
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))

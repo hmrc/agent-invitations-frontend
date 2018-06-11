@@ -51,10 +51,6 @@ class InvitationsConnector @Inject() (
   private[connectors] def rejectITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
 
-  private[connectors] def clientInvitationUrl(clientId: String, invitationId: InvitationId, apiIdentifier: String): String = {
-    s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
-  }
-
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
   def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
@@ -68,13 +64,6 @@ class InvitationsConnector @Inject() (
   def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[StoredInvitation] = {
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
-      http.GET[StoredInvitation](url.toString)
-    }
-  }
-
-  def getInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier): Future[StoredInvitation] = {
-    monitor(s"ConsumedAPI-Get-Invitation-GET") {
-      val url = invitationUrl(clientInvitationUrl(clientId, invitationId, apiIdentifier))
       http.GET[StoredInvitation](url.toString)
     }
   }

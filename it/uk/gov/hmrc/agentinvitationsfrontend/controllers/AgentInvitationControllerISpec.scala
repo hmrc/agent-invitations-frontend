@@ -205,6 +205,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
+
+    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
+      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_SERVICE"))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+    }
   }
 
   "POST /agents/identify-client" when {
