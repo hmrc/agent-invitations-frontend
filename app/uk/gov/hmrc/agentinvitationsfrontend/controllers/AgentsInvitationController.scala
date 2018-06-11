@@ -401,6 +401,9 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         Future successful Redirect(routes.AgentsInvitationController.selectService())
 
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) => invitationNeedsClientIdentifier.service match {
+        //Remove when implementing APB-16-11
+        case Some(HMRCPIR) if isSupportedWhitelistedService(HMRCPIR, isWhitelisted) =>
+          Future successful Redirect(routes.AgentsInvitationController.showNinoForm())
         case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
           Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
         case _ =>
