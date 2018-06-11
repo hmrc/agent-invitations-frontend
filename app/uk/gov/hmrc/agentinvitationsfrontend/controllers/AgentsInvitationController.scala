@@ -22,7 +22,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation._
-import play.api.data.{Form, FormError, Mapping, OptionalMapping}
+import play.api.data.{Form, FormError, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
@@ -104,7 +104,8 @@ class AgentsInvitationController @Inject()(@Named("agent-invitations-frontend.ex
         },
         userInput => {
           val updateAggregate = fastTrackCache.fetch()
-            .map(_.getOrElse(CurrentInvitationInput(userInput.service)))
+            .map(_.getOrElse(CurrentInvitationInput()))
+            .map(_.copy(service = Some(userInput.service)))
 
           updateAggregate.flatMap(updateFastTrack =>
             fastTrackCache.save(updateFastTrack).flatMap(_ =>

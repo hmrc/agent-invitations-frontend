@@ -77,6 +77,14 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           registrationDateForm.errors shouldBe Seq(FormError("registrationDate", List("error.vat-registration-date.required")))
         }
 
+        "registrationDate is missing" in {
+          val dataWithEmptyRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
+          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+          registrationDateForm.errors should contain(FormError("registrationDate.year", List("error.required")))
+          registrationDateForm.errors should contain(FormError("registrationDate.month", List("error.required")))
+          registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.required")))
+        }
+
         "VRN is invalid for regex" in {
           val dataWithInvalidVrn = Map("clientIdentifier" -> "12345", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)

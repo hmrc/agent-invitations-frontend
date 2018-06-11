@@ -331,7 +331,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service" -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "registrationDate" -> "")
+          "registrationDate.year" -> "2008",
+          "registrationDate.month" -> "",
+          "registrationDate.day" -> "12")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
