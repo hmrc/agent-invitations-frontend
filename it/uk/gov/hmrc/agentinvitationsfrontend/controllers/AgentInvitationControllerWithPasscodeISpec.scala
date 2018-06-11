@@ -120,7 +120,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
   "POST to /select-service" when {
     "service is IRV" should {
-      "redirect to /enter-nino if user is whitelisted (has valid OTAC session key)" in {
+      "redirect to /identify-client if user is whitelisted (has valid OTAC session key)" in {
         stubFor(get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
           .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
           .willReturn(aResponse()
@@ -131,7 +131,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val result = controller.submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/enter-nino"
+        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
         verifyAuthoriseAttempt()
       }
 
@@ -166,14 +166,5 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
       }
     }
-  }
-
-  "GET /agents/enter-nino not be restricted by whitelisting" in {
-    testFastTrackCache.save(CurrentInvitationInput("HMRC-MTD-IT"))
-
-    val request = FakeRequest("GET", "/agents/enter-nino")
-    val result = controller.showNinoForm(authorisedAsValidAgent(request, arn.value))
-    status(result) shouldBe 200
-    checkHtmlResultWithBodyText(result, hasMessage("generic.title",  htmlEscapedMessage("enter-nino.header"),  htmlEscapedMessage("title.suffix.agents")))
   }
 }

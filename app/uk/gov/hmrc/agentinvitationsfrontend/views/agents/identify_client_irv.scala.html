@@ -24,35 +24,35 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("enter-nino.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@featureSwitch(featureName: String)(content: Html) = {
+@if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
+}
 
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("enter-nino"))
+    @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
 
+    @form(
+        action = routes.AgentsInvitationController.submitIdentifyClient,
+        'class -> "form js-form") {
 
-  <h1 class="heading-xlarge">@Messages("enter-nino.header")</h1>
-
-
- @form(
-  action = routes.AgentsInvitationController.submitNino,
-  'class -> "form js-form") {
-
-    <div class="form-group">
+        <div class="form-group margin-top-30">
         @input(
             agentInvitationsForm("clientIdentifier"),
-        '_label -> Messages("enter-nino.label"),
-        '_inputClass -> "input--medium input--cleared",
-        '_labelTextClass -> "h2-heading",
-        '_inputHint -> Messages("nino-example.hint"),
-        '_labelClass -> "soft--ends"
+            '_label -> Messages("identify-client.irv.header"),
+            '_inputClass -> "input--medium input--cleared",
+            '_labelTextClass -> "heading-xlarge",
+            '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
+            '_labelClass -> "soft--ends"
         )
-    </div>
+        </div>
 
-  <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
-  <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
+        <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
-  <div class="form-group">
-   <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-  </div>
- }
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        </div>
+    }
+
+
 }

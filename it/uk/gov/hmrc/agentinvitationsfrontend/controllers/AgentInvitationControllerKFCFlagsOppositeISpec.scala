@@ -5,7 +5,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationNinoForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationIdentifyClientFormIrv}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -82,46 +82,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   val validVrn9755 = Vrn("101747641")
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  "POST /agents/enter-nino" should {
-    val request = FakeRequest("POST", "/agents/enter-nino")
-    val submitNino = controller.submitNino()
-
-    "return 303 for authorised Agent with valid nino and service HMRC-MTD-IT" in {
-      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
-      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-
-      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino.value), None))
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-
-      verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Not Required", serviceITSA)
-    }
-  }
-
-  "POST /agents/enter-nino" should {
-    val request = FakeRequest("POST", "/agents/enter-nino")
-    val submitNino = controller.submitNino()
-
-    "throw an exception when  feature flag show-kfc-personal-income is on " +
-      "for authorised Agent with valid nino and Personal Income Record service" in {
-      testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None))
-
-      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-
-      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(servicePIR, Some(validNino.value), None))
-
-      intercept[Exception] {
-        await(submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*)
-          .withSession("clientIdentifier" -> validNino.value, "service" -> servicePIR), arn.value)))
-      }.getMessage shouldBe "KFC flagged as on, not implemented for personal-income-record"
-    }
-  }
 
   "GET /agents/identify-client" when {
     val request = FakeRequest("GET", "/agents/identify-client")

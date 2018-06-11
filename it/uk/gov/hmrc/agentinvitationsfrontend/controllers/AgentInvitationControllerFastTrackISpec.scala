@@ -108,73 +108,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   }
 
-  "POST /agents/enter-nino" should {
-    val request = FakeRequest("POST", "/agents/enter-nino")
-    val submitNino = controller.submitNino()
-
-    "return 303 for authorised Agent with valid ITSA service and KnownFact, then entered valid nino, redirect to invitation-sent" in {
-      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), None, None, Some(validPostcode), None))
-      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "NI", Some(validPostcode))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino.value), None))
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for authorised Agent with valid IRV service, then entered valid nino, redirect to invitation-sent" in {
-      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
-      createInvitationStubForNoKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode(servicePIR, Some(validNino.value), None))
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for authorised Agent with valid KnownFact: Postcode, then entered valid nino, redirect to select-service" in {
-      testFastTrackCache.save(CurrentInvitationInput(None, None, None, Some(validPostcode), None))
-      val ninoForm = agentInvitationNinoForm.fill(UserInputNinoAndPostcode("", Some(validNino.value), None))
-      val result = submitNino(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
-      verifyAuthoriseAttempt()
-    }
-
-  }
-
-  "POST /agents/enter-postcode" should {
-    val request = FakeRequest("POST", "/agents/enter-postcode")
-    val submitPostcode = controller.submitPostcode()
-
-    "return 303 for authorised Agent with valid ITSA service and nino, then entered KnownFact: Postcode, redirect to invitation-sent" in {
-      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None))
-      createInvitationStubWithKnownFacts(arn, mtdItId.value, invitationIdITSA, validNino.value, serviceITSA, "NI", Some(validPostcode))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-      val ninoForm =  controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode(serviceITSA, Some(validNino.value), Some(validPostcode)))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for authorised Agent with valid nino, then entered KnownFact: Postcode, redirect to select-service" in {
-      testFastTrackCache.save(CurrentInvitationInput(None, Some("ni"), Some(validNino.value), None, None))
-      val ninoForm = controller.agentInvitationPostCodeForm.fill(UserInputNinoAndPostcode("", Some(validNino.value), Some(validPostcode)))
-      val result = submitPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
-      verifyAuthoriseAttempt()
-    }
-  }
-
   "POST /agents/fast-track" should {
     val request = FakeRequest("POST", "/agents/fast-track")
     val fastTrack = controller.agentFastTrack()
@@ -243,7 +176,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showNinoForm().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
     }
 
     "return 303 identify-client if service calling fast-track for ITSA does not contain nino" in {
