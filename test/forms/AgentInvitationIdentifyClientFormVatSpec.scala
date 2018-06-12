@@ -85,6 +85,15 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.required")))
         }
 
+        "registrationDate has invalid characters" in {
+          val dataWithInvalidCharactersRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "abcd", "registrationDate.month" -> "ef", "registrationDate.day" -> "gh")
+          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidCharactersRegistrationDate)
+          registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.day.invalid-format")))
+          registrationDateForm.errors should contain(FormError("registrationDate.month", List("error.month.invalid-format")))
+          registrationDateForm.errors should contain(FormError("registrationDate.year", List("error.year.invalid-format")))
+
+        }
+
         "VRN is invalid for regex" in {
           val dataWithInvalidVrn = Map("clientIdentifier" -> "12345", "service" -> "HMRC-MTD-VAT", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)

@@ -370,13 +370,29 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service" -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
+          "registrationDate.year" -> "2007",
+          "registrationDate.month" -> "17",
+          "registrationDate.day" -> "07")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vat-registration-date.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when invalid registrationDate fields are submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> validVrn.value,
           "registrationDate.year" -> "INVALID",
           "registrationDate.month" -> "INVALID",
           "registrationDate.day" -> "INVALID")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vat-registration-date.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.day.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.month.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.year.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 

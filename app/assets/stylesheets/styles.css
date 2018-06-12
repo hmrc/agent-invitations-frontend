@@ -9,3 +9,8 @@
 .normal-text {
     color: #0b0c0c !important;
 }
+
+.form-field--error .form-date .form-field--error{
+    border-left: none;
+    padding: inherit;
+}

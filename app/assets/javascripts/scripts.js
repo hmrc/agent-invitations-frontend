@@ -23,4 +23,14 @@ $(function() {
     });
     //Add aria-hidden to hidden inputs
     $('[type="hidden"]').attr("aria-hidden", true)
+
+    //arrange validation messages/classes to correct pattern
+
+    $('.form-date label.form-field--error').each(function () {
+
+            $(this).closest('div').addClass('form-field--error')
+            var $relocate = $(this).closest('fieldset').find('legend')
+            $(this).find('.error-notification').appendTo($relocate)
+
+    })
 });
