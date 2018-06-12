@@ -94,7 +94,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(resultFuture,
-        "identify-client.header",
+        "identify-client.nino.header",
         "identify-client.nino.label",
         "identify-client.nino.hint")
 
@@ -111,7 +111,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(resultFuture,
-        "identify-client.header",
+        "identify-client.vrn.header",
         "identify-client.vrn.label",
         "identify-client.vrn.hint")
 

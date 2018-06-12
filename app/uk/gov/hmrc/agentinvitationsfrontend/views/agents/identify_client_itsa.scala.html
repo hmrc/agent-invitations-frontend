@@ -24,21 +24,48 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@featureSwitch(featureName: String)(content: Html) = {
+@featureSwitchOn(featureName: String)(content: Html) = {
   @if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+
+@featureSwitchOff(featureName: String)(content: Html) = {
+@if(!configuration.getBoolean(featureName).getOrElse(false)) { @content }
+}
+
+@titleSwitch = @{
+if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"identify-client.header"}
+    else if(!configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)){"identify-client.nino.header"}
+}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+
+    @back_link(s"${routes.AgentsInvitationController.selectService()}")
 
 @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
 
-  <h1 class="heading-xlarge">@Messages("identify-client.header")</h1>
+  @featureSwitchOn("features.show-kfc-mtd-it"){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 
-  <p>@Messages("identify-client.itsa.p1")</p>
+  <p>@Messages("identify-client.itsa.p1")</p>}
 
  @form(
   action = routes.AgentsInvitationController.submitIdentifyClient,
   'class -> "form js-form") {
+
+     @featureSwitchOff("features.show-kfc-mtd-it") {
+         <div class="form-group margin-top-30">
+         @input(
+             agentInvitationsForm("clientIdentifier"),
+             '_label -> Messages("identify-client.nino.header"),
+             '_inputClass -> "input--medium input--cleared",
+             '_labelTextClass -> "heading-xlarge",
+             '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
+             '_labelClass -> "soft--ends"
+         )
+         </div>
+     }
+
+    @featureSwitchOn("features.show-kfc-mtd-it") {
 
      <div class="form-group">
      @input(
@@ -51,7 +78,6 @@
      )
      </div>
 
-     @featureSwitch("features.show-kfc-mtd-it") {
          <div class="form-group">
          @input(
              agentInvitationsForm("postcode"),
