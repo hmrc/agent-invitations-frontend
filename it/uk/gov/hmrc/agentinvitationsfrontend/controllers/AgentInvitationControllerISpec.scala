@@ -194,7 +194,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyMsgs(result,
         "identify-client.irv.header",
         "identify-client.itsa.p1",
-        "identify-client.nino.hint"
+        "identify-client.irv.hint"
       )
 
       checkHasAgentSignOutLink(result)
@@ -250,7 +250,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.nino.required")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
@@ -262,7 +262,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-nino.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
@@ -274,7 +274,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.postcode.required")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.postcode.required")
         checkHasAgentSignOutLink(result)
       }
 
@@ -286,7 +286,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "identify-client.postcode.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-postcode.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
@@ -420,7 +420,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "identify-client.nino.required")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
@@ -431,7 +431,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "identify-client.nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "enter-nino.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 

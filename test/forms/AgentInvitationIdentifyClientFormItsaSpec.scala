@@ -71,25 +71,25 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
         "postcode is invalid" in {
           val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
           val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("identify-client.postcode.invalid-format")))
+          postcodeForm.errors shouldBe Seq(FormError("postcode", List("enter-postcode.invalid-format")))
         }
 
         "postcode is empty" in {
           val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
           val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("identify-client.postcode.required")))
+          postcodeForm.errors shouldBe Seq(FormError("postcode", List("error.postcode.required")))
         }
 
         "NINO is invalid" in {
           val dataWithInvalidNino = validData + ("clientIdentifier" -> JsString("12345"))
           val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidNino)
-          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("identify-client.nino.invalid-format")))
+          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-nino.invalid-format")))
         }
 
         "NINO is empty" in {
           val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
           val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyNino)
-          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("identify-client.nino.required")))
+          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.nino.required")))
         }
       }
     }
@@ -118,11 +118,11 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       "return an error message" when {
         "NINO is invalid" in {
           val dataWithInvalidPostcode = validData + ("clientIdentifier" -> JsString("12345"))
-          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors shouldBe Seq(FormError("clientIdentifier", List("identify-client.nino.invalid-format")))
+          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors shouldBe Seq(FormError("clientIdentifier", List("enter-nino.invalid-format")))
         }
         "NINO is empty" in {
           val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
-          agentInvitationIdentifyClientForm.bind(dataWithEmptyNino).errors shouldBe Seq(FormError("clientIdentifier", List("identify-client.nino.required")))
+          agentInvitationIdentifyClientForm.bind(dataWithEmptyNino).errors shouldBe Seq(FormError("clientIdentifier", List("error.nino.required")))
         }
       }
     }

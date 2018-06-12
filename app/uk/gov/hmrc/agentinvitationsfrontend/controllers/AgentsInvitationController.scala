@@ -453,9 +453,9 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormItsa(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] = {
     Form(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")),
+      "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format")),
       "postcode" -> optionalIf(featureFlags.showKfcMtdIt,
-        trimmedUppercaseText.verifying(validPostcode(featureFlags.showKfcMtdIt, "identify-client.postcode.invalid-format", "identify-client.postcode.required"))
+        trimmedUppercaseText.verifying(validPostcode(featureFlags.showKfcMtdIt, "enter-postcode.invalid-format", "error.postcode.required"))
         )
     )
     ({ (service, clientIdentifier, postcode) => UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), postcode) })
@@ -476,7 +476,7 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] = {
     Form(mapping(
       "service" -> text,
-      "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "identify-client.nino.required", invalidFailure = "identify-client.nino.invalid-format")))
+      "clientIdentifier" -> normalizedText.verifying(validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format")))
     ({ (service, clientIdentifier) => UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), None) })
     ({ user => Some((user.service, user.clientIdentifier.getOrElse(""))) }))
   }
