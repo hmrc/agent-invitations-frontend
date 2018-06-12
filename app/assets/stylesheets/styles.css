@@ -1,3 +1,16 @@
 #error-summary-display:focus{
     outline: 3px solid #ffbf47;
 }
+
+.margin-top-30 {
+    margin-top: 30px !important;
+}
+
+.normal-text {
+    color: #0b0c0c !important;
+}
+
+.form-field--error .form-date .form-field--error{
+    border-left: none;
+    padding: inherit;
+}

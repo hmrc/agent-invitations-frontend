@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInline}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
@@ -52,7 +52,7 @@
          </div>
 
      @featureSwitch("features.show-kfc-mtd-vat") {
-         @dateFieldsHelper(agentInvitationsForm, "registrationDate",
+         @dateFieldsFreeInlineLegend(agentInvitationsForm, "registrationDate",
              '_legend -> Messages("identify-client.vat-registration-date.label"),
              '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
              '_legendSpanClass -> "heading-medium",
@@ -67,5 +67,4 @@
      </div>
 
  }
-
  }

@@ -9,53 +9,36 @@ generic.title={0} - {1} - GOV.UK
 identify-client.header=Enter your client''s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=What is your client's VAT registration number?
+identify-client.irv.header=What is your client''s National Insurance number?
+identify-client.irv.hint=For example, QQ 12 34 56 C
 
+# Nino
 identify-client.nino.label=National Insurance number
 identify-client.nino.hint=For example, VO 12 34 56 D
-identify-client.nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D
-identify-client.nino.required=Enter your client''s National Insurance number
+enter-nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D, like QQ 12 34 56 C
+error.nino.required=Enter your client''s National Insurance number
+
+# Postcode
 identify-client.postcode.label=Postcode
 identify-client.postcode.hint=This is the postcode of your client''s registered address
-identify-client.postcode.invalid-format=Enter a valid postcode, like AA1 1AA
-identify-client.postcode.required=Enter your client''s postcode
+enter-postcode.invalid-format=Postcode must only include letters a to z, numbers and spaces, like AA1 1AA
+error.postcode.required=Enter your client''s postcode
 
+# Vrn
 identify-client.vrn.label=VAT registration number
 identify-client.vrn.hint=This is the 9-digit number they received when they registered for VAT. For example, 123456789
-identify-client.vrn.required=Enter your client's VAT registration number
-identify-client.vrn.invalid-format=VAT registration number must be 9 numbers
-identify-client.vat-registration-date.label=VAT registration date
-identify-client.vat-registration-date.hint=For example, 31 8 2015
-identify-client.vat-registration-date.invalid-format=Enter a valid VAT registration date
-identify-client.vat-registration-date.required=Enter your client's VAT registration date
-
-# Enter Nino
-enter-nino.header=Enter an individual''s National Insurance number
-enter-nino.label=National Insurance number
-enter-nino.invalid-format=Enter a valid National Insurance number
-nino-example.hint=For example, VO 12 34 56 D
-error.nino.required = You must enter an individual''s number
-
-#Enter VRN
-enter-vrn.header=What is your client''s VAT registration number?
-enter-vrn.label=This is the 9-digit number they received when they registered for VAT.
-enter-vrn.example=For example, 123456789
-enter-vrn.regex-failure=VAT registration number must be a 9-digit number
-error.vrn.required=Enter the VAT registration number
+error.vrn.required=Enter your client's VAT registration number
+enter-vrn.regex-failure=VAT registration number must be 9 numbers
 enter-vrn.checksum-failure=Enter a valid VAT registration number
 
-# Enter Postcode
-enter-postcode.header=We need more information about this individual
-enter-postcode.label=Postcode
-enter-postcode.invalid-format=You can only enter these characters: a-z A-Z 0-9
-postcode.hint=This must match our records
-error.postcode.required = You must enter an individual''s postcode
-
-# Enter VatRegDate
-enter-vat-registration-date.header=We need more information about this individual
-enter-vat-registration-date.label=VAT registration date
-enter-vat-registration-date.invalid-format=You must enter a valid registration date
-enter-vat-registration-date.hint=This must match our records
-error.vat-registration-date.required = You must enter the client''s VAT registration date
+# Vat registration date
+identify-client.vat-registration-date.label=VAT registration date
+identify-client.vat-registration-date.hint=For example, 31 8 2015
+enter-vat-registration-date.invalid-format=Enter a valid VAT registration date
+error.vat-registration-date.required=Enter your client's VAT registration date
+error.day.invalid-format=Day must only include numbers
+error.month.invalid-format=Month must only include numbers
+error.year.invalid-format=Year must only include numbers
 
 # Select Service
 select-service.header=What do you want the client to authorise you to do?
@@ -241,11 +224,8 @@ error.terminate.500.message=Your income record is still visible to tax agents. P
 
 
 #Common
-button.deauthorise=Continue
-error.confirmResponse.invalid=You must choose an option
 error.summary.heading=There is a problem
 error.confirmInvite.invalid=You must choose an option
 error.confirmTerms.invalid=You must accept the terms to continue
 error.prefix=Error:
-common.pta=Go to personal tax account
 common.sign-out=Sign out
