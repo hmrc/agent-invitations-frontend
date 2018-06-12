@@ -14,7 +14,7 @@ identify-client.irv.hint=For example, QQ 12 34 56 C
 
 # Nino
 identify-client.nino.label=National Insurance number
-identify-client.nino.hint=For example, VO 12 34 56 D
+identify-client.nino.hint=For example, QQ 12 34 56 C
 enter-nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D, like QQ 12 34 56 C
 error.nino.required=Enter your client''s National Insurance number
 
