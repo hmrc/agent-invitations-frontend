@@ -168,8 +168,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result,
-        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "title.suffix.agents")
 
       checkHtmlResultWithBodyMsgs(result,
         "identify-client.header",
@@ -188,13 +187,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result,
-        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "title.suffix.agents")
 
       checkHtmlResultWithBodyMsgs(result,
-        "identify-client.irv.header",
+        "identify-client.nino.header",
         "identify-client.itsa.p1",
-        "identify-client.irv.hint"
+        "identify-client.nino.hint"
       )
 
       checkHasAgentSignOutLink(result)
@@ -436,7 +434,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "error.nino.required")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.nino.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
@@ -447,7 +445,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.irv.header", "enter-nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result,"identify-client.nino.header", "enter-nino.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
