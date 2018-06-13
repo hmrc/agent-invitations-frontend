@@ -28,56 +28,73 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsService @Inject() (invitationsConnector: InvitationsConnector,
-                                    agentServicesAccountConnector: AgentServicesAccountConnector) {
+class InvitationsService @Inject()(
+  invitationsConnector: InvitationsConnector,
+  agentServicesAccountConnector: AgentServicesAccountConnector) {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: String, clientIdentifier: TaxIdentifier, postcode: Option[String])
-                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
-    val agentInvitation = AgentInvitation(service,
-      clientIdentifierType,
-      clientIdentifier.value, postcode)
+  def createInvitation(
+    arn: Arn,
+    service: String,
+    clientIdentifierType: String,
+    clientIdentifier: TaxIdentifier,
+    postcode: Option[String])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
+    val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value, postcode)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
       invitation <- invitationsConnector
-        .getInvitation(locationOpt.getOrElse { throw new Exception("Invitation location expected; but missing.") })
+                     .getInvitation(locationOpt.getOrElse {
+                       throw new Exception("Invitation location expected; but missing.")
+                     })
     } yield invitation
   }
 
-  def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.acceptITSAInvitation(mtdItId, invitationId)
 
-  def rejectITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def rejectITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectITSAInvitation(mtdItId, invitationId)
 
-  def acceptAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def acceptAFIInvitation(invitationId: InvitationId, nino: Nino)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.acceptAFIInvitation(nino, invitationId)
 
-  def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectAFIInvitation(nino, invitationId)
 
-  def acceptVATInvitation(invitationId: InvitationId, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def acceptVATInvitation(invitationId: InvitationId, vrn: Vrn)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.acceptVATInvitation(vrn, invitationId)
 
-  def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     invitationsConnector.rejectVATInvitation(vrn, invitationId)
 
-  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
+  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[StoredInvitation] =
     invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
-  }
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     agentServicesAccountConnector.getAgencyName(arn.value).map {
       case Some(name) => name
-      case None => throw new Exception("Agency name not found")
-  }
+      case None       => throw new Exception("Agency name not found")
+    }
 
-  def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(implicit hc: HeaderCarrier): Future[Option[Boolean]] = {
+  def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
+    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
     invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
-  }
 
-  private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String = {
-      s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
-  }
+  private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
+    s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
 
 }

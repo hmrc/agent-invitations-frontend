@@ -29,10 +29,8 @@ class RelationshipFormSpec extends UnitSpec {
 
   "ConfirmInvite form" should {
     "return no error with valid input" in {
-      val result = testRelationshipForm.bind(Json.obj(
-        "arn" -> arn.value,
-        "service" -> afiService,
-        "clientId" -> clientId))
+      val result =
+        testRelationshipForm.bind(Json.obj("arn" -> arn.value, "service" -> afiService, "clientId" -> clientId))
 
       result.errors.isEmpty shouldBe true
     }

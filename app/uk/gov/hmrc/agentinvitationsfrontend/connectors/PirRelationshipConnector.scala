@@ -32,33 +32,36 @@ import scala.concurrent.Future
 
 @Singleton
 class PirRelationshipConnector @Inject()(
-                                          @Named("agent-fi-relationship-baseUrl") baseUrl: URL,
-                                          http: HttpGet with HttpPost with HttpPut with HttpDelete,
-                                          metrics: Metrics) extends HttpAPIMonitor {
+  @Named("agent-fi-relationship-baseUrl") baseUrl: URL,
+  http: HttpGet with HttpPost with HttpPut with HttpDelete,
+  metrics: Metrics)
+    extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
       val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
-      http.PUT[JsObject, HttpResponse](url.toString, body).map(_.status)
+      http
+        .PUT[JsObject, HttpResponse](url.toString, body)
+        .map(_.status)
         .recover {
           case _: Upstream5xxResponse => 500
         }
     }
-  }
 
-  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
-      http.DELETE[HttpResponse](url.toString).map(_.status)
+      http
+        .DELETE[HttpResponse](url.toString)
+        .map(_.status)
         .recover {
           case _: Upstream5xxResponse => 500
         }
     }
-  }
 
   private def createAndDeleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
     s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"

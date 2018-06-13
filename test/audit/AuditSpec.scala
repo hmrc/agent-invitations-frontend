@@ -49,22 +49,23 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         requestId = Some(RequestId("dummy request id")))
 
       val arn: Arn = Arn("HX2345")
-      val agentInvitaitonUserInput: UserInputNinoAndPostcode = UserInputNinoAndPostcode("serviceName", Some("WM123456C"), Some("AA1 1AA"))
+      val agentInvitaitonUserInput: UserInputNinoAndPostcode =
+        UserInputNinoAndPostcode("serviceName", Some("WM123456C"), Some("AA1 1AA"))
       val invitationId: String = "1"
       val result: String = "Success"
 
-      await(service.sendAgentInvitationSubmitted(
-        arn,
-        invitationId,
-        new FastTrackInvitation[Nino] {
-          val service: String = agentInvitaitonUserInput.service
-          val clientIdentifier: Nino = Nino("WM123456C")
-          val clientIdentifierType: String = "ni"
-          val knownFact: Option[String] = None
-        },
-        result)(
-        hc,
-        FakeRequest("GET", "/path")))
+      await(
+        service.sendAgentInvitationSubmitted(
+          arn,
+          invitationId,
+          new FastTrackInvitation[Nino] {
+            val service: String = agentInvitaitonUserInput.service
+            val clientIdentifier: Nino = Nino("WM123456C")
+            val clientIdentifierType: String = "ni"
+            val knownFact: Option[String] = None
+          },
+          result
+        )(hc, FakeRequest("GET", "/path")))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -107,16 +108,15 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val mtdItId: MtdItId = MtdItId("mtdItId")
       val serviceName: String = "HMRC-MTD-IT"
 
-      await(service.sendAgentInvitationResponse(
-        invitationId,
-        arn,
-        clientResponse,
-        clientIdType,
-        mtdItId.value,
-        serviceName,
-        agencyName)(
-        hc,
-        FakeRequest("GET", "/path")))
+      await(
+        service.sendAgentInvitationResponse(
+          invitationId,
+          arn,
+          clientResponse,
+          clientIdType,
+          mtdItId.value,
+          serviceName,
+          agencyName)(hc, FakeRequest("GET", "/path")))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -160,16 +160,11 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val nino: String = "nino"
       val serviceName: String = "PERSONAL-INCOME-RECORD"
 
-      await(service.sendAgentInvitationResponse(
-        invitationId,
-        arn,
-        clientResponse,
-        clientIdType,
-        nino,
-        serviceName,
-        agencyName)(
-        hc,
-        FakeRequest("GET", "/path")))
+      await(
+        service
+          .sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, nino, serviceName, agencyName)(
+            hc,
+            FakeRequest("GET", "/path")))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -213,16 +208,15 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val vatRegistrationNumber: String = "vat"
       val serviceName: String = "HMRC-MTD-VAT"
 
-      await(service.sendAgentInvitationResponse(
-        invitationId,
-        arn,
-        clientResponse,
-        clientIdType,
-        vatRegistrationNumber,
-        serviceName,
-        agencyName)(
-        hc,
-        FakeRequest("GET", "/path")))
+      await(
+        service.sendAgentInvitationResponse(
+          invitationId,
+          arn,
+          clientResponse,
+          clientIdType,
+          vatRegistrationNumber,
+          serviceName,
+          agencyName)(hc, FakeRequest("GET", "/path")))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])

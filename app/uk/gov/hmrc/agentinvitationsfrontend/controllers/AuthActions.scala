@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
@@ -34,13 +35,16 @@ trait AuthActions extends AuthorisedFunctions {
 
   def externalUrls: ExternalUrls
 
-  private def getEnrolmentValue(enrolments: Enrolments, serviceName: String, identifierKey: String) = for {
-    enrolment <- enrolments.getEnrolment(serviceName)
-    identifier <- enrolment.getIdentifier(identifierKey)
-  } yield identifier.value
+  private def getEnrolmentValue(enrolments: Enrolments, serviceName: String, identifierKey: String) =
+    for {
+      enrolment  <- enrolments.getEnrolment(serviceName)
+      identifier <- enrolment.getIdentifier(identifierKey)
+    } yield identifier.value
 
-
-  protected def withAuthorisedAsAgent[A](body: (Arn, Boolean) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+  protected def withAuthorisedAsAgent[A](body: (Arn, Boolean) => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode { isWhitelisted =>
       withEnrolledAsAgent {
         case Some(arn) =>
@@ -51,23 +55,30 @@ trait AuthActions extends AuthorisedFunctions {
       }
     }
 
-  protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+  protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     withEnrolledAsClient(serviceName, identifierKey) {
       case Some(clientId) => body(clientId)
-      case None => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
+      case None           => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
     }.recover {
       case _: InsufficientEnrolments =>
         serviceName match {
           case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
-          case _ => Redirect(routes.ClientsInvitationController.notSignedUp())
-            .addingToSession("clientService" -> serviceName)
+          case _ =>
+            Redirect(routes.ClientsInvitationController.notSignedUp())
+              .addingToSession("clientService" -> serviceName)
         }
       case _: InsufficientConfidenceLevel =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
 
     }
 
-  protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     authorised(
       Enrolment("HMRC-AS-AGENT")
         and AuthProviders(GovernmentGateway))
@@ -75,21 +86,22 @@ trait AuthActions extends AuthorisedFunctions {
         val id = getEnrolmentValue(enrolments, "HMRC-AS-AGENT", "AgentReferenceNumber")
         body(id)
       }
-  }
 
-  protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(
+    body: Option[String] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     authorised(
       Enrolment(serviceName)
         and AuthProviders(GovernmentGateway)
         and ConfidenceLevel.L200
-    )
-      .retrieve(authorisedEnrolments) { enrolments =>
-        val id = for {
-          enrolment <- enrolments.getEnrolment(serviceName)
-          identifier <- enrolment.getIdentifier(identifierKey)
-        } yield identifier.value
+    ).retrieve(authorisedEnrolments) { enrolments =>
+      val id = for {
+        enrolment  <- enrolments.getEnrolment(serviceName)
+        identifier <- enrolment.getIdentifier(identifierKey)
+      } yield identifier.value
 
-        body(id)
-      }
-  }
+      body(id)
+    }
 }

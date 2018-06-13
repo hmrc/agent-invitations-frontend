@@ -33,10 +33,11 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 
 @Singleton
-class InvitationsConnector @Inject() (
+class InvitationsConnector @Inject()(
   @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
   http: HttpGet with HttpPost with HttpPut,
-  metrics: Metrics) extends HttpAPIMonitor {
+  metrics: Metrics)
+    extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -46,85 +47,92 @@ class InvitationsConnector @Inject() (
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
-  def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
       http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
         r.header("location")
       }
     }
-  }
 
-  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[StoredInvitation] = {
+  def getInvitation(location: String)(implicit hc: HeaderCarrier): Future[StoredInvitation] =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       http.GET[StoredInvitation](url.toString)
     }
-  }
 
-  def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptITSAInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }
-  }
 
-  def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectITSAInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
     }
-  }
 
   private[connectors] def acceptAFIInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectAFIInvitationUrl(nino: Nino, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
 
-  def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
     }
-  }
 
-  def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
     }
-  }
 
   private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/accept")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/reject")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${registrationDate.toString}")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${registrationDate.toString}")
 
-  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
     }
-  }
 
-  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] = {
+  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
     }
-  }
 
-  def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+  def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
+    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
       http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map(_ => Some(true))
-    }.recover{
+    }.recover {
       case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
-      case _: NotFoundException => None
+      case _: NotFoundException                                      => None
     }
 
   object Reads {
@@ -135,16 +143,15 @@ class InvitationsConnector @Inject() (
     import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
 
     implicit val reads: Reads[StoredInvitation] = {
-      implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(baseUrl,s))
-      (
-        (JsPath \ "arn").read[Arn] and
-          (JsPath \ "service").read[String] and
-          (JsPath \ "clientId").read[String] and
-          (JsPath \ "status").read[String] and
-          (JsPath \ "created").read[DateTime] and
-          (JsPath \ "lastUpdated").read[DateTime] and
-          (JsPath \ "expiryDate").read[LocalDate] and
-          (JsPath \ "_links" \ "self").read[URL])(StoredInvitation.apply _)
+      implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
+      ((JsPath \ "arn").read[Arn] and
+        (JsPath \ "service").read[String] and
+        (JsPath \ "clientId").read[String] and
+        (JsPath \ "status").read[String] and
+        (JsPath \ "created").read[DateTime] and
+        (JsPath \ "lastUpdated").read[DateTime] and
+        (JsPath \ "expiryDate").read[LocalDate] and
+        (JsPath \ "_links" \ "self").read[URL])(StoredInvitation.apply _)
     }
   }
 }

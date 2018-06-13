@@ -35,13 +35,15 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesApi,
-                                        pirRelationshipConnector: PirRelationshipConnector,
-                                        fastTrackCache: FastTrackCache,
-                                        val authConnector: AuthConnector,
-                                        val withVerifiedPasscode: PasscodeVerification
-                                       )(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
-  extends FrontendController with I18nSupport with AuthActions {
+class TestEndpointsController @Inject()(
+  val messagesApi: play.api.i18n.MessagesApi,
+  pirRelationshipConnector: PirRelationshipConnector,
+  fastTrackCache: FastTrackCache,
+  val authConnector: AuthConnector,
+  val withVerifiedPasscode: PasscodeVerification)(
+  implicit val configuration: Configuration,
+  val externalUrls: ExternalUrls)
+    extends FrontendController with I18nSupport with AuthActions {
 
   import TestEndpointsController._
 
@@ -50,35 +52,43 @@ class TestEndpointsController @Inject()(val messagesApi: play.api.i18n.MessagesA
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    testRelationshipForm.bindFromRequest().fold(
-      formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
-      validFormData => {
-        pirRelationshipConnector.deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
-          case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-          case _ => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
+        validFormData => {
+          pirRelationshipConnector
+            .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
+              case _  => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+            }
         }
-      }
-    )
+      )
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-      Future successful Ok(create_relationship(testRelationshipForm))
-    }
+    Future successful Ok(create_relationship(testRelationshipForm))
+  }
 
   def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    testRelationshipForm.bindFromRequest().fold(
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
         formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
         validFormData => {
-          pirRelationshipConnector.createRelationship(validFormData.arn, validFormData.service, validFormData.clientId).map {
-            case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-            case _ => Redirect(agentRoutes.AgentsInvitationController.notMatched())
-          }
+          pirRelationshipConnector
+            .createRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
+              case _       => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+            }
         }
       )
-    }
+  }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent{(_, _) =>
+    withAuthorisedAsAgent { (_, _) =>
       Future successful Ok(test_fast_track(testAgentFastTrackForm))
     }
   }
@@ -89,25 +99,36 @@ object TestEndpointsController {
   case class Relationship(arn: Arn, service: String, clientId: String)
 
   val testRelationshipForm: Form[Relationship] = {
-    Form(mapping(
-      "arn" -> text,
-      "service" -> text,
-      "clientId" -> text
-    )({
-      case (arn, service, clientId) => Relationship(Arn(arn), service, clientId)
-    })({
-      dr: Relationship => Some((dr.arn.value, dr.service, dr.clientId))
-    }))
+    Form(
+      mapping(
+        "arn"      -> text,
+        "service"  -> text,
+        "clientId" -> text
+      )({
+        case (arn, service, clientId) => Relationship(Arn(arn), service, clientId)
+      })({ dr: Relationship =>
+        Some((dr.arn.value, dr.service, dr.clientId))
+      }))
   }
 
   val testAgentFastTrackForm: Form[CurrentInvitationInput] = {
-    Form(mapping(
-      "service" -> optional(text),
-      "clientIdentifierType" -> optional(text),
-      "clientIdentifier" -> optional(normalizedText),
-      "postcode" -> optional(text),
-      "vatRegDate" -> optional(text))
-    ({ (service, clientIdType, clientId, postcode, vatRegDate) => CurrentInvitationInput(service, clientIdType, clientId, postcode, vatRegDate) })
-    ({ fastTrack => Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.postcode, fastTrack.vatRegDate)) }))
+    Form(
+      mapping(
+        "service"              -> optional(text),
+        "clientIdentifierType" -> optional(text),
+        "clientIdentifier"     -> optional(normalizedText),
+        "postcode"             -> optional(text),
+        "vatRegDate"           -> optional(text)
+      )({ (service, clientIdType, clientId, postcode, vatRegDate) =>
+        CurrentInvitationInput(service, clientIdType, clientId, postcode, vatRegDate)
+      })({ fastTrack =>
+        Some(
+          (
+            fastTrack.service,
+            fastTrack.clientIdentifierType,
+            fastTrack.clientIdentifier,
+            fastTrack.postcode,
+            fastTrack.vatRegDate))
+      }))
   }
 }

@@ -36,10 +36,18 @@ class InvitationsConnectorISpec extends BaseISpec {
     "service is for ITSA" should {
       val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", Some("AB1 1BA"))
       "return a link of a ITSA created invitation" in {
-        createInvitationStubWithKnownFacts(arn, "mtdItId", invitationIdITSA, "AB123456B", serviceITSA, identifierITSA, Some("AB1 1BA"))
+        createInvitationStubWithKnownFacts(
+          arn,
+          "mtdItId",
+          invitationIdITSA,
+          "AB123456B",
+          serviceITSA,
+          identifierITSA,
+          Some("AB1 1BA"))
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
-        result.get should include("agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
+        result.get should include(
+          "agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
       }
 
       "return an error if unexpected response when creating ITSA invitation" in {
@@ -53,7 +61,14 @@ class InvitationsConnectorISpec extends BaseISpec {
     "service is for PIR" should {
       val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
       "return a link of a PIR created invitation" in {
-        createInvitationStubForNoKnownFacts(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
+        createInvitationStubForNoKnownFacts(
+          arn,
+          "AB123456B",
+          invitationIdPIR,
+          "AB123456B",
+          "ni",
+          servicePIR,
+          identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/BT5YMLY6GG2L6")
@@ -70,7 +85,14 @@ class InvitationsConnectorISpec extends BaseISpec {
     "service is for VAT" should {
       val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
       "return a link of a VAT created invitation" in {
-        createInvitationStubForNoKnownFacts(arn, validVrn97.value, invitationIdVAT, validVrn97.value, "vrn", serviceVAT, identifierVAT)
+        createInvitationStubForNoKnownFacts(
+          arn,
+          validVrn97.value,
+          invitationIdVAT,
+          validVrn97.value,
+          "vrn",
+          serviceVAT,
+          identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/VAT/101747696/invitations/received/CZTW1KY6RTAAT")
@@ -88,50 +110,59 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Get Invitation" when {
 
     "service is for ITSA" should {
-      val getITSAInvitation = s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"
+      val getITSAInvitation =
+        s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"
       "return an invitation" in {
-        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA,"Pending")
-        val result = await(connector
-          .getInvitation(getITSAInvitation))
+        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        val result = await(
+          connector
+            .getInvitation(getITSAInvitation))
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if invitation not found" in {
         notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-        an[NotFoundException] shouldBe thrownBy (await(connector
-          .getInvitation(getITSAInvitation)))
+        an[NotFoundException] shouldBe thrownBy(
+          await(connector
+            .getInvitation(getITSAInvitation)))
       }
     }
 
     "service is for PIR" should {
-      val getPIRInvitation = s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
+      val getPIRInvitation =
+        s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
       "return PIR Invitation" in {
-        getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR,"Pending")
-        val result = await(connector
-          .getInvitation(getPIRInvitation))
+        getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        val result = await(
+          connector
+            .getInvitation(getPIRInvitation))
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if PIR invitation not found" in {
         notFoundGetInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
-        an[NotFoundException] shouldBe thrownBy (await(connector
-          .getInvitation(getPIRInvitation)))
+        an[NotFoundException] shouldBe thrownBy(
+          await(connector
+            .getInvitation(getPIRInvitation)))
       }
     }
 
     "service is for VAT" should {
-      val getVATInvitation = s"/agent-client-authorisation/clients/VAT/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
+      val getVATInvitation =
+        s"/agent-client-authorisation/clients/VAT/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
       "return VAT Invitation" in {
         getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-        val result = await(connector
-          .getInvitation(getVATInvitation))
+        val result = await(
+          connector
+            .getInvitation(getVATInvitation))
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if VAT invitation not found" in {
         notFoundGetInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
-        an[NotFoundException] shouldBe thrownBy (await(connector
-          .getInvitation(getVATInvitation)))
+        an[NotFoundException] shouldBe thrownBy(
+          await(connector
+            .getInvitation(getVATInvitation)))
       }
     }
   }
@@ -324,7 +355,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       val suppliedDate = LocalDate.parse("2001-02-03")
       checkVatRegisteredClientStub(validVrn97, suppliedDate, 502)
 
-      assertThrows[Upstream5xxResponse]{
+      assertThrows[Upstream5xxResponse] {
         await(connector.checkVatRegisteredClient(validVrn97, suppliedDate))
       }
 

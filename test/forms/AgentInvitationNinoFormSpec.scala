@@ -34,7 +34,7 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
 
   "NinoForm" should {
     "return no error message for valid Nino" in {
-      val data = Json.obj("service"-> "someService", "clientIdentifier" -> "WM123456C", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "WM123456C", "postcode" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
@@ -66,7 +66,8 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
     }
 
     "return no errors when unbinding the form" in {
-      val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(UserInputNinoAndPostcode("", Some("AE123456C"), None))
+      val unboundForm =
+        agentInvitationIdentifyClientForm.mapping.unbind(UserInputNinoAndPostcode("", Some("AE123456C"), None))
       unboundForm("clientIdentifier") shouldBe "AE123456C"
     }
 

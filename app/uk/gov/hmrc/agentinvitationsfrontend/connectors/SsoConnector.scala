@@ -31,7 +31,7 @@ import scala.concurrent.Future
 
 @Singleton
 class SsoConnector @Inject()(http: HttpGet, @Named("sso-baseUrl") baseUrl: URL, metrics: Metrics)
-  extends HttpAPIMonitor {
+    extends HttpAPIMonitor {
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def validateExternalDomain(domain: String)(implicit hc: HeaderCarrier): Future[Boolean] =

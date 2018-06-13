@@ -13,8 +13,8 @@ class TestEndpointsControllerISpec extends BaseISpec {
   val clientId = "AA123456A"
   val afiService = "PERSONAL-INCOME-RECORD"
   val relationshipForm = Seq(
-    "arn" -> arn.value,
-    "service" -> afiService,
+    "arn"      -> arn.value,
+    "service"  -> afiService,
     "clientId" -> clientId
   )
 
@@ -31,8 +31,11 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "delete an existing relationship" in {
       deleteRelationship(arn, afiService, clientId)
 
-      val result = await(controller.submitDeleteRelationship().apply(FakeRequest()
-        .withFormUrlEncodedBody(relationshipForm: _*)))
+      val result = await(
+        controller
+          .submitDeleteRelationship()
+          .apply(FakeRequest()
+            .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getDeleteRelationship().url
@@ -41,8 +44,11 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "show not matched page as an error page if unable to delete an existing relationship" in {
       deleteRelationshipFailed(arn, afiService, clientId)
 
-      val result = await(controller.submitDeleteRelationship().apply(FakeRequest()
-        .withFormUrlEncodedBody(relationshipForm: _*)))
+      val result = await(
+        controller
+          .submitDeleteRelationship()
+          .apply(FakeRequest()
+            .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url
@@ -69,8 +75,11 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "delete an existing relationship" in {
       createRelationship(arn, afiService, clientId)
 
-      val result = await(controller.submitCreateRelationship().apply(FakeRequest()
-        .withFormUrlEncodedBody(relationshipForm: _*)))
+      val result = await(
+        controller
+          .submitCreateRelationship()
+          .apply(FakeRequest()
+            .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getCreateRelationship().url
@@ -79,8 +88,11 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "show not matched page as an error page if unable to delete an existing relationship" in {
       createRelationshipFailed(arn, afiService, clientId)
 
-      val result = await(controller.submitCreateRelationship().apply(FakeRequest()
-        .withFormUrlEncodedBody(relationshipForm: _*)))
+      val result = await(
+        controller
+          .submitCreateRelationship()
+          .apply(FakeRequest()
+            .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url

@@ -25,21 +25,24 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationKfcExtractorSpec extends UnitSpec {
 
-  private val featureFlagsAllOn = new FeatureFlags(showHmrcMtdIt          = true,
-                                                   showPersonalIncome     = true,
-                                                   showHmrcMtdVat         = true,
-                                                   showKfcMtdIt           = true,
-                                                   showKfcPersonalIncome  = true,
-                                                   showKfcMtdVat          = true,
-                                                   enableFastTrack          = true)
+  private val featureFlagsAllOn = new FeatureFlags(
+    showHmrcMtdIt = true,
+    showPersonalIncome = true,
+    showHmrcMtdVat = true,
+    showKfcMtdIt = true,
+    showKfcPersonalIncome = true,
+    showKfcMtdVat = true,
+    enableFastTrack = true)
 
-  private val featureFlagsAllOff = new FeatureFlags(showHmrcMtdIt          = true,
-                                                    showPersonalIncome     = true,
-                                                    showHmrcMtdVat         = true,
-                                                    showKfcMtdIt           = false,
-                                                    showKfcPersonalIncome  = false,
-                                                    showKfcMtdVat          = false,
-                                                    enableFastTrack          = false)
+  private val featureFlagsAllOff = new FeatureFlags(
+    showHmrcMtdIt = true,
+    showPersonalIncome = true,
+    showHmrcMtdVat = true,
+    showKfcMtdIt = false,
+    showKfcPersonalIncome = false,
+    showKfcMtdVat = false,
+    enableFastTrack = false
+  )
 
   private val serviceITSA = "HMRC-MTD-IT"
   private val servicePIR = "PERSONAL-INCOME-RECORD"

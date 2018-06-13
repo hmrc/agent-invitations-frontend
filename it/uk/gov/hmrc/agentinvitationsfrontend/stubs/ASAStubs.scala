@@ -8,23 +8,21 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 trait ASAStubs {
   me: WireMockSupport =>
 
-  def givenGetAgencyNameStub(arn: Arn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200)
-          .withBody(
-            s"""
-               |{
-               |  "agencyName" : "My Agency"
-               |}""".stripMargin)))
-  }
+  def givenGetAgencyNameStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyName" : "My Agency"
+                         |}""".stripMargin)))
 
-  def givenAgencyNameNotFoundStub(arn: Arn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
-      .willReturn(
-        aResponse()
+  def givenAgencyNameNotFoundStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(aResponse()
           .withStatus(404)))
-  }
 
 }

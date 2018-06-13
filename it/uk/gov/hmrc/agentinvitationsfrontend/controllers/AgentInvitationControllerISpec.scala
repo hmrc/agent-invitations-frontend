@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, UserInputVrnAndRegDate, CurrentInvitationInput}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthorisationException
@@ -76,12 +76,17 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("generic.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")),
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("select-service.itsa"),
         htmlEscapedMessage("select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat"))
+        htmlEscapedMessage("select-service.vat")
+      )
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
@@ -96,7 +101,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+      val result =
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -106,7 +112,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
       testFastTrackCache.save(CurrentInvitationInput(servicePIR))
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(servicePIR, None, None))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+      val result =
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -116,7 +123,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceVAT, None, None))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+      val result =
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -127,8 +135,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("service" -> ""), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", htmlEscapedMessage("select-service.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
@@ -148,10 +160,15 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result,
-        hasMessage("generic.title", htmlEscapedMessage("identify-client.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        hasMessage(
+          "generic.title",
+          htmlEscapedMessage("identify-client.header"),
+          htmlEscapedMessage("title.suffix.agents")))
 
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "identify-client.header",
         "identify-client.itsa.p1",
         "identify-client.nino.label",
@@ -170,7 +187,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHtmlResultWithBodyMsgs(result, "identify-client.header", "title.suffix.agents")
 
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "identify-client.header",
         "identify-client.vat.p1",
         "identify-client.vrn.label",
@@ -189,16 +207,16 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "title.suffix.agents")
 
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "identify-client.nino.header",
         "identify-client.itsa.p1",
-        "identify-client.nino.hint"
-      )
+        "identify-client.nino.hint")
 
       checkHasAgentSignOutLink(result)
     }
 
-  "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
@@ -221,19 +239,22 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "service is HMRC-MTD-IT" should {
 
       "redirect to /agents/invitation-sent when a valid NINO and postcode are submitted" in {
-        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdITSA, validNino.value, "HMRC-MTD-IT", "NI", Some(validPostcode))
+        createInvitationStubWithKnownFacts(
+          arn,
+          validNino.value,
+          invitationIdITSA,
+          validNino.value,
+          "HMRC-MTD-IT",
+          "NI",
+          Some(validPostcode))
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(
-          Some("HMRC-MTD-IT"),
-          None,
-          Some(validNino.value),
-          Some(validPostcode),
-          None))
+        testFastTrackCache.save(
+          CurrentInvitationInput(Some("HMRC-MTD-IT"), None, Some(validNino.value), Some(validPostcode), None))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-IT",
+          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "postcode" -> validPostcode)
+          "postcode"         -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -241,58 +262,52 @@ class AgentInvitationControllerISpec extends BaseISpec {
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-IT",
-          "clientIdentifier" -> "",
-          "postcode" -> validPostcode)
+        val requestWithForm = request
+          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> "", "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.nino.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-IT",
+          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> "invalid",
-          "postcode" -> validPostcode)
+          "postcode"         -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-nino.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an empty postcode is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-IT",
-          "clientIdentifier" -> validNino.value,
-          "postcode" -> "")
+        val requestWithForm = request
+          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> validNino.value, "postcode" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.postcode.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.postcode.required")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an invalid postcode is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-IT",
+          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "postcode" -> "invalid")
+          "postcode"         -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-postcode.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "",
-          "clientIdentifier" -> validNino.value,
-          "postcode" -> validPostcode)
+        val requestWithForm = request
+          .withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value, "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -303,23 +318,32 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "service is HMRC-MTD-VAT" should {
 
       "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
-        createInvitationStubForNoKnownFacts(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+        createInvitationStubForNoKnownFacts(
+          arn,
+          validVrn.value,
+          invitationIdVAT,
+          validVrn.value,
+          "vrn",
+          serviceVAT,
+          identifierVAT)
         getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
         checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
 
-        testFastTrackCache.save(CurrentInvitationInput(
-          Some("HMRC-MTD-VAT"),
-          None,
-          Some(validVrn.value),
-          None,
-          Some(validRegistrationDate)
-        ))
+        testFastTrackCache.save(
+          CurrentInvitationInput(
+            Some("HMRC-MTD-VAT"),
+            None,
+            Some(validVrn.value),
+            None,
+            Some(validRegistrationDate)
+          ))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year" -> "2007",
+          "service"                -> "HMRC-MTD-VAT",
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2007",
           "registrationDate.month" -> "7",
-          "registrationDate.day" -> "7")
+          "registrationDate.day"   -> "7"
+        )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -328,75 +352,78 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
       "redisplay page with errors when an empty VRN is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "",
           "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.vrn.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.vrn.required")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an invalid VRN is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "invalid",
           "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vrn.regex-failure")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-vrn.regex-failure")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an empty registrationDate is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year" -> "2008",
+          "service"                -> "HMRC-MTD-VAT",
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2008",
           "registrationDate.month" -> "",
-          "registrationDate.day" -> "12")
+          "registrationDate.day"   -> "12"
+        )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.vat-registration-date.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.vat-registration-date.required")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an invalid registrationDate is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year" -> "2007",
+          "service"                -> "HMRC-MTD-VAT",
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2007",
           "registrationDate.month" -> "17",
-          "registrationDate.day" -> "07")
+          "registrationDate.day"   -> "07"
+        )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "enter-vat-registration-date.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-vat-registration-date.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when invalid registrationDate fields are submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year" -> "INVALID",
+          "service"                -> "HMRC-MTD-VAT",
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "INVALID",
           "registrationDate.month" -> "INVALID",
-          "registrationDate.day" -> "INVALID")
+          "registrationDate.day"   -> "INVALID"
+        )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.day.invalid-format")
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.month.invalid-format")
-        checkHtmlResultWithBodyMsgs(result,"identify-client.header", "error.year.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.day.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.month.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.year.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
       "redirect to /agents/select-service if service is missing" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "",
+          "service"          -> "",
           "clientIdentifier" -> validVrn.value,
           "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -409,18 +436,19 @@ class AgentInvitationControllerISpec extends BaseISpec {
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
-        createInvitationStubWithKnownFacts(arn, validNino.value, invitationIdPIR, validNino.value, servicePIR, "NI", None)
+        createInvitationStubWithKnownFacts(
+          arn,
+          validNino.value,
+          invitationIdPIR,
+          validNino.value,
+          servicePIR,
+          "NI",
+          None)
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(
-          Some(servicePIR),
-          None,
-          Some(validNino.value),
-          None,
-          None))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> servicePIR,
-          "clientIdentifier" -> validNino.value)
+        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), None, Some(validNino.value), None, None))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -428,31 +456,25 @@ class AgentInvitationControllerISpec extends BaseISpec {
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> servicePIR,
-          "clientIdentifier" -> "")
+        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.nino.header", "error.nino.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> servicePIR,
-          "clientIdentifier" -> "invalid")
+        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result,"identify-client.nino.header", "enter-nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "enter-nino.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "",
-          "clientIdentifier" -> validNino.value)
+        val requestWithForm = request.withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -466,19 +488,30 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val invitationSent = controller.invitationSent()
 
     "return 200 for authorised Agent successfully created invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
-      val invitation = CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      val invitation =
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"), arn.value))
+      val result = invitationSent(
+        authorisedAsValidAgent(
+          request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"),
+          arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("invitation-sent-link.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("invitation-sent-link.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -502,12 +535,18 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled client" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
-      val ninoForm = agentInvitationIdentifyClientFormIrv(featureFlags).fill(UserInputNinoAndPostcode(serviceITSA, None, None))
-      val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+      val ninoForm =
+        agentInvitationIdentifyClientFormIrv(featureFlags).fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+      val result =
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", htmlEscapedMessage("not-enrolled.itsa.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("not-enrolled.itsa.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.description"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.button"))
       checkHasAgentSignOutLink(result)
@@ -518,12 +557,18 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
-      val vrnForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(serviceVAT, None, None))
-      val result = notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
+      val vrnForm =
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(serviceVAT, None, None))
+      val result =
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(
-        "generic.title", htmlEscapedMessage("not-enrolled.vat.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("not-enrolled.vat.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.button"))
       checkHasAgentSignOutLink(result)
@@ -533,10 +578,13 @@ class AgentInvitationControllerISpec extends BaseISpec {
 
     "return 5xx for Unsupported service" in {
       testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED"))
-      val unsupportedForm = agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
+      val unsupportedForm =
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
 
       intercept[Exception] {
-        await(notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))
+        await(
+          notEnrolled(
+            authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))
       }.getMessage shouldBe "Unsupported Service"
     }
 
@@ -554,13 +602,19 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val notMatched = controller.notMatched()
 
     "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
-      val invitation = CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+      val invitation =
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("not-matched.itsa.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("not-matched.itsa.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.description"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
       checkHasAgentSignOutLink(result)
@@ -575,7 +629,12 @@ class AgentInvitationControllerISpec extends BaseISpec {
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 403
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("generic.title", htmlEscapedMessage("not-matched.vat.header"), htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("not-matched.vat.header"),
+          htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.description"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.button"))
       checkHasAgentSignOutLink(result)
@@ -589,7 +648,8 @@ class AgentInvitationControllerISpec extends BaseISpec {
   def checkHasAgentSignOutLink(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString
-    val continueUrl = URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
+    val continueUrl =
+      URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
@@ -620,26 +680,31 @@ class AgentInvitationControllerISpec extends BaseISpec {
     }
   }
 
-  def noKeyStoreCacheFound(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
+  def noKeyStoreCacheFound(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) =
     "return 303, redirect to select-service when no keystore cache is found" in {
       val result = await(action(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
-  }
 
-  def verifyAgentClientInvitationSubmittedEvent(arn: String, clientId: String, clientIdType: String, result: String, service: String): Unit = {
-    verifyAuditRequestSent(1, AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
+  def verifyAgentClientInvitationSubmittedEvent(
+    arn: String,
+    clientId: String,
+    clientIdType: String,
+    result: String,
+    service: String): Unit =
+    verifyAuditRequestSent(
+      1,
+      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       detail = Map(
-        "factCheck" -> result,
+        "factCheck"            -> result,
         "agentReferenceNumber" -> arn,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "service" -> service
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "service"              -> service
       ),
       tags = Map(
         "transactionName" -> "Agent client service authorisation request created"
       )
     )
-  }
 }

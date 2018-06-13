@@ -16,12 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
-@import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary, singleCheckbox}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
-
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 @(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 

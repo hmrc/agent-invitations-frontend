@@ -37,55 +37,68 @@ object AgentInvitationEvent extends Enumeration {
 }
 
 @Singleton
-class AuditService @Inject() (val auditConnector: AuditConnector) {
+class AuditService @Inject()(val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted[T <: TaxIdentifier](arn: Arn, invitationId: String, fti: FastTrackInvitation[T], result: String, failure: Option[String] = None)
-                                  (implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
-    auditEvent(AgentInvitationEvent.AgentClientAuthorisationRequestCreated, "Agent client service authorisation request created",
+  def sendAgentInvitationSubmitted[T <: TaxIdentifier](
+    arn: Arn,
+    invitationId: String,
+    fti: FastTrackInvitation[T],
+    result: String,
+    failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] =
+    auditEvent(
+      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
+      "Agent client service authorisation request created",
       Seq(
-        "factCheck" -> result,
-        "invitationId" -> invitationId,
+        "factCheck"            -> result,
+        "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType" -> fti.clientIdentifierType,
-        "clientId" -> fti.clientIdentifier.value,
-        "service" -> fti.service
+        "clientIdType"         -> fti.clientIdentifierType,
+        "clientId"             -> fti.clientIdentifier.value,
+        "service"              -> fti.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
-  }
 
-  def sendAgentInvitationResponse(invitationId: String, arn: Arn, clientResponse: String, clientIdType: String, clientId: String, service: String, agencyName:String)
-                                 (implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
-    auditEvent(AgentInvitationEvent.AgentClientInvitationResponse, "agent-client-invitation-response",
+  def sendAgentInvitationResponse(
+    invitationId: String,
+    arn: Arn,
+    clientResponse: String,
+    clientIdType: String,
+    clientId: String,
+    service: String,
+    agencyName: String)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] =
+    auditEvent(
+      AgentInvitationEvent.AgentClientInvitationResponse,
+      "agent-client-invitation-response",
       Seq(
-        "invitationId" -> invitationId,
+        "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "agencyName" -> agencyName,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "service" -> service,
-        "clientResponse" -> clientResponse))
-  }
+        "agencyName"           -> agencyName,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "service"              -> service,
+        "clientResponse"       -> clientResponse
+      )
+    )
 
-  private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] = {
+  private[audit] def auditEvent(
+    event: AgentInvitationEvent,
+    transactionName: String,
+    details: Seq[(String, Any)] = Seq.empty)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] =
     send(createEvent(event, transactionName, details: _*))
-  }
 
-  private def createEvent(event: AgentInvitationEvent, transactionName: String, details: (String, Any)*)(implicit hc: HeaderCarrier, request: Request[Any]): DataEvent = {
+  private def createEvent(event: AgentInvitationEvent, transactionName: String, details: (String, Any)*)(
+    implicit hc: HeaderCarrier,
+    request: Request[Any]): DataEvent = {
 
     val detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     val tags = hc.toAuditTags(transactionName, request.path)
-    DataEvent(
-      auditSource = "agent-invitations-frontend",
-      auditType = event.toString,
-      tags = tags,
-      detail = detail)
+    DataEvent(auditSource = "agent-invitations-frontend", auditType = event.toString, tags = tags, detail = detail)
   }
 
-  private def send(events: DataEvent*)(implicit hc: HeaderCarrier): Future[Unit] = {
+  private def send(events: DataEvent*)(implicit hc: HeaderCarrier): Future[Unit] =
     Future {
       events.foreach { event =>
         Try(auditConnector.sendEvent(event))
       }
     }
-  }
 }
