@@ -263,24 +263,25 @@ class AgentsInvitationController @Inject()(
       })
       .recoverWith {
         case noMtdItId: Upstream4xxResponse if noMtdItId.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => {
-          Logger.warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
           auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Some("CLIENT_REGISTRATION_NOT_FOUND"))
           Future successful Redirect(routes.AgentsInvitationController.notEnrolled())
         }
         case noPostCode: Upstream4xxResponse if noPostCode.message.contains("POSTCODE_DOES_NOT_MATCH") => {
-          Logger.warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
           auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
         }
         case e =>
-          Logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
+          Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
           auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Logger.info(s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
+      Logger(getClass).info(
+        s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
       (request.session.get("invitationId"), request.session.get("deadline")) match {
         case (Some(id), Some(deadline)) =>
           val invitationUrl: String =
@@ -359,7 +360,7 @@ class AgentsInvitationController @Inject()(
             }
           )
       } else {
-        Logger.warn("Fast-Track feature flag is switched off")
+        Logger(getClass).warn("Fast-Track feature flag is switched off")
         Future successful BadRequest
       }
     }
@@ -397,7 +398,7 @@ class AgentsInvitationController @Inject()(
 
       case CurrentInvitationInputPirReady(completePirInvitation) =>
         if (featureFlags.showKfcPersonalIncome) {
-          Logger.warn("KFC flagged as on, not implemented for personal-income-record")
+          Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
           createInvitation(arn, completePirInvitation)
         } else
           createInvitation(arn, completePirInvitation)
@@ -422,7 +423,7 @@ class AgentsInvitationController @Inject()(
         }
 
       case _ =>
-        Logger.warn("Resetting due to mix data in session")
+        Logger(getClass).warn("Resetting due to mix data in session")
         fastTrackCache
           .save(CurrentInvitationInput())
           .map(_ => Redirect(routes.AgentsInvitationController.selectService()))
@@ -435,16 +436,16 @@ class AgentsInvitationController @Inject()(
     isWhitelisted: Boolean)(body: => Future[Result]): Future[Result] =
     currentInvitationInput.service match {
       case Some(HMRCPIR) if !isWhitelisted =>
-        Logger.warn(s"User is not whitelisted to create $HMRCPIR invitation")
+        Logger(getClass).warn(s"User is not whitelisted to create $HMRCPIR invitation")
         Future successful BadRequest
       case Some(HMRCMTDVAT) if !featureFlags.showHmrcMtdVat =>
-        Logger.warn(s"Service: $HMRCMTDVAT feature flagged is switched off")
+        Logger(getClass).warn(s"Service: $HMRCMTDVAT feature flagged is switched off")
         Future successful BadRequest
       case Some(HMRCMTDIT) if !featureFlags.showHmrcMtdIt =>
-        Logger.warn(s"Service: $HMRCMTDIT feature flagged is switched off")
+        Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
         Future successful BadRequest
       case Some(HMRCPIR) if !featureFlags.showPersonalIncome =>
-        Logger.warn(s"Service: $HMRCPIR feature flagged is switched off")
+        Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")
         Future successful BadRequest
       case _ => body
     }

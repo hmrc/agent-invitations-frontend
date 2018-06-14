@@ -266,16 +266,16 @@ class ClientsInvitationController @Inject()(
       .flatMap(body)
       .recover {
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
-          Logger.warn(s"${invitationId.value} Has been access by the wrong Client.")
+          Logger(getClass).warn(s"${invitationId.value} Has been access by the wrong Client.")
           Redirect(routes.ClientsInvitationController.incorrectInvitation())
         case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
-          Logger.warn(s"${invitationId.value} Has already been responded.")
+          Logger(getClass).warn(s"${invitationId.value} Has already been responded.")
           Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
         case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
-          Logger.warn(s"${invitationId.value} is not found.")
+          Logger(getClass).warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
         case _: NotFoundException =>
-          Logger.warn(s"${invitationId.value} is not found.")
+          Logger(getClass).warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
       }
 
