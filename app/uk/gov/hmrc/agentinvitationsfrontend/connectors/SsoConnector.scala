@@ -43,7 +43,7 @@ class SsoConnector @Inject()(http: HttpGet, @Named("sso-baseUrl") baseUrl: URL, 
         .recover {
           case _: BadRequestException => false
           case e: Exception =>
-            Logger.error(s"Unable to validate domain $domain", e)
+            Logger(getClass).error(s"Unable to validate domain $domain", e)
             false
         }
     }

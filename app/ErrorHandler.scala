@@ -84,14 +84,14 @@ class ErrorHandler @Inject()(
             Messages("global.error.403.heading"),
             Messages("global.error.403.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
       case ex: OtacFailureThrowable =>
-        Logger.warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
+        Logger(getClass).warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(
           error_template(
             Messages("global.error.passcode.title"),
             Messages("global.error.passcode.heading"),
             Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
       case ex =>
-        Logger.warn(s"There has been a failure", ex)
+        Logger(getClass).warn(s"There has been a failure", ex)
         InternalServerError(
           error_template(
             Messages("global.error.500.title"),

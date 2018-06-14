@@ -49,11 +49,11 @@ class ContinueUrlActions @Inject()(
               }
               .recover {
                 case NonFatal(e) =>
-                  Logger.warn(s"Check for whitelisted hostname failed", e)
+                  Logger(getClass).warn(s"Check for whitelisted hostname failed", e)
                   None
               }
           case Failure(e) =>
-            Logger.warn(s"$continueUrl is not a valid continue URL", e)
+            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
             Future.successful(None)
         }
       case None =>
