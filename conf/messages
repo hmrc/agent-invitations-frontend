@@ -48,6 +48,11 @@ select-service.personal-income-viewer=View their PAYE income record
 select-service.itsa=Report their income and expenses through software
 select-service.vat=Report their VAT returns through software
 
+## Helper Text
+select-service.alternative=I want to set up a different type of authorisation
+select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
+select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
+
 continue.button=Continue
 button.back=Back
 
