@@ -20,6 +20,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import org.joda.time.LocalDate
+import org.jsoup.Jsoup
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -86,6 +87,9 @@ class AgentInvitationControllerISpec extends BaseISpec {
         htmlEscapedMessage("select-service.itsa"),
         htmlEscapedMessage("select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
+      )
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("select-service.alternative")
       )
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
