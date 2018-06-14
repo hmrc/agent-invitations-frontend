@@ -24,8 +24,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AgentInvitationServiceFormSpec extends UnitSpec{
-  
+class AgentInvitationServiceFormSpec extends UnitSpec {
+
   val serviceEmptyMessage: String = "error.service.required"
   val serviceEmptyFormError: FormError = FormError("service", List(serviceEmptyMessage))
   val serviceITSA = "HMRC-MTD-IT"
@@ -59,13 +59,16 @@ class AgentInvitationServiceFormSpec extends UnitSpec{
     }
 
     "return no errors when unbinding the form" in {
-      val unboundFormITSA = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some("AE123456C"), None))
+      val unboundFormITSA =
+        agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceITSA, Some("AE123456C"), None))
       unboundFormITSA("service") shouldBe serviceITSA
 
-      val unboundFormAFI = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(servicePIR, Some("AE123456C"), None))
+      val unboundFormAFI =
+        agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(servicePIR, Some("AE123456C"), None))
       unboundFormAFI("service") shouldBe servicePIR
 
-      val unboundFormVAT = agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceVAT, Some("101747696"), None))
+      val unboundFormVAT =
+        agentInvitationServiceForm.mapping.unbind(UserInputNinoAndPostcode(serviceVAT, Some("101747696"), None))
       unboundFormVAT("service") shouldBe serviceVAT
     }
   }

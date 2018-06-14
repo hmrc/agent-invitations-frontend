@@ -25,15 +25,18 @@ class AuthActionsISpec extends BaseISpec {
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    def withAuthorisedAsAgent[A]: Result = {
-      await(super.withAuthorisedAsAgent { (arn, isWhitelisted) => Future.successful(Ok((arn.value, isWhitelisted).toString)) })
-    }
+    def withAuthorisedAsAgent[A]: Result =
+      await(super.withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        Future.successful(Ok((arn.value, isWhitelisted).toString))
+      })
 
-    def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result = {
-      await(super.withAuthorisedAsClient(serviceName, identifierKey) { clientId => Future.successful(Ok(clientId)) })
-    }
+    def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result =
+      await(super.withAuthorisedAsClient(serviceName, identifierKey) { clientId =>
+        Future.successful(Ok(clientId))
+      })
 
-    override def externalUrls: ExternalUrls = new ExternalUrls("","","","","","","","","","","fooSubscriptionUrl","")
+    override def externalUrls: ExternalUrls =
+      new ExternalUrls("", "", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "")
   }
 
   "withAuthorisedAsAgent" should {
@@ -46,7 +49,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsAgent
       status(result) shouldBe 200
       bodyOf(result) shouldBe "(fooArn,true)"
@@ -67,7 +71,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"MTDITID", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = await(TestController.withAuthorisedAsAgent)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
@@ -81,7 +86,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"BAR", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = await(TestController.withAuthorisedAsAgent)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
@@ -98,7 +104,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"MTDITID", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
 
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 200
@@ -113,7 +120,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"NINO", "value": "fooNINO" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
 
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 200
@@ -128,7 +136,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -142,7 +151,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -156,7 +166,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -170,7 +181,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -191,7 +203,8 @@ class AuthActionsISpec extends BaseISpec {
            |  { "key":"HMRC-MTD-VAT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin)
+           |]}""".stripMargin
+      )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-VAT", "VRN")
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url

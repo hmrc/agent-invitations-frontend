@@ -15,8 +15,8 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.Services
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 @(agencyName: String, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true)) {

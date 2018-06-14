@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-trait Service
-case class ValidService(serviceName: String, enrolmentName: String, enrolmentIdentifier: String, apiIdentifier: String, messageKey: String) extends Service
+sealed trait Service
+
 case object InvalidService extends Service
+
+case class ValidService(
+  serviceName: String,
+  enrolmentName: String,
+  enrolmentIdentifier: String,
+  apiIdentifier: String,
+  messageKey: String)
+    extends Service
 
 object Services {
 
@@ -39,12 +47,11 @@ object Services {
   val VAT = "VAT"
   val messageKeyForVAT = "vat"
 
-  def determineService(invitationId: InvitationId): Service = {
+  def determineService(invitationId: InvitationId): Service =
     invitationId.value.head match {
       case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
       case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
       case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VAT, messageKeyForVAT)
-      case _ => InvalidService
+      case _   => InvalidService
     }
-  }
 }

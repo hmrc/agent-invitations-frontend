@@ -21,8 +21,7 @@ import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Named, Singleton}
 
 @Singleton
-class ExternalUrls @Inject()
-(
+class ExternalUrls @Inject()(
   @Named("company-auth-frontend.external-url") val companyAuthUrl: String,
   @Named("company-auth-frontend.sign-out.path") val companyAuthSignOutPath: String,
   @Named("business-tax-account.external-url") val businessTaxAccountUrl: String,
@@ -33,11 +32,11 @@ class ExternalUrls @Inject()
   @Named("survey.feedbackSurveyURNWithoutOriginToken") val invitationExitSurvey: String,
   @Named("survey.originTokenIdentifier.agent") val agentOriginTokenIdentifier: String,
   @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
-  @Named("agent-subscription-frontend.external-url") val subscriptionURL:String,
+  @Named("agent-subscription-frontend.external-url") val subscriptionURL: String,
   @Named("agent-client-management-frontend.external-url") val agentClientManagementUrl: String
-
 ) {
-  private def contactFrontendServiceId(isAgent: Boolean) = if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
+  private def contactFrontendServiceId(isAgent: Boolean) =
+    if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
     val continueUrl = isAgent match {
@@ -50,14 +49,12 @@ class ExternalUrls @Inject()
         else s"$businessTaxAccountUrl/business-account"
       }
     }
-        s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
-    }
+    s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
+  }
 
-  def contactFrontendAjaxUrl(isAgent: Boolean): String = {
+  def contactFrontendAjaxUrl(isAgent: Boolean): String =
     s"$contactFrontendUrl/contact/problem_reports_ajax?service=${contactFrontendServiceId(isAgent)}"
-  }
 
-  def contactFrontendNonJsUrl(isAgent: Boolean): String = {
+  def contactFrontendNonJsUrl(isAgent: Boolean): String =
     s"$contactFrontendUrl/contact/problem_reports_nonjs?service=${contactFrontendServiceId(isAgent)}"
-  }
 }

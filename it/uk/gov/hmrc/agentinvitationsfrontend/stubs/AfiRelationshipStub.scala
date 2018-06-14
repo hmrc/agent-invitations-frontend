@@ -8,75 +8,70 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 trait AfiRelationshipStub {
   me: WireMockSupport =>
 
-  def getActiveAfiRelationship(arn: Arn, service: String, clientId: String, fromCesa: Boolean): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
-      .willReturn(
-        aResponse()
-          .withStatus(200)
-          .withBody(
-            s"""
-               |[{
-               |  "arn" : "${arn.value}",
-               |  "service" : "$service",
-               |  "clientId" : "$clientId",
-               |  "relationshipStatus" : "ACTIVE",
-               |  "startDate" : "2017-12-08T15:21:51.040",
-               |  "fromCesa" : $fromCesa
-               |}]""".stripMargin)))
-  }
+  def getActiveAfiRelationship(arn: Arn, service: String, clientId: String, fromCesa: Boolean): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |[{
+                         |  "arn" : "${arn.value}",
+                         |  "service" : "$service",
+                         |  "clientId" : "$clientId",
+                         |  "relationshipStatus" : "ACTIVE",
+                         |  "startDate" : "2017-12-08T15:21:51.040",
+                         |  "fromCesa" : $fromCesa
+                         |}]""".stripMargin)))
 
-  def getNotFoundForAfiRelationship(service: String, clientId: String): Unit = {
-    stubFor(get(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
-      .willReturn(
-        aResponse()
+  def getNotFoundForAfiRelationship(service: String, clientId: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
+        .willReturn(aResponse()
           .withStatus(404)))
-  }
 
-  def terminateAfiRelationshipsForClientId(service: String, clientId: String): Unit = {
-    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
-      .willReturn(
-        aResponse()
+  def terminateAfiRelationshipsForClientId(service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
+        .willReturn(aResponse()
           .withStatus(200)))
-  }
 
-  def failedTerminationAfiRelationshipsForClientId(service: String, clientId: String): Unit = {
-    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
-      .willReturn(
-        aResponse()
+  def failedTerminationAfiRelationshipsForClientId(service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))
+        .willReturn(aResponse()
           .withStatus(500)))
-  }
 
-  def verifyTerminateAfiRelationshipsAttempt(service: String, clientId: String): Unit = {
-    verify(1, deleteRequestedFor(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId")))
-  }
+  def verifyTerminateAfiRelationshipsAttempt(service: String, clientId: String): Unit =
+    verify(
+      1,
+      deleteRequestedFor(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId")))
 
-  def deleteRelationship(arn: Arn, service: String, clientId: String): Unit = {
-    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
-      .willReturn(
-        aResponse()
-          .withStatus(200)
-      ))
-  }
+  def deleteRelationship(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+        ))
 
-  def deleteRelationshipFailed(arn: Arn, service: String, clientId: String): Unit = {
-    stubFor(delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
-      .willReturn(
-        aResponse()
-          .withStatus(500)
-      ))
-  }
+  def deleteRelationshipFailed(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(500)
+        ))
 
-  def createRelationship(arn: Arn, service: String, clientId: String): Unit = {
-    stubFor(put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
-      .willReturn(
-        aResponse()
+  def createRelationship(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(aResponse()
           .withStatus(201)))
-  }
 
-  def createRelationshipFailed(arn: Arn, service: String, clientId: String): Unit = {
-    stubFor(put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
-      .willReturn(
-        aResponse()
+  def createRelationshipFailed(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(aResponse()
           .withStatus(500)))
-  }
 }

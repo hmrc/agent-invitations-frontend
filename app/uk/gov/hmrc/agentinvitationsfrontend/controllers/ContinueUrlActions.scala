@@ -28,16 +28,13 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.mvc.{Action, AnyContent, Request, Result}
 
-
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
-
-
 @Singleton
 class ContinueUrlActions @Inject()(
-                                    whiteListService: HostnameWhiteListService,
-                                    continueUrlStoreService: ContinueUrlStoreService) {
+  whiteListService: HostnameWhiteListService,
+  continueUrlStoreService: ContinueUrlStoreService) {
 
   def extractContinueUrl[A](implicit request: Request[A]): Future[Option[ContinueUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
@@ -68,7 +65,8 @@ class ContinueUrlActions @Inject()(
     if (!continueUrl.isRelativeUrl) whiteListService.isAbsoluteUrlWhiteListed(continueUrl)
     else Future.successful(true)
 
-  def withMaybeContinueUrl[A](block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+  def withMaybeContinueUrl[A](
+    block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     val continueUrl: Future[Option[ContinueUrl]] = extractContinueUrl
     continueUrl.flatMap(block(_))
   }

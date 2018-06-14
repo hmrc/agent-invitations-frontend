@@ -39,13 +39,11 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
   val body = (b: Boolean) => Future.successful(Ok(b.toString))
   lazy val app = FakeApplication()
 
-  protected override def beforeAll() = {
+  protected override def beforeAll() =
     Play.start(app)
-  }
 
-  protected override def afterAll() = {
+  protected override def afterAll() =
     Play.stop(app)
-  }
 
   "PasscodeVerification" when {
 
@@ -53,9 +51,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
       "execute function with 'true'" in {
         val otacAuthConnector = mock[OtacAuthConnector]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          Configuration.from(Map(
-            "passcodeAuthentication.enabled" -> false,
-            "passcodeAuthentication.regime" -> "fooRegime")),
+          Configuration.from(
+            Map("passcodeAuthentication.enabled" -> false, "passcodeAuthentication.regime" -> "fooRegime")),
           environment,
           otacAuthConnector
         )
@@ -68,9 +65,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
 
     "passcodeAuthentication enabled" should {
 
-      val configuration = Configuration.from(Map(
-        "passcodeAuthentication.enabled" -> true,
-        "passcodeAuthentication.regime" -> "fooRegime"))
+      val configuration = Configuration.from(
+        Map("passcodeAuthentication.enabled" -> true, "passcodeAuthentication.regime" -> "fooRegime"))
 
       "execute function with 'false' if not otac param nor session key present" in {
         val otacAuthConnector = mock[OtacAuthConnector]

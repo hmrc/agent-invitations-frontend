@@ -39,11 +39,12 @@ object AgencyName {
 }
 
 @Singleton
-class AgentServicesAccountConnector @Inject() (
-                                                @Named("agent-services-account-baseUrl") baseUrl: URL,
-                                                http: HttpGet,
-                                                continueUrlActions: ContinueUrlActions,
-                                                metrics: Metrics) extends HttpAPIMonitor {
+class AgentServicesAccountConnector @Inject()(
+  @Named("agent-services-account-baseUrl") baseUrl: URL,
+  http: HttpGet,
+  continueUrlActions: ContinueUrlActions,
+  metrics: Metrics)
+    extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 

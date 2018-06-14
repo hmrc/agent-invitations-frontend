@@ -32,7 +32,8 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.ws.WSHttp
 
-class FrontendModule(val environment: Environment, val configuration: Configuration) extends AbstractModule with ServicesConfig {
+class FrontendModule(val environment: Environment, val configuration: Configuration)
+    extends AbstractModule with ServicesConfig {
 
   override val runModeConfiguration: Configuration = configuration
   override protected def mode = environment.mode
@@ -100,39 +101,46 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[String]).annotatedWith(Names.named(propertyName)).toProvider(new PropertyProvider(propertyName))
 
   private class PropertyProvider(confKey: String) extends Provider[String] {
-    override lazy val get = configuration.getString(confKey)
+    override lazy val get = configuration
+      .getString(confKey)
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 
   private def bindServiceProperty(propertyName: String) =
-    bind(classOf[String]).annotatedWith(Names.named(s"$propertyName")).toProvider(new ServicePropertyProvider(propertyName))
+    bind(classOf[String])
+      .annotatedWith(Names.named(s"$propertyName"))
+      .toProvider(new ServicePropertyProvider(propertyName))
 
   private class ServicePropertyProvider(propertyName: String) extends Provider[String] {
-    override lazy val get = getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
+    override lazy val get =
+      getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
   }
 
   private def bindBooleanProperty(propertyName: String) =
-    bind(classOf[Boolean]).annotatedWith(Names.named(propertyName)).toProvider(new BooleanPropertyProvider(propertyName))
+    bind(classOf[Boolean])
+      .annotatedWith(Names.named(propertyName))
+      .toProvider(new BooleanPropertyProvider(propertyName))
 
   private class BooleanPropertyProvider(confKey: String) extends Provider[Boolean] {
-    override lazy val get: Boolean = configuration.getBoolean(confKey)
+    override lazy val get: Boolean = configuration
+      .getBoolean(confKey)
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 }
 
 @Singleton
-class HttpVerbs @Inject() (val auditConnector: AuditConnector, @Named("appName") val appName: String)
-  extends HttpGet with HttpPost with HttpPut with HttpPatch with HttpDelete with WSHttp
-  with HttpAuditing {
+class HttpVerbs @Inject()(val auditConnector: AuditConnector, @Named("appName") val appName: String)
+    extends HttpGet with HttpPost with HttpPut with HttpPatch with HttpDelete with WSHttp with HttpAuditing {
   override val hooks = Seq(AuditingHook)
 }
 
 @Singleton
-class InvitationsSessionCache @Inject()(val http: HttpVerbs,
-                                                  @Named("appName") val appName: String,
-                                                  @Named("cachable.session-cache-baseUrl") val baseUrl: URL,
-                                                  @Named("cachable.session-cache.domain") val domain: String
-                                                 ) extends SessionCache {
+class InvitationsSessionCache @Inject()(
+  val http: HttpVerbs,
+  @Named("appName") val appName: String,
+  @Named("cachable.session-cache-baseUrl") val baseUrl: URL,
+  @Named("cachable.session-cache.domain") val domain: String)
+    extends SessionCache {
   override lazy val defaultSource = appName
   override lazy val baseUri = baseUrl.toExternalForm
 }

@@ -13,36 +13,44 @@ trait DataStreamStubs extends Eventually {
 
   override implicit val patienceConfig = PatienceConfig(scaled(Span(5, Seconds)), scaled(Span(500, Millis)))
 
-  def verifyAuditRequestSent(count: Int, event: AgentInvitationEvent,
-                             tags: Map[String, String] = Map.empty,
-                             detail: Map[String, String] = Map.empty): Unit = {
+  def verifyAuditRequestSent(
+    count: Int,
+    event: AgentInvitationEvent,
+    tags: Map[String, String] = Map.empty,
+    detail: Map[String, String] = Map.empty): Unit =
     eventually {
-      verify(1, postRequestedFor(urlPathEqualTo(auditUrl))
-        .withRequestBody(similarToJson(
-          s"""{
+      verify(
+        1,
+        postRequestedFor(urlPathEqualTo(auditUrl))
+          .withRequestBody(
+            similarToJson(
+              s"""{
               |  "auditSource": "agent-invitations-frontend",
               |  "auditType": "$event",
               |  "tags": ${Json.toJson(tags)},
               |  "detail": ${Json.toJson(detail)}
               |}"""
-        )))
+            ))
+      )
     }
-  }
 
-  def verifyAuditRequestNotSent(event: AgentInvitationEvent): Unit = {
+  def verifyAuditRequestNotSent(event: AgentInvitationEvent): Unit =
     eventually {
-      verify(0, postRequestedFor(urlPathEqualTo(auditUrl))
-        .withRequestBody(similarToJson(
-          s"""{
+      verify(
+        0,
+        postRequestedFor(urlPathEqualTo(auditUrl))
+          .withRequestBody(
+            similarToJson(
+              s"""{
               |  "auditSource": "agent-invitations-frontend",
               |  "auditType": "$event"
               |}"""
-        )))
+            ))
+      )
     }
-  }
 
   def givenAuditConnector(): Unit = {
-    stubFor(post(urlPathEqualTo(auditUrl+"/merged")).willReturn(aResponse().withStatus(204)))
+    stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204)))
     stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
   }
 

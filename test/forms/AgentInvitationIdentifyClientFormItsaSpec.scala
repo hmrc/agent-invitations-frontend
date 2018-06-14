@@ -30,7 +30,8 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
     "feature flags are on" when {
 
       val featureFlags = FeatureFlags()
-      val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
+      val agentInvitationIdentifyClientForm =
+        AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
       val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
 
       "return no error message" when {
@@ -96,7 +97,8 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
     "feature flags are off" when {
       val featureFlags = FeatureFlags().copy(showKfcMtdIt = false)
-      val agentInvitationIdentifyClientForm = AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
+      val agentInvitationIdentifyClientForm =
+        AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
       val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
 
       "return no error message" when {
@@ -118,11 +120,13 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       "return an error message" when {
         "NINO is invalid" in {
           val dataWithInvalidPostcode = validData + ("clientIdentifier" -> JsString("12345"))
-          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors shouldBe Seq(FormError("clientIdentifier", List("enter-nino.invalid-format")))
+          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors shouldBe Seq(
+            FormError("clientIdentifier", List("enter-nino.invalid-format")))
         }
         "NINO is empty" in {
           val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
-          agentInvitationIdentifyClientForm.bind(dataWithEmptyNino).errors shouldBe Seq(FormError("clientIdentifier", List("error.nino.required")))
+          agentInvitationIdentifyClientForm.bind(dataWithEmptyNino).errors shouldBe Seq(
+            FormError("clientIdentifier", List("error.nino.required")))
         }
       }
     }

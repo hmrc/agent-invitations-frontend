@@ -50,7 +50,8 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
     }
 
     "error occurs due to InsufficientEnrolments when path contains 'agents' " in {
-      val result = handler.onServerError(FakeRequest("GET","http://host:port/invitations/agents/enter-nino"), new InsufficientEnrolments)
+      val result = handler
+        .onServerError(FakeRequest("GET", "http://host:port/invitations/agents/enter-nino"), new InsufficientEnrolments)
 
       status(result) shouldBe FORBIDDEN
       contentType(result) shouldBe Some(HTML)
@@ -62,8 +63,11 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
 
       status(result) shouldBe FORBIDDEN
       contentType(result) shouldBe Some(HTML)
-      checkIncludesMessages(result, "global.error.passcode.title",
-        "global.error.passcode.heading", "global.error.passcode.message")
+      checkIncludesMessages(
+        result,
+        "global.error.passcode.title",
+        "global.error.passcode.heading",
+        "global.error.passcode.message")
     }
 
     "a client error (400) occurs" in {
@@ -86,16 +90,16 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
   "ErrorHandler should redirect to GG Login" when {
     "a user attempts to access a page without authentication" in {
       val result = handler.onServerError(FakeRequest(), MissingBearerToken(""))
-      val expectedRedirect: String = "/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2F&origin=agent-invitations-frontend"
+      val expectedRedirect: String =
+        "/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2F&origin=agent-invitations-frontend"
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe expectedRedirect
     }
   }
 
-  private def checkIncludesMessages(result: Future[Result], messageKeys: String*): Unit = {
+  private def checkIncludesMessages(result: Future[Result], messageKeys: String*): Unit =
     messageKeys.foreach { messageKey =>
       messagesApi.isDefinedAt(messageKey) shouldBe true
       contentAsString(result) should include(HtmlFormat.escape(messagesApi(messageKey)).toString)
     }
-  }
 }

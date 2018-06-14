@@ -41,14 +41,14 @@ class FastTrackKeyStoreCache @Inject()(session: SessionCache) extends FastTrackC
 
   val id = "fast-track-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] = {
+  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
     session.fetchAndGetEntry[CurrentInvitationInput](id)
-  }
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] = for {
-    entry <- session.fetchAndGetEntry[CurrentInvitationInput](id)
-    _ <- session.cache(id, CurrentInvitationInput())
-  } yield entry
+  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
+    for {
+      entry <- session.fetchAndGetEntry[CurrentInvitationInput](id)
+      _     <- session.cache(id, CurrentInvitationInput())
+    } yield entry
 
   def save(invitation: CurrentInvitationInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     session.cache(id, invitation).map(_ => ())
