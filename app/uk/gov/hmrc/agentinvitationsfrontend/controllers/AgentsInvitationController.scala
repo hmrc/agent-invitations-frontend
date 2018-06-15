@@ -244,6 +244,49 @@ class AgentsInvitationController @Inject()(
           } yield redirectResult
       )
 
+  val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      fastTrackCache.fetch().flatMap {
+        case Some(data) =>
+          (data.clientIdentifier, data.service) match {
+            case (Some(clientId), Some(service)) =>
+              invitationsService.getNameByService(clientId, service).flatMap { name =>
+                Future successful Ok(confirm_client(name.getOrElse(""), confirmForm))
+              }
+            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+          }
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
+  val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      fastTrackCache.fetch().flatMap {
+        case Some(invitationWithClientDetails) =>
+          (invitationWithClientDetails.clientIdentifier, invitationWithClientDetails.service) match {
+            case (Some(clientId), Some(service)) =>
+              invitationsService.getNameByService(clientId, service).flatMap { name =>
+                val clientName = name.getOrElse("")
+                confirmForm
+                  .bindFromRequest()
+                  .fold(
+                    formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
+                    data =>
+                      if (data.choice) {
+                        redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
+                      } else {
+                        Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+                    }
+                  )
+              }
+            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+          }
+        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
     invitationsService
@@ -474,6 +517,13 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.service.required"))
   }
 
+  private val confirmationChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.nonEmpty)
+      Valid
+    else
+      Invalid(ValidationError("error.confirm-client.required"))
+  }
+
   private def validNino(
     nonEmptyFailure: String = "error.nino.required",
     invalidFailure: String = "enter-nino.invalid-format") =
@@ -547,6 +597,13 @@ object AgentsInvitationController {
       })({ user =>
         Some((user.service, None, None))
       }))
+  }
+
+  val confirmForm: Form[Confirmation] = {
+    Form(
+      mapping(
+        "choice" -> normalizedText.verifying(confirmationChoice)
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
   }
 
   def agentInvitationPostCodeForm(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =

@@ -58,6 +58,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("auth")
     bindBaseUrl("agent-client-authorisation")
     bindBaseUrl("agent-fi-relationship")
+    bindBaseUrl("citizen-details")
     bindBaseUrl("authentication.login-callback.url")
     bindBaseUrl("agent-services-account")
     bindBaseUrl("cachable.session-cache")

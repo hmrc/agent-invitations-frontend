@@ -17,20 +17,22 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
+
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
-  agentServicesAccountConnector: AgentServicesAccountConnector) {
+  agentServicesAccountConnector: AgentServicesAccountConnector,
+  citizenDetailsConnector: CitizenDetailsConnector) {
 
   def createInvitation(
     arn: Arn,
@@ -89,6 +91,45 @@ class InvitationsService @Inject()(
       case Some(name) => name
       case None       => throw new Exception("Agency name not found")
     }
+
+  def getNameByService(clientIdentifier: String, service: String)(
+    implicit c: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[String]] =
+    service match {
+      case HMRCMTDIT if Nino.isValid(clientIdentifier) => getTradingName(Some(clientIdentifier))
+      case HMRCPIR if Nino.isValid(clientIdentifier)   => getCitizenName(Some(clientIdentifier))
+      case HMRCMTDVAT if Vrn.isValid(clientIdentifier) => getVatName(Some(clientIdentifier))
+      case _                                           => Future successful None
+    }
+
+  def getTradingName(
+    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier match {
+      case Some(s) => agentServicesAccountConnector.getTradingName(Nino(s)).map(Some(_))
+      case None    => Future successful None
+    }
+
+  def getCitizenName(
+    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier match {
+      case Some(s) => citizenDetailsConnector.getCitizenDetails(Nino(s)).map(citizen => citizen.name)
+      case None    => Future successful None
+    }
+
+  def getVatName(
+    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier
+      .map { s =>
+        agentServicesAccountConnector.getCustomerDetails(Vrn(s)).map { customerDetails =>
+          customerDetails.tradingName
+            .orElse(customerDetails.organisationName)
+            .orElse(customerDetails.individual.map(_.name))
+        }
+      }
+      .getOrElse(Future.successful(None))
+
+  def checkPostcodeMatches(nino: Nino, postcode: String)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    invitationsConnector.checkPostcodeForClient(nino, postcode)
 
   def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
     implicit hc: HeaderCarrier): Future[Option[Boolean]] =

@@ -116,6 +116,9 @@ class InvitationsConnector @Inject()(
       baseUrl,
       s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${registrationDate.toString}")
 
+  private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/check-postcode-known-fact/${nino.value}/postcode/$postcode")
+
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
@@ -124,6 +127,14 @@ class InvitationsConnector @Inject()(
   def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+    }
+
+  def checkPostcodeForClient(nino: Nino, postcode: String)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    monitor(s"ConsumedAPI-CheckPostcode-GET") {
+      http.GET[HttpResponse](checkPostcodeUrl(nino, postcode).toString).map(_ => Some(true))
+    }.recover {
+      case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
+      case _: NotFoundException                                      => None
     }
 
   def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(

@@ -21,13 +21,16 @@ import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.{JsObject, JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ContinueUrlActions
+import uk.gov.hmrc.agentinvitationsfrontend.models.CustomerDetails
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class AgencyName(name: Option[String])
 
@@ -54,4 +57,33 @@ class AgentServicesAccountConnector @Inject()(
     } recoverWith {
       case _: NotFoundException => Future failed AgencyNameNotFound()
     }
+
+  def getTradingName(nino: Nino)(implicit c: HeaderCarrier): Future[String] =
+    monitor(s"ConsumedAPI-Get-TradingName-POST") {
+      http
+        .GET[JsObject](craftUrl(getTradingNameWithNino(nino)).toString)
+        .map(obj => (obj \ "tradingName").as[String])
+    }.recover {
+      case _: NotFoundException => ""
+    }
+
+  def getCustomerDetails(vrn: Vrn)(implicit c: HeaderCarrier): Future[CustomerDetails] =
+    monitor(s"ConsumedAPI-Get-VatOrgName-POST") {
+      http
+        .GET[CustomerDetails](craftUrl(getCustomerDetailsWithVrn(vrn)).toString)
+    }.recover {
+      case _: NotFoundException => CustomerDetails(None, None, None)
+    }
+
+  private def craftUrl(location: String) = new URL(baseUrl, location)
+
+  private def getTradingNameWithNino(nino: Nino): String =
+    s"/agent-services-account/client/trading-name/nino/${nino.value}"
+
+  private def getCustomerDetailsWithVrn(vrn: Vrn): String =
+    s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"
+
+  private val getAgentServicesAccountAgencyNamesUrl: String =
+    "/agent-services-account/client/agency-names"
+
 }

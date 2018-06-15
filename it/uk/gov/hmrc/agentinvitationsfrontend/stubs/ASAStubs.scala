@@ -3,7 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.domain.Nino
 
 trait ASAStubs {
   me: WireMockSupport =>
@@ -25,4 +26,79 @@ trait ASAStubs {
         .willReturn(aResponse()
           .withStatus(404)))
 
+  def givenTradingName(nino: Nino, tradingName: String) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/$nino"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(s"""{"tradingName": "$tradingName"}""")
+      ))
+  }
+
+  def givenTradingNameNotFound(nino: Nino) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/${nino.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(404)
+      ))
+  }
+
+  def givenClientDetails(vrn: Vrn) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(
+          s"""{"organisationName": "Gadgetron",
+             |"individual" : {
+             |    "title": "Mr",
+             |    "firstName": "Winston",
+             |    "middleName": "H",
+             |    "lastName": "Greenburg"
+             |    },
+             |"tradingName": "GDT"
+             |}""".stripMargin)
+      ))
+  }
+
+  def givenClientDetailsNotFound(vrn: Vrn) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(
+          s"""{}""".stripMargin)
+      ))
+
+  }
+
+  def givenClientDetailsOnlyTrading(vrn: Vrn) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(
+          s"""{"tradingName": "GDT"}""".stripMargin)
+      ))
+  }
+
+  def givenClientDetailsOnlyOrganisation(vrn: Vrn) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(
+          s"""{"organisationName": "Gadgetron"}""".stripMargin)
+      ))
+  }
+
+  def givenClientDetailsOnlyPersonal(vrn: Vrn) = {
+    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+      .willReturn(
+        aResponse()
+          .withStatus(200).withBody(
+          s"""{"individual" : {
+             |    "title": "Mr",
+             |    "firstName": "Winston",
+             |    "middleName": "H",
+             |    "lastName": "Greenburg"
+             |    }
+             |}""".stripMargin)
+      ))
+  }
 }
