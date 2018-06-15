@@ -57,13 +57,15 @@ continue.button=Continue
 button.back=Back
 
 # Invitation Sent
-invitation-sent-link.header=Send your client this link
-invitation-sent.header=What to do next
-invitation-sent.description.advice.pt1=You must <strong>share this unique link</strong> with your client and they must respond by <strong>{0}</strong>. Copy and paste the link into an email.
-invitation-sent.description.advice.pt2=If your client does not respond in time, you will need to request authorisation again and send them the new link.
-invitation-sent.description.advice.pt3=This is the only way your client can authorise you. <strong>HMRC will not share the link for you.</strong>
-invitation-sent.continueToASAccount.button=Return to your Agent Services account
+invitation-sent-link.header=One more step
+invitation-sent.header=What you need to do next
+invitation-sent.l1=Copy this link and email it to your client:<br /><span id="invitationUrl" class="word-wrap">{0}</span>
+invitation-sent.l2=Ask your client to go to the link and sign in with their Government Gateway account to accept your authorisation request. They will be able to set up an account if they do not have one.
+invitation-sent.p1=Your client cannot authorise you until this is done.
+invitation-sent.p2=The link expires {0} from now.
+invitation-sent.continueToASAccount.button=Return to your agent services account
 invitation-sent.continueJourney.button=Continue
+invitation-sent.startNewAuthRequest=Start new authorisation request
 
 # Not Enrolled
 not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
