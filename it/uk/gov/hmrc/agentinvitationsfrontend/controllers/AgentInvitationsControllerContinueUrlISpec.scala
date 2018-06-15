@@ -54,11 +54,12 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
           "generic.title",
           htmlEscapedMessage("invitation-sent-link.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
+          checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
@@ -88,11 +89,12 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
           "generic.title",
           htmlEscapedMessage("invitation-sent-link.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
+          checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdPIR)}"))
@@ -119,11 +121,12 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
           "generic.title",
           htmlEscapedMessage("invitation-sent-link.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
+          checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
+          checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdVAT)}"))
