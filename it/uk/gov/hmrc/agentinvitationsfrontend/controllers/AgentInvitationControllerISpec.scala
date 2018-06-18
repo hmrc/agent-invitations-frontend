@@ -509,10 +509,11 @@ class AgentInvitationControllerISpec extends BaseISpec {
           htmlEscapedMessage("invitation-sent-link.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt1", "27 December 2017"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.description.advice.pt2"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.description.advice.pt3"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
@@ -522,6 +523,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
       await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
+
 
     "return exception when no invitation id and deadline found" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
