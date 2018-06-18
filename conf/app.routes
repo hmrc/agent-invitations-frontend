@@ -27,6 +27,9 @@ POST        /accept-tax-agent-invitation/3/:invitationId        @uk.gov.hmrc.age
 GET         /accept-tax-agent-invitation/4/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getCompletePage(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 GET         /reject-tax-agent-invitation/1/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 
+# Request tracking
+GET         /track/                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
+
 # Error Client Endpoints
 GET         /not-signed-up/                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
 GET         /not-authorised/                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notAuthorised

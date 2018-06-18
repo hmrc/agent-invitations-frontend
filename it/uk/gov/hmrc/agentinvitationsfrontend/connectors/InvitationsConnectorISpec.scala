@@ -112,7 +112,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Get All Agency Invitations" should {
 
     "return all Agency invitations" in {
-      getAllInvitationsStub(arn)
+      givenAllInvitationsStub(arn)
       val result: Seq[StoredInvitation] = await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result should not be empty
       result.length shouldBe 15
@@ -139,7 +139,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "return an empty set of invitations" in {
-      getAllInvitationsEmptyStub(arn)
+      givenAllInvitationsEmptyStub(arn)
       val result: Seq[StoredInvitation] = await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result shouldBe empty
     }

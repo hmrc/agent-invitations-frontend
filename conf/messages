@@ -231,10 +231,21 @@ error.terminate.500.heading=Sorry, we''re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 
-
 #Common
 error.summary.heading=There is a problem
 error.confirmInvite.invalid=You must choose an option
 error.confirmTerms.invalid=You must accept the terms to continue
 error.prefix=Error:
 common.sign-out=Sign out
+
+#Track invitation requests
+recent-invitations.header=Track your recent authorisation requests
+recent-invitations.description=Use this service to check the status of your authorisation requests to clients in the last {0} days.
+recent-invitations.empty=You do not have any recent authorisation requests.
+recent-invitations.empty.continue=Start a new authorisation request
+recent-invitations.table-row-header.clientName=Client''s details
+recent-invitations.table-row-header.service=Authorisation requested
+recent-invitations.table-row-header.status=Status
+recent-invitations.invitation.service.HMRC-MTD-IT=View their PAYE income record
+recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Report their income and expenses through software
+recent-invitations.invitation.service.HMRC-MTD-VAT=Report their VAT returns through software

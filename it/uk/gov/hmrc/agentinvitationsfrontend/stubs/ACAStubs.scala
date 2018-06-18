@@ -352,7 +352,7 @@ trait ACAStubs {
       getRequestedFor(
         urlPathMatching("/agent-client-authorisation/agencies/check-vat-known-fact/.*/registration-date/.*")))
 
-  def getAllInvitationsStub(arn: Arn): Unit =
+  def givenAllInvitationsStub(arn: Arn): Unit =
     stubFor(
       get(urlPathEqualTo(
         s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
@@ -378,7 +378,7 @@ trait ACAStubs {
               invitation(arn,"Expired","PERSONAL-INCOME-RECORD", "ni", "AB123456B","fo14")
             ).mkString("[",",","]"))))
 
-  def getAllInvitationsEmptyStub(arn: Arn): Unit =
+  def givenAllInvitationsEmptyStub(arn: Arn): Unit =
     stubFor(
       get(urlPathEqualTo(
         s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
