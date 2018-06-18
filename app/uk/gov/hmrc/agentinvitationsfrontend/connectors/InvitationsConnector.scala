@@ -17,10 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
+import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
@@ -43,8 +44,17 @@ class InvitationsConnector @Inject()(
 
   import Reads._
 
+  private val dateFormatter = ISODateTimeFormat.date()
+
   private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
+
+  private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?createdOnOrAfter=${dateFormatter
+        .print(createdOnOrAfter)}"
+    )
 
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
     new URL(
@@ -69,6 +79,13 @@ class InvitationsConnector @Inject()(
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       http.GET[StoredInvitation](url.toString)
+    }
+
+  def getAllInvitations(arn: Arn, createdOnOrAfter: LocalDate)(
+    implicit hc: HeaderCarrier): Future[Seq[StoredInvitation]] =
+    monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
+      val url = getAgencyInvitationsUrl(arn, createdOnOrAfter)
+      http.GET[Seq[StoredInvitation]](url.toString)
     }
 
   def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier): Future[Int] =
