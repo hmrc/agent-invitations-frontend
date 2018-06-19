@@ -33,9 +33,9 @@
 
     <p>@Messages("invitation-sent.p1")</p>
 
-    <p class="panel panel-border-wide">@Messages("invitation-sent.p2")</p>
+    <p class="panel panel-border-wide margin-bottom-30">@Messages("invitation-sent.p2")</p>
 
-    <a href="#" class="button" id="recentRequest">@Messages("invitation-sent.recentRequest")</a>
+    <a href="#" class="button form-field-group" id="recentRequest">@Messages("invitation-sent.recentRequest")</a>
 
     @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
         <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()"  id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
