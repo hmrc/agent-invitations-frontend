@@ -80,6 +80,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
     bindProperty("survey.originTokenIdentifier.agent")
     bindProperty("survey.originTokenIdentifier.client")
+    bindIntegerProperty("track-requests-show-last-days")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
@@ -124,6 +125,17 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
   private class BooleanPropertyProvider(confKey: String) extends Provider[Boolean] {
     override lazy val get: Boolean = configuration
       .getBoolean(confKey)
+      .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
+  }
+
+  private def bindIntegerProperty(propertyName: String) =
+    bind(classOf[Int])
+      .annotatedWith(Names.named(propertyName))
+      .toProvider(new IntegerPropertyProvider(propertyName))
+
+  private class IntegerPropertyProvider(confKey: String) extends Provider[Int] {
+    override lazy val get: Int = configuration
+      .getInt(confKey)
       .getOrElse(throw new IllegalStateException(s"No value found for configuration property $confKey"))
   }
 }
