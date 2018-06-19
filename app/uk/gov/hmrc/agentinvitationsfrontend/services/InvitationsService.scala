@@ -105,7 +105,7 @@ class InvitationsService @Inject()(
   def getTradingName(
     clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
-      case Some(s) => agentServicesAccountConnector.getTradingName(Nino(s)).map(Some(_))
+      case Some(s) => agentServicesAccountConnector.getTradingName(Nino(s))
       case None    => Future successful None
     }
 

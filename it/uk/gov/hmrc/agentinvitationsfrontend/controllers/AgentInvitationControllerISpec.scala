@@ -26,10 +26,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -242,7 +240,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-IT" should {
 
-      "redirect to /agents/invitation-sent when a valid NINO and postcode are submitted" in {
+      "redirect to /agents/confirm-client when a valid NINO and postcode are submitted" in {
         createInvitationStubWithKnownFacts(
           arn,
           validNino.value,
@@ -251,6 +249,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           "HMRC-MTD-IT",
           "NI",
           Some(validPostcode))
+        givenMatchingClientIdAndPostcode(validNino, validPostcode)
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
@@ -262,7 +261,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
@@ -321,7 +320,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-VAT" should {
 
-      "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
+      "redirect to /agents/confirm-client when a valid VRN and registrationDate are submitted" in {
         createInvitationStubForNoKnownFacts(
           arn,
           validVrn.value,
@@ -351,7 +350,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
       }
 
       "redisplay page with errors when an empty VRN is submitted" in {
@@ -439,7 +438,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is PERSONAL-INCOME-RECORD" should {
 
-      "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
+      "redirect to /agents/confirm-client when a valid NINO is submitted" in {
         createInvitationStubWithKnownFacts(
           arn,
           validNino.value,
@@ -456,7 +455,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
