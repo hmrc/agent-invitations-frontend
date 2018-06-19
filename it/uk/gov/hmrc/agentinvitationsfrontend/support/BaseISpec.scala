@@ -12,7 +12,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache, FastTrackKeyStoreCache, InvitationsCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -50,6 +50,8 @@ abstract class BaseISpec
         "microservice.services.business-tax-account.external-url"             -> businessTaxAccountUrl,
         "microservice.services.tax-account-router-frontend.account-url"       -> taxAccountRelativeUrl,
         "microservice.services.personal-tax-account.external-url"             -> personalTaxAccountUrl,
+        "microservice.services.citizen-details.host"                          -> wireMockHost,
+        "microservice.services.citizen-details.port"                          -> wireMockPort,
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,
