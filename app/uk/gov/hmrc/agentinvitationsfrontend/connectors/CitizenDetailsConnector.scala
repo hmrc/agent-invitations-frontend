@@ -17,17 +17,16 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class Citizen(firstName: Option[String], lastName: Option[String], nino: Option[String]) {
   val name: Option[String] = (firstName, lastName) match {
@@ -56,7 +55,7 @@ class CitizenDetailsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getCitizenDetails(nino: Nino)(implicit c: HeaderCarrier): Future[Citizen] =
+  def getCitizenDetails(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Citizen] =
     monitor(s"ConsumedAPI-CitizenDetails-GET") {
       val url = new URL(baseUrl, s"/citizen-details/nino/${nino.value}")
       http.GET[Citizen](url.toString).recover {

@@ -20,25 +20,25 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import org.joda.time.LocalDate
-import org.jsoup.Jsoup
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class AgentInvitationControllerISpec extends BaseISpec {
+class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   val arn = Arn("TARN0000001")
@@ -95,7 +95,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
-    behave like anAuthorisedEndpoint(request, selectService)
+    behave like anAuthorisedAgentEndpoint(request, selectService)
   }
 
   "POST /agents/select-service" should {
@@ -150,14 +150,14 @@ class AgentInvitationControllerISpec extends BaseISpec {
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
-    behave like anAuthorisedEndpoint(request, submitService)
+    behave like anAuthorisedAgentEndpoint(request, submitService)
   }
 
   "GET /agents/identify-client" should {
     val request = FakeRequest("GET", "/agents/identify-client")
     val showIdentifyClientForm = controller.showIdentifyClientForm()
 
-    behave like anAuthorisedEndpoint(request, showIdentifyClientForm)
+    behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for ITSA service" in {
       testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
@@ -238,7 +238,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-client")
     val submitIdentifyClient = controller.submitIdentifyClient()
 
-    behave like anAuthorisedEndpoint(request, submitIdentifyClient)
+    behave like anAuthorisedAgentEndpoint(request, submitIdentifyClient)
 
     "service is HMRC-MTD-IT" should {
 
@@ -531,7 +531,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       an[RuntimeException] should be thrownBy await(result)
     }
 
-    behave like anAuthorisedEndpoint(request, invitationSent)
+    behave like anAuthorisedAgentEndpoint(request, invitationSent)
   }
 
   "GET /agents/not-enrolled" should {
@@ -600,7 +600,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       }.getMessage shouldBe "Empty Cache"
     }
 
-    behave like anAuthorisedEndpoint(request, notEnrolled)
+    behave like anAuthorisedAgentEndpoint(request, notEnrolled)
   }
 
   "GET /agents/not-matched" should {
@@ -648,7 +648,7 @@ class AgentInvitationControllerISpec extends BaseISpec {
       await(testFastTrackCache.fetch()).get shouldBe invitation
     }
 
-    behave like anAuthorisedEndpoint(request, notMatched)
+    behave like anAuthorisedAgentEndpoint(request, notMatched)
   }
 
   def checkHasAgentSignOutLink(result: Future[Result]) = {
@@ -657,33 +657,6 @@ class AgentInvitationControllerISpec extends BaseISpec {
     val continueUrl =
       URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
-  }
-
-  def anAuthorisedEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) = {
-
-    "return 303 for an Agent with no enrolments and redirected to Login Page" in {
-      givenUnauthorisedForInsufficientEnrolments()
-      val result = await(action(authenticatedClient(request, Enrolment("", "", ""))))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for no Agent and redirected to Login Page" in {
-      givenUnauthorisedForInsufficientEnrolments()
-      val result = await(action(authenticatedClient(request, Enrolment("OtherEnrolment", "Key", "Value"))))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
-      verifyAuthoriseAttempt()
-    }
-
-    "return 303 for not logged in user and redirected to Login Page" in {
-      givenUnauthorisedWith("MissingBearerToken")
-      an[AuthorisationException] shouldBe thrownBy {
-        await(action(request))
-      }
-      verifyAuthoriseAttempt()
-    }
   }
 
   def noKeyStoreCacheFound(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) =
@@ -714,3 +687,5 @@ class AgentInvitationControllerISpec extends BaseISpec {
       )
     )
 }
+
+

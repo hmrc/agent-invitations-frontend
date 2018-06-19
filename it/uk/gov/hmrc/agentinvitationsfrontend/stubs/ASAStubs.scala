@@ -26,79 +26,88 @@ trait ASAStubs {
         .willReturn(aResponse()
           .withStatus(404)))
 
-  def givenTradingName(nino: Nino, tradingName: String) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/$nino"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(s"""{"tradingName": "$tradingName"}""")
-      ))
-  }
+  def givenTradingName(nino: Nino, tradingName: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"tradingName": "$tradingName"}""")
+        ))
 
-  def givenTradingNameNotFound(nino: Nino) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/${nino.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(404)
-      ))
-  }
+  def givenTradingNameMissing(nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{}""")
+        ))
 
-  def givenClientDetails(vrn: Vrn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(
-          s"""{"organisationName": "Gadgetron",
-             |"individual" : {
-             |    "title": "Mr",
-             |    "firstName": "Winston",
-             |    "middleName": "H",
-             |    "lastName": "Greenburg"
-             |    },
-             |"tradingName": "GDT"
-             |}""".stripMargin)
-      ))
-  }
+  def givenTradingNameNotFound(nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/trading-name/nino/${nino.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        ))
 
-  def givenClientDetailsNotFound(vrn: Vrn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(
-          s"""{}""".stripMargin)
-      ))
+  def givenClientDetails(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"organisationName": "Gadgetron",
+                         |"individual" : {
+                         |    "title": "Mr",
+                         |    "firstName": "Winston",
+                         |    "middleName": "H",
+                         |    "lastName": "Greenburg"
+                         |    },
+                         |"tradingName": "GDT"
+                         |}""".stripMargin)
+        ))
 
-  }
+  def givenClientDetailsNotFound(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{}""".stripMargin)
+        ))
 
-  def givenClientDetailsOnlyTrading(vrn: Vrn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(
-          s"""{"tradingName": "GDT"}""".stripMargin)
-      ))
-  }
+  def givenClientDetailsOnlyTrading(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"tradingName": "GDT"}""".stripMargin)
+        ))
 
-  def givenClientDetailsOnlyOrganisation(vrn: Vrn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(
-          s"""{"organisationName": "Gadgetron"}""".stripMargin)
-      ))
-  }
+  def givenClientDetailsOnlyOrganisation(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"organisationName": "Gadgetron"}""".stripMargin)
+        ))
 
-  def givenClientDetailsOnlyPersonal(vrn: Vrn) = {
-    stubFor(get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
-      .willReturn(
-        aResponse()
-          .withStatus(200).withBody(
-          s"""{"individual" : {
-             |    "title": "Mr",
-             |    "firstName": "Winston",
-             |    "middleName": "H",
-             |    "lastName": "Greenburg"
-             |    }
-             |}""".stripMargin)
-      ))
-  }
+  def givenClientDetailsOnlyPersonal(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"individual" : {
+                         |    "title": "Mr",
+                         |    "firstName": "Winston",
+                         |    "middleName": "H",
+                         |    "lastName": "Greenburg"
+                         |    }
+                         |}""".stripMargin)
+        ))
 }

@@ -22,7 +22,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation._
-import play.api.data.{Form, FormError, Mapping}
+import play.api.data.{Form, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
@@ -40,7 +40,6 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 
 @Singleton
 class AgentsInvitationController @Inject()(
