@@ -35,11 +35,11 @@
    '_label -> Messages("select-service.label"),
    '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("select-service.header") + """</h1>"""),
    '_groupDivClass -> "form-group soft--ends",
-   '_fieldsetAttributes -> Html("""id='service'""")
+   '_fieldsetAttributes -> Html("""id='service'  data-ga-event='false'""")
   )
 
   <details id="selectServiceHelper" role="group">
-   <summary id="selectServiceSummary" role="button" aria-controls="details-content-0" aria-expanded="false">
+   <summary id="selectServiceSummary" role="button" aria-controls="details-content-0" aria-expanded="false" data-ga-event="false">
     <span id="selectServiceAlt" class="summary">
      @Messages("select-service.alternative")
    </span>
@@ -53,7 +53,7 @@
   <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
-   <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+   <button class="button form-field--submit" type="submit" id="continue"  data-ga-event="false">@Messages("continue.button")</button>
  }
 
 }
