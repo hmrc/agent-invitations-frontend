@@ -359,7 +359,7 @@ trait ACAStubs {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(Seq(
+            .withBody(halEnvelope(Seq(
               invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2017-12-18"),
               invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18"),
               invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2017-12-18"),
@@ -378,7 +378,7 @@ trait ACAStubs {
               invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2099-01-01"),
               invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2099-01-01"),
               invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01")
-            ).mkString("[", ",", "]"))))
+            ).mkString("[", ",", "]")))))
 
   def givenAllInvitationsEmptyStub(arn: Arn): Unit =
     stubFor(
@@ -386,7 +386,7 @@ trait ACAStubs {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody("[]")
+            .withBody(halEnvelope("[]"))
         ))
 
   val invitation = (
@@ -412,4 +412,20 @@ trait ACAStubs {
                               |		  }
                               |  }
                               |}""".stripMargin
+
+  def halEnvelope(embedded: String): String =
+    s"""{"_links": {
+        "invitations": [
+          {
+            "href": "/agent-client-authorisation/agencies/TARN0000001/invitations/sent/AK77NLH3ETXM9"
+          }
+        ],
+        "self": {
+          "href": "/agent-client-authorisation/agencies/TARN0000001/invitations/sent"
+        }
+      },
+      "_embedded": {
+        "invitations": $embedded
+      }
+    }""".stripMargin
 }

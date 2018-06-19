@@ -74,6 +74,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "FooBar Ltd.",
         "John Smith",
         "GDT",
+        "11 September 2018",
+        "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
       checkHtmlResultWithBodyMsgs(
@@ -105,6 +107,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Rejected",
         "Expired",
         "Cancelled",
+        "11 September 2018",
+        "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
       checkHtmlResultWithBodyMsgs(

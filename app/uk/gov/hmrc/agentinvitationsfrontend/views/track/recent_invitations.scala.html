@@ -21,15 +21,23 @@
 @import org.joda.time.format.ISODateTimeFormat
 @(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
-  @back_link(s"${externalUrls.agentServicesAccountUrl}")
+   @back_link(s"${externalUrls.agentServicesAccountUrl}")
 
-  <h1 class="heading-xlarge">@Messages(s"recent-invitations.header")</h1>
+    <div class="grid-row">
+        <div class="column-two-thirds">
 
-  <p id="recentInvitations">@Messages(s"recent-invitations.description", trackRequestsShowLastDays)</p>
+            <h1 class="heading-xlarge" style="margin-bottom: 30px;">@Messages(s"recent-invitations.header")</h1>
 
-    <table id="invitationsTable" class="margin-bottom-30">
+            <p>@Messages(s"recent-invitations.description", trackRequestsShowLastDays)</p>
+
+        </div>
+    </div>
+
+    <div class="clearer"></div>
+
+    <table class="monitor-authorisations">
         <col class="sortable-header" style="width: 30%">
         <col class="sortable-header">
         <col class="sortable-header" style="width: 20%">
@@ -69,10 +77,10 @@
 }
 
 @dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @if(invitation.status=="Pending") {
-        <span>@Messages("recent-invitations.invitation.expires")</span> @{ISODateTimeFormat.date().print(invitation.expiryDate)}
+    @if(invitation.effectiveStatus=="Pending") {
+        <span>@Messages("recent-invitations.invitation.expires")</span> @{invitation.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)}
     } else {
-        @{ISODateTimeFormat.date().print(invitation.lastUpdated)}
+        @{invitation.lastUpdated.toString("dd MMMM yyyy", messages.lang.locale)}
     }
 
 }

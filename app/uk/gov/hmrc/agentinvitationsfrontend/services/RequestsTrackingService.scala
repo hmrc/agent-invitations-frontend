@@ -51,10 +51,10 @@ class RequestsTrackingService @Inject()(
   def clientNameFor(
     invitation: TrackedInvitation)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     invitation.service match {
-      case Services.HMRCMTDIT  => getItsaTradingName(Nino(invitation.clientId))
-      case Services.HMRCPIR    => getCitizenName(Nino(invitation.clientId))
-      case Services.HMRCMTDVAT => getVatName(Vrn(invitation.clientId))
-      case _                   => Future successful None
+      case Services.HMRCMTDIT if Nino.isValid(invitation.clientId) => getItsaTradingName(Nino(invitation.clientId))
+      case Services.HMRCPIR if Nino.isValid(invitation.clientId)   => getCitizenName(Nino(invitation.clientId))
+      case Services.HMRCMTDVAT if Vrn.isValid(invitation.clientId) => getVatName(Vrn(invitation.clientId))
+      case _                                                       => Future successful None
     }
 
   def getItsaTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
