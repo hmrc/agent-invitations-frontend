@@ -16,9 +16,10 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
+@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
 
-@(invitations: Seq[StoredInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import org.joda.time.format.ISODateTimeFormat
+@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -44,13 +45,15 @@
             @invitations.map { invitation =>
                 <tr>
                     <td id="taxpayerName">
-                        @invitation.clientId
+                        <span>@invitation.clientName.getOrElse("")</span>
+                        <span class="supplementary-information">@clientIdentifierInfo(invitation)</span>
                     </td>
                     <td id="serviceInfo">
-                        @Messages(s"recent-invitations.invitation.service.${invitation.service}")
+                        <span>@Messages(s"recent-invitations.invitation.service.${invitation.service}")</span>
                     </td>
                     <td id="status">
-                        @invitation.status
+                        @invitation.effectiveStatus
+                        <span class="supplementary-information">@dateInfo(invitation)</span>
                     </td>
                 </tr>
             }
@@ -63,6 +66,32 @@
         </tbody>
     </table>
 
+}
+
+@dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
+    @if(invitation.status=="Pending") {
+        <span>@Messages("recent-invitations.invitation.expires")</span> @{ISODateTimeFormat.date().print(invitation.expiryDate)}
+    } else {
+        @{ISODateTimeFormat.date().print(invitation.lastUpdated)}
+    }
+
+}
+
+@clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
+    @{invitation.service match {
+        case "HMRC-MTD-IT" => ninoIdentifier(invitation.clientId)
+        case "HMRC-MTD-VAT" => vrnIdentifier(invitation.clientId)
+        case "PERSONAL-INCOME-RECORD" => ninoIdentifier(invitation.clientId)
+        case _ => ""
+    }}
+}
+
+@ninoIdentifier(nino: String)(implicit messages: Messages) = {
+    <span>@Messages("recent-invitations.invitation.identifier.nino")</span> @{nino.sliding(2,2).mkString(" ")}
+}
+
+@vrnIdentifier(vrn: String)(implicit messages: Messages) = {
+    <span>@Messages("recent-invitations.invitation.identifier.vrn")</span> @vrn
 }
 
 @back_link(url: String)(implicit messages: Messages, config: Configuration) = {

@@ -354,55 +354,62 @@ trait ACAStubs {
 
   def givenAllInvitationsStub(arn: Arn): Unit =
     stubFor(
-      get(urlPathEqualTo(
-        s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
         .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
         .willReturn(
           aResponse()
             .withStatus(200)
             .withBody(Seq(
-              invitation(arn,"Pending","HMRC-MTD-IT", "ni", "AB123456A","foo1"),
-              invitation(arn,"Pending","HMRC-MTD-VAT", "vrn", "101747696","foo2"),
-              invitation(arn,"Pending","PERSONAL-INCOME-RECORD", "ni", "AB123456B","foo3"),
-              invitation(arn,"Accepted","HMRC-MTD-IT", "ni", "AB123456A","foo4"),
-              invitation(arn,"Accepted","HMRC-MTD-VAT", "vrn", "101747696","foo5"),
-              invitation(arn,"Accepted","PERSONAL-INCOME-RECORD", "ni", "AB123456B","foo6"),
-              invitation(arn,"Rejected","HMRC-MTD-IT", "ni", "AB123456A","foo7"),
-              invitation(arn,"Rejected","HMRC-MTD-VAT", "vrn", "101747696","foo2"),
-              invitation(arn,"Rejected","PERSONAL-INCOME-RECORD", "ni", "AB123456B","foo8"),
-              invitation(arn,"Cancelled","HMRC-MTD-IT", "ni", "AB123456A","foo9"),
-              invitation(arn,"Cancelled","HMRC-MTD-VAT", "vrn", "101747696","fo10"),
-              invitation(arn,"Cancelled","PERSONAL-INCOME-RECORD", "ni", "AB123456B","fo11"),
-              invitation(arn,"Expired","HMRC-MTD-IT", "ni", "AB123456A","fo12"),
-              invitation(arn,"Expired","HMRC-MTD-VAT", "vrn", "101747696","fo13"),
-              invitation(arn,"Expired","PERSONAL-INCOME-RECORD", "ni", "AB123456B","fo14")
-            ).mkString("[",",","]"))))
+              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2017-12-18"),
+              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18"),
+              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2017-12-18"),
+              invitation(arn, "Accepted", "HMRC-MTD-IT", "ni", "AB123456A", "foo4", "2017-12-18"),
+              invitation(arn, "Accepted", "HMRC-MTD-VAT", "vrn", "101747696", "foo5", "2017-12-18"),
+              invitation(arn, "Accepted", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo6", "2017-12-18"),
+              invitation(arn, "Rejected", "HMRC-MTD-IT", "ni", "AB123456A", "foo7", "2017-12-18"),
+              invitation(arn, "Rejected", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18"),
+              invitation(arn, "Rejected", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo8", "2017-12-18"),
+              invitation(arn, "Cancelled", "HMRC-MTD-IT", "ni", "AB123456A", "foo9", "2017-12-18"),
+              invitation(arn, "Cancelled", "HMRC-MTD-VAT", "vrn", "101747696", "fo10", "2017-12-18"),
+              invitation(arn, "Cancelled", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo11", "2017-12-18"),
+              invitation(arn, "Expired", "HMRC-MTD-IT", "ni", "AB123456A", "fo12", "2017-12-18"),
+              invitation(arn, "Expired", "HMRC-MTD-VAT", "vrn", "101747696", "fo13", "2017-12-18"),
+              invitation(arn, "Expired", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo14", "2017-12-18"),
+              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2099-01-01"),
+              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2099-01-01"),
+              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01")
+            ).mkString("[", ",", "]"))))
 
   def givenAllInvitationsEmptyStub(arn: Arn): Unit =
     stubFor(
-      get(urlPathEqualTo(
-        s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
         .willReturn(
           aResponse()
             .withStatus(200)
             .withBody("[]")
         ))
 
-
-  val invitation = (arn: Arn, status: String, service: String, clientIdType: String, clientId: String, invitationId: String) => s"""
-                                  |{
-                                  |  "arn" : "${arn.value}",
-                                  |  "service" : "$service",
-                                  |  "clientId" : "$clientId",
-                                  |  "clientIdType" : "$clientIdType",
-                                  |  "status" : "$status",
-                                  |  "created" : "2017-10-31T23:22:50.971Z",
-                                  |  "lastUpdated" : "2018-09-11T21:02:00.000Z",
-                                  |  "expiryDate" : "2017-12-18",
-                                  |  "_links": {
-                                  |    	"self" : {
-                                  |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"
-                                  |		  }
-                                  |  }
-                                  |}""".stripMargin
+  val invitation = (
+    arn: Arn,
+    status: String,
+    service: String,
+    clientIdType: String,
+    clientId: String,
+    invitationId: String,
+    expiryDate: String) => s"""
+                              |{
+                              |  "arn" : "${arn.value}",
+                              |  "service" : "$service",
+                              |  "clientId" : "$clientId",
+                              |  "clientIdType" : "$clientIdType",
+                              |  "status" : "$status",
+                              |  "created" : "2017-10-31T23:22:50.971Z",
+                              |  "lastUpdated" : "2018-09-11T21:02:00.000Z",
+                              |  "expiryDate" : "$expiryDate",
+                              |  "_links": {
+                              |    	"self" : {
+                              |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"
+                              |		  }
+                              |  }
+                              |}""".stripMargin
 }

@@ -18,13 +18,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
-class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
+class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours with CitizenDetailsStub {
 
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
 
@@ -53,13 +54,61 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val request = FakeRequest("GET", "/track/")
     val showTrackRequests = controller.showTrackRequests
 
-    "render a page listing non-empty invitations" in {
+    "render a page listing non-empty invitations with client's names resolved" in {
       givenAllInvitationsStub(arn)
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenClientDetails(Vrn("101747696"))
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "AB123456A", "101747696", "AB123456B", "Accepted", "Pending", "Rejected", "Expired", "Cancelled",
-        htmlEscapedMessage("recent-invitations.description", 30))
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyText(
+        result,
+        "AB 12 34 56 A",
+        "101747696",
+        "AB 12 34 56 B",
+        "Accepted",
+        "Pending",
+        "Rejected",
+        "Expired",
+        "Cancelled",
+        "FooBar Ltd.",
+        "John Smith",
+        "GDT",
+        htmlEscapedMessage("recent-invitations.description", 30)
+      )
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "recent-invitations.header",
+        "recent-invitations.table-row-header.clientName",
+        "recent-invitations.table-row-header.service",
+        "recent-invitations.table-row-header.status",
+        "recent-invitations.invitation.service.HMRC-MTD-IT",
+        "recent-invitations.invitation.service.HMRC-MTD-VAT",
+        "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
+      )
+    }
+
+    "render a page listing non-empty invitations without client's names" in {
+      givenAllInvitationsStub(arn)
+      givenTradingNameNotFound(Nino("AB123456A"))
+      givenCitizenDetailsReturns404For("AB123456B")
+      givenClientDetailsNotFound(Vrn("101747696"))
+      val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "AB 12 34 56 A",
+        "101747696",
+        "AB 12 34 56 B",
+        "Accepted",
+        "Pending",
+        "Rejected",
+        "Expired",
+        "Cancelled",
+        htmlEscapedMessage("recent-invitations.description", 30)
+      )
+      checkHtmlResultWithBodyMsgs(
+        result,
         "recent-invitations.header",
         "recent-invitations.table-row-header.clientName",
         "recent-invitations.table-row-header.service",
@@ -75,11 +124,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "recent-invitations.header",
         "recent-invitations.empty",
-        "recent-invitations.empty.continue"
-      )
+        "recent-invitations.empty.continue")
     }
 
     behave like anAuthorisedAgentEndpoint(request, showTrackRequests)

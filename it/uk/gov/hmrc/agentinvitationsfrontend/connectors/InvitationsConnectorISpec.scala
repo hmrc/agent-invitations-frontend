@@ -10,6 +10,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class InvitationsConnectorISpec extends BaseISpec {
 
   implicit val hc = HeaderCarrier()
@@ -113,34 +115,57 @@ class InvitationsConnectorISpec extends BaseISpec {
 
     "return all Agency invitations" in {
       givenAllInvitationsStub(arn)
-      val result: Seq[StoredInvitation] = await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
+      val result: Seq[StoredInvitation] =
+        await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result should not be empty
-      result.length shouldBe 15
-      result.count(_.clientId == validNino.value) shouldBe 5
-      result.count(_.clientId == validVrn97.value) shouldBe 5
-      result.count(_.clientId == "AB123456B") shouldBe 5
-      result.count(_.service == "HMRC-MTD-IT") shouldBe 5
-      result.count(_.service == "HMRC-MTD-VAT") shouldBe 5
-      result.count(_.service == "PERSONAL-INCOME-RECORD") shouldBe 5
-      result.count(_.status == "Pending") shouldBe 3
+      result.length shouldBe 18
+      result.count(_.clientId == validNino.value) shouldBe 6
+      result.count(_.clientId == validVrn97.value) shouldBe 6
+      result.count(_.clientId == "AB123456B") shouldBe 6
+      result.count(_.service == "HMRC-MTD-IT") shouldBe 6
+      result.count(_.service == "HMRC-MTD-VAT") shouldBe 6
+      result.count(_.service == "PERSONAL-INCOME-RECORD") shouldBe 6
+      result.count(_.status == "Pending") shouldBe 6
       result.count(_.status == "Accepted") shouldBe 3
       result.count(_.status == "Rejected") shouldBe 3
       result.count(_.status == "Cancelled") shouldBe 3
       result.count(_.status == "Expired") shouldBe 3
-      result(0) shouldBe StoredInvitation(arn, "HMRC-MTD-IT", "AB123456A", "Pending", DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T21:02:00.000Z"), LocalDate.parse("2017-12-18"),
-        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo1"))
-      result(4) shouldBe StoredInvitation(arn, "HMRC-MTD-VAT", "101747696", "Accepted", DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T21:02:00.000Z"), LocalDate.parse("2017-12-18"),
-        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo5"))
-      result(8) shouldBe StoredInvitation(arn, "PERSONAL-INCOME-RECORD", "AB123456B", "Rejected", DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T21:02:00.000Z"), LocalDate.parse("2017-12-18"),
-        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo8"))
+      result(0) shouldBe StoredInvitation(
+        arn,
+        "HMRC-MTD-IT",
+        "AB123456A",
+        "Pending",
+        DateTime.parse("2017-10-31T23:22:50.971Z"),
+        DateTime.parse("2018-09-11T21:02:00.000Z"),
+        LocalDate.parse("2017-12-18"),
+        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo1")
+      )
+      result(4) shouldBe StoredInvitation(
+        arn,
+        "HMRC-MTD-VAT",
+        "101747696",
+        "Accepted",
+        DateTime.parse("2017-10-31T23:22:50.971Z"),
+        DateTime.parse("2018-09-11T21:02:00.000Z"),
+        LocalDate.parse("2017-12-18"),
+        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo5")
+      )
+      result(8) shouldBe StoredInvitation(
+        arn,
+        "PERSONAL-INCOME-RECORD",
+        "AB123456B",
+        "Rejected",
+        DateTime.parse("2017-10-31T23:22:50.971Z"),
+        DateTime.parse("2018-09-11T21:02:00.000Z"),
+        LocalDate.parse("2017-12-18"),
+        new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo8")
+      )
     }
 
     "return an empty set of invitations" in {
       givenAllInvitationsEmptyStub(arn)
-      val result: Seq[StoredInvitation] = await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
+      val result: Seq[StoredInvitation] =
+        await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result shouldBe empty
     }
 
