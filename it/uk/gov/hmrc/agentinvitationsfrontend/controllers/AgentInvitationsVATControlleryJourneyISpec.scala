@@ -64,7 +64,7 @@ class AgentInvitationsVATControlleryJourneyISpec extends BaseISpec with AuthBeha
         identifierVAT)
       givenClientDetails(validVrn)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      val choice = confirmForm.fill(Confirmation(true))
+      val choice = agentConfirmClientForm.fill(Confirmation(true))
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       status(result) shouldBe 303
@@ -77,6 +77,7 @@ class AgentInvitationsVATControlleryJourneyISpec extends BaseISpec with AuthBeha
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "GDT")
+      checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")

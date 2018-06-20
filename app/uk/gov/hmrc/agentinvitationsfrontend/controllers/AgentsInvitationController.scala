@@ -253,7 +253,7 @@ class AgentsInvitationController @Inject()(
           (data.clientIdentifier, data.service) match {
             case (Some(clientId), Some(service)) =>
               invitationsService.getNameByService(clientId, service).flatMap { name =>
-                Future successful Ok(confirm_client(name.getOrElse(""), confirmForm))
+                Future successful Ok(confirm_client(name.getOrElse(""), agentConfirmClientForm))
               }
             case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
           }
@@ -270,7 +270,7 @@ class AgentsInvitationController @Inject()(
             case (Some(clientId), Some(service)) =>
               invitationsService.getNameByService(clientId, service).flatMap { name =>
                 val clientName = name.getOrElse("")
-                confirmForm
+                agentConfirmClientForm
                   .bindFromRequest()
                   .fold(
                     formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
@@ -421,10 +421,12 @@ class AgentsInvitationController @Inject()(
             }
           case Some(false) =>
             fastTrackCache.save(currentInvitationInput).map { _ =>
+              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
               Redirect(routes.AgentsInvitationController.notMatched())
             }
           case None =>
             fastTrackCache.save(currentInvitationInput).map { _ =>
+              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
               Redirect(routes.AgentsInvitationController.notEnrolled())
             }
         }
@@ -676,10 +678,12 @@ object AgentsInvitationController {
       }))
   }
 
-  val confirmForm: Form[Confirmation] = {
+  val agentConfirmClientForm: Form[Confirmation] = {
     Form(
       mapping(
-        "choice" -> normalizedText.verifying(confirmationChoice)
+        "choice" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice)
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
   }
 

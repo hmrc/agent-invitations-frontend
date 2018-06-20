@@ -62,7 +62,7 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
         Some(validPostcode))
       givenTradingName(validNino, "64 Bit")
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-      val choice = confirmForm.fill(Confirmation(true))
+      val choice = agentConfirmClientForm.fill(Confirmation(true))
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       status(result) shouldBe 303
@@ -71,9 +71,11 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
     "return 200 for not selecting an option" in {
       testFastTrackCache.save(
         CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None, fromFastTrack))
-      givenTradingNameMissing(validNino)
+      givenTradingName(validNino, "64 Bit")
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
+      givenTradingName(validNino, "64 Bit")
+      checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")

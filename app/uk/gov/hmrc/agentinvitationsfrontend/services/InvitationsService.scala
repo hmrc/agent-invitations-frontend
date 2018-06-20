@@ -128,11 +128,14 @@ class InvitationsService @Inject()(
       }
       .getOrElse(Future.successful(None))
 
-  def checkPostcodeMatches(nino: Nino, postcode: String)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+  def checkPostcodeMatches(nino: Nino, postcode: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkPostcodeForClient(nino, postcode)
 
   def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
-    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =

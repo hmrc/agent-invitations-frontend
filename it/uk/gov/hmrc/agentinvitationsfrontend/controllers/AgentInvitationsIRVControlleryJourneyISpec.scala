@@ -63,7 +63,7 @@ class AgentInvitationsIRVControlleryJourneyISpec extends BaseISpec with AuthBeha
         "NI")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val choice = confirmForm.fill(Confirmation(true))
+      val choice = agentConfirmClientForm.fill(Confirmation(true))
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       status(result) shouldBe 303
@@ -72,9 +72,11 @@ class AgentInvitationsIRVControlleryJourneyISpec extends BaseISpec with AuthBeha
     "return 200 for not selecting an option for PERSONAL-INCOME-RECORD" in {
       testFastTrackCache.save(
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack))
-      givenCitizenDetailsReturns404For(validNino.value)
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "64 Bit")
+      checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")

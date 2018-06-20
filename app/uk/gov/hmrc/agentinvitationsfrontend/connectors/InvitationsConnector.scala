@@ -163,7 +163,9 @@ class InvitationsConnector @Inject()(
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
     }
 
-  def checkPostcodeForClient(nino: Nino, postcode: String)(implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+  def checkPostcodeForClient(nino: Nino, postcode: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-CheckPostcode-GET") {
       http.GET[HttpResponse](checkPostcodeUrl(nino, postcode).toString).map(_ => Some(true))
     }.recover {
