@@ -26,22 +26,17 @@ case class CurrentInvitationInput(
   clientIdentifierType: Option[String],
   clientIdentifier: Option[String],
   postcode: Option[String],
-  vatRegDate: Option[String]) {
-
-  val clientIdentifierTypeConversion: Option[String] = clientIdentifier match {
-    case Some(clientId) => {
-      if (Nino.isValid(clientId)) Some("ni")
-      else if (Vrn.isValid(clientId)) Some("vrn")
-      else None
-    }
-    case _ => None
-  }
-}
+  vatRegDate: Option[String],
+  fromFastTrack: Boolean = false)
 
 object CurrentInvitationInput {
 
-  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, None)
-  def apply(service: String): CurrentInvitationInput = CurrentInvitationInput(Some(service), None, None, None, None)
+  val fromFastTrack: Boolean = true
+  val fromManual: Boolean = false
+
+  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, None, fromManual)
+  def apply(service: String): CurrentInvitationInput =
+    CurrentInvitationInput(Some(service), None, None, None, None, fromManual)
 
   implicit val format = Json.format[CurrentInvitationInput]
 

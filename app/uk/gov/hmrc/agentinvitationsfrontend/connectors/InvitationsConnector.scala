@@ -146,6 +146,9 @@ class InvitationsConnector @Inject()(
       baseUrl,
       s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${registrationDate.toString}")
 
+  private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode")
+
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Int] =
@@ -158,6 +161,16 @@ class InvitationsConnector @Inject()(
     ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+    }
+
+  def checkPostcodeForClient(nino: Nino, postcode: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor(s"ConsumedAPI-CheckPostcode-GET") {
+      http.GET[HttpResponse](checkPostcodeUrl(nino, postcode).toString).map(_ => Some(true))
+    }.recover {
+      case notMatched: Upstream4xxResponse if notMatched.message.contains("POSTCODE_DOES_NOT_MATCH")         => Some(false)
+      case notEnrolled: Upstream4xxResponse if notEnrolled.message.contains("CLIENT_REGISTRATION_NOT_FOUND") => None
     }
 
   def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
@@ -189,4 +202,5 @@ class InvitationsConnector @Inject()(
         (JsPath \ "_links" \ "self").read[URL])(StoredInvitation.apply _)
     }
   }
+
 }

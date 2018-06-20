@@ -17,20 +17,23 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
+
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
-  agentServicesAccountConnector: AgentServicesAccountConnector) {
+  val agentServicesAccountConnector: AgentServicesAccountConnector,
+  val citizenDetailsConnector: CitizenDetailsConnector)
+    extends GetClientName {
 
   def createInvitation(
     arn: Arn,
@@ -90,8 +93,14 @@ class InvitationsService @Inject()(
       case None       => throw new Exception("Agency name not found")
     }
 
+  def checkPostcodeMatches(nino: Nino, postcode: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    invitationsConnector.checkPostcodeForClient(nino, postcode)
+
   def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
-    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =

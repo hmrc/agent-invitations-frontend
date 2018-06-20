@@ -21,7 +21,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 
 abstract class BaseISpec
-    extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
+    extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with CitizenDetailsStub
     with AfiRelationshipStub with DataStreamStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
@@ -43,6 +43,8 @@ abstract class BaseISpec
         "microservice.services.company-auth.port"                             -> wireMockPort,
         "microservice.services.des.port"                                      -> wireMockPort,
         "microservice.services.agent-fi-relationship.port"                    -> wireMockPort,
+        "microservice.services.citizen-details.host"                          -> wireMockHost,
+        "microservice.services.citizen-details.port"                          -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url"       -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url"  -> wireMockBaseUrlAsString,
         "microservice.services.company-auth-frontend.external-url"            -> companyAuthUrl,

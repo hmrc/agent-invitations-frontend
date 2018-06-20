@@ -56,6 +56,13 @@ select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noo
 continue.button=Continue
 button.back=Back
 
+# Confirm Client
+confirm-client.header=Is this the client you want authorisation from?
+confirm-client.yes=Yes - I want to ask this client for authorisation
+confirm-client.no=No - I need to start over again
+
+error.confirm-client.required=Select yes if this is the client you want authorisation from
+
 # Invitation Sent
 invitation-sent-link.header=One more step
 invitation-sent.header=What you need to do next
