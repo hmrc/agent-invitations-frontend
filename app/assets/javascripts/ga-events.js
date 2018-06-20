@@ -46,7 +46,7 @@ $(function() {
     // checkbox onclick
     $('fieldset:not([data-ga-event="false"]) input:checkbox').each(function(){
     	$(this).click(function(e){
-     		ga('send', 'event', 'radio', 'click', $(this).closest('fieldset').find('legend').text() + " - " + $(this).val())
+     		ga('send', 'event', 'checkbox', 'click', $(this).closest('fieldset').find('legend').text() + " - " + $(this).val())
      	});
     });
 
