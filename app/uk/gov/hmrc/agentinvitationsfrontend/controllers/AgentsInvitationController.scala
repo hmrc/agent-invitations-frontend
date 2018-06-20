@@ -252,7 +252,7 @@ class AgentsInvitationController @Inject()(
         case Some(data) =>
           (data.clientIdentifier, data.service) match {
             case (Some(clientId), Some(service)) =>
-              invitationsService.getNameByService(clientId, service).flatMap { name =>
+              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
                 Future successful Ok(confirm_client(name.getOrElse(""), agentConfirmClientForm))
               }
             case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
@@ -268,7 +268,7 @@ class AgentsInvitationController @Inject()(
         case Some(invitationWithClientDetails) =>
           (invitationWithClientDetails.clientIdentifier, invitationWithClientDetails.service) match {
             case (Some(clientId), Some(service)) =>
-              invitationsService.getNameByService(clientId, service).flatMap { name =>
+              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
                 val clientName = name.getOrElse("")
                 agentConfirmClientForm
                   .bindFromRequest()

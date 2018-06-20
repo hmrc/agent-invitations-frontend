@@ -30,8 +30,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class RequestsTrackingService @Inject()(
   invitationsConnector: InvitationsConnector,
-  agentServicesAccountConnector: AgentServicesAccountConnector,
-  citizenDetailsConnector: CitizenDetailsConnector) {
+  val agentServicesAccountConnector: AgentServicesAccountConnector,
+  val citizenDetailsConnector: CitizenDetailsConnector)
+    extends GetClientName {
 
   def getRecentAgentInvitations(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
@@ -46,28 +47,6 @@ class RequestsTrackingService @Inject()(
 
   def addClientName(
     invitation: TrackedInvitation)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackedInvitation] =
-    clientNameFor(invitation).map(cn => invitation.copy(clientName = cn))
-
-  def clientNameFor(
-    invitation: TrackedInvitation)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    invitation.service match {
-      case Services.HMRCMTDIT if Nino.isValid(invitation.clientId) => getItsaTradingName(Nino(invitation.clientId))
-      case Services.HMRCPIR if Nino.isValid(invitation.clientId)   => getCitizenName(Nino(invitation.clientId))
-      case Services.HMRCMTDVAT if Vrn.isValid(invitation.clientId) => getVatName(Vrn(invitation.clientId))
-      case _                                                       => Future successful None
-    }
-
-  def getItsaTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    agentServicesAccountConnector.getTradingName(nino)
-
-  def getCitizenName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    citizenDetailsConnector.getCitizenDetails(nino).map(_.name)
-
-  def getVatName(vrn: Vrn)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>
-      customerDetails.tradingName
-        .orElse(customerDetails.organisationName)
-        .orElse(customerDetails.individual.map(_.name))
-    }
+    getClientNameByService(invitation).map(cn => invitation.copy(clientName = cn))
 
 }

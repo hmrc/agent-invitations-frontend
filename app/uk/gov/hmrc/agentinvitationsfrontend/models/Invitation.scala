@@ -16,22 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.{DateTime, LocalDate}
+trait Invitation {
 
-case class TrackedInvitation(
-  service: String,
-  clientId: String,
-  clientName: Option[String],
-  status: String,
-  lastUpdated: DateTime,
-  expiryDate: LocalDate
-) extends Invitation {
-  lazy val effectiveStatus =
-    if (status == "Pending" && expiryDate.isBefore(LocalDate.now())) "Expired"
-    else status
-}
+  val service: String
+  val clientId: String
 
-object TrackedInvitation {
-  def apply(i: StoredInvitation): TrackedInvitation =
-    TrackedInvitation(i.service, i.clientId, None, i.status, i.lastUpdated, i.expiryDate)
 }

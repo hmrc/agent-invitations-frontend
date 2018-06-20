@@ -31,8 +31,9 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
-  agentServicesAccountConnector: AgentServicesAccountConnector,
-  citizenDetailsConnector: CitizenDetailsConnector) {
+  val agentServicesAccountConnector: AgentServicesAccountConnector,
+  val citizenDetailsConnector: CitizenDetailsConnector)
+    extends GetClientName {
 
   def createInvitation(
     arn: Arn,
@@ -91,42 +92,6 @@ class InvitationsService @Inject()(
       case Some(name) => name
       case None       => throw new Exception("Agency name not found")
     }
-
-  def getNameByService(clientIdentifier: String, service: String)(
-    implicit c: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[String]] =
-    service match {
-      case HMRCMTDIT if Nino.isValid(clientIdentifier) => getTradingName(Some(clientIdentifier))
-      case HMRCPIR if Nino.isValid(clientIdentifier)   => getCitizenName(Some(clientIdentifier))
-      case HMRCMTDVAT if Vrn.isValid(clientIdentifier) => getVatName(Some(clientIdentifier))
-      case _                                           => Future successful None
-    }
-
-  def getTradingName(
-    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    clientIdentifier match {
-      case Some(s) => agentServicesAccountConnector.getTradingName(Nino(s))
-      case None    => Future successful None
-    }
-
-  def getCitizenName(
-    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    clientIdentifier match {
-      case Some(s) => citizenDetailsConnector.getCitizenDetails(Nino(s)).map(citizen => citizen.name)
-      case None    => Future successful None
-    }
-
-  def getVatName(
-    clientIdentifier: Option[String])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    clientIdentifier
-      .map { s =>
-        agentServicesAccountConnector.getCustomerDetails(Vrn(s)).map { customerDetails =>
-          customerDetails.tradingName
-            .orElse(customerDetails.organisationName)
-            .orElse(customerDetails.individual.map(_.name))
-        }
-      }
-      .getOrElse(Future.successful(None))
 
   def checkPostcodeMatches(nino: Nino, postcode: String)(
     implicit hc: HeaderCarrier,
