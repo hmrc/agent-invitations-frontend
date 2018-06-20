@@ -71,7 +71,7 @@ $(function() {
     		});
 
     		if(getName){
-    			ga('send', 'event', 'radio', 'selected', $('[name="' + getName + '"]').closest('fieldset').find('legend').text() + " - " + allVals)
+    			ga('send', 'event', 'checkbox', 'selected', $('[name="' + getName + '"]').closest('fieldset').find('legend').text() + " - " + allVals)
     		}
     	});
     });
