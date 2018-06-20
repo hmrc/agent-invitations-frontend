@@ -28,10 +28,10 @@ import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class Citizen(firstName: Option[String], lastName: Option[String], nino: Option[String]) {
-  val name: Option[String] = (firstName, lastName) match {
-    case (Some(f), Some(l)) => Some(s"$f $l")
-    case _                  => None
+case class Citizen(firstName: Option[String], lastName: Option[String], nino: Option[String] = None) {
+  lazy val name: Option[String] = {
+    val n = Seq(firstName, lastName).collect({ case Some(x) => x }).mkString(" ")
+    if (n.isEmpty) None else Some(n)
   }
 }
 

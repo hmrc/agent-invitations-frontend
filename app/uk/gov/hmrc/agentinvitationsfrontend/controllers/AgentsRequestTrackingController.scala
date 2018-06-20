@@ -17,14 +17,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
-import org.joda.time.LocalDate
 import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Services, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.services.RequestsTrackingService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.recent_invitations
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -36,20 +34,16 @@ class AgentsRequestTrackingController @Inject()(
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
-  val invitationsConnector: InvitationsConnector,
+  val requestsTrackingService: RequestsTrackingService,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration)
     extends FrontendController with I18nSupport with AuthActions {
 
-  def whitelistedInvitation(isPirWhitelisted: Boolean): StoredInvitation => Boolean =
-    i => isPirWhitelisted || i.service != Services.HMRCPIR
-
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      invitationsConnector
-        .getAllInvitations(arn, LocalDate.now().minusDays(trackRequestsShowLastDays))
-        .map(_.filter(whitelistedInvitation(isWhitelisted)))
+      requestsTrackingService
+        .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
         .map(invitations => Ok(recent_invitations(invitations, trackRequestsShowLastDays)))
     }
   }
