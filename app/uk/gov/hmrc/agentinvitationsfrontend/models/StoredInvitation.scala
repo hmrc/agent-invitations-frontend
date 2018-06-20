@@ -25,8 +25,45 @@ case class StoredInvitation(
   arn: Arn,
   service: String,
   clientId: String,
+  clientIdType: String,
+  suppliedClientId: String,
+  suppliedClientIdType: String,
   status: String,
   created: DateTime,
   lastUpdated: DateTime,
   expiryDate: LocalDate,
   selfUrl: URL)
+    extends ServiceAndClient
+
+object StoredInvitation {
+
+  val clientIdTypeByService: String => String = {
+    case "HMRC-MTD-IT"            => "ni"
+    case "HMRC-MTD-VAT"           => "vrn"
+    case "PERSONAL-INCOME-RECORD" => "ni"
+    case _                        => throw new IllegalArgumentException()
+  }
+
+  def apply(
+    arn: Arn,
+    service: String,
+    clientId: String,
+    status: String,
+    created: DateTime,
+    lastUpdated: DateTime,
+    expiryDate: LocalDate,
+    selfUrl: URL): StoredInvitation =
+    StoredInvitation(
+      arn,
+      service,
+      clientId,
+      clientIdTypeByService(service),
+      clientId,
+      clientIdTypeByService(service),
+      status,
+      created,
+      lastUpdated,
+      expiryDate,
+      selfUrl)
+
+}

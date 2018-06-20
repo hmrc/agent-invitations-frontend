@@ -21,17 +21,29 @@ import org.joda.time.{DateTime, LocalDate}
 case class TrackedInvitation(
   service: String,
   clientId: String,
+  clientIdType: String,
   clientName: Option[String],
   status: String,
   lastUpdated: DateTime,
   expiryDate: LocalDate
-) extends Invitation {
-  lazy val effectiveStatus =
-    if (status == "Pending" && expiryDate.isBefore(LocalDate.now())) "Expired"
-    else status
-}
+) extends ServiceAndClient
 
 object TrackedInvitation {
-  def apply(i: StoredInvitation): TrackedInvitation =
-    TrackedInvitation(i.service, i.clientId, None, i.status, i.lastUpdated, i.expiryDate)
+
+  val preferredIdTypes = Set("ni", "vrn")
+
+  def fromStored(i: StoredInvitation)(implicit now: LocalDate): TrackedInvitation = {
+
+    val (clientId, clientIdType) =
+      if (preferredIdTypes.contains(i.clientIdType)
+          || i.suppliedClientIdType.isEmpty
+          || i.suppliedClientId.isEmpty) (i.clientId, i.clientIdType)
+      else (i.suppliedClientId, i.suppliedClientIdType)
+
+    val status =
+      if (i.status == "Pending" && i.expiryDate.isBefore(now)) "Expired"
+      else i.status
+
+    TrackedInvitation(i.service, clientId, clientIdType, None, status, i.lastUpdated, i.expiryDate)
+  }
 }

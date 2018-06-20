@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-trait Invitation {
+trait ServiceAndClient {
 
-  val service: String
-  val clientId: String
-
+  def service: String
+  def clientId: String
+  def clientIdType: String
 }

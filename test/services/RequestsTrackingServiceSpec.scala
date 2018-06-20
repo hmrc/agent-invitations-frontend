@@ -41,9 +41,9 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
   val vrn = Vrn("101747696")
   val nino = Nino("AB123456A")
-  val dateTime = DateTime.now().minusDays(10)
-  val date = LocalDate.now()
+  val dateTime = DateTime.now.minusDays(10)
 
+  implicit val now: LocalDate = LocalDate.now
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "RequestsTrackingService" when {
@@ -161,18 +161,26 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Citizen(Some("Aa1"), Some("Aa2"))))
 
-        await(tested.getClientNameByService(
-          TrackedInvitation("HMRC-MTD-IT", nino.value, None, "Pending", dateTime, date))) shouldBe Some(
+        await(
+          tested.getClientNameByService(
+            TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now))) shouldBe Some(
           "Aaa Itsa Trader")
 
-        await(tested.getClientNameByService(
-          TrackedInvitation("HMRC-MTD-VAT", vrn.value, None, "Accepted", dateTime, date))) shouldBe Some("Aaa Ltd.")
+        await(
+          tested.getClientNameByService(
+            TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now))) shouldBe Some(
+          "Aaa Ltd.")
 
         await(
           tested
-            .getClientNameByService(
-              TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, None, "Expired", dateTime, date))) shouldBe Some(
-          "Aa1 Aa2")
+            .getClientNameByService(TrackedInvitation(
+              "PERSONAL-INCOME-RECORD",
+              nino.value,
+              "ni",
+              None,
+              "Expired",
+              dateTime,
+              now))) shouldBe Some("Aa1 Aa2")
       }
     }
 
@@ -192,16 +200,17 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Citizen(Some("Foo"), Some("Bar"))))
 
-        await(tested.addClientName(TrackedInvitation("HMRC-MTD-IT", nino.value, None, "Pending", dateTime, date))) shouldBe
-          TrackedInvitation("HMRC-MTD-IT", nino.value, Some("Aaa Itsa Trader"), "Pending", dateTime, date)
+        await(tested.addClientName(TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now))) shouldBe
+          TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", Some("Aaa Itsa Trader"), "Pending", dateTime, now)
 
-        await(tested.addClientName(TrackedInvitation("HMRC-MTD-VAT", vrn.value, None, "Accepted", dateTime, date))) shouldBe
-          TrackedInvitation("HMRC-MTD-VAT", vrn.value, Some("Aaa Ltd."), "Accepted", dateTime, date)
+        await(tested.addClientName(
+          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now))) shouldBe
+          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", Some("Aaa Ltd."), "Accepted", dateTime, now)
 
         await(
           tested.addClientName(
-            TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, None, "Rejected", dateTime, date))) shouldBe
-          TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, Some("Foo Bar"), "Rejected", dateTime, date)
+            TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, "ni", None, "Rejected", dateTime, now))) shouldBe
+          TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, "ni", Some("Foo Bar"), "Rejected", dateTime, now)
       }
 
       "return unchanged invitation if name not available" in {
@@ -218,16 +227,17 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Citizen(None, None)))
 
-        await(tested.addClientName(TrackedInvitation("HMRC-MTD-IT", nino.value, None, "Pending", dateTime, date))) shouldBe
-          TrackedInvitation("HMRC-MTD-IT", nino.value, None, "Pending", dateTime, date)
+        await(tested.addClientName(TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now))) shouldBe
+          TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now)
 
-        await(tested.addClientName(TrackedInvitation("HMRC-MTD-VAT", vrn.value, None, "Accepted", dateTime, date))) shouldBe
-          TrackedInvitation("HMRC-MTD-VAT", vrn.value, None, "Accepted", dateTime, date)
+        await(tested.addClientName(
+          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now))) shouldBe
+          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now)
 
         await(
           tested.addClientName(
-            TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, None, "Rejected", dateTime, date))) shouldBe
-          TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, None, "Rejected", dateTime, date)
+            TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, "ni", None, "Rejected", dateTime, now))) shouldBe
+          TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, "ni", None, "Rejected", dateTime, now)
       }
     }
 
@@ -278,8 +288,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         "Aaa Itsa Trader",
         "Aaa Ltd.",
         "Foo Bar")
-      result.map(_.status) should contain atLeastOneElementOf Seq("Pending")
-      result.map(_.effectiveStatus) should contain atLeastOneElementOf Seq("Expired")
+      result.map(_.status) should contain atLeastOneElementOf Seq("Expired")
     }
 
   }
@@ -292,7 +301,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
       "Pending",
       dateTime.minusDays(10),
       dateTime,
-      date.minusDays(1),
+      now.minusDays(1),
       new URL("http://foo/"))
 
 }
