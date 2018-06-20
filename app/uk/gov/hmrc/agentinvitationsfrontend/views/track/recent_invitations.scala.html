@@ -60,7 +60,7 @@
                         <span>@Messages(s"recent-invitations.invitation.service.${invitation.service}")</span>
                     </td>
                     <td id="status">
-                        @invitation.effectiveStatus
+                        @Messages(s"recent-invitations.invitation.status.${invitation.effectiveStatus.toLowerCase}")
                         <span class="supplementary-information">@dateInfo(invitation)</span>
                     </td>
                 </tr>
