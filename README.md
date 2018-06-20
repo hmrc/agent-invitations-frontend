@@ -4,7 +4,7 @@
 
 ## What the service does
 This is a frontend microservice for Agent Client Authorisation.
- 
+
 Invitations service currently provides these functions:
  - Agent can create an invitation to represent a client for specific tax regime.
  - Client can accept or decline agent's invitation.
@@ -66,6 +66,6 @@ Start Page for Clients:
 
     GET     /invitations/{invitationId}
 
-### License
+### License 
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
