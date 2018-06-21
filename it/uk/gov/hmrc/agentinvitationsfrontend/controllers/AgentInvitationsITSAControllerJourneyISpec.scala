@@ -11,7 +11,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationControll
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBehaviours with AgentInvitationsControllerCommonSupport {
+class AgentInvitationsITSAControllerJourneyISpec
+    extends BaseISpec with AuthBehaviours with AgentInvitationsControllerCommonSupport {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -23,7 +24,13 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
 
     "return 200 and show client name" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None, fromFastTrack))
+        CurrentInvitationInput(
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          None,
+          fromFastTrack))
       givenTradingName(validNino, "64 Bit")
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -35,7 +42,13 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
 
     "return 200 and no client name was found" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None, fromFastTrack))
+        CurrentInvitationInput(
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          None,
+          fromFastTrack))
       givenTradingNameMissing(validNino)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -51,7 +64,13 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
 
     "redirect to invitation-sent" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None, fromFastTrack))
+        CurrentInvitationInput(
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          None,
+          fromFastTrack))
       createInvitationStubWithKnownFacts(
         arn,
         mtdItId.value,
@@ -63,14 +82,21 @@ class AgentInvitationsITSAControlleryJourneyISpec extends BaseISpec with AuthBeh
       givenTradingName(validNino, "64 Bit")
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))
-      val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       status(result) shouldBe 303
     }
 
     "return 200 for not selecting an option" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None, fromFastTrack))
+        CurrentInvitationInput(
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          None,
+          fromFastTrack))
       givenTradingName(validNino, "64 Bit")
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

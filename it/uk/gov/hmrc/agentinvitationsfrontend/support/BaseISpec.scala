@@ -21,8 +21,8 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 
 abstract class BaseISpec
-    extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs with CitizenDetailsStub
-    with AfiRelationshipStub with DataStreamStubs {
+    extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
+    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -64,6 +64,7 @@ abstract class BaseISpec
         "features.show-kfc-personal-income"                                   -> false,
         "features.show-kfc-mtd-vat"                                           -> true,
         "features.enable-fast-track"                                          -> true,
+        "features.enable-track-requests"                                      -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )

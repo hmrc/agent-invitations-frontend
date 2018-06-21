@@ -3,17 +3,17 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.play.binders.ContinueUrl
 
-class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -41,11 +41,19 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
         "features.show-kfc-mtd-it"                                            -> false,
         "features.show-kfc-personal-income"                                   -> false,
         "features.show-kfc-mtd-vat"                                           -> false,
-        "features.enable-fast-track"                                          -> false,
+        "features.enable-fast-track"                                          -> true,
+        "features.enable-track-requests"                                      -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )
       .overrides(new TestGuiceModule)
+
+  private class TestGuiceModule extends AbstractModule {
+    override def configure(): Unit = {
+      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
+      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+    }
+  }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   val arn = Arn("TARN0000001")
@@ -70,51 +78,57 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testFastTrackCache.clear()
+    continueUrlKeyStoreCache.clear()
   }
 
-  private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-  }
+  "GET /agents/invitation-sent" should {
+    val request = FakeRequest("GET", "/agents/invitation-sent")
+    val invitationSent = controller.invitationSent()
+    "return 200 with the only option to continue where user left off" in {
+      val continueUrl = ContinueUrl("/someITSA/Url")
+      continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
+      val result = invitationSent(
+        authorisedAsValidAgent(
+          request.withSession("invitationId" -> invitationIdITSA.value, "deadline" -> "27 December 2017"),
+          arn.value))
 
-  "Show Fast Track flag is switched off" should {
-    val request = FakeRequest("POST", "/agents/fast-track")
-    val fastTrack = controller.agentFastTrack()
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.continueToASAccount.button")
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
-    "through fast-track, return 400 and prevent agents" when {
-
-      "creating an ITSA invitation" in {
-        val formData =
-          CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), None)
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
-        val result = fastTrack(
-          authorisedAsValidAgent(request, arn.value)
-            .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-        status(result) shouldBe BAD_REQUEST
-      }
-
-      "creating an IRV invitation" in {
-        val formData = CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
-        val result = fastTrack(
-          authorisedAsValidAgent(request, arn.value)
-            .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-        status(result) shouldBe BAD_REQUEST
-      }
-
-      "creating an VAT invitation" in {
-        val formData =
-          CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, validRegDateForVrn97)
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
-        val result = fastTrack(
-          authorisedAsValidAgent(request, arn.value)
-            .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-        status(result) shouldBe BAD_REQUEST
-      }
+      verifyAuthoriseAttempt()
+      await(continueUrlKeyStoreCache.fetchContinueUrl).get shouldBe continueUrl
     }
+
+    "return 200 with two options; agent-services-account and a link to create new invitaiton" in {
+      val result = invitationSent(
+        authorisedAsValidAgent(
+          request.withSession(
+            "invitationId" -> invitationIdPIR.value,
+            "deadline"     -> "27 December 2017",
+            "sessionId"    -> "session12345"),
+          arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdPIR)}"))
+      checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
+      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
+      verifyAuthoriseAttempt()
+      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
+    }
+
   }
 
 }

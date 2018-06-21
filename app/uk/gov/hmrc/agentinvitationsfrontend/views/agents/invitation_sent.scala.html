@@ -17,29 +17,44 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@(invitationUrl: String, deadline: String, hasContinueUrl: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(invitationUrl: String, deadline: String, hasContinueUrl: Boolean, trackRequests: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
 
-    <h1 class="heading-xlarge">@Messages("invitation-sent-link.header")</h1>
+  <h1 class="heading-xlarge">@Messages("invitation-sent-link.header")</h1>
 
-    <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
+  <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
 
-    <ol class="list list-number margin-left-0">
-        <li class="margin-bottom-30">@Html(Messages("invitation-sent.l1", invitationUrl))</li>
-        <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
-    </ol>
+  <ol class="list list-number margin-left-0">
+    <li class="margin-bottom-30">@Html(Messages("invitation-sent.l1", invitationUrl))</li>
+    <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
+  </ol>
 
-    <p>@Messages("invitation-sent.p1")</p>
+  <p>@Messages("invitation-sent.p1")</p>
 
-    <p class="panel panel-border-wide margin-bottom-30">@Messages("invitation-sent.p2")</p>
+  <p class="panel panel-border-wide margin-bottom-30">@Messages("invitation-sent.p2")</p>
 
-    <a href="#" class="button form-field-group" id="recentRequest">@Messages("invitation-sent.recentRequest")</a>
 
-    @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
-        <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()"  id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
+  @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
+    @if(hasContinueUrl && trackRequests) {
+      <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
+      <p><a href="@routes.AgentsRequestTrackingController.showTrackRequests()" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a></p>
+
+    } else {
+      @if(trackRequests) {
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
+        <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
+        <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+      } else {
+        @if(hasContinueUrl) {
+          <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
+        } else {
+          <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
+          <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+        }
+      }
+
     }
-    <p><a href="@routes.AgentsInvitationController.selectService()"  id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-
+  }
 }

@@ -86,9 +86,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
       )
-      checkHtmlResultWithBodyText(result,
-        htmlEscapedMessage("select-service.alternative")
-      )
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
@@ -511,6 +509,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
@@ -522,7 +521,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       verifyAuthoriseAttempt()
       await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
-
 
     "return exception when no invitation id and deadline found" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
@@ -686,5 +684,3 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       )
     )
 }
-
-
