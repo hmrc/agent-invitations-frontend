@@ -624,7 +624,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe invitation
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
 
     "return 403 for authorised Agent who submitted not matching known facts for VAT" in {
@@ -644,7 +644,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe invitation
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
 
     behave like anAuthorisedAgentEndpoint(request, notMatched)
