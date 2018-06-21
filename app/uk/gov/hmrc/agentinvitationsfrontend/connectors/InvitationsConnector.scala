@@ -191,15 +191,22 @@ class InvitationsConnector @Inject()(
     import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
 
     implicit val reads: Reads[StoredInvitation] = {
-      implicit val urlReads = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
+
+      implicit val urlReads: SimpleObjectReads[URL] = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
+
       ((JsPath \ "arn").read[Arn] and
         (JsPath \ "service").read[String] and
         (JsPath \ "clientId").read[String] and
+        (JsPath \ "clientIdType").read[String] and
+        (JsPath \ "suppliedClientId").read[String] and
+        (JsPath \ "suppliedClientIdType").read[String] and
         (JsPath \ "status").read[String] and
         (JsPath \ "created").read[DateTime] and
         (JsPath \ "lastUpdated").read[DateTime] and
         (JsPath \ "expiryDate").read[LocalDate] and
-        (JsPath \ "_links" \ "self").read[URL])(StoredInvitation.apply _)
+        (JsPath \ "_links" \ "self").read[URL])(
+        (a, b, c, d, e, f, g, h, i, j, k) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k)
+      )
     }
   }
 

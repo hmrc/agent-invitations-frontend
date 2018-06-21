@@ -20,12 +20,11 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{Services, StoredInvitation, TrackedInvitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RequestsTrackingService @Inject()(
@@ -36,10 +35,12 @@ class RequestsTrackingService @Inject()(
 
   def getRecentAgentInvitations(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[TrackedInvitation]] =
+    ec: ExecutionContext,
+    now: LocalDate): Future[Seq[TrackedInvitation]] =
     invitationsConnector
-      .getAllInvitations(arn, LocalDate.now().minusDays(showLastDays))
-      .map(_.filter(whitelistedInvitation(isPirWhitelisted)).map(TrackedInvitation.apply))
+      .getAllInvitations(arn, now.minusDays(showLastDays))
+      .map(_.filter(whitelistedInvitation(isPirWhitelisted))
+        .map(TrackedInvitation.fromStored))
       .flatMap(ii => Future.sequence(ii.map(addClientName)))
 
   def whitelistedInvitation(isPirWhitelisted: Boolean): StoredInvitation => Boolean =

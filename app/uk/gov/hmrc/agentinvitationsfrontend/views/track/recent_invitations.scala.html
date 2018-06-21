@@ -53,7 +53,7 @@
                             <span>@Messages(s"recent-invitations.invitation.service.${invitation.service}")</span>
                         </td>
                         <td id="status">
-                            @Messages(s"recent-invitations.invitation.status.${invitation.effectiveStatus.toLowerCase}")
+                            @Messages(s"recent-invitations.invitation.status.${invitation.status.toLowerCase}")
                             <span class="supplementary-information">@dateInfo(invitation)</span>
                         </td>
                     </tr>
@@ -70,7 +70,7 @@
 }
 
 @dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @if(invitation.effectiveStatus=="Pending") {
+    @if(invitation.status=="Pending") {
         <span>@Messages("recent-invitations.invitation.expires")</span> @{invitation.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)}
     } else {
         @{invitation.lastUpdated.toString("dd MMMM yyyy", messages.lang.locale)}
@@ -79,10 +79,10 @@
 }
 
 @clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @{invitation.service match {
-        case "HMRC-MTD-IT" => ninoIdentifier(invitation.clientId)
-        case "HMRC-MTD-VAT" => vrnIdentifier(invitation.clientId)
-        case "PERSONAL-INCOME-RECORD" => ninoIdentifier(invitation.clientId)
+    @{invitation.clientIdType match {
+        case "ni" => ninoIdentifier(invitation.clientId)
+        case "vrn" => vrnIdentifier(invitation.clientId)
+        case "MTDITID" => mtditidIdentifier(invitation.clientId)
         case _ => ""
     }}
 }
@@ -93,6 +93,10 @@
 
 @vrnIdentifier(vrn: String)(implicit messages: Messages) = {
     <span>@Messages("recent-invitations.invitation.identifier.vrn")</span> @vrn
+}
+
+@mtditidIdentifier(mtditid: String)(implicit messages: Messages) = {
+    <span>@Messages("recent-invitations.invitation.identifier.mtditid")</span> @mtditid
 }
 
 @back_link(url: String)(implicit messages: Messages, config: Configuration) = {

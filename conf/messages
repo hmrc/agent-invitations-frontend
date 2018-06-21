@@ -259,6 +259,7 @@ recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Report their income
 recent-invitations.invitation.service.HMRC-MTD-VAT=Report their VAT returns through software
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
+recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:
 recent-invitations.invitation.expires=Expires:
 recent-invitations.invitation.status.pending=Pending
 recent-invitations.invitation.status.accepted=Accepted
