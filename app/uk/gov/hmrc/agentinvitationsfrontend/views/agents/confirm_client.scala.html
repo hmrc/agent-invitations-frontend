@@ -25,32 +25,22 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
- @back_link(s"${routes.AgentsInvitationController.showIdentifyClientForm()}")
+  @back_link(s"${routes.AgentsInvitationController.showIdentifyClientForm()}")
 
- @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
+  @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 
-  <div class="panel panel-border-wide" style="margin-bottom: 40px;">
-    <h2 class="heading-medium">@clientName</h2>
-  </div>
-
- @form(
-  action = routes.AgentsInvitationController.submitConfirmClient(),
-  'class -> "form js-form"
- ){
-  @inputRadioGroup(
-   choiceForm("choice"),
-   Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
-   '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("confirm-client.header") + """</h1>"""),
-   '_groupDivClass -> "form-group soft--ends",
-   '_fieldsetAttributes -> Html("""id='choice'""")
-  )
-
-  <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
-
- }
-
-
-
-
-
+  @form(
+    action = routes.AgentsInvitationController.submitConfirmClient(),
+    'class -> "form js-form"
+  ) {
+    @inputRadioGroup(
+      choiceForm("choice"),
+      Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
+      '_legend -> Html("""<h1 class="heading-xlarge">""" + Messages("confirm-client.header") +
+          s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span></div>"""),
+      '_groupDivClass -> "form-group soft--ends",
+      '_fieldsetAttributes -> Html("""id='choice'""")
+    )
+    <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+  }
 }
