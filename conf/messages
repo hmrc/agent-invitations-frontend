@@ -45,7 +45,7 @@ error.year.invalid-format=Year must only include numbers
 select-service.header=What do you want the client to authorise you to do?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
-select-service.itsa=Report their income and expenses through software
+select-service.itsa=Report their income or expenses through software
 select-service.vat=Report their VAT returns through software
 
 ## Helper Text
@@ -254,8 +254,8 @@ recent-invitations.empty.continue=Start a new authorisation request
 recent-invitations.table-row-header.clientName=Client''s details
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
-recent-invitations.invitation.service.HMRC-MTD-IT=View their PAYE income record
-recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Report their income and expenses through software
+recent-invitations.invitation.service.HMRC-MTD-IT=Report their income or expenses through software
+recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
 recent-invitations.invitation.service.HMRC-MTD-VAT=Report their VAT returns through software
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
