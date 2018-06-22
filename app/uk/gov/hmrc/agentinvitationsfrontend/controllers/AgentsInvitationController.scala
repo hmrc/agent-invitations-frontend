@@ -328,7 +328,7 @@ class AgentsInvitationController @Inject()(
           for {
             _        <- fastTrackCache.save(CurrentInvitationInput())
             continue <- continueUrlStoreService.fetchContinueUrl
-          } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined))
+          } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined, featureFlags.enableTrackRequests))
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }

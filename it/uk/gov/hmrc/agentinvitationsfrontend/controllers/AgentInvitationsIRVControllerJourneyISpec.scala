@@ -11,8 +11,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationControll
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
-class AgentInvitationsIRVControlleryJourneyISpec extends BaseISpec with AuthBehaviours with AgentInvitationsControllerCommonSupport {
+class AgentInvitationsIRVControllerJourneyISpec
+    extends BaseISpec with AuthBehaviours with AgentInvitationsControllerCommonSupport {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -64,7 +64,8 @@ class AgentInvitationsIRVControlleryJourneyISpec extends BaseISpec with AuthBeha
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))
-      val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
       status(result) shouldBe 303
     }
