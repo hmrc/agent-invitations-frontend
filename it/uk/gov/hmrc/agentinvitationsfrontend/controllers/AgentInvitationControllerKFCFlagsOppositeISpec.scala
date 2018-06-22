@@ -28,6 +28,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "microservice.services.company-auth.port"                             -> wireMockPort,
         "microservice.services.des.port"                                      -> wireMockPort,
         "microservice.services.agent-fi-relationship.port"                    -> wireMockPort,
+        "microservice.services.citizen-details.host"                          -> wireMockHost,
+        "microservice.services.citizen-details.port"                          -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url"       -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url"  -> wireMockBaseUrlAsString,
         "microservice.services.company-auth-frontend.external-url"            -> companyAuthUrl,
@@ -80,6 +82,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   val validVrn97 = Vrn("101747696")
   val validRegDateForVrn97 = Some("2007-07-07")
   val validVrn9755 = Vrn("101747641")
+  val fromFastTrack: Boolean = true
+  val fromManual: Boolean = false
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -130,7 +134,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
-      val formData = CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None)
+      val formData =
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(
         arn,
@@ -140,6 +145,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "ni",
         serviceITSA,
         "NI")
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -149,8 +155,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
-    "return 303 invitation-sent when service and valid vrn are provided and kfc flag is off for VAT service" in {
-      val formData = CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None)
+    "return 303 invitation-sent when service and valid vrn are provided and kfc flag is true for VAT service" in {
+      val formData =
+        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(
         arn,
@@ -169,16 +176,28 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
-    "throw an exception when service and valid nino are provided and kfc flag is on for PIR service" in {
-      val formData = CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None)
+    "return 303 invitation-sent if service calling fast-track is correct for IRV and kfc flag is on" in {
+      val formData =
+        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      createInvitationStubForNoKnownFacts(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-      an[Exception] shouldBe thrownBy(
-        await(fastTrack(authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
+
   }
 
   def verifyAgentClientInvitationSubmittedEvent(

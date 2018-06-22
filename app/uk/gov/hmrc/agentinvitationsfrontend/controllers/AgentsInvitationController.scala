@@ -371,6 +371,8 @@ class AgentsInvitationController @Inject()(
               Forbidden(not_matched(Services.messageKeyForVAT))
             case Some(HMRCMTDIT) =>
               Forbidden(not_matched(Services.messageKeyForITSA))
+            case Some(HMRCPIR) =>
+              Forbidden(not_enrolled(Services.messageKeyForAfi))
             case _ =>
               throw new Exception("Unsupported Service")
           }
@@ -481,13 +483,26 @@ class AgentsInvitationController @Inject()(
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
       Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
-      determinePath(currentInvitationInput) {
-        createInvitation(arn, fastTrackPirInvitation)
+      invitationsService.getCitizenName(fastTrackPirInvitation.clientIdentifier).flatMap {
+        case Some(name) if name.nonEmpty =>
+          determinePath(currentInvitationInput) {
+            createInvitation(arn, fastTrackPirInvitation)
+          }
+        case None =>
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
+          Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
-    } else
-      determinePath(currentInvitationInput) {
-        createInvitation(arn, fastTrackPirInvitation)
+    } else {
+      invitationsService.getCitizenName(fastTrackPirInvitation.clientIdentifier).flatMap {
+        case Some(name) if name.nonEmpty =>
+          determinePath(currentInvitationInput) {
+            createInvitation(arn, fastTrackPirInvitation)
+          }
+        case None =>
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
+          Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
+    }
 
   private[controllers] def determinePath(currentInvitationInput: CurrentInvitationInput)(body: => Future[Result])(
     implicit request: Request[_]): Future[Result] =
