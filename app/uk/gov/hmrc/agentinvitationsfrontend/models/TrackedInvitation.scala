@@ -41,7 +41,7 @@ object TrackedInvitation {
       else (i.suppliedClientId, i.suppliedClientIdType)
 
     val status =
-      if (i.status == "Pending" && i.expiryDate.isBefore(now)) "Expired"
+      if (i.status == "Pending" && (now.isAfter(i.expiryDate) || now.isEqual(i.expiryDate))) "Expired"
       else i.status
 
     TrackedInvitation(i.service, clientId, clientIdType, None, status, i.lastUpdated, i.expiryDate)
