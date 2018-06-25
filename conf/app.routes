@@ -3,7 +3,7 @@
 # Invitations ---------------------------------------------------------------------------------------------------------
 
 # Agent Endpoints
-GET         /agents/                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
+GET         /agents                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
 GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showIdentifyClientForm
 POST        /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitIdentifyClient
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.invitationSent
@@ -29,7 +29,7 @@ GET         /accept-tax-agent-invitation/4/:invitationId        @uk.gov.hmrc.age
 GET         /reject-tax-agent-invitation/1/:invitationId        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 
 # Request tracking
-GET         /track/                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
+GET         /track                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
 
 # Error Client Endpoints
 GET         /not-signed-up/                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
