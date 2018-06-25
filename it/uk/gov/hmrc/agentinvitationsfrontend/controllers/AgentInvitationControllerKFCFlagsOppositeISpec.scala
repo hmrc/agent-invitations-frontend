@@ -5,18 +5,16 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationIdentifyClientFormIrv}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
+class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with TestDataCommonSupport {
 
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -66,24 +64,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  private val validNino = Nino("AB123456A")
-  private val validNinoSpace = Nino("AB 12 34 56 A")
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-  val validPostcode = "BN12 6BX"
-  val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
-
-  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "VRN"
-  val validVrn97 = Vrn("101747696")
-  val validRegDateForVrn97 = Some("2007-07-07")
-  val validVrn9755 = Vrn("101747641")
-  val fromFastTrack: Boolean = true
-  val fromManual: Boolean = false
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -157,17 +137,17 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "return 303 invitation-sent when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), None, None, fromFastTrack)
+        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(
         arn,
-        validVrn97.value,
+        validVrn.value,
         invitationIdVAT,
-        validVrn97.value,
+        validVrn.value,
         "vrn",
         serviceVAT,
         identifierVAT)
-      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))

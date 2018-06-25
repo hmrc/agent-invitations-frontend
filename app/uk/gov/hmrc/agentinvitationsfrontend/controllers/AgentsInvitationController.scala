@@ -372,7 +372,7 @@ class AgentsInvitationController @Inject()(
             case Some(HMRCMTDIT) =>
               Forbidden(not_matched(Services.messageKeyForITSA))
             case Some(HMRCPIR) =>
-              Forbidden(not_enrolled(Services.messageKeyForAfi))
+              Forbidden(not_matched(Services.messageKeyForAfi))
             case _ =>
               throw new Exception("Unsupported Service")
           }
@@ -521,7 +521,7 @@ class AgentsInvitationController @Inject()(
       case CurrentInvitationInputPirReady(completeIrvInvitation) =>
         createInvitation(arn, completeIrvInvitation)
       case _ =>
-        Logger.warn(s"Redirected back to check current state")
+        Logger(getClass).warn(s"Something has gone wrong. Redirected back to check current state.")
         redirectBasedOnCurrentInputState(arn, currentInvitationInput, isWhitelisted)
     }
 

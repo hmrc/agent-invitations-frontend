@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
@@ -47,7 +47,10 @@ trait GetClientName {
     agentServicesAccountConnector.getTradingName(nino)
 
   def getCitizenName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    citizenDetailsConnector.getCitizenDetails(nino).map(_.name)
+    getCitizenRecord(nino).map(_.name)
+
+  def getCitizenRecord(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Citizen] =
+    citizenDetailsConnector.getCitizenDetails(nino)
 
   def getVatName(vrn: Vrn)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>

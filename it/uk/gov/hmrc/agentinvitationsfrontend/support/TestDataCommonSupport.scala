@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 
-trait AgentInvitationsControllerCommonSupport {
+trait TestDataCommonSupport {
 
   val arn = Arn("TARN0000001")
   val validNino = Nino("AB123456A")
