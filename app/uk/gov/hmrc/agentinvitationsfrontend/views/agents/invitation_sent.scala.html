@@ -39,7 +39,9 @@
   @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
     @if(hasContinueUrl && trackRequests) {
       <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-      <p><a href="@routes.AgentsRequestTrackingController.showTrackRequests()" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a></p>
+      <p><a href="@routes.AgentsRequestTrackingController.showTrackRequests()" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")
+        <span class="visuallyhidden">@Messages("invitation-sent.new-window")</span>
+      </a></p>
 
     } else {
       @if(trackRequests) {
