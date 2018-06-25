@@ -38,10 +38,28 @@ class TrackedInvitationSpec extends UnitSpec {
         tracked.expiryDate shouldBe now.minusDays(1)
       }
 
+      "have status Expired if expired today" in {
+
+        val invitation = exampleInvitation
+          .copy(status = "Pending", created = DateTime.now, expiryDate = now)
+        val tracked = TrackedInvitation.fromStored(invitation)
+        tracked.status shouldBe "Expired"
+        tracked.expiryDate shouldBe now
+      }
+
       "have status Pending if not yet expired" in {
 
         val invitation = exampleInvitation
-          .copy(status = "Pending", expiryDate = now.plusDays(1))
+          .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
+        val tracked = TrackedInvitation.fromStored(invitation)
+        tracked.status shouldBe "Pending"
+        tracked.expiryDate shouldBe now.plusDays(1)
+      }
+
+      "have status Pending if expires tomorrow" in {
+
+        val invitation = exampleInvitation
+          .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
         tracked.expiryDate shouldBe now.plusDays(1)
