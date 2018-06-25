@@ -59,6 +59,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(
         result,
@@ -94,6 +95,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(
         result,
@@ -126,6 +128,8 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2", "27 December 2017"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdVAT)}"))
