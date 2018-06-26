@@ -5,7 +5,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
@@ -106,6 +106,60 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.label")
       bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.hint")
     }
+  }
+
+  "POST /agents/identify-client" should {
+    val request = FakeRequest("POST", "/agents/identify-client")
+    val submitIdentifyClient = controller.submitIdentifyClient()
+
+    "return 303 confirm-client for ITSA" in {
+      givenTradingName(validNino, "64 Bit")
+      val formData =
+        CurrentInvitationInput(Some(serviceITSA), None, None, None, None, fromManual)
+      testFastTrackCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormItsa.fill(
+          UserInputNinoAndPostcode(serviceITSA, Some(validNino.nino), None))
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+    }
+
+    "return 303 confirm-client for IRV" in {
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      val formData =
+        CurrentInvitationInput(Some(servicePIR), None, None, None, None, fromManual)
+      testFastTrackCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormIrv.fill(
+          UserInputNinoAndPostcode(servicePIR, Some(validNino.nino), None))
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+    }
+
+    "return 303 confirm-client for VAT" in {
+      givenClientDetails(validVrn)
+      val formData =
+        CurrentInvitationInput(Some(serviceVAT), None, None, None, None, fromManual)
+      testFastTrackCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormVat.fill(
+          UserInputVrnAndRegDate(serviceVAT, Some(validVrn.value), None))
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+    }
+
   }
 
   "POST /agents/fast-track" should {

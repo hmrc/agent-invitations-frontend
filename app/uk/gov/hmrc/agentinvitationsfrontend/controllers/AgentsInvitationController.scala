@@ -416,7 +416,7 @@ class AgentsInvitationController @Inject()(
         invitationsService
           .checkVatRegistrationDateMatches(fastTrackVatInvitation.clientIdentifier, vatRegDate) flatMap {
           case Some(true) =>
-            determinePath(currentInvitationInput) {
+            redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
               createInvitation(arn, fastTrackVatInvitation)
             }
           case Some(false) =>
@@ -431,7 +431,9 @@ class AgentsInvitationController @Inject()(
             }
         }
       case None =>
-        createInvitation(arn, fastTrackVatInvitation)
+        redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
+          createInvitation(arn, fastTrackVatInvitation)
+        }
     }
 
   private[controllers] def knownFactCheckItsa(
@@ -445,7 +447,7 @@ class AgentsInvitationController @Inject()(
           hasPostcode <- invitationsService.checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode)
           result <- hasPostcode match {
                      case Some(true) =>
-                       determinePath(currentInvitationInput) {
+                       redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
                          createInvitation(arn, fastTrackItsaInvitation)
                        }
                      case Some(false) =>
@@ -473,7 +475,10 @@ class AgentsInvitationController @Inject()(
                        }
                    }
         } yield result
-      case None => createInvitation(arn, fastTrackItsaInvitation)
+      case None =>
+        redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
+          createInvitation(arn, fastTrackItsaInvitation)
+        }
     }
 
   private[controllers] def knownFactCheckIrv(
@@ -483,9 +488,9 @@ class AgentsInvitationController @Inject()(
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
       Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
-      invitationsService.getCitizenName(fastTrackPirInvitation.clientIdentifier).flatMap {
-        case Some(name) if name.nonEmpty =>
-          determinePath(currentInvitationInput) {
+      invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
+        case Some(_) =>
+          redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
             createInvitation(arn, fastTrackPirInvitation)
           }
         case None =>
@@ -493,9 +498,9 @@ class AgentsInvitationController @Inject()(
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
     } else {
-      invitationsService.getCitizenName(fastTrackPirInvitation.clientIdentifier).flatMap {
-        case Some(name) if name.nonEmpty =>
-          determinePath(currentInvitationInput) {
+      invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
+        case Some(_) =>
+          redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
             createInvitation(arn, fastTrackPirInvitation)
           }
         case None =>
@@ -504,9 +509,9 @@ class AgentsInvitationController @Inject()(
       }
     }
 
-  private[controllers] def determinePath(currentInvitationInput: CurrentInvitationInput)(body: => Future[Result])(
+  private[controllers] def redirectOrShowConfirmClient(fromFastTrack: Boolean)(body: => Future[Result])(
     implicit request: Request[_]): Future[Result] =
-    if (currentInvitationInput.fromFastTrack) body
+    if (fromFastTrack) body
     else Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
 
   private[controllers] def confirmAndRedirect(
