@@ -29,7 +29,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   val identifierITSA = "MTDITID"
   val identifierPIR = "NI"
 
-  val identifierVAT = "VAT"
+  val identifierVAT = "VRN"
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
 
@@ -99,7 +99,7 @@ class InvitationsConnectorISpec extends BaseISpec {
           identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
-        result.get should include("agent-client-authorisation/clients/VAT/101747696/invitations/received/CZTW1KY6RTAAT")
+        result.get should include("agent-client-authorisation/clients/VRN/101747696/invitations/received/CZTW1KY6RTAAT")
       }
 
       "return an error if unexpected response when creating VAT invitation" in {
@@ -213,7 +213,7 @@ class InvitationsConnectorISpec extends BaseISpec {
 
     "service is for VAT" should {
       val getVATInvitation =
-        s"/agent-client-authorisation/clients/VAT/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
+        s"/agent-client-authorisation/clients/VRN/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
       "return VAT Invitation" in {
         getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
         val result = await(

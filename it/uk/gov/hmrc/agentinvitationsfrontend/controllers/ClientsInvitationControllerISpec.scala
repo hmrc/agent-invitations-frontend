@@ -52,7 +52,7 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
   val nino = "AB123456A"
   val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "VAT"
+  val identifierVAT = "VRN"
   val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
 
   "GET /:invitationId (landing page)" should {

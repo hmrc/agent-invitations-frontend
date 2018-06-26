@@ -44,14 +44,13 @@ object Services {
 
   val HMRCMTDVAT = "HMRC-MTD-VAT"
   val VRN = "VRN"
-  val VAT = "VAT"
   val messageKeyForVAT = "vat"
 
   def determineService(invitationId: InvitationId): Service =
     invitationId.value.head match {
       case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
       case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
-      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VAT, messageKeyForVAT)
+      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, messageKeyForVAT)
       case _   => InvalidService
     }
 }
