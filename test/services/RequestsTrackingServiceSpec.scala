@@ -288,7 +288,8 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         "Aaa Itsa Trader",
         "Aaa Ltd.",
         "Foo Bar")
-      result.map(_.status) should contain atLeastOneElementOf Seq("Expired")
+      result.map(_.status) should contain theSameElementsAs Seq("Pending", "Pending", "Pending")
+      result.map(_.effectiveStatus) should contain atLeastOneElementOf Seq("Expired")
     }
 
   }

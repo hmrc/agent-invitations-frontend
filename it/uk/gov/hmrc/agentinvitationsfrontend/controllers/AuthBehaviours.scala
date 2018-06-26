@@ -10,8 +10,8 @@ import uk.gov.hmrc.auth.core.AuthorisationException
 trait AuthBehaviours extends AuthStubs {
   self: BaseISpec =>
 
-  def anAuthorisedAgentEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])
-                               (implicit defaultAwaitTimeout: akka.util.Timeout) = {
+  def anAuthorisedAgentEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(
+    implicit defaultAwaitTimeout: akka.util.Timeout) = {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
       givenUnauthorisedForInsufficientEnrolments()
