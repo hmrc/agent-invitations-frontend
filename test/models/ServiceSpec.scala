@@ -47,7 +47,7 @@ class ServiceSpec extends UnitSpec {
         "HMRC-MTD-VAT",
         "HMRC-MTD-VAT",
         "VRN",
-        "VAT",
+        "VRN",
         "vat")
     }
 

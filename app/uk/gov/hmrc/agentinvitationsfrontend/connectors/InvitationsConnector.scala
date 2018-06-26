@@ -134,12 +134,12 @@ class InvitationsConnector @Inject()(
   private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
     new URL(
       baseUrl,
-      s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/accept")
+      s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
     new URL(
       baseUrl,
-      s"/agent-client-authorisation/clients/VAT/${vrn.value}/invitations/received/${invitationId.value}/reject")
+      s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
     new URL(
