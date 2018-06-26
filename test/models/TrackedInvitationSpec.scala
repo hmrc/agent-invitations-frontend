@@ -34,7 +34,8 @@ class TrackedInvitationSpec extends UnitSpec {
         val invitation = exampleInvitation
           .copy(status = "Pending", expiryDate = now.minusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.status shouldBe "Expired"
+        tracked.status shouldBe "Pending"
+        tracked.effectiveStatus shouldBe "Expired"
         tracked.expiryDate shouldBe now.minusDays(1)
       }
 
@@ -43,7 +44,8 @@ class TrackedInvitationSpec extends UnitSpec {
         val invitation = exampleInvitation
           .copy(status = "Pending", created = DateTime.now, expiryDate = now)
         val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.status shouldBe "Expired"
+        tracked.status shouldBe "Pending"
+        tracked.effectiveStatus shouldBe "Expired"
         tracked.expiryDate shouldBe now
       }
 
@@ -53,6 +55,7 @@ class TrackedInvitationSpec extends UnitSpec {
           .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
+        tracked.effectiveStatus shouldBe "Pending"
         tracked.expiryDate shouldBe now.plusDays(1)
       }
 
@@ -62,6 +65,7 @@ class TrackedInvitationSpec extends UnitSpec {
           .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
+        tracked.effectiveStatus shouldBe "Pending"
         tracked.expiryDate shouldBe now.plusDays(1)
       }
 
@@ -71,6 +75,7 @@ class TrackedInvitationSpec extends UnitSpec {
           .copy(status = "Accepted", lastUpdated = dateTime)
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Accepted"
+        tracked.effectiveStatus shouldBe "Accepted"
         tracked.lastUpdated shouldBe dateTime
       }
 

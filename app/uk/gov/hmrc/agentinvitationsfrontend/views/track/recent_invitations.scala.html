@@ -17,13 +17,13 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
+@import org.joda.time.{LocalDate,DateTime}
 
-@import org.joda.time.format.ISODateTimeFormat
-@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
-   @back_link(s"${externalUrls.agentServicesAccountUrl}")
+   @back_link(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
    <div class="text">
        <h1 class="heading-xlarge margin-bottom-30">@Messages(s"recent-invitations.header")</h1>
@@ -55,7 +55,7 @@
                             <span>@Messages(s"recent-invitations.invitation.service.${invitation.service}")</span>
                         </td>
                         <td id="status">
-                            @Messages(s"recent-invitations.invitation.status.${invitation.status.toLowerCase}")
+                            @Messages(s"recent-invitations.invitation.status.${invitation.effectiveStatus.toLowerCase}")
                             <span class="supplementary-information">@dateInfo(invitation)</span>
                         </td>
                     </tr>
@@ -73,10 +73,14 @@
 }
 
 @dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @if(invitation.status=="Pending") {
-        <span>@Messages("recent-invitations.invitation.expires")</span> @{invitation.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)}
+    @if(invitation.effectiveStatus=="Pending") {
+        <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate)
     } else {
-        @{invitation.lastUpdated.toString("dd MMMM yyyy", messages.lang.locale)}
+        @if(invitation.effectiveStatus=="Expired") {
+            @displayDate(invitation.expiryDate)
+        } else {
+            @displayDateTime(invitation.lastUpdated)
+        }
     }
 
 }
@@ -88,6 +92,14 @@
         case "MTDITID" => mtditidIdentifier(invitation.clientId)
         case _ => ""
     }}
+}
+
+@displayDate(date: LocalDate) = {
+    @date.toString("dd MMMM yyyy", messages.lang.locale)
+}
+
+@displayDateTime(date: DateTime) = {
+    @date.toString("dd MMMM yyyy", messages.lang.locale)
 }
 
 @ninoIdentifier(nino: String)(implicit messages: Messages) = {

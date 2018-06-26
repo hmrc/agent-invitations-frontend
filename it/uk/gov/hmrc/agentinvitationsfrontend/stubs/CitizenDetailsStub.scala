@@ -6,38 +6,35 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 trait CitizenDetailsStub {
   me: WireMockSupport =>
 
-  def givenCitizenDetailsAreKnownFor(nino: String, firstName: String, lastName: String): Unit = {
-    stubFor(get(urlEqualTo(s"/citizen-details/nino/$nino"))
-      .willReturn(
-        aResponse()
-          .withStatus(200)
-          .withBody(
-            s"""{
-               |   "name": {
-               |      "current": {
-               |         "firstName": "$firstName",
-               |         "lastName": "$lastName"
-               |      },
-               |      "previous": []
-               |   },
-               |   "ids": {
-               |      "nino": "$nino"
-               |   },
-               |   "dateOfBirth": "11121971"
-               |}""".stripMargin)))
-  }
+  def givenCitizenDetailsAreKnownFor(nino: String, firstName: String, lastName: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/citizen-details/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{
+                         |   "name": {
+                         |      "current": {
+                         |         "firstName": "$firstName",
+                         |         "lastName": "$lastName"
+                         |      },
+                         |      "previous": []
+                         |   },
+                         |   "ids": {
+                         |      "nino": "$nino"
+                         |   },
+                         |   "dateOfBirth": "11121971"
+                         |}""".stripMargin)))
 
-  def givenCitizenDetailsReturns404For(nino: String): Unit = {
-    stubFor(get(urlEqualTo(s"/citizen-details/nino/$nino"))
-      .willReturn(
-        aResponse()
+  def givenCitizenDetailsReturns404For(nino: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/citizen-details/nino/$nino"))
+        .willReturn(aResponse()
           .withStatus(404)))
-  }
 
-  def givenCitizenDetailsReturns400For(nino: String): Unit = {
-    stubFor(get(urlEqualTo(s"/citizen-details/nino/$nino"))
-      .willReturn(
-        aResponse()
+  def givenCitizenDetailsReturns400For(nino: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/citizen-details/nino/$nino"))
+        .willReturn(aResponse()
           .withStatus(400)))
-  }
 }

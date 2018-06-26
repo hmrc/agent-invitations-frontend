@@ -26,13 +26,19 @@ case class TrackedInvitation(
   status: String,
   lastUpdated: DateTime,
   expiryDate: LocalDate
-) extends ServiceAndClient
+) extends ServiceAndClient {
+
+  def effectiveStatus(implicit now: LocalDate): String =
+    if (status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate))) "Expired"
+    else status
+
+}
 
 object TrackedInvitation {
 
   val preferredIdTypes = Set("ni", "vrn")
 
-  def fromStored(i: StoredInvitation)(implicit now: LocalDate): TrackedInvitation = {
+  def fromStored(i: StoredInvitation): TrackedInvitation = {
 
     val (clientId, clientIdType) =
       if (preferredIdTypes.contains(i.clientIdType)
@@ -40,10 +46,6 @@ object TrackedInvitation {
           || i.suppliedClientId.isEmpty) (i.clientId, i.clientIdType)
       else (i.suppliedClientId, i.suppliedClientIdType)
 
-    val status =
-      if (i.status == "Pending" && (now.isAfter(i.expiryDate) || now.isEqual(i.expiryDate))) "Expired"
-      else i.status
-
-    TrackedInvitation(i.service, clientId, clientIdType, None, status, i.lastUpdated, i.expiryDate)
+    TrackedInvitation(i.service, clientId, clientIdType, None, i.status, i.lastUpdated, i.expiryDate)
   }
 }
