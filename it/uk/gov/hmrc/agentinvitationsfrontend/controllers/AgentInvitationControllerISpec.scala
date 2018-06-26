@@ -623,7 +623,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceITSA)
     }
 
     "return 403 for authorised Agent who submitted not matching known facts for VAT" in {
@@ -643,7 +643,27 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceVAT)
+    }
+
+    "return 403 for authorised Agent who enter nino for IRV but no record found" in {
+      val invitation = CurrentInvitationInput(servicePIR)
+      testFastTrackCache.save(invitation)
+
+      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("not-matched.afi.header"),
+          htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.button"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(servicePIR)
     }
 
     behave like anAuthorisedAgentEndpoint(request, notMatched)
