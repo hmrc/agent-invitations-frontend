@@ -94,6 +94,10 @@ not-matched.vat.header=There is a problem
 not-matched.vat.description = We could not find any records that match the details you entered.
 not-matched.vat.button = Try again
 
+not-matched.afi.header=There is a problem
+not-matched.afi.description = We could not find any records that match the details you entered.
+not-matched.afi.button = Try again
+
 # Client Pages
 # Landing Page
 landing-page.header=Accept or decline a tax agent''s request for authorisation

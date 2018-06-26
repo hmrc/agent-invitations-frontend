@@ -445,6 +445,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           servicePIR,
           "NI",
           None)
+        givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
         testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), None, Some(validNino.value), None, None))

@@ -1,9 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentInvitationInput}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{AgentInvitationsControllerCommonSupport, BaseISpec}
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import play.api.test.Helpers._
@@ -11,8 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationControll
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationsITSAControllerJourneyISpec
-    extends BaseISpec with AuthBehaviours with AgentInvitationsControllerCommonSupport {
+class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBehaviours with TestDataCommonSupport {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -56,6 +56,8 @@ class AgentInvitationsITSAControllerJourneyISpec
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
     }
+
+    behaveLikeMissingCacheScenarios(showConfirmClient, request)
   }
 
   "POST /confirm-client" should {
@@ -106,6 +108,22 @@ class AgentInvitationsITSAControllerJourneyISpec
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
     }
+
+    behaveLikeMissingCacheScenarios(submitConfirmClient, request)
   }
 
+  def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
+    "return to identify-client no client identifier found in cache" in {
+      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), None, None, None, None, fromFastTrack))
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+    }
+
+    "return to select-service for no cache" in {
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+    }
+  }
 }

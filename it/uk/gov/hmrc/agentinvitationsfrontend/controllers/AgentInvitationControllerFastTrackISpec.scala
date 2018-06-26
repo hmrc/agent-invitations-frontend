@@ -79,6 +79,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(servicePIR, None, None))
       val result =
@@ -220,6 +221,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       createInvitationStubForNoKnownFacts(
         arn,
         validNino.value,
@@ -500,6 +502,23 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       verifyCheckVatRegisteredClientStubAttempt(validVrn97, LocalDate.parse("2007-07-07"))
       await(testFastTrackCache.fetch()).get shouldBe invitation
 
+    }
+
+    "return 303 not-matched if nino that does not return citizen-details record" in {
+      val formData =
+        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
+      givenCitizenDetailsReturns404For(validNino.value)
+
+      val form = agentFastTrackForm.fill(formData)
+      val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+
+      verifyAuthoriseAttempt()
+      await(testFastTrackCache.fetch()).get shouldBe formData
     }
   }
 
