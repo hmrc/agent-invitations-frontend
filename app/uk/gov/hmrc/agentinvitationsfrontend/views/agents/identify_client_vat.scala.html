@@ -37,6 +37,12 @@
     else if(!configuration.getBoolean("features.show-kfc-mtd-vat").getOrElse(false)){"identify-client.vrn.header"}
 }
 
+@noJsDateFieldsError = @{
+    if(agentInvitationsForm("registrationDate.day").hasErrors || agentInvitationsForm("registrationDate.month").hasErrors || agentInvitationsForm("registrationDate.year").hasErrors)
+        "nojs-date-fields-error"
+}
+
+
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(s"${routes.AgentsInvitationController.selectService()}")
@@ -46,6 +52,9 @@
   @featureSwitchOn("features.show-kfc-mtd-vat"){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 
   <p>@Messages("identify-client.vat.p1")</p>}
+
+
+
 
  @form(
   action = routes.AgentsInvitationController.submitIdentifyClient,
@@ -76,11 +85,15 @@
              )
          </div>
 
-         @dateFieldsFreeInlineLegend(agentInvitationsForm, "registrationDate",
-             '_legend -> Messages("identify-client.vat-registration-date.label"),
-             '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
-             '_legendSpanClass -> "heading-medium",
-             '_legendClass -> "flush--ends")
+
+         <div class="@noJsDateFieldsError">
+             @dateFieldsFreeInlineLegend(agentInvitationsForm, "registrationDate",
+                 '_legend -> Messages("identify-client.vat-registration-date.label"),
+                 '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
+                 '_legendSpanClass -> "heading-medium",
+                 '_legendClass -> "flush--ends"
+             )
+        </div>
      }
 
 
