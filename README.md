@@ -58,7 +58,7 @@ The following are the supported services and relevant mandatory fields required 
 |PERSONAL-INCOME-RECORD|ni|Valid Nino|N/A|N/A|
 |HMRC-MTD-VAT|vrn|Valid Vat Registration Number|N/A|Date of Client's VAT Registration|
 
-Note: clientIdentifierType is optional and will be provided by the app. If any information is missing / invalid / unsupported, you will be redirected to the appropriate page to fill in.
+Note: If any information is missing / invalid / unsupported, you will be redirected to the appropriate page to fill in.
 
 ### For Clients
 
