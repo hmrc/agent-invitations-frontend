@@ -39,3 +39,30 @@ caption.caption-normal{
     font-weight: normal;
     text-align: left;
 }
+
+/* no js style for dates */
+.no-js .form-date .form-field--error{
+    border-left: none;
+    padding: inherit;
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+    padding: inherit;
+}
+.no-js .nojs-date-fields-error .form-group.soft--ends{
+    border-left: 3px solid #df3034;
+    padding: 0.75em 1em;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: .63158em .84211em .63158em .84211em;
+}
+
+.no-js .nojs-date-fields-error .error-notification{
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+}
