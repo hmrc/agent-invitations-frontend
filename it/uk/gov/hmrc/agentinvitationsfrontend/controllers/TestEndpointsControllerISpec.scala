@@ -19,8 +19,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
   )
 
   "getDeleteRelationship" should {
+    val request = FakeRequest("GET", "/test-only/relationships/delete")
+    val getDeleteRelationship = controller.getDeleteRelationship()
     "show delete_relationship page" in {
-      val result = await(controller.getDeleteRelationship().apply(FakeRequest()))
+      val result = await(getDeleteRelationship(authorisedAsValidAgent(request, arn.value)))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Test Only: Delete a relationship")
@@ -28,14 +30,14 @@ class TestEndpointsControllerISpec extends BaseISpec {
   }
 
   "submitDeleteRelationship" should {
+    val request = FakeRequest("POST", "/test-only/relationships/delete")
+    val submitDeleteRelationship = controller.submitDeleteRelationship()
     "delete an existing relationship" in {
       deleteRelationship(arn, afiService, clientId)
 
       val result = await(
-        controller
-          .submitDeleteRelationship()
-          .apply(FakeRequest()
-            .withFormUrlEncodedBody(relationshipForm: _*)))
+        submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getDeleteRelationship().url
@@ -45,17 +47,15 @@ class TestEndpointsControllerISpec extends BaseISpec {
       deleteRelationshipFailed(arn, afiService, clientId)
 
       val result = await(
-        controller
-          .submitDeleteRelationship()
-          .apply(FakeRequest()
-            .withFormUrlEncodedBody(relationshipForm: _*)))
+        submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url
     }
 
     "return a Bad Request and reload the page if invalid form data" in {
-      val result = await(controller.submitDeleteRelationship().apply(FakeRequest()))
+      val result = await(submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)))
 
       status(result) shouldBe 400
       checkHtmlResultWithBodyText(result, "Test Only: Delete a relationship")
@@ -63,8 +63,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
   }
 
   "getCreateRelationship" should {
+    val request = FakeRequest("POST", "/test-only/relationships/create")
+    val getCreateRelationship = controller.getCreateRelationship()
     "show create_relationship page" in {
-      val result = await(controller.getCreateRelationship().apply(FakeRequest()))
+      val result = await(getCreateRelationship(authorisedAsValidAgent(request, arn.value)))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Test Only: Create a relationship")
@@ -72,14 +74,14 @@ class TestEndpointsControllerISpec extends BaseISpec {
   }
 
   "submitCreateRelationship" should {
+    val request = FakeRequest("POST", "/test-only/relationships/create")
+    val submitCreateRelationship = controller.submitCreateRelationship()
     "delete an existing relationship" in {
       createRelationship(arn, afiService, clientId)
 
       val result = await(
-        controller
-          .submitCreateRelationship()
-          .apply(FakeRequest()
-            .withFormUrlEncodedBody(relationshipForm: _*)))
+        submitCreateRelationship(authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getCreateRelationship().url
@@ -89,17 +91,15 @@ class TestEndpointsControllerISpec extends BaseISpec {
       createRelationshipFailed(arn, afiService, clientId)
 
       val result = await(
-        controller
-          .submitCreateRelationship()
-          .apply(FakeRequest()
-            .withFormUrlEncodedBody(relationshipForm: _*)))
+        submitCreateRelationship(authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.notMatched().url
     }
 
     "return a Bad Request and reload the page if invalid form data" in {
-      val result = await(controller.submitCreateRelationship().apply(FakeRequest()))
+      val result = await(submitCreateRelationship(authorisedAsValidAgent(request, arn.value)))
 
       status(result) shouldBe 400
       checkHtmlResultWithBodyText(result, "Test Only: Create a relationship")

@@ -48,43 +48,51 @@ class TestEndpointsController @Inject()(
   import TestEndpointsController._
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(delete_relationship(testRelationshipForm))
+    withAuthorisedAsAgent { (_, _) =>
+      Future successful Ok(delete_relationship(testRelationshipForm))
+    }
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    testRelationshipForm
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
-        validFormData => {
-          pirRelationshipConnector
-            .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-            .map {
-              case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-              case _  => Redirect(agentRoutes.AgentsInvitationController.notMatched())
-            }
-        }
-      )
+    withAuthorisedAsAgent { (_, _) =>
+      testRelationshipForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
+          validFormData => {
+            pirRelationshipConnector
+              .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+              .map {
+                case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
+                case _  => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+              }
+          }
+        )
+    }
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(create_relationship(testRelationshipForm))
+    withAuthorisedAsAgent { (_, _) =>
+      Future successful Ok(create_relationship(testRelationshipForm))
+    }
   }
 
   def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    testRelationshipForm
-      .bindFromRequest()
-      .fold(
-        formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
-        validFormData => {
-          pirRelationshipConnector
-            .createRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-            .map {
-              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-              case _       => Redirect(agentRoutes.AgentsInvitationController.notMatched())
-            }
-        }
-      )
+    withAuthorisedAsAgent { (_, _) =>
+      testRelationshipForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
+          validFormData => {
+            pirRelationshipConnector
+              .createRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+              .map {
+                case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
+                case _       => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+              }
+          }
+        )
+    }
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
