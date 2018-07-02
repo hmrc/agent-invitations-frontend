@@ -139,37 +139,30 @@ confirm-invitation.button=Continue
 confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
 confirm-terms.afi.title=Are you happy for this tax agent to view your income record? - {0} - GOV.UK
 confirm-terms.vat.title=Confirm that you understand - {0} - GOV.UK
-confirm-terms.itsa.heading=By accepting the invitation, you are agreeing that {0} will
-confirm-terms.afi.heading=Are you happy for {0} to view your income record?
-confirm-terms.bullet1=use accounting software to record your income and expenses, then submit a report once every 3 months from the start of your accounting period
-confirm-terms.bullet2=allow HMRC to calculate your Income Tax estimate using the information from your reports
-confirm-terms.bullet3=present back to the agency firm the calculation for your Income Tax estimate
-confirm-terms.bullet4=send HMRC your summary report for the 2017 to 2018 tax year by 31 January 2019
-confirm-terms.bullet5=declare any other income sources and reliefs
-confirm-terms.bullet6=let HMRC know if you start a new business or your current business stops trading
+confirm-terms.heading=We need your consent
+confirm-terms.p1=We need your consent to share your personal information with {0}
+confirm-terms.subheading1=What this means
+confirm-terms.subheading1.p1=By giving your consent, you agree that HMRC will share the following information with {0}:
+confirm-terms.subheading2=How to withdraw your consent
+confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage your tax agents (opens in a new window or tab)</a>.
+confirm-terms.subheading3=Our privacy policy
+confirm-terms.subheading3.p1=For details about how we store and process your personal information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
+confirm-terms.subheading1.p2=If you choose to give your consent, this will last until you remove this tax agent's authorisation to act on your behalf.
+confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with ABC Accountants for the purposes above?
 
+confirm-terms.itsa.bullet1=your income and expenses information
+confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
+confirm-terms.itsa.p1=This tax agent needs access to this information to report your income and expenses through software.
 
-confirm-terms.p2=You have responsibility for any information a third party gives to HMRC on your behalf
+confirm-terms.afi.bullet1=who you have worked for in the past
+confirm-terms.afi.bullet2=taxable benefits like medical insurance and company car
+confirm-terms.afi.bullet3=pensions
+confirm-terms.afi.bullet4=your PAYE employment start and end dates
 
-confirm-terms-afi.p1=Your income record includes information about:
-confirm-terms-afi.p2=Every tax agent you authorise will be able to view your income record. They will not know who else can see your information.
-confirm-terms-afi.bullet1=who you have worked for in the past
-confirm-terms-afi.bullet2=taxable benefits like medical insurance and company car
-confirm-terms-afi.bullet3=pensions
-confirm-terms-afi.bullet4=your PAYE employment start and end dates
-confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my income and expense information.
-confirm-terms-afi.checkbox=I understand {0} will be able to view my income record until I remove their authorisation.
-
-confirm-terms-vat.title=Confirm that you understand
-confirm-terms-vat.p1=By accepting the invitation, you are agreeing that {0} will:
-confirm-terms-vat.bullet1=use accounting software that supports Making Tax Digital to record your sales and purchases, then to submit your VAT returns
-confirm-terms-vat.bullet2=submit each VAT return within one calendar month and 7 days from the end of your accounting period
-confirm-terms-vat.bullet3=tell HMRC if you stop trading and then submit your final VAT return
-confirm-terms-vat.bullet4=tell HMRC if you want to leave this trial
-confirm-terms-vat.checkbox=I understand {0} will be granted access to my VAT information.
-
-confirm-terms.continue=Authorise tax agent
-confirm-terms.back=Back
+confirm-terms.vat.bullet1=your VAT registration details, such as business name and contact details
+confirm-terms.vat.bullet2=your VAT returns submitted online for the last 15 months
+confirm-terms.vat.bullet3=how your VAT returns have been calculated
+confirm-terms.vat.p1=This tax agent needs access to this information to report your VAT returns through software.
 
 #Invitation Expired
 invitation-expired.heading=Invitation Expired
