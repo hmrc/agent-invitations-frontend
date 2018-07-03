@@ -293,19 +293,17 @@ class ClientsInvitationController @Inject()(
 
 object ClientsInvitationController {
 
-  val invitationChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
-    if (fieldValue.isDefined)
-      Valid
-    else
-      Invalid(ValidationError("error.confirmInvite.invalid"))
+  def radioChoice(invalidError: String): Constraint[Option[Boolean]] = Constraint[Option[Boolean]] {
+    fieldValue: Option[Boolean] =>
+      if (fieldValue.isDefined)
+        Valid
+      else
+        Invalid(ValidationError(invalidError))
   }
 
-  val termsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
-    if (fieldValue.isDefined)
-      Valid
-    else
-      Invalid(ValidationError("error.confirmTerms.invalid"))
-  }
+  val invitationChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmInvite.invalid")
+
+  val termsChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmTerms.invalid")
 
   val confirmInvitationForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping("confirmInvite" -> optional(boolean)
