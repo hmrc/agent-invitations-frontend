@@ -157,8 +157,6 @@ confirm-terms-afi.bullet1=who you have worked for in the past
 confirm-terms-afi.bullet2=taxable benefits like medical insurance and company car
 confirm-terms-afi.bullet3=pensions
 confirm-terms-afi.bullet4=your PAYE employment start and end dates
-confirm-terms-itsa.checkbox=I understand that {0} will be granted access to my income and expense information.
-confirm-terms-afi.checkbox=I understand {0} will be able to view my income record until I remove their authorisation.
 
 confirm-terms-vat.title=Confirm that you understand
 confirm-terms-vat.p1=By accepting the invitation, you are agreeing that {0} will:
@@ -166,9 +164,11 @@ confirm-terms-vat.bullet1=use accounting software that supports Making Tax Digit
 confirm-terms-vat.bullet2=submit each VAT return within one calendar month and 7 days from the end of your accounting period
 confirm-terms-vat.bullet3=tell HMRC if you stop trading and then submit your final VAT return
 confirm-terms-vat.bullet4=tell HMRC if you want to leave this trial
-confirm-terms-vat.checkbox=I understand {0} will be granted access to my VAT information.
 
-confirm-terms.continue=Authorise tax agent
+confirm-terms.consent=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
+confirm-terms.consent.yes=Yes
+confirm-terms.consent.no=No
+confirm-terms.consent.continue=Continue
 confirm-terms.back=Back
 
 #Invitation Expired

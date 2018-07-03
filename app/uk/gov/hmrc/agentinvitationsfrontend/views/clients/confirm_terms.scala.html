@@ -16,7 +16,7 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox,inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -73,20 +73,19 @@
         </ul>
     }
 
-
-
-
     @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId)) {
 
-        @singleCheckbox(
+        @inputRadioGroup(
             confirmTermsForm("confirmTerms"),
-            '_label -> Messages(s"confirm-terms-$service.checkbox", agencyName),
-            '_labelClass -> "flush--ends soft--ends",
-            '_groupDivClass -> "soft-half--ends"
+            Seq(("true", Messages("confirm-terms.consent.yes")),("false",Messages("confirm-terms.consent.no"))),
+            '_legend -> Messages("confirm-terms.consent", agencyName),
+            '_legendClass -> "h2-heading",
+            '_groupDivClass -> "form-group soft--ends",
+            '_fieldsetAttributes -> Html("""id='confirmTerms'""")
         )
 
         <div class="form-group">
-            <button class="button" type="submit" id="continue">@Messages("confirm-terms.continue")</button>
+            <button class="button" type="submit" id="continue">@Messages("confirm-terms.consent.continue", agencyName)</button>
         </div>
 
     }
