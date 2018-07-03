@@ -161,19 +161,24 @@ class ClientsInvitationController @Inject()(
                 formWithErrors => {
                   Future successful Ok(confirm_terms(formWithErrors, name, invitationId, messageKey))
                 },
-                _ => {
-                  acceptInvitation(serviceName, invitationId, clientId).map {
-                    case NO_CONTENT =>
-                      auditService.sendAgentInvitationResponse(
-                        invitationId.value,
-                        invitation.arn,
-                        "Accepted",
-                        clientIdentifierType(clientId),
-                        clientId,
-                        serviceName,
-                        name)
-                      Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
-                    case status => throw new Exception(s"Invitation acceptance failed with status $status")
+                data => {
+                  if (data.value.getOrElse(false)) {
+                    acceptInvitation(serviceName, invitationId, clientId).map {
+                      case NO_CONTENT =>
+                        auditService.sendAgentInvitationResponse(
+                          invitationId.value,
+                          invitation.arn,
+                          "Accepted",
+                          clientIdentifierType(clientId),
+                          clientId,
+                          serviceName,
+                          name)
+                        Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
+                      case status => throw new Exception(s"Invitation acceptance failed with status $status")
+                    }
+                  } else {
+                    //To be changed when routing to wherever NO radio button option is meant to go
+                    Future successful Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
                   }
                 }
               )
@@ -296,10 +301,10 @@ object ClientsInvitationController {
   }
 
   val termsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
-    fieldValue match {
-      case Some(true) => Valid
-      case _          => Invalid(ValidationError("error.confirmTerms.invalid"))
-    }
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError("error.confirmTerms.invalid"))
   }
 
   val confirmInvitationForm: Form[ConfirmForm] = Form[ConfirmForm](

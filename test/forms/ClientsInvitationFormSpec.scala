@@ -50,21 +50,20 @@ class ClientsInvitationFormSpec extends UnitSpec {
   }
 
   "ConfirmTerms form" should {
-    "return no error for a valid input" in {
+    "return no error for a valid input - Yes" in {
       val result = confirmTermsForm.bind(Json.obj("confirmTerms" -> "true"))
 
       result.errors.isEmpty shouldBe true
     }
 
-    "return an error for no input" in {
-      val result = confirmTermsForm.bind(Json.obj("confirmTerms" -> ""))
+    "return no error for a valid input - No" in {
+      val result = confirmTermsForm.bind(Json.obj("confirmTerms" -> "false"))
 
-      result.errors.length shouldBe 1
-      result.errors.map(_.message).contains("error.confirmTerms.invalid") shouldBe true
+      result.errors.isEmpty shouldBe true
     }
 
-    "return an error for invalid input" in {
-      val result = confirmTermsForm.bind(Json.obj("confirmTerms" -> "false"))
+    "return an error for an invalid input" in {
+      val result = confirmTermsForm.bind(Json.obj("confirmTerms" -> ""))
 
       result.errors.length shouldBe 1
       result.errors.map(_.message).contains("error.confirmTerms.invalid") shouldBe true

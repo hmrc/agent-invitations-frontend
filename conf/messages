@@ -147,8 +147,8 @@ confirm-terms.subheading2=How to withdraw your consent
 confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage your tax agents (opens in a new window or tab)</a>.
 confirm-terms.subheading3=Our privacy policy
 confirm-terms.subheading3.p1=For details about how we store and process your personal information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
-confirm-terms.subheading1.p2=If you choose to give your consent, this will last until you remove this tax agent's authorisation to act on your behalf.
-confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with ABC Accountants for the purposes above?
+confirm-terms.subheading1.p2=If you choose to give your consent, this will last until you remove this tax agent''s authorisation to act on your behalf.
+confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 
 confirm-terms.itsa.bullet1=your income and expenses information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
