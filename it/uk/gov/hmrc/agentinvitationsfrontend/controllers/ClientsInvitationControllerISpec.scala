@@ -607,8 +607,12 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         resultITSA,
         htmlEscapedMessage("confirm-terms.itsa.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.heading"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet1"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet2"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.p1"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1.p2"))
       checkHasClientSignOutUrl(resultITSA)
     }
 
@@ -622,8 +626,13 @@ class ClientsInvitationControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("confirm-terms.afi.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.heading", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.bullet1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.bullet2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.bullet3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.bullet4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1.p2"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -637,13 +646,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-terms-vat.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.p1", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.bullet4"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-vat.checkbox", "My Agency"))
+        htmlEscapedMessage("confirm-terms.vat.title", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.vat.bullet1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.vat.bullet2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.vat.bullet3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.vat.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1.p2"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -802,12 +812,14 @@ class ClientsInvitationControllerISpec extends BaseISpec {
 
       status(resultITSA) shouldBe OK
       status(resultAFI) shouldBe OK
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("error.confirmTerms.invalid"))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmTerms.invalid"))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms-itsa.checkbox", "My Agency"))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms-afi.checkbox", "My Agency"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.heading"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet1"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet2"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.bullet1"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.bullet2"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.bullet3"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.bullet4"))
       checkHasClientSignOutUrl(resultITSA)
       checkHasClientSignOutUrl(resultAFI)
     }
