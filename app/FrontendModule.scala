@@ -76,6 +76,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("agent-subscription-frontend.external-url")
     bindServiceProperty("cachable.session-cache.domain")
     bindServiceProperty("agent-client-management-frontend.external-url")
+    bindServiceProperty("privacy-policy.external-url")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
