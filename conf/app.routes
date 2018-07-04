@@ -10,8 +10,6 @@ GET         /agents/invitation-sent                             @uk.gov.hmrc.age
 GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.continueAfterInvitationSent
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
 POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
-GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showConfirmClient
-POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitConfirmClient
 POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrack
 
 # Error Agent Endpoints

@@ -238,7 +238,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-IT" should {
 
-      "redirect to /agents/confirm-client when a valid NINO and postcode are submitted" in {
+      "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
         createInvitationStubWithKnownFacts(
           arn,
           validNino.value,
@@ -259,7 +259,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
@@ -318,7 +318,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-VAT" should {
 
-      "redirect to /agents/confirm-client when a valid VRN and registrationDate are submitted" in {
+      "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
         createInvitationStubForNoKnownFacts(
           arn,
           validVrn.value,
@@ -348,7 +348,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
       }
 
       "redisplay page with errors when an empty VRN is submitted" in {
@@ -436,7 +436,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is PERSONAL-INCOME-RECORD" should {
 
-      "redirect to /agents/confirm-client when a valid NINO is submitted" in {
+      "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
         createInvitationStubWithKnownFacts(
           arn,
           validNino.value,
@@ -454,7 +454,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showConfirmClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {

@@ -246,53 +246,6 @@ class AgentsInvitationController @Inject()(
           } yield redirectResult
       )
 
-  val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch().flatMap {
-        case Some(data) =>
-          (data.clientIdentifier, data.service) match {
-            case (Some(clientId), Some(service)) =>
-              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Future successful Ok(confirm_client(name.getOrElse(""), agentConfirmClientForm))
-              }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
-          }
-        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
-      }
-    }
-  }
-
-  val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      fastTrackCache.fetch().flatMap {
-        case Some(invitationWithClientDetails) =>
-          (invitationWithClientDetails.clientIdentifier, invitationWithClientDetails.service) match {
-            case (Some(clientId), Some(service)) =>
-              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                val clientName = name.getOrElse("")
-                agentConfirmClientForm
-                  .bindFromRequest()
-                  .fold(
-                    formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
-                    data =>
-                      if (data.choice) {
-                        confirmAndRedirect(arn, invitationWithClientDetails, isWhitelisted)
-                      } else {
-                        for {
-                          _ <- fastTrackCache.save(CurrentInvitationInput.apply(service))
-                          result <- Future successful Redirect(
-                                     routes.AgentsInvitationController.showIdentifyClientForm())
-                        } yield result
-                    }
-                  )
-              }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
-          }
-        case None => Future successful Redirect(routes.AgentsInvitationController.selectService())
-      }
-    }
-  }
-
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
     invitationsService
@@ -424,9 +377,7 @@ class AgentsInvitationController @Inject()(
         invitationsService
           .checkVatRegistrationDateMatches(fastTrackVatInvitation.clientIdentifier, vatRegDate) flatMap {
           case Some(true) =>
-            redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-              createInvitation(arn, fastTrackVatInvitation)
-            }
+            createInvitation(arn, fastTrackVatInvitation)
           case Some(false) =>
             fastTrackCache.save(currentInvitationInput).map { _ =>
               Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
@@ -439,9 +390,7 @@ class AgentsInvitationController @Inject()(
             }
         }
       case None =>
-        redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-          createInvitation(arn, fastTrackVatInvitation)
-        }
+        createInvitation(arn, fastTrackVatInvitation)
     }
 
   private[controllers] def knownFactCheckItsa(
@@ -455,9 +404,7 @@ class AgentsInvitationController @Inject()(
           hasPostcode <- invitationsService.checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode)
           result <- hasPostcode match {
                      case Some(true) =>
-                       redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-                         createInvitation(arn, fastTrackItsaInvitation)
-                       }
+                       createInvitation(arn, fastTrackItsaInvitation)
                      case Some(false) =>
                        fastTrackCache.save(currentInvitationInput).map { _ =>
                          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
@@ -484,9 +431,7 @@ class AgentsInvitationController @Inject()(
                    }
         } yield result
       case None =>
-        redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-          createInvitation(arn, fastTrackItsaInvitation)
-        }
+        createInvitation(arn, fastTrackItsaInvitation)
     }
 
   private[controllers] def knownFactCheckIrv(
@@ -498,9 +443,7 @@ class AgentsInvitationController @Inject()(
       Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
       invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
         case Some(_) =>
-          redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-            createInvitation(arn, fastTrackPirInvitation)
-          }
+          createInvitation(arn, fastTrackPirInvitation)
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
@@ -508,19 +451,12 @@ class AgentsInvitationController @Inject()(
     } else {
       invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
         case Some(_) =>
-          redirectOrShowConfirmClient(currentInvitationInput.fromFastTrack) {
-            createInvitation(arn, fastTrackPirInvitation)
-          }
+          createInvitation(arn, fastTrackPirInvitation)
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
     }
-
-  private[controllers] def redirectOrShowConfirmClient(fromFastTrack: Boolean)(body: => Future[Result])(
-    implicit request: Request[_]): Future[Result] =
-    if (fromFastTrack) body
-    else Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
 
   private[controllers] def confirmAndRedirect(
     arn: Arn,
