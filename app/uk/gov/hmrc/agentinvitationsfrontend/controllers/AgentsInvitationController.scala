@@ -486,7 +486,7 @@ class AgentsInvitationController @Inject()(
         knownFactCheckItsa(arn, currentInvitationInput, completeItsaInvitation, isWhitelisted)
 
       case CurrentInvitationInputPirReady(completePirInvitation) =>
-        knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
+        createInvitation(arn, completePirInvitation)
 
       case CurrentInvitationInputNeedsService(_) =>
         Future successful Redirect(routes.AgentsInvitationController.selectService())
