@@ -30,7 +30,7 @@
 
     @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
 
-    @back_link(s"${routes.ClientsInvitationController.getConfirmInvitation(invitationId)}")
+    @back_link(s"${routes.ClientsInvitationController.getConfirmDecline(invitationId)}")
 
     <h1 class="heading-xlarge">@Messages("confirm-terms.heading", agencyName)</h1>
 
