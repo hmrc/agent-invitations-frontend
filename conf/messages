@@ -139,6 +139,7 @@ confirm-invitation.button=Continue
 confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
 confirm-terms.afi.title=Are you happy for this tax agent to view your income record? - {0} - GOV.UK
 confirm-terms.vat.title=Confirm that you understand - {0} - GOV.UK
+
 confirm-terms.heading=We need your consent
 confirm-terms.p1=We need your consent to share your personal information with {0}
 confirm-terms.subheading1=What this means

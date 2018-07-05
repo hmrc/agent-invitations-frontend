@@ -31,7 +31,7 @@
     <h1 class="heading-xlarge">@Messages("confirm-invitation.heading", agencyName)</h1>
 
 
-    @form(routes.ClientsInvitationController.submitConfirmInvitation(invitationId)){
+    @form(routes.ClientsInvitationController.submitConfirmDecline(invitationId)){
 
         @inputRadioGroup(
             confirmForm("confirmInvite"),
