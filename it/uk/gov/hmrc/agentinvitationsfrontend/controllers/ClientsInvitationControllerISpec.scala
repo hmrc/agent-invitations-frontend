@@ -19,6 +19,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc.{Action, AnyContent, Cookie}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 
@@ -46,12 +49,26 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdITSA)
 
     "redirect to /accept-tax-agent-invitation/2" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       val result =
-        submitStart(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmTerms(invitationIdITSA)
+        .url
+    }
+
+    "refresh the page with errors when no radio button is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .start(invitationIdITSA)
         .url
     }
   }

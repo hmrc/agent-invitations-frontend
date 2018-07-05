@@ -40,6 +40,8 @@ import scala.concurrent.Future
 
 case class ConfirmForm(value: Option[Boolean])
 
+case class ConfirmAuthForm(confirmAuthorisation: Option[String])
+
 @Singleton
 class ClientsInvitationController @Inject()(
   invitationsService: InvitationsService,
@@ -56,13 +58,26 @@ class ClientsInvitationController @Inject()(
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
       case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
-        Ok(landing_page(invitationId, messageKey))
-      case _ => Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        Ok(landing_page(invitationId, messageKey, confirmAuthorisationForm))
+      case _ =>
+        Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
   }
 
   def submitStart(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
-    Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+    confirmAuthorisationForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => {
+          determineService(invitationId) match {
+            case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+              Ok(landing_page(invitationId, messageKey, formWithErrors))
+            case _ =>
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          }
+        },
+        _ => Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+      )
   }
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
@@ -296,17 +311,18 @@ class ClientsInvitationController @Inject()(
 
 object ClientsInvitationController {
 
-  def radioChoice(invalidError: String): Constraint[Option[Boolean]] = Constraint[Option[Boolean]] {
-    fieldValue: Option[Boolean] =>
-      if (fieldValue.isDefined)
-        Valid
-      else
-        Invalid(ValidationError(invalidError))
+  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError(invalidError))
   }
 
   val invitationChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmInvite.invalid")
 
   val termsChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmTerms.invalid")
+
+  val authChoice: Constraint[Option[String]] = radioChoice("error.confirmAuthorisation.invalid")
 
   val confirmInvitationForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping("confirmInvite" -> optional(boolean)
@@ -315,4 +331,11 @@ object ClientsInvitationController {
   val confirmTermsForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping("confirmTerms" -> optional(boolean)
       .verifying(termsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
+
+  val confirmAuthorisationForm: Form[ConfirmAuthForm] = Form[ConfirmAuthForm](
+    mapping(
+      "confirmAuthorisation" -> optional(text)
+        .verifying(authChoice))(ConfirmAuthForm.apply)(ConfirmAuthForm.unapply)
+  )
+
 }

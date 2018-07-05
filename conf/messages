@@ -100,17 +100,20 @@ not-matched.afi.button = Try again
 
 # Client Pages
 # Landing Page
-landing-page.header=Accept or decline a tax agent''s request for authorisation
+landing-page.itsa.header=Do you want to authorise your tax agent to view your income record?
+landing-page.afi.header=Do you want to authorise your tax agent to report your income and expenses through software?
+landing-page.vat.header=Do you want to authorise your tax agent to report your VAT returns through software?
+landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent's authorisation for the same service.
+landing-page.radio1=Yes
+landing-page.radio2=No
+landing-page.radio3=I want to decide later
+landing-page.subheading1=You will need a Government Gateway account to sign in so we can confirm who you are. You can create an account if you do not have one.
+landing-page.alternative=Why am I seeing this?
+landing-page.alt-suggestion=You may have asked this tax agent to deal with HM Revenue & Customs (HMRC) on your behalf.
+landing-page.guidance=You received this request because they need you to authorise them to report your income record. They cannot do this until you give your authorisation.
 landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
-landing-page.service.p2=You will need to create or use a Government Gateway account for an <strong>individual</strong> to continue
-landing-page.service.vat.p2=You will need to create or use a Government Gateway account for an organisation to continue.
-landing-page.sub-header=What this means
-landing-page.service.p3=The tax agent who sent you the request will have access to your income and expense information through software. Sometimes HMRC will contact you as well as the agent, or instead of them.
-landing-page.service.vat.p3=The tax agent who sent you the request will have access to your VAT information through software. Sometimes HMRC will contact you as well as the agent, or instead of them.
-landing-page.accept=Accept request
-landing-page.decline=Decline request
 
 # Invitation Declined
 invitation-declined.header=You have declined this request
@@ -242,6 +245,7 @@ error.terminate.500.message=Your income record is still visible to tax agents. P
 error.summary.heading=There is a problem
 error.confirmInvite.invalid=You must choose an option
 error.confirmTerms.invalid=You must accept the terms to continue
+error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
 error.prefix=Error:
 common.sign-out=Sign out
 
