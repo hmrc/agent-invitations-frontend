@@ -504,18 +504,27 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     }
 
-    "return 303 not-matched if nino that does not return citizen-details record" in {
+    "return 303 invitation-sent if nino that does not return citizen-details record" in {
       val formData =
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       testFastTrackCache.save(formData)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
       givenCitizenDetailsReturns404For(validNino.value)
+      createInvitationStubForNoKnownFacts(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val form = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
 
       verifyAuthoriseAttempt()
       await(testFastTrackCache.fetch()).get shouldBe formData
