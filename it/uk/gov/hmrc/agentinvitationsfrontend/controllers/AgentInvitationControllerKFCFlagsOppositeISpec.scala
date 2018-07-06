@@ -112,7 +112,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     val request = FakeRequest("POST", "/agents/identify-client")
     val submitIdentifyClient = controller.submitIdentifyClient()
 
-    "return 303 confirm-client for ITSA" in {
+    "return 303 invitation-sent for ITSA" in {
       givenTradingName(validNino, "64 Bit")
       val formData =
         CurrentInvitationInput(Some(serviceITSA), None, None, None, None, fromManual)
@@ -120,15 +120,26 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(serviceITSA, Some(validNino.nino), None))
+      createInvitationStubForNoKnownFacts(
+        arn,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
-    "return 303 confirm-client for IRV" in {
+    "return 303 invitation-sent for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
         CurrentInvitationInput(Some(servicePIR), None, None, None, None, fromManual)
@@ -136,15 +147,25 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndPostcode(servicePIR, Some(validNino.nino), None))
+      createInvitationStubForNoKnownFacts(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
-    "return 303 confirm-client for VAT" in {
+    "return 303 invitation-sent for VAT" in {
       givenClientDetails(validVrn)
       val formData =
         CurrentInvitationInput(Some(serviceVAT), None, None, None, None, fromManual)
@@ -152,12 +173,22 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(serviceVAT, Some(validVrn.value), None))
+      createInvitationStubForNoKnownFacts(
+        arn,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/confirm-client")
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
   }
