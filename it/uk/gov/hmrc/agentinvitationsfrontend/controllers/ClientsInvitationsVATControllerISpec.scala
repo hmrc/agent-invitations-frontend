@@ -16,9 +16,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
 import play.api.mvc.{Action, AnyContent, Cookie, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -28,8 +25,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationControl
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.auth.core.AuthorisationException
-
-import scala.concurrent.Future
 
 class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
 
@@ -60,9 +55,15 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
     }
+
+    "show a signout url on the landing page if the user is authenticated" in {
+      val result = controller.start(invitationIdVAT)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe OK
+      checkHasClientSignOutUrl(result)
+    }
   }
 
-  "POST /:invitationId (clicking accept on the landing page)" should {
+  "POST /:invitationId (making a choice on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdVAT)
 
     "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
@@ -79,10 +80,26 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
 
     "redirect to confirm-decline page when no is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getConfirmDecline(invitationIdVAT)
+        .url
     }
 
     "redirect to decide-later page when I dont know is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getDecideLater(invitationIdVAT)
+        .url
     }
 
     "refresh the page with errors when no radio button is selected" in {
@@ -539,6 +556,8 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
         validVrn.value,
         serviceVAT,
         "My Agency")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmInvite.invalid"))
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {

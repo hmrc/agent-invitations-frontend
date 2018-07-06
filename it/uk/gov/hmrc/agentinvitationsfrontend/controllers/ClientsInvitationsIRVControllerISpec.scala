@@ -55,9 +55,15 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("landing-page.reminder"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
     }
+
+    "show a signout url on the landing page if the user is authenticated" in {
+      val result = controller.start(invitationIdPIR)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe OK
+      checkHasClientSignOutUrl(result)
+    }
   }
 
-  "POST /:invitationId (clicking accept on the landing page)" should {
+  "POST /:invitationId (making a choice on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdPIR)
 
       "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
@@ -72,9 +78,31 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
           .url
       }
 
-      "redirect to confirm-decline page when no is selected" in {}
+      "redirect to confirm-decline page when no is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
+        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).get shouldBe routes.ClientsInvitationController
+          .getConfirmDecline(invitationIdPIR)
+          .url
 
-      "redirect to decide-later page when I dont know is selected" in {}
+      }
+
+      "redirect to decide-later page when I want to decide later is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
+        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).get shouldBe routes.ClientsInvitationController
+          .getDecideLater(invitationIdPIR)
+          .url
+
+      }
 
       "refresh the page with errors when no radio button is selected" in {
         val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
@@ -595,6 +623,30 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
           "50"))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+  }
+
+  "GET /decide-later/:invitationId" should {
+    val getDecideLaterPIR = controller.getDecideLater(invitationIdPIR)
+
+    "show the decide later page with PIR content even when user is not authenticated" in {
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+      givenGetAgencyNameStub(arn)
+      val result = getDecideLaterPIR(FakeRequest())
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("decide-later.header", htmlEscapedMessage("title.suffix.client")))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.afi.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.subheader2"))
+    }
+
+    "show a signout url on the landing page if the user is authenticated" in {
+      val result = getDecideLaterPIR(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe OK
+      checkHasClientSignOutUrl(result)
     }
   }
 }

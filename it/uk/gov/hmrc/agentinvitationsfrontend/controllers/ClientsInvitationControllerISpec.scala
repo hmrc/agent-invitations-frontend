@@ -37,11 +37,14 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
+  }
 
-    "show a signout url on the landing page if the user is authenticated" in {
-      val result = controller.start(invitationIdITSA)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
-      status(result) shouldBe OK
-      checkHasClientSignOutUrl(result)
+  "GET /decide-later/:invitationId" should {
+    "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
+      val strangePrefixInvId = InvitationId("ZTSF4OW9CCRPT")
+      val result = controller.getDecideLater(strangePrefixInvId)(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
   }
 
