@@ -111,10 +111,21 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
         status(result) shouldBe OK
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.itsa.header"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
       }
+
+    "throw an error when the radio button selection is invalid" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
+      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+
+      an[Exception] should be thrownBy{
+        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
+      }
+    }
   }
 
   "GET /accept-tax-agent-invitation/consent/:invitationId (confirm terms page)" should {
@@ -445,6 +456,15 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       verifyAuditRequestNotSent(AgentClientInvitationResponse)
     }
 
+    "redirect to notFoundInvitation when invitation is invalid" in {
+      val resultITSA = controller.getConfirmDecline(invalidInvitationId)(
+        authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
+
+      status(resultITSA) shouldBe SEE_OTHER
+      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      verifyAuditRequestNotSent(AgentClientInvitationResponse)
+    }
+
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
       getAlreadyAcceptedInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
       val resultITSA = getConfirmInvitationITSA(
@@ -597,6 +617,15 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
     "redirect to notFoundInvitation when invitation does not exist" in {
       notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
       val resultITSA = getInvitationDeclinedITSA(
+        authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
+
+      status(resultITSA) shouldBe SEE_OTHER
+      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      verifyAuditRequestNotSent(AgentClientInvitationResponse)
+    }
+
+    "redirect to notFoundInvitation when invitation is invalid" in {
+      val resultITSA = controller.getInvitationDeclined(invalidInvitationId)(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
       status(resultITSA) shouldBe SEE_OTHER

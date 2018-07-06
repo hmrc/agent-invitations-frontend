@@ -66,56 +66,67 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
   "POST /:invitationId (making a choice on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdPIR)
 
-      "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
-        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result).get shouldBe routes.ClientsInvitationController
-          .getConfirmTerms(invitationIdPIR)
-          .url
-      }
+    "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getConfirmTerms(invitationIdPIR)
+        .url
+    }
 
-      "redirect to confirm-decline page when no is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
-        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result).get shouldBe routes.ClientsInvitationController
-          .getConfirmDecline(invitationIdPIR)
-          .url
+    "redirect to confirm-decline page when no is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getConfirmDecline(invitationIdPIR)
+        .url
 
-      }
+    }
 
-      "redirect to decide-later page when I want to decide later is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
-        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result).get shouldBe routes.ClientsInvitationController
-          .getDecideLater(invitationIdPIR)
-          .url
+    "redirect to decide-later page when I want to decide later is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getDecideLater(invitationIdPIR)
+        .url
 
-      }
+    }
 
-      "refresh the page with errors when no radio button is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
-        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe OK
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.afi.header"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+    "refresh the page with errors when no radio button is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+      val result =
+        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.afi.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+    }
+
+    "throw an error when the radio button selection is invalid" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
+      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+
+      an[Exception] should be thrownBy {
+        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
       }
     }
+  }
 
   "GET /accept-tax-agent-invitation/consent/:invitationId (confirm terms page)" should {
 
@@ -640,7 +651,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.afi.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.subheader2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.subheader1"))
     }
 
     "show a signout url on the landing page if the user is authenticated" in {

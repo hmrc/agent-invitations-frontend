@@ -38,6 +38,7 @@ trait TestDataCommonSupport extends BaseISpec {
 
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false
+  val invalidInvitationId = InvitationId("ZTSF4OW9CCRPT")
 
   val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
 

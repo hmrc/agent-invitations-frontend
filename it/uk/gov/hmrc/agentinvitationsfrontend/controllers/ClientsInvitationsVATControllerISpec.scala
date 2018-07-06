@@ -110,9 +110,20 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.vat.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+    }
+
+    "throw an error when the radio button selection is invalid" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
+      getInvitationStub(arn, nino, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+
+      an[Exception] should be thrownBy {
+        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
+      }
     }
   }
 
@@ -546,7 +557,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
       status(result) shouldBe OK
-      //TODO checkResultBody: Test for content -- Out of Scope of APB-1884
+
       checkExitSurveyAfterInviteResponseSignOutUrl(result)
       verifyAgentInvitationResponseEvent(
         invitationIdVAT,
@@ -557,7 +568,9 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
         serviceVAT,
         "My Agency")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmInvite.invalid"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-vat.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined-vat.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.sub-header"))
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
@@ -629,6 +642,30 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up-vat.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+  }
+
+  "GET /decide-later/:invitationId" should {
+    val getDecideLaterVAT = controller.getDecideLater(invitationIdVAT)
+
+    "show the decide later page with VAT content even when user is not authenticated" in {
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenGetAgencyNameStub(arn)
+      val result = getDecideLaterVAT(FakeRequest())
+      status(result) shouldBe OK
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("decide-later.header", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.vat.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("decide-later.subheader1"))
+      await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
+    }
+
+    "show a signout url on the landing page if the user is authenticated" in {
+      val result = getDecideLaterVAT(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
+      status(result) shouldBe OK
+      checkHasClientSignOutUrl(result)
     }
   }
 }

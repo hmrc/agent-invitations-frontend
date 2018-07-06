@@ -32,10 +32,22 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
   "GET /:invitationId (landing page)" should {
 
     "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
-      val strangePrefixInvId = InvitationId("ZTSF4OW9CCRPT")
-      val result = controller.start(strangePrefixInvId)(FakeRequest())
+      val result = controller.start(invalidInvitationId)(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+    }
+  }
+
+  "POST /:invitationId (landing page)" should {
+
+    "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
+      val result =
+        controller.submitStart(invalidInvitationId)(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+    }
+
+    "throw an error when the radio button selection is invalid" in {
+
     }
   }
 
