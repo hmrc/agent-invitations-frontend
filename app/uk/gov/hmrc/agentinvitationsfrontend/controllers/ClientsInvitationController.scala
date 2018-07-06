@@ -76,8 +76,26 @@ class ClientsInvitationController @Inject()(
               Redirect(routes.ClientsInvitationController.notFoundInvitation())
           }
         },
-        _ => Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+        data => {
+          val result = data.confirmAuthorisation.getOrElse("") match {
+            case "yes"   => Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+            case "no"    => Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+            case "maybe" => Redirect(routes.ClientsInvitationController.getDecideLater(invitationId))
+            case _       => throw new Exception("Invalid authorisation choice")
+          }
+          result
+        }
       )
+  }
+
+  def getDecideLater(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
+    determineService(invitationId) match {
+      case ValidService(_, enrolmentName, enrolmentIdentifier, _, messageKey) =>
+        withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { _ =>
+          Future successful Ok(decide_later(invitationId, messageKey))
+        }
+      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+    }
   }
 
   def getInvitationDeclined(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>

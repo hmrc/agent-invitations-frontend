@@ -100,8 +100,8 @@ not-matched.afi.button = Try again
 
 # Client Pages
 # Landing Page
-landing-page.itsa.header=Do you want to authorise your tax agent to view your income record?
-landing-page.afi.header=Do you want to authorise your tax agent to report your income and expenses through software?
+landing-page.itsa.header=Do you want to authorise your tax agent to report your income and expenses through software?
+landing-page.afi.header=Do you want to authorise your tax agent to view your income record?
 landing-page.vat.header=Do you want to authorise your tax agent to report your VAT returns through software?
 landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent's authorisation for the same service.
 landing-page.radio1=Yes
@@ -110,7 +110,9 @@ landing-page.radio3=I want to decide later
 landing-page.subheading1=You will need a Government Gateway account to sign in so we can confirm who you are. You can create an account if you do not have one.
 landing-page.alternative=Why am I seeing this?
 landing-page.alt-suggestion=You may have asked this tax agent to deal with HM Revenue & Customs (HMRC) on your behalf.
-landing-page.guidance=You received this request because they need you to authorise them to report your income record. They cannot do this until you give your authorisation.
+landing-page.itsa.guidance=You received this request because they need you to authorise them to report your income and expenses through software. They cannot do this until you give your authorisation.
+landing-page.afi.guidance=You received this request because they need you to authorise them to report your income record. They cannot do this until you give your authorisation.
+landing-page.vat.guidance=You received this request because they need you to authorise them to report your VAT returns through software. They cannot do this until you give your authorisation.
 landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
@@ -167,6 +169,16 @@ confirm-terms.vat.bullet1=your VAT registration details, such as business name a
 confirm-terms.vat.bullet2=your VAT returns submitted online for the last 15 months
 confirm-terms.vat.bullet3=how your VAT returns have been calculated
 confirm-terms.vat.p1=This tax agent needs access to this information to report your VAT returns through software.
+
+#Decide later
+decide-later.header=You have not accepted this tax agent's request
+decide-later.subheading1=If you want to decide later
+decide-later.reminder=You need to accept this request by 16 June 2018.
+decide-later.itsa.p1=If you do not accept this request, your tax agent cannot report your income and expenses through software.
+decide-later.afi.p1=If you do not accept this request, your tax agent cannot view your income record.
+decide-later.vat.p1=If you do not accept this request, your tax agent cannot report your VAT returns through software.
+decide-later.subheading2=Made a mistake?
+decide-later.p2=If you meant to accept this request, you can <a href="{0}">go back to the request</a>.
 
 #Invitation Expired
 invitation-expired.heading=Invitation Expired
