@@ -21,6 +21,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.auth.core.AuthorisationException
@@ -38,7 +39,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
         result,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("landing-page.header"),
+          htmlEscapedMessage("landing-page.itsa.header"),
           htmlEscapedMessage("title.suffix.client")))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -50,24 +51,44 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
         result,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("landing-page.header"),
+          htmlEscapedMessage("landing-page.itsa.header"),
           htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.itsa.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
     }
   }
 
   "POST /:invitationId (clicking accept on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdITSA)
 
-    "redirect to /accept-tax-agent-invitation/consent/:invitationId" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      val result =
-        submitStart(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController
-        .getConfirmTerms(invitationIdITSA)
-        .url
-    }
+      "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
+        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).get shouldBe routes.ClientsInvitationController
+          .getConfirmTerms(invitationIdITSA)
+          .url
+      }
+
+    "redirect to confirm-decline page when no is selected" in {}
+
+    "redirect to decide-later page when I dont know is selected" in {}
+
+      "refresh the page with errors when no radio button is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
+        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe OK
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.itsa.header"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+      }
   }
 
   "GET /accept-tax-agent-invitation/consent/:invitationId (confirm terms page)" should {

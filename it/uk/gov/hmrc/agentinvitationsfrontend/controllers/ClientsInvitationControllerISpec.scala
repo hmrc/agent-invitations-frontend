@@ -45,34 +45,6 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
     }
   }
 
-  "POST / (clicking accept on the landing page)" should {
-    val submitStart: Action[AnyContent] = controller.submitStart(invitationIdITSA)
-
-    "redirect to /accept-tax-agent-invitation/2" in {
-      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController
-        .getConfirmTerms(invitationIdITSA)
-        .url
-    }
-
-    "refresh the page with errors when no radio button is selected" in {
-      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController
-        .start(invitationIdITSA)
-        .url
-    }
-  }
-
   "GET /not-sign-up/" should {
     "show not-sign-up page if user does not have a valid enrolment" in {
       val result = controller.notSignedUp(FakeRequest())

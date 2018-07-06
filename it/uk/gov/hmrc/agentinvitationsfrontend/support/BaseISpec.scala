@@ -85,6 +85,12 @@ abstract class BaseISpec
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  protected def checkHtmlResultWithNotBodyText(result: Result, expectedSubstrings: String*): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+    expectedSubstrings.foreach(s => bodyOf(result) should not include s)
+  }
+
   protected def checkHtmlResultWithBodyMsgs(result: Result, expectedMessageKeys: String*): Unit = {
     expectedMessageKeys.foreach { messageKey =>
       withClue(s"Message key '$messageKey' exists:") {

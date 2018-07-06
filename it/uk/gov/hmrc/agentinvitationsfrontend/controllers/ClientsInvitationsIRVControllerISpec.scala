@@ -21,6 +21,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
 import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
 import uk.gov.hmrc.auth.core.AuthorisationException
 
@@ -37,7 +38,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
         result,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("landing-page.header"),
+          htmlEscapedMessage("landing-page.afi.header"),
           htmlEscapedMessage("title.suffix.client")))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
@@ -49,25 +50,44 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
         result,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("landing-page.header"),
+          htmlEscapedMessage("landing-page.afi.header"),
           htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.service.afi.p1"))
+      checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
     }
   }
 
   "POST /:invitationId (clicking accept on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdPIR)
 
-    "redirect to /accept-tax-agent-invitation/2" in {
-      getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      val result =
-        submitStart(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController
-        .getConfirmTerms(invitationIdPIR)
-        .url
+      "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
+        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).get shouldBe routes.ClientsInvitationController
+          .getConfirmTerms(invitationIdPIR)
+          .url
+      }
+
+      "redirect to confirm-decline page when no is selected" in {}
+
+      "redirect to decide-later page when I dont know is selected" in {}
+
+      "refresh the page with errors when no radio button is selected" in {
+        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
+        getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        val result =
+          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        status(result) shouldBe OK
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.afi.header"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+      }
     }
-  }
 
   "GET /accept-tax-agent-invitation/consent/:invitationId (confirm terms page)" should {
 
