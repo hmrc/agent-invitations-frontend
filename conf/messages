@@ -166,8 +166,7 @@ confirm-terms.vat.bullet3=how your VAT returns have been calculated
 confirm-terms.vat.p1=This tax agent needs access to this information to report your VAT returns through software.
 
 #Decide later
-decide-later.header=You have not accepted this tax agent's request
-decide-later.reminder=You need to accept this request by 16 June 2018.
+decide-later.header=You have not accepted this tax agent''s request
 decide-later.itsa.p1=If you do not accept this request, your tax agent cannot report your income and expenses through software.
 decide-later.afi.p1=If you do not accept this request, your tax agent cannot view your income record.
 decide-later.vat.p1=If you do not accept this request, your tax agent cannot report your VAT returns through software.

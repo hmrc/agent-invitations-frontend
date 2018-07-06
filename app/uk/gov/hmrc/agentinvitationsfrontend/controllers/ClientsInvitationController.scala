@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{InvalidService, Services, StoredInvitation, ValidService}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
@@ -57,7 +57,7 @@ class ClientsInvitationController @Inject()(
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+      case IsServiceMessageKeyValid(messageKey) =>
         Ok(landing_page(invitationId, messageKey, confirmAuthorisationForm))
       case _ =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -70,7 +70,7 @@ class ClientsInvitationController @Inject()(
       .fold(
         formWithErrors => {
           determineService(invitationId) match {
-            case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+            case IsServiceMessageKeyValid(messageKey) =>
               Ok(landing_page(invitationId, messageKey, formWithErrors))
             case _ =>
               Redirect(routes.ClientsInvitationController.notFoundInvitation())
@@ -90,7 +90,7 @@ class ClientsInvitationController @Inject()(
 
   def getDecideLater(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
-      case ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+      case IsServiceMessageKeyValid(messageKey) =>
         Future successful Ok(decide_later(invitationId, messageKey))
       case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
     }
@@ -353,5 +353,15 @@ object ClientsInvitationController {
       "confirmAuthorisation" -> optional(text)
         .verifying(authChoice))(ConfirmAuthForm.apply)(ConfirmAuthForm.unapply)
   )
+
+  object IsServiceMessageKeyValid {
+    def unapply(service: Service): Option[String] =
+      service match {
+        case validService @ ValidService(_, _, _, _, messageKey) if messageKey.nonEmpty =>
+          Some(validService.messageKey)
+        case _ =>
+          None
+      }
+  }
 
 }
