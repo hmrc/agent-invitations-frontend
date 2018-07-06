@@ -63,9 +63,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "AB 12 34 56 A",
-        "101747696",
-        "AB 12 34 56 B",
         "Accepted",
         "Pending",
         "Declined",
@@ -99,9 +96,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "AB 12 34 56 A",
-        "101747696",
-        "AB 12 34 56 B",
         "Accepted",
         "Pending",
         "Declined",
