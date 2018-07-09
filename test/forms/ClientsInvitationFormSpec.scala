@@ -18,7 +18,7 @@ package forms
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmAuthForm, ConfirmForm}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class ClientsInvitationFormSpec extends UnitSpec {
@@ -72,6 +72,30 @@ class ClientsInvitationFormSpec extends UnitSpec {
     "return no errors when unbinding the form" in {
       val unboundForm = confirmTermsForm.mapping.unbind(ConfirmForm(Some(true)))
       unboundForm("confirmTerms") shouldBe "true"
+    }
+  }
+
+  "confirmAuthorisation form" should {
+    "return no error for a valid inputs" in {
+      val resultYes = confirmAuthorisationForm.bind(Json.obj("confirmAuthorisation"   -> "yes"))
+      val resultNo = confirmAuthorisationForm.bind(Json.obj("confirmAuthorisation"    -> "no"))
+      val resultMaybe = confirmAuthorisationForm.bind(Json.obj("confirmAuthorisation" -> "maybe"))
+
+      resultYes.errors.isEmpty shouldBe true
+      resultNo.errors.isEmpty shouldBe true
+      resultMaybe.errors.isEmpty shouldBe true
+    }
+
+    "return an error for an invalid input" in {
+      val resultInvalid = confirmAuthorisationForm.bind(Json.obj("confirmAuthorisation" -> ""))
+
+      resultInvalid.errors.length shouldBe 1
+      resultInvalid.errors.map(_.message).contains("error.confirmAuthorisation.invalid") shouldBe true
+    }
+
+    "return no error when unbinding the form" in {
+      val unboundForm = confirmAuthorisationForm.mapping.unbind(ConfirmAuthForm(Some("yes")))
+      unboundForm("confirmAuthorisation") shouldBe "yes"
     }
   }
 

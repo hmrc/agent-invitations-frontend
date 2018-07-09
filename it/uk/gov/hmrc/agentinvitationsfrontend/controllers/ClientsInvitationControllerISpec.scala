@@ -19,6 +19,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc.{Action, AnyContent, Cookie}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 
@@ -29,30 +32,31 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
   "GET /:invitationId (landing page)" should {
 
     "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
-      val strangePrefixInvId = InvitationId("ZTSF4OW9CCRPT")
-      val result = controller.start(strangePrefixInvId)(FakeRequest())
+      val result = controller.start(invalidInvitationId)(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
+  }
 
-    "show a signout url on the landing page if the user is authenticated" in {
-      val result = controller.start(invitationIdITSA)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
-      status(result) shouldBe OK
-      checkHasClientSignOutUrl(result)
+  "POST /:invitationId (landing page)" should {
+
+    "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
+      val result =
+        controller.submitStart(invalidInvitationId)(FakeRequest())
+      status(result) shouldBe SEE_OTHER
+    }
+
+    "throw an error when the radio button selection is invalid" in {
+
     }
   }
 
-  "POST / (clicking accept on the landing page)" should {
-    val submitStart: Action[AnyContent] = controller.submitStart(invitationIdITSA)
-
-    "redirect to /accept-tax-agent-invitation/2" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      val result =
-        submitStart(authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
+  "GET /decide-later/:invitationId" should {
+    "redirect to notFoundInvitation when the invitation ID prefix is not a known service" in {
+      val strangePrefixInvId = InvitationId("ZTSF4OW9CCRPT")
+      val result = controller.getDecideLater(strangePrefixInvId)(FakeRequest())
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController
-        .getConfirmTerms(invitationIdITSA)
-        .url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
     }
   }
 
