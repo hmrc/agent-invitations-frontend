@@ -141,7 +141,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       status(resultITSA) shouldBe OK
       checkHtmlResultWithBodyText(
         resultITSA,
-        htmlEscapedMessage("confirm-terms.itsa.title", htmlEscapedMessage("title.suffix.client")))
+        htmlEscapedMessage("confirm-terms.heading", htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.heading"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet1"))
@@ -412,9 +412,9 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.itsa.sub-header", "My Agency"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.sub-header", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -506,9 +506,9 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       status(resultITSA) shouldBe OK
       checkHtmlResultWithBodyText(
         resultITSA,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("error.confirmInvite.invalid"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-decline.heading", "My Agency"))
+      checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("error.confirmDecline.invalid"))
     }
 
     "redirect to declined page when YES was selected" in {
@@ -516,7 +516,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       givenGetAgencyNameStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
-        .withFormUrlEncodedBody("confirmInvite" -> "true")
+        .withFormUrlEncodedBody("confirmDecline" -> "true")
       val resultITSA = submitConfirmInvitationITSA(reqITSA)
 
       status(resultITSA) shouldBe SEE_OTHER
@@ -528,7 +528,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       givenGetAgencyNameStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
-        .withFormUrlEncodedBody("confirmInvite" -> "false")
+        .withFormUrlEncodedBody("confirmDecline" -> "false")
       val resultITSA = controller.submitConfirmDecline(invitationIdITSA).apply(reqITSA)
 
       status(resultITSA) shouldBe SEE_OTHER
