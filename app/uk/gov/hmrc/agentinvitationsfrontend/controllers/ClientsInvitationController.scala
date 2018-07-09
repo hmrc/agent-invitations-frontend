@@ -130,7 +130,7 @@ class ClientsInvitationController @Inject()(
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
             invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-              Ok(confirm_invitation(confirmInvitationForm, agencyName, invitationId, messageKey))
+              Ok(confirm_decline(confirmDeclineForm, agencyName, invitationId, messageKey))
             }
           })
         }
@@ -143,12 +143,12 @@ class ClientsInvitationController @Inject()(
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
           withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            confirmInvitationForm
+            confirmDeclineForm
               .bindFromRequest()
               .fold(
                 formWithErrors => {
                   invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                    Ok(confirm_invitation(formWithErrors, agencyName, invitationId, messageKey))
+                    Ok(confirm_decline(formWithErrors, agencyName, invitationId, messageKey))
                   }
                 },
                 data => {
@@ -334,15 +334,15 @@ object ClientsInvitationController {
       Invalid(ValidationError(invalidError))
   }
 
-  val invitationChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmInvite.invalid")
+  val declineChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmDecline.invalid")
 
   val termsChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmTerms.invalid")
 
   val authChoice: Constraint[Option[String]] = radioChoice("error.confirmAuthorisation.invalid")
 
-  val confirmInvitationForm: Form[ConfirmForm] = Form[ConfirmForm](
-    mapping("confirmInvite" -> optional(boolean)
-      .verifying(invitationChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
+  val confirmDeclineForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping("confirmDecline" -> optional(boolean)
+      .verifying(declineChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 
   val confirmTermsForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping("confirmTerms" -> optional(boolean)
