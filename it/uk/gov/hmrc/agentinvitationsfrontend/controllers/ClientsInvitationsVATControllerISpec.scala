@@ -51,10 +51,12 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
         hasMessage(
           "generic.title",
           htmlEscapedMessage("landing-page.vat.header"),
-          htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+          htmlEscapedMessage("title.suffix.client"),
+          htmlEscapedMessage("landing-page.reminder"),
+          htmlEscapedMessage("landing-page.radio1")))
     }
+
+
 
     "show a signout url on the landing page if the user is authenticated" in {
       val result = controller.start(invitationIdVAT)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
@@ -113,7 +115,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.vat.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+      htmlEscapedMessage("landing-page.reminder")
     }
 
     "throw an error when the radio button selection is invalid" in {
