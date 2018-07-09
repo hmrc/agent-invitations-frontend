@@ -26,8 +26,10 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
   val postcodeEmptyMessage: String = "error.postcode.required"
   val postcodeFormatMessage: String = "enter-postcode.invalid-format"
+  val postcodeCharactersMessage: String = "enter-postcode.invalid-characters"
   val postcodeEmptyFormError: FormError = FormError("postcode", List(postcodeEmptyMessage))
   val postcodeFormatFormError: FormError = FormError("postcode", List(postcodeFormatMessage))
+  val postcodeCharacterFormError: FormError = FormError("postcode", List(postcodeCharactersMessage))
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
 
@@ -54,10 +56,17 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
       postcodeForm.errors.isEmpty shouldBe true
     }
 
-    "return an error message for invalid postcode" in {
+    "return an error message for invalid format postcode" in {
       val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "W12")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeFormatFormError) shouldBe true
+      postcodeForm.errors.length shouldBe 1
+    }
+
+    "return an error message for postcode with invalid characters" in {
+      val data = Json.obj("clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "postcode" -> "$%$%$%")
+      val postcodeForm = agentInvitationPostCodeForm.bind(data)
+      postcodeForm.errors.contains(postcodeCharacterFormError) shouldBe true
       postcodeForm.errors.length shouldBe 1
     }
 
