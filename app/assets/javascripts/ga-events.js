@@ -54,14 +54,14 @@ $(function() {
     // radio onclick
     $('fieldset:not('+exclude+') input:radio').each(function(){
         $(this).click(function(e){
-     		ga('send', 'event', 'radio-click', title, $(this).closest('fieldset').find('legend').text() + " - " + $(this).val())
+     		ga('send', 'event', 'radio-click', title, $(this).closest('fieldset').attr('id') + " - " + $(this).val())
      	});
     });
 
     // checkbox onclick
     $('fieldset:not('+exclude+') input:checkbox').each(function(){
         $(this).click(function(e){
-     		ga('send', 'event', 'checkbox-click', title, $(this).closest('fieldset').find('legend').text() + " - " + $(this).val())
+     		ga('send', 'event', 'checkbox-click', title, $(this).closest('fieldset').attr('id') + " - " + $(this).val())
      	});
     });
 
@@ -70,7 +70,7 @@ $(function() {
 
     	// selected radio on submit
     	$('fieldset:not('+exclude+') input:radio:checked').each(function(){
-     		ga('send', 'event', 'radio-selected', title, $(this).closest('fieldset').find('legend').text() + " - " + $(this).val())
+     		ga('send', 'event', 'radio-selected', title, $(this).closest('fieldset').attr('id') + " - " + $(this).val())
     	});
 
     	// selected checkbox on submit
@@ -86,7 +86,7 @@ $(function() {
     		});
 
     		if(getName){
-    			ga('send', 'event', 'checkbox-selected', title, $('[name="' + getName + '"]').closest('fieldset').find('legend').text() + " - " + allVals)
+    			ga('send', 'event', 'checkbox-selected', title, $('[name="' + getName + '"]').closest('fieldset').attr('id') + " - " + allVals)
     		}
     	});
     });
