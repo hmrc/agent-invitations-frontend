@@ -141,7 +141,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-terms.afi.title", htmlEscapedMessage("title.suffix.client")))
+        htmlEscapedMessage("confirm-terms.heading", htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.afi.bullet1"))
@@ -398,9 +398,9 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.afi.sub-header", "My Agency"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.afi.sub-header", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -484,9 +484,9 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       status(resultAFI) shouldBe OK
       checkHtmlResultWithBodyText(
         resultAFI,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmInvite.invalid"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-decline.heading", "My Agency"))
+      checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("error.confirmDecline.invalid"))
     }
 
     "redirect to declined page when YES was selected" in {
@@ -494,7 +494,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenGetAgencyNameStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
-        .withFormUrlEncodedBody("confirmInvite" -> "true")
+        .withFormUrlEncodedBody("confirmDecline" -> "true")
       val resultAFI = submitConfirmInvitationAFI(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
@@ -506,7 +506,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenGetAgencyNameStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
-        .withFormUrlEncodedBody("confirmInvite" -> "false")
+        .withFormUrlEncodedBody("confirmDecline" -> "false")
       val resultAFI = controller.submitConfirmDecline(invitationIdPIR).apply(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER

@@ -141,7 +141,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
 
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-terms.vat.title", htmlEscapedMessage("title.suffix.client")))
+        htmlEscapedMessage("confirm-terms.heading", htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.subheading1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.vat.bullet1"))
@@ -406,9 +406,9 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-invitation.vat.sub-header", "My Agency"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.vat.sub-header", "My Agency"))
       checkHasClientSignOutUrl(result)
     }
 
@@ -482,9 +482,9 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       status(resultVAT) shouldBe OK
       checkHtmlResultWithBodyText(
         resultVAT,
-        htmlEscapedMessage("confirm-invitation.title", htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(resultVAT, htmlEscapedMessage("confirm-invitation.heading", "My Agency"))
-      checkHtmlResultWithBodyText(resultVAT, htmlEscapedMessage("error.confirmInvite.invalid"))
+        htmlEscapedMessage("confirm-decline.heading", htmlEscapedMessage("title.suffix.client")))
+      checkHtmlResultWithBodyText(resultVAT, htmlEscapedMessage("confirm-decline.heading", "My Agency"))
+      checkHtmlResultWithBodyText(resultVAT, htmlEscapedMessage("error.confirmDecline.invalid"))
     }
 
     "redirect to declined page when YES was selected" in {
@@ -492,7 +492,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenGetAgencyNameStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
-        .withFormUrlEncodedBody("confirmInvite" -> "true")
+        .withFormUrlEncodedBody("confirmDecline" -> "true")
 
       val resultVAT = submitConfirmInvitationVAT(reqVAT)
 
@@ -505,7 +505,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenGetAgencyNameStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
-        .withFormUrlEncodedBody("confirmInvite" -> "false")
+        .withFormUrlEncodedBody("confirmDecline" -> "false")
 
       val resultVAT = controller.submitConfirmDecline(invitationIdVAT).apply(reqVAT)
 

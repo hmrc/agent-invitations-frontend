@@ -25,27 +25,27 @@ class ClientsInvitationFormSpec extends UnitSpec {
 
   "ConfirmInvite form" should {
     "return no error for the input - Yes" in {
-      val result = confirmDeclineForm.bind(Json.obj("confirmInvite" -> "true"))
+      val result = confirmDeclineForm.bind(Json.obj("confirmDecline" -> "true"))
 
       result.errors.isEmpty shouldBe true
     }
 
     "return no error for the input - No" in {
-      val result = confirmDeclineForm.bind(Json.obj("confirmInvite" -> "false"))
+      val result = confirmDeclineForm.bind(Json.obj("confirmDecline" -> "false"))
 
       result.errors.isEmpty shouldBe true
     }
 
     "return an error for an invalid input" in {
-      val result = confirmDeclineForm.bind(Json.obj("confirmInvite" -> ""))
+      val result = confirmDeclineForm.bind(Json.obj("confirmDecline" -> ""))
 
       result.errors.length shouldBe 1
-      result.errors.map(_.message).contains("error.confirmInvite.invalid") shouldBe true
+      result.errors.map(_.message).contains("error.confirmDecline.invalid") shouldBe true
     }
 
     "return no errors when unbinding the form" in {
       val unboundForm = confirmDeclineForm.mapping.unbind(ConfirmForm(Some(true)))
-      unboundForm("confirmInvite") shouldBe "true"
+      unboundForm("confirmDecline") shouldBe "true"
     }
   }
 
