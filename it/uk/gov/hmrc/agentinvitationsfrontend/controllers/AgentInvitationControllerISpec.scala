@@ -239,14 +239,14 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is HMRC-MTD-IT" should {
 
       "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
-        createInvitationStubWithKnownFacts(
+        createInvitationStub(
           arn,
           validNino.value,
           invitationIdITSA,
           validNino.value,
+          "ni",
           "HMRC-MTD-IT",
-          "NI",
-          Some(validPostcode))
+          "NI")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -319,7 +319,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is HMRC-MTD-VAT" should {
 
       "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
-        createInvitationStubForNoKnownFacts(
+        createInvitationStub(
           arn,
           validVrn.value,
           invitationIdVAT,
@@ -437,14 +437,14 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
-        createInvitationStubWithKnownFacts(
+        createInvitationStub(
           arn,
           validNino.value,
           invitationIdPIR,
           validNino.value,
+          "ni",
           servicePIR,
-          "NI",
-          None)
+          "NI")
         givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
