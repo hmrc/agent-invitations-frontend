@@ -38,7 +38,7 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Create Invitation" when {
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", Some("AB1 1BA"))
+      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
         createInvitationStubWithKnownFacts(
           arn,
@@ -63,7 +63,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
+      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
         createInvitationStubForNoKnownFacts(
           arn,
@@ -87,7 +87,7 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
+      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value)
       "return a link of a VAT created invitation" in {
         createInvitationStubForNoKnownFacts(
           arn,

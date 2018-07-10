@@ -21,12 +21,18 @@ import play.api.libs.json.{JsPath, Json, Reads}
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
+trait KnownFacts {
+  val value: String
+}
+
+case class Postcode(value: String) extends KnownFacts
+case class VatRegDate(value: String) extends KnownFacts
+
 case class CurrentInvitationInput(
   service: Option[String],
   clientIdentifierType: Option[String],
   clientIdentifier: Option[String],
-  postcode: Option[String],
-  vatRegDate: Option[String],
+  knownFact: Option[String],
   fromFastTrack: Boolean = false)
 
 object CurrentInvitationInput {
@@ -34,9 +40,9 @@ object CurrentInvitationInput {
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false
 
-  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, None, fromManual)
+  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, fromManual)
   def apply(service: String): CurrentInvitationInput =
-    CurrentInvitationInput(Some(service), None, None, None, None, fromManual)
+    CurrentInvitationInput(Some(service), None, None, None, fromManual)
 
   implicit val format = Json.format[CurrentInvitationInput]
 
@@ -44,8 +50,7 @@ object CurrentInvitationInput {
     ((JsPath \ "service").readNullable[String] and
       (JsPath \ "clientIdentifierType").readNullable[String] and
       (JsPath \ "clientIdentifier").readNullable[String] and
-      (JsPath \ "postcode").readNullable[String] and
-      (JsPath \ "vatRegDate").readNullable[String])((a, b, c, d, e) => CurrentInvitationInput(a, b, c, d, e))
+      (JsPath \ "knownFact").readNullable[String])((a, b, c, d) => CurrentInvitationInput(a, b, c, d))
   }
 }
 
@@ -71,5 +76,5 @@ case class FastTrackPirInvitation(clientIdentifier: Nino) extends FastTrackInvit
 case class FastTrackVatInvitation(clientIdentifier: Vrn, vatRegDate: Option[String]) extends FastTrackInvitation[Vrn] {
   val service = Services.HMRCMTDVAT
   val clientIdentifierType = "vrn"
-  val knownFact = None
+  val knownFact = vatRegDate
 }

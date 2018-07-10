@@ -239,23 +239,23 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is HMRC-MTD-IT" should {
 
       "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
-        createInvitationStubWithKnownFacts(
+        createInvitationStubForNoKnownFacts(
           arn,
           validNino.value,
           invitationIdITSA,
           validNino.value,
+          "ni",
           "HMRC-MTD-IT",
-          "NI",
-          Some(validPostcode))
+          "NI")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
-          CurrentInvitationInput(Some("HMRC-MTD-IT"), None, Some(validNino.value), Some(validPostcode), None))
+          CurrentInvitationInput(Some("HMRC-MTD-IT"), None, Some(validNino.value), Some(validPostcode)))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "postcode"         -> validPostcode)
+          "knownFact"         -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -264,7 +264,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
       "redisplay page with errors when an empty NINO is submitted" in {
         val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> "", "postcode" -> validPostcode)
+          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> "", "knownFact" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -276,7 +276,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> "invalid",
-          "postcode"         -> validPostcode)
+          "knownFact"         -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -286,7 +286,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
       "redisplay page with errors when an empty postcode is submitted" in {
         val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> validNino.value, "postcode" -> "")
+          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> validNino.value, "knownFact" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -298,7 +298,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "postcode"         -> "invalid")
+          "knownFact"         -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -308,7 +308,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
       "redirect to /agents/select-service if service is missing" in {
         val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value, "postcode" -> validPostcode)
+          .withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value, "knownFact" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -333,17 +333,16 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         testFastTrackCache.save(
           CurrentInvitationInput(
             Some("HMRC-MTD-VAT"),
-            None,
+            Some("vrn"),
             Some(validVrn.value),
-            None,
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"                -> "HMRC-MTD-VAT",
           "clientIdentifier"       -> validVrn.value,
-          "registrationDate.year"  -> "2007",
-          "registrationDate.month" -> "7",
-          "registrationDate.day"   -> "7"
+          "knownFact.year"  -> "2007",
+          "knownFact.month" -> "7",
+          "knownFact.day"   -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -355,7 +354,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "",
-          "registrationDate" -> validRegistrationDate)
+          "knownFact" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -367,7 +366,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "invalid",
-          "registrationDate" -> validRegistrationDate)
+          "knownFact" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -379,9 +378,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"                -> "HMRC-MTD-VAT",
           "clientIdentifier"       -> validVrn.value,
-          "registrationDate.year"  -> "2008",
-          "registrationDate.month" -> "",
-          "registrationDate.day"   -> "12"
+          "knownFact.year"  -> "2008",
+          "knownFact.month" -> "",
+          "knownFact.day"   -> "12"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -394,9 +393,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"                -> "HMRC-MTD-VAT",
           "clientIdentifier"       -> validVrn.value,
-          "registrationDate.year"  -> "2007",
-          "registrationDate.month" -> "17",
-          "registrationDate.day"   -> "07"
+          "knownFact.year"  -> "2007",
+          "knownFact.month" -> "17",
+          "knownFact.day"   -> "07"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -409,9 +408,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"                -> "HMRC-MTD-VAT",
           "clientIdentifier"       -> validVrn.value,
-          "registrationDate.year"  -> "INVALID",
-          "registrationDate.month" -> "INVALID",
-          "registrationDate.day"   -> "INVALID"
+          "knownFact.year"  -> "INVALID",
+          "knownFact.month" -> "INVALID",
+          "knownFact.day"   -> "INVALID"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -426,7 +425,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "",
           "clientIdentifier" -> validVrn.value,
-          "registrationDate" -> validRegistrationDate)
+          "knownFact" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -448,7 +447,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), None, Some(validNino.value), None, None))
+        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), None, Some(validNino.value), None))
         val requestWithForm =
           request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -491,7 +490,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for authorised Agent successfully created invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
@@ -607,7 +606,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
       val invitation =
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), None)
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))

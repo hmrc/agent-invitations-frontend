@@ -125,18 +125,11 @@ object TestEndpointsController {
         "service"              -> optional(text),
         "clientIdentifierType" -> optional(text),
         "clientIdentifier"     -> optional(normalizedText),
-        "postcode"             -> optional(text),
-        "vatRegDate"           -> optional(text)
-      )({ (service, clientIdType, clientId, postcode, vatRegDate) =>
-        CurrentInvitationInput(service, clientIdType, clientId, postcode, vatRegDate)
+        "knownFact"            -> optional(text)
+      )({ (service, clientIdType, clientId, knownFact) =>
+        CurrentInvitationInput(service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
-        Some(
-          (
-            fastTrack.service,
-            fastTrack.clientIdentifierType,
-            fastTrack.clientIdentifier,
-            fastTrack.postcode,
-            fastTrack.vatRegDate))
+        Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
       }))
   }
 }

@@ -115,7 +115,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for ITSA" in {
       givenTradingName(validNino, "64 Bit")
       val formData =
-        CurrentInvitationInput(Some(serviceITSA), None, None, None, None, fromManual)
+        CurrentInvitationInput(Some(serviceITSA), None, None, None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
@@ -142,7 +142,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
-        CurrentInvitationInput(Some(servicePIR), None, None, None, None, fromManual)
+        CurrentInvitationInput(Some(servicePIR), None, None, None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
@@ -168,7 +168,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for VAT" in {
       givenClientDetails(validVrn)
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), None, None, None, None, fromManual)
+        CurrentInvitationInput(Some(serviceVAT), None, None, None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
@@ -200,7 +200,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
       val formData =
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(
         arn,
@@ -222,7 +222,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 invitation-sent when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, None, fromFastTrack)
+        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStubForNoKnownFacts(
         arn,
@@ -243,7 +243,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 invitation-sent if service calling fast-track is correct for IRV and kfc flag is on" in {
       val formData =
-        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
+        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       createInvitationStubForNoKnownFacts(
