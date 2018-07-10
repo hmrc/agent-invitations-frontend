@@ -11,35 +11,7 @@ import uk.gov.hmrc.domain.Nino
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createInvitationStubWithKnownFacts(
-    arn: Arn,
-    clientId: String,
-    invitationId: InvitationId,
-    suppliedClientId: String,
-    service: String,
-    serviceIdentifier: String,
-    postcode: Option[String]): Unit =
-    stubFor(
-      post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
-        .withRequestBody(
-          equalToJson(s"""
-                         |{
-                         |   "service": "$service",
-                         |   "clientIdType": "ni",
-                         |   "clientId":"$suppliedClientId"
-                         |   ${postcode.map(p => s""", "clientPostcode":"$p" """).getOrElse("")}
-                         |}""".stripMargin)
-        )
-        .willReturn(
-          aResponse()
-            .withStatus(201)
-            .withHeader(
-              "location",
-              s"$wireMockBaseUrlAsString/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(
-                clientId)}/invitations/received/${invitationId.value}"
-            )))
-
-  def createInvitationStubForNoKnownFacts(
+  def createInvitationStub(
     arn: Arn,
     clientId: String,
     invitationId: InvitationId,
@@ -55,8 +27,7 @@ trait ACAStubs {
                          |   "service": "$service",
                          |   "clientIdType": "$suppliedClientType",
                          |   "clientId":"$suppliedClientId"
-                         |}
-           """.stripMargin)
+                         |}""".stripMargin)
         )
         .willReturn(
           aResponse()

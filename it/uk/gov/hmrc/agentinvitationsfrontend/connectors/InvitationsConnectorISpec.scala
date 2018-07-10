@@ -38,20 +38,20 @@ class InvitationsConnectorISpec extends BaseISpec {
   "Create Invitation" when {
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B", Some("AB1 1BA"))
+      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        createInvitationStubWithKnownFacts(
+        createInvitationStub(
           arn,
-          "mtdItId",
+          "AB123456B",
           invitationIdITSA,
           "AB123456B",
+          "ni",
           serviceITSA,
-          identifierITSA,
-          Some("AB1 1BA"))
+          identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include(
-          "agent-client-authorisation/clients/MTDITID/mtdItId/invitations/received/ABERULMHCKKW3")
+          "agent-client-authorisation/clients/MTDITID/AB123456B/invitations/received/ABERULMHCKKW3")
       }
 
       "return an error if unexpected response when creating ITSA invitation" in {
@@ -63,9 +63,9 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B", None)
+      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
-        createInvitationStubForNoKnownFacts(
+        createInvitationStub(
           arn,
           "AB123456B",
           invitationIdPIR,
@@ -87,9 +87,9 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value, None)
+      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value)
       "return a link of a VAT created invitation" in {
-        createInvitationStubForNoKnownFacts(
+        createInvitationStub(
           arn,
           validVrn97.value,
           invitationIdVAT,

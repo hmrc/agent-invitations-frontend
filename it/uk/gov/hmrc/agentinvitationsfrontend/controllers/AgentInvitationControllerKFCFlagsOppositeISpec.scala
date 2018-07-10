@@ -120,7 +120,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(serviceITSA, Some(validNino.nino), None))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdITSA,
@@ -147,14 +147,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndPostcode(servicePIR, Some(validNino.nino), None))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
-        "NI")
+        identifierPIR)
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val result = submitIdentifyClient(
@@ -173,7 +173,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(serviceVAT, Some(validVrn.value), None))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validVrn.value,
         invitationIdVAT,
@@ -202,7 +202,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val formData =
         CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdITSA,
@@ -224,7 +224,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val formData =
         CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validVrn.value,
         invitationIdVAT,
@@ -246,14 +246,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
-        "NI")
+        identifierPIR)
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
