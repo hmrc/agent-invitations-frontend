@@ -52,9 +52,10 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
         hasMessage(
           "generic.title",
           htmlEscapedMessage("landing-page.itsa.header"),
-          htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+          htmlEscapedMessage("title.suffix.client"),
+          htmlEscapedMessage("landing-page.reminder"),
+          htmlEscapedMessage("landing-page.radio1"))
+        )
     }
 
     "show a signout url on the landing page if the user is authenticated" in {
@@ -110,11 +111,11 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
           submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
         status(result) shouldBe OK
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.itsa.header"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.reminder"))
+        htmlEscapedMessage("error.summary.heading")
+        htmlEscapedMessage("error.confirmAuthorisation.invalid")
+        htmlEscapedMessage("landing-page.itsa.header")
+        htmlEscapedMessage("landing-page.radio1")
+        htmlEscapedMessage("landing-page.reminder")
       }
 
     "throw an error when the radio button selection is invalid" in {

@@ -35,9 +35,12 @@ class InvitationsService @Inject()(
   val citizenDetailsConnector: CitizenDetailsConnector)
     extends GetClientName {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: String, clientIdentifier: TaxIdentifier)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[StoredInvitation] = {
+  def createInvitation(
+    arn: Arn,
+    service: String,
+    clientIdentifierType: String,
+    clientIdentifier: TaxIdentifier,
+    postcode: Option[String])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
     val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value)
 
     for {

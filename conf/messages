@@ -21,7 +21,8 @@ error.nino.required=Enter your client''s National Insurance number
 # Postcode
 identify-client.postcode.label=Postcode
 identify-client.postcode.hint=This is the postcode of your client''s registered address
-enter-postcode.invalid-format=Postcode must only include letters a to z, numbers and spaces, like AA1 1AA
+enter-postcode.invalid-format=Enter a valid postcode, like AA1 1AA
+enter-postcode.invalid-characters=Postcode must only include letters a to z, numbers and spaces, for example AA1 1AA
 error.postcode.required=Enter your client''s postcode
 
 # Vrn
@@ -98,7 +99,7 @@ not-matched.afi.button = Try again
 landing-page.itsa.header=Do you want to authorise your tax agent to report your income and expenses through software?
 landing-page.afi.header=Do you want to authorise your tax agent to view your income record?
 landing-page.vat.header=Do you want to authorise your tax agent to report your VAT returns through software?
-landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent's authorisation for the same service.
+landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent''s authorisation for the same service.
 landing-page.radio1=Yes
 landing-page.radio2=No
 landing-page.radio3=I want to decide later

@@ -49,7 +49,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected ITSA, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         mtdItId.value,
         invitationIdITSA,
@@ -71,7 +71,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino then selected IRV, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, Some("ni"), Some(validNino.value), None, fromFastTrack))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,
@@ -93,7 +93,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid VAT Information and selected VAT, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, Some("vrn"), Some(validVrn97.value), validRegDateForVrn97, fromFastTrack))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validVrn97.value,
         invitationIdVAT,
@@ -115,7 +115,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid VAT Information but selected ITSA, redirect to /agents/identify-client" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, Some("vrn"), Some(validVrn97.value), validRegDateForVrn97, fromFastTrack))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validVrn97.value,
         invitationIdVAT,
@@ -137,7 +137,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, Some("ni"), Some(validNino.value), None, fromFastTrack))
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,
@@ -170,7 +170,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
           Some(validPostcode),
           fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStubForNoKnownFacts(
+
+      createInvitationStub(
         arn,
         mtdItId.value,
         invitationIdITSA,
@@ -197,7 +198,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
           validRegDateForVrn97,
           fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validVrn97.value,
         invitationIdVAT,
@@ -220,7 +221,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,
@@ -502,7 +503,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
       givenCitizenDetailsReturns404For(validNino.value)
-      createInvitationStubForNoKnownFacts(
+      createInvitationStub(
         arn,
         validNino.value,
         invitationIdPIR,

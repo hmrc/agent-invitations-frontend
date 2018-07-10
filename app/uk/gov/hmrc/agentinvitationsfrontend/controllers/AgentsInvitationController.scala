@@ -551,6 +551,8 @@ object AgentsInvitationController {
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
+  private val postcodeCharactersRegex = "^[a-zA-Z0-9 ]+$"
+
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.nonEmpty)
       Valid
@@ -573,13 +575,17 @@ object AgentsInvitationController {
   private val validVrn =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
 
-  def validPostcode(isKfcFlagOn: Boolean, regexFailure: String, emptyFailure: String) = Constraint[String] {
-    (input: String) =>
-      if (isKfcFlagOn) {
-        if (input.isEmpty) Invalid(ValidationError(emptyFailure))
-        else if (!input.matches(postcodeRegex)) Invalid(ValidationError(regexFailure))
-        else Valid
-      } else Valid
+  def validPostcode(
+    isKfcFlagOn: Boolean,
+    invalidFormatFailure: String,
+    emptyFailure: String,
+    invalidCharactersFailure: String) = Constraint[String] { (input: String) =>
+    if (isKfcFlagOn) {
+      if (input.isEmpty) Invalid(ValidationError(emptyFailure))
+      else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
+      else if (!input.matches(postcodeRegex)) Invalid(ValidationError(invalidFormatFailure))
+      else Valid
+    } else Valid
   }
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
@@ -596,7 +602,11 @@ object AgentsInvitationController {
         "knownFact" -> optionalIf(
           featureFlags.showKfcMtdIt,
           trimmedUppercaseText.verifying(
-            validPostcode(featureFlags.showKfcMtdIt, "enter-postcode.invalid-format", "error.postcode.required"))
+            validPostcode(
+              featureFlags.showKfcMtdIt,
+              "enter-postcode.invalid-format",
+              "error.postcode.required",
+              "enter-postcode.invalid-characters"))
         )
       )({ (service, clientIdentifier, postcode) =>
         UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), postcode)
@@ -657,7 +667,11 @@ object AgentsInvitationController {
         "knownFact" -> optionalIf(
           featureFlags.showKfcMtdIt,
           trimmedUppercaseText.verifying(
-            validPostcode(featureFlags.showKfcMtdIt, "enter-postcode.invalid-format", "error.postcode.required"))
+            validPostcode(
+              featureFlags.showKfcMtdIt,
+              "enter-postcode.invalid-format",
+              "error.postcode.required",
+              "enter-postcode.invalid-characters"))
         )
       )({ (service, nino, postcode) =>
         UserInputNinoAndPostcode(service, Some(nino.trim.toUpperCase()), postcode)

@@ -239,7 +239,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is HMRC-MTD-IT" should {
 
       "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
-        createInvitationStubForNoKnownFacts(
+        createInvitationStub(
           arn,
           validNino.value,
           invitationIdITSA,
@@ -294,7 +294,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         checkHasAgentSignOutLink(result)
       }
 
-      "redisplay page with errors when an invalid postcode is submitted" in {
+      "redisplay page with errors when a postcode with invalid format is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
@@ -303,6 +303,18 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when a postcode with invalid characters is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service"          -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "postcode"         -> "invalid%")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-characters")
         checkHasAgentSignOutLink(result)
       }
 
@@ -319,7 +331,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is HMRC-MTD-VAT" should {
 
       "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
-        createInvitationStubForNoKnownFacts(
+        createInvitationStub(
           arn,
           validVrn.value,
           invitationIdVAT,
@@ -436,14 +448,14 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
-        createInvitationStubWithKnownFacts(
+        createInvitationStub(
           arn,
           validNino.value,
           invitationIdPIR,
           validNino.value,
+          "ni",
           servicePIR,
-          "NI",
-          None)
+          "NI")
         givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 

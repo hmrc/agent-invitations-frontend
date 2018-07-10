@@ -51,9 +51,10 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
         hasMessage(
           "generic.title",
           htmlEscapedMessage("landing-page.afi.header"),
-          htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("landing-page.reminder"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("landing-page.radio1"))
+          htmlEscapedMessage("title.suffix.client"),
+          htmlEscapedMessage("landing-page.reminder"),
+          htmlEscapedMessage("landing-page.radio1"))
+        )
     }
 
     "show a signout url on the landing page if the user is authenticated" in {
