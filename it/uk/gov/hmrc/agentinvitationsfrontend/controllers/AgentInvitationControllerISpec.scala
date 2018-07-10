@@ -294,7 +294,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         checkHasAgentSignOutLink(result)
       }
 
-      "redisplay page with errors when an invalid postcode is submitted" in {
+      "redisplay page with errors when a postcode with invalid format is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
@@ -303,6 +303,18 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when a postcode with invalid characters is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service"          -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "postcode"         -> "invalid%")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-characters")
         checkHasAgentSignOutLink(result)
       }
 
