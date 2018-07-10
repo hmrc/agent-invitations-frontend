@@ -41,7 +41,7 @@ class InvitationsService @Inject()(
     clientIdentifierType: String,
     clientIdentifier: TaxIdentifier,
     postcode: Option[String])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
-    val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value, postcode)
+    val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value)
 
     for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
