@@ -35,7 +35,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
@@ -372,7 +372,7 @@ class AgentsInvitationController @Inject()(
     currentInvitationInput: CurrentInvitationInput,
     fastTrackVatInvitation: FastTrackVatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    fastTrackVatInvitation.vatRegDate.map(LocalDate.parse) match {
+    fastTrackVatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
       case Some(vatRegDate) =>
         invitationsService
           .checkVatRegistrationDateMatches(fastTrackVatInvitation.clientIdentifier, vatRegDate) flatMap {
@@ -401,7 +401,8 @@ class AgentsInvitationController @Inject()(
     fastTrackItsaInvitation.postcode match {
       case Some(postcode) =>
         for {
-          hasPostcode <- invitationsService.checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode)
+          hasPostcode <- invitationsService
+                          .checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode.value)
           result <- hasPostcode match {
                      case Some(true) =>
                        createInvitation(arn, fastTrackItsaInvitation)
@@ -579,7 +580,7 @@ object AgentsInvitationController {
     isKfcFlagOn: Boolean,
     invalidFormatFailure: String,
     emptyFailure: String,
-    invalidCharactersFailure: String) = Constraint[String] { (input: String) =>
+    invalidCharactersFailure: String) = Constraint[String] { input: String =>
     if (isKfcFlagOn) {
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
       else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
@@ -742,7 +743,10 @@ object AgentsInvitationController {
         case CurrentInvitationInput(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), postcodeOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcMtdIt || postcodeOpt.exists(
               _.matches(postcodeRegex))) =>
-          Some(FastTrackItsaInvitation(Nino(clientIdentifier), if (featureFlags.showKfcMtdIt) postcodeOpt else None))
+          Some(
+            FastTrackItsaInvitation(
+              Nino(clientIdentifier),
+              if (featureFlags.showKfcMtdIt) postcodeOpt.map(Postcode) else None))
         case _ => None
       }
   }
@@ -762,7 +766,10 @@ object AgentsInvitationController {
         case CurrentInvitationInput(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), vatRegDateOpt, _)
             if Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt.exists(
               DateFieldHelper.validateDate)) =>
-          Some(FastTrackVatInvitation(Vrn(clientIdentifier), if (featureFlags.showKfcMtdVat) vatRegDateOpt else None))
+          Some(
+            FastTrackVatInvitation(
+              Vrn(clientIdentifier),
+              if (featureFlags.showKfcMtdVat) vatRegDateOpt.map(VatRegDate) else None))
         case _ => None
       }
   }

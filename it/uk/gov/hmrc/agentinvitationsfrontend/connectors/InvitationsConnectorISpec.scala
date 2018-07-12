@@ -5,35 +5,16 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class InvitationsConnectorISpec extends BaseISpec {
+class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
 
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[InvitationsConnector]
-
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  val validNino = Nino("AB123456A")
-  val validVrn97 = Vrn("101747696")
-
-  val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdPIR = InvitationId("BT5YMLY6GG2L6")
-
-  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val identifierITSA = "MTDITID"
-  val identifierPIR = "NI"
-
-  val identifierVAT = "VRN"
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-
-  val serviceVAT = "HMRC-MTD-VAT"
 
   "Create Invitation" when {
 
@@ -75,7 +56,7 @@ class InvitationsConnectorISpec extends BaseISpec {
           identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
-        result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/BT5YMLY6GG2L6")
+        result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/B9SCS2T4NZBAX")
       }
 
       "return an error if unexpected response when creating PIR invitation" in {
@@ -87,13 +68,13 @@ class InvitationsConnectorISpec extends BaseISpec {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn97.value)
+      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
         createInvitationStub(
           arn,
-          validVrn97.value,
+          validVrn.value,
           invitationIdVAT,
-          validVrn97.value,
+          validVrn.value,
           "vrn",
           serviceVAT,
           identifierVAT)
@@ -120,7 +101,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       result should not be empty
       result.length shouldBe 18
       result.count(_.clientId == validNino.value) shouldBe 6
-      result.count(_.clientId == validVrn97.value) shouldBe 6
+      result.count(_.clientId == validVrn.value) shouldBe 6
       result.count(_.clientId == "AB123456B") shouldBe 6
       result.count(_.service == "HMRC-MTD-IT") shouldBe 6
       result.count(_.service == "HMRC-MTD-VAT") shouldBe 6
@@ -213,9 +194,9 @@ class InvitationsConnectorISpec extends BaseISpec {
 
     "service is for VAT" should {
       val getVATInvitation =
-        s"/agent-client-authorisation/clients/VRN/${encodePathSegment(validVrn97.value)}/invitations/received/${invitationIdVAT.value}"
+        s"/agent-client-authorisation/clients/VRN/${encodePathSegment(validVrn.value)}/invitations/received/${invitationIdVAT.value}"
       "return VAT Invitation" in {
-        getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+        getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
         val result = await(
           connector
             .getInvitation(getVATInvitation))
@@ -223,7 +204,7 @@ class InvitationsConnectorISpec extends BaseISpec {
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundGetInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+        notFoundGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         an[NotFoundException] shouldBe thrownBy(
           await(connector
             .getInvitation(getVATInvitation)))
@@ -285,26 +266,26 @@ class InvitationsConnectorISpec extends BaseISpec {
 
     "service is for VAT" should {
       "return status 204 if VAT invitation was accepted" in {
-        acceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.acceptVATInvitation(validVrn97, invitationIdVAT))
+        acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         result shouldBe 204
-        verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
-        alreadyActionedAcceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+        alreadyActionedAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         intercept[Upstream4xxResponse] {
-          await(connector.acceptVATInvitation(validVrn97, invitationIdVAT))
+          await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         }
-        verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundAcceptInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+        notFoundAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         intercept[NotFoundException] {
-          await(connector.acceptVATInvitation(validVrn97, invitationIdVAT))
+          await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         }
-        verifyAcceptInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
     }
   }
@@ -363,67 +344,103 @@ class InvitationsConnectorISpec extends BaseISpec {
 
     "service is for VAT" should {
       "return status 204 if VAT invitation was rejected" in {
-        rejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.rejectVATInvitation(validVrn97, invitationIdVAT))
+        rejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe 204
-        verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
-        alreadyActionedRejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+        alreadyActionedRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         intercept[Upstream4xxResponse] {
-          await(connector.rejectVATInvitation(validVrn97, invitationIdVAT))
+          await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         }
-        verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundRejectInvitationStub(validVrn97.value, invitationIdVAT, identifierVAT)
+        notFoundRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         intercept[NotFoundException] {
-          await(connector.rejectVATInvitation(validVrn97, invitationIdVAT))
+          await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         }
-        verifyRejectInvitationAttempt(validVrn97.value, invitationIdVAT, identifierVAT)
+        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
+    }
+  }
+
+  "Check ITSA Registered Client KFC" should {
+    "return Some(true) if DES/ETMP has a matching postcode" in {
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
+
+      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe Some(true)
+
+      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+    }
+
+    "return Some(false) if DES/ETMP has customer ITSA information but has no matching postcode" in {
+      givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
+
+      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe Some(false)
+
+      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+    }
+
+    "return None if DES/ETMP has no customer ITSA information" in {
+      givenNotEnrolledClientITSA(validNino, validPostcode)
+
+      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe None
+
+      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+    }
+
+    "throws 5xx is DES/ETMP is unavailable" in {
+      givenServiceUnavailableITSA(validNino, validPostcode)
+
+      assertThrows[Upstream5xxResponse] {
+        await(connector.checkPostcodeForClient(validNino, validPostcode))
+      }
+
+      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
     }
   }
 
   "Check Vat Registered Client KFC" should {
     "return Some(true) if DES/ETMP has a matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn97, suppliedDate, 204)
+      checkVatRegisteredClientStub(validVrn, suppliedDate, 204)
 
-      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe Some(true)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(true)
 
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
     "return Some(false) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn97, suppliedDate, 403)
+      checkVatRegisteredClientStub(validVrn, suppliedDate, 403)
 
-      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe Some(false)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(false)
 
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
     "return None if DES/ETMP has no customer VAT information" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn97, suppliedDate, 404)
+      checkVatRegisteredClientStub(validVrn, suppliedDate, 404)
 
-      await(connector.checkVatRegisteredClient(validVrn97, suppliedDate)) shouldBe None
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe None
 
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
     "throws 5xx is DES/ETMP is unavailable" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn97, suppliedDate, 502)
+      checkVatRegisteredClientStub(validVrn, suppliedDate, 502)
 
       assertThrows[Upstream5xxResponse] {
-        await(connector.checkVatRegisteredClient(validVrn97, suppliedDate))
+        await(connector.checkVatRegisteredClient(validVrn, suppliedDate))
       }
 
-      verifyCheckVatRegisteredClientStubAttempt(validVrn97, suppliedDate)
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
   }
 }

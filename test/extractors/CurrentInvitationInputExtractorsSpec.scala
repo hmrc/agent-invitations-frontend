@@ -18,7 +18,7 @@ package extractors
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, Postcode, VatRegDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
@@ -44,7 +44,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
         fti.map(_.clientIdentifier) shouldBe Some(nino)
-        fti.flatMap(_.postcode) shouldBe Some(validPostcode)
+        fti.flatMap(_.postcode) shouldBe Some(Postcode(validPostcode))
       }
     }
 
@@ -199,7 +199,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.vatRegDate) shouldBe Some(validRegDateForVrn97)
+        fti.flatMap(_.vatRegDate) shouldBe Some(VatRegDate(validRegDateForVrn97))
       }
     }
 
@@ -212,7 +212,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
         fti.map(_.clientIdentifier) shouldBe Some(vrn)
-        fti.flatMap(_.vatRegDate) shouldBe Some(validRegDateForVrn97)
+        fti.flatMap(_.vatRegDate) shouldBe Some(VatRegDate(validRegDateForVrn97))
       }
 
       "the service is HMRC-MTD-VAT and there is a valid Vrn and invalid VatRegDate" in {

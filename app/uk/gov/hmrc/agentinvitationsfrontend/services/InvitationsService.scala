@@ -17,14 +17,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,12 +33,9 @@ class InvitationsService @Inject()(
   val citizenDetailsConnector: CitizenDetailsConnector)
     extends GetClientName {
 
-  def createInvitation(
-    arn: Arn,
-    service: String,
-    clientIdentifierType: String,
-    clientIdentifier: TaxIdentifier,
-    postcode: Option[String])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StoredInvitation] = {
+  def createInvitation(arn: Arn, service: String, clientIdentifierType: String, clientIdentifier: TaxIdentifier)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[StoredInvitation] = {
     val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value)
 
     for {

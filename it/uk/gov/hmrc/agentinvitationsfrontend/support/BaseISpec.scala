@@ -138,4 +138,12 @@ abstract class BaseISpec
     val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, continueUrl)
   }
+
+  def checkHasAgentSignOutLink(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val asAcHomepageExternalUrl = wireMockBaseUrlAsString
+    val continueUrl =
+      URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+  }
 }

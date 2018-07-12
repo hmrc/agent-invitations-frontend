@@ -85,8 +85,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
             "knownFact.month"  -> "",
             "knownFact.day"    -> "1")
           val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-          registrationDateForm.errors shouldBe Seq(
-            FormError("registrationDate", List("error.vat-registration-date.required")))
+          registrationDateForm.errors shouldBe Seq(FormError("knownFact", List("error.vat-registration-date.required")))
         }
 
         "registrationDate is empty" in {

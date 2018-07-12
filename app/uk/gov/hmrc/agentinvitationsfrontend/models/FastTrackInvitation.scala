@@ -21,12 +21,12 @@ import play.api.libs.json.{JsPath, Json, Reads}
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
-trait KnownFacts {
+trait KnownFact {
   val value: String
 }
 
-case class Postcode(value: String) extends KnownFacts
-case class VatRegDate(value: String) extends KnownFacts
+case class Postcode(value: String) extends KnownFact
+case class VatRegDate(value: String) extends KnownFact
 
 case class CurrentInvitationInput(
   service: Option[String],
@@ -58,10 +58,11 @@ trait FastTrackInvitation[T <: TaxIdentifier] {
   def service: String
   def clientIdentifier: T
   def clientIdentifierType: String
-  def knownFact: Option[String]
+  def knownFact: Option[KnownFact]
 }
 
-case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[String]) extends FastTrackInvitation[Nino] {
+case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[Postcode])
+    extends FastTrackInvitation[Nino] {
   val service = Services.HMRCMTDIT
   val clientIdentifierType = "ni"
   val knownFact = postcode
@@ -73,7 +74,8 @@ case class FastTrackPirInvitation(clientIdentifier: Nino) extends FastTrackInvit
   val knownFact = None
 }
 
-case class FastTrackVatInvitation(clientIdentifier: Vrn, vatRegDate: Option[String]) extends FastTrackInvitation[Vrn] {
+case class FastTrackVatInvitation(clientIdentifier: Vrn, vatRegDate: Option[VatRegDate])
+    extends FastTrackInvitation[Vrn] {
   val service = Services.HMRCMTDVAT
   val clientIdentifierType = "vrn"
   val knownFact = vatRegDate

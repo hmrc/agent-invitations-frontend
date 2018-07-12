@@ -43,17 +43,13 @@
           '_inputClass -> "input--medium input--cleared"
         )
 
-        @input(
-          fastTrackForm("postcode"),
-          '_label -> "Enter Postcode",
+          @input(
+          fastTrackForm("knownFact"),
+          '_label -> "Enter Known Fact",
           '_inputClass -> "input--medium input--cleared"
         )
 
-        @input(
-          fastTrackForm("vatRegDate"),
-          '_label -> "Enter Vat Reg Date",
-          '_inputClass -> "input--medium input--cleared"
-        )
+          @Html("""<p>""" + "Example Postcode: DH14EJ" + """</p>""" + """<p>""" + "Example Date: 2007-07-07" + """</p>""")
       </div>
     </fieldset>
     <div class="form-group">

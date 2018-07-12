@@ -70,7 +70,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
       "return an error message" when {
         "postcode is invalid" in {
-          val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
+          val dataWithInvalidPostcode = validData + ("knownFact" -> JsString("W12"))
           val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode)
           postcodeForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
         }

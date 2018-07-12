@@ -441,7 +441,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         fromFastTrack)
       testFastTrackCache.save(formData)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
-      givenNotEnrolledClient(validNino, validPostcode)
+      givenNotEnrolledClientITSA(validNino, validPostcode)
 
       val form = agentFastTrackForm.fill(formData)
       val result = fastTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))

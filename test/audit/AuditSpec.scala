@@ -24,7 +24,7 @@ import org.scalatest.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.CurrentInvitationInputItsaReady
-import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, KnownFact, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -62,7 +62,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
             val service: String = agentInvitaitonUserInput.service
             val clientIdentifier: Nino = Nino("WM123456C")
             val clientIdentifierType: String = "ni"
-            val knownFact: Option[String] = None
+            val knownFact: Option[KnownFact] = None
           },
           result
         )(hc, FakeRequest("GET", "/path")))
