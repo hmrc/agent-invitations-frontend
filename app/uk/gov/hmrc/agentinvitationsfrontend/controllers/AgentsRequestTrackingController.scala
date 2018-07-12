@@ -46,7 +46,9 @@ class AgentsRequestTrackingController @Inject()(
       implicit val now: LocalDate = LocalDate.now()
       requestsTrackingService
         .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
-        .map(invitations => Ok(recent_invitations(invitations, trackRequestsShowLastDays)))
+        .map(invitations =>
+          if (featureFlags.enableTrackRequests) Ok(recent_invitations(invitations, trackRequestsShowLastDays))
+          else BadRequest)
     }
   }
 

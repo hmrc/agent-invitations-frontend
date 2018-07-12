@@ -56,6 +56,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val requestTrackingController: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   val arn = Arn("TARN0000001")
   val mtdItId = MtdItId("ABCDEF123456789")
   private val validNino = Nino("AB123456A")
@@ -129,6 +130,20 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
     }
 
+  }
+
+  "GET /track" should {
+
+    val request = FakeRequest("GET", "/track/")
+
+    "return a bad request when the enable-track-requests flag is off" in {
+      givenAllInvitationsStub(arn)
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenClientDetails(Vrn("101747696"))
+      val result = requestTrackingController.showTrackRequests(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 400
+    }
   }
 
 }
