@@ -32,7 +32,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val featureFlags = FeatureFlags()
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
+      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "knownFact" -> "W12 7TQ")
 
       "return no error message" when {
         "NINO and postcode are valid" in {
@@ -40,12 +40,12 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
         }
 
         "NINO and postcode are valid, but postcode contains spaces" in {
-          val dataWithPostcodeSpaces = validData + ("postcode" -> JsString("  W12 7TQ  "))
+          val dataWithPostcodeSpaces = validData + ("knownFact" -> JsString("  W12 7TQ  "))
           agentInvitationIdentifyClientForm.bind(dataWithPostcodeSpaces).errors.isEmpty shouldBe true
         }
 
-        "NINO and postcode are valid, but postcode is lower case" in {
-          val dataWithPostcodeLowercase = validData + ("postcode" -> JsString("w12 7tq"))
+        "NINO and postcode are valid, but knownFact is lower case" in {
+          val dataWithPostcodeLowercase = validData + ("knownFact" -> JsString("w12 7tq"))
           agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
         }
 
@@ -63,22 +63,22 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
             UserInputNinoAndPostcode("HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
           )
-          unboundForm("postcode") shouldBe "AA1 1AA"
+          unboundForm("knownFact") shouldBe "AA1 1AA"
           unboundForm("clientIdentifier") shouldBe "AE123456C"
         }
       }
 
       "return an error message" when {
         "postcode is invalid" in {
-          val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
+          val dataWithInvalidPostcode = validData + ("knownFact" -> JsString("W12"))
           val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("enter-postcode.invalid-format")))
+          postcodeForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
         }
 
         "postcode is empty" in {
-          val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
+          val dataWithEmptyPostcode = validData + ("knownFact" -> JsString(""))
           val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("error.postcode.required")))
+          postcodeForm.errors shouldBe Seq(FormError("knownFact", List("error.postcode.required")))
         }
 
         "NINO is invalid" in {
@@ -99,7 +99,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val featureFlags = FeatureFlags().copy(showKfcMtdIt = false)
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "postcode" -> "W12 7TQ")
+      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "knownFact" -> "W12 7TQ")
 
       "return no error message" when {
         "NINO and postcode are valid" in {
@@ -107,12 +107,12 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
         }
 
         "NINO is valid but postcode is not" in {
-          val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
+          val dataWithInvalidPostcode = validData + ("knownFact" -> JsString("W12"))
           agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors.isEmpty shouldBe true
         }
 
         "NINO is valid and postcode is empty" in {
-          val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
+          val dataWithEmptyPostcode = validData + ("knownFact" -> JsString(""))
           agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode).errors.isEmpty shouldBe true
         }
       }

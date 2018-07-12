@@ -15,8 +15,7 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
     Some("service"),
     Some("clientIdentifierType"),
     Some("clientIdentifier"),
-    Some("postcode"),
-    Some("vatRegDate"))
+    Some("knownFact"))
 
   "FastTrackKeyStoreCache" should {
     "store and fetch saved fast-track invitation from keystore" in {

@@ -34,32 +34,32 @@ class AgentInvitationNinoFormSpec extends UnitSpec {
 
   "NinoForm" should {
     "return no error message for valid Nino" in {
-      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "WM123456C", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "WM123456C", "knownFact" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid Nino with spaces" in {
-      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "  WM123456C  ", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "  WM123456C  ", "knownFact" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid lower case Nino" in {
-      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "wn123456c", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "wn123456c", "knownFact" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for invalid Nino" in {
-      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "12345", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "12345", "knownFact" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.contains(ninoFormatFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }
 
     "return an error message for empty form" in {
-      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "", "postcode" -> "")
+      val data = Json.obj("service" -> "someService", "clientIdentifier" -> "", "knownFact" -> "")
       val ninoForm = agentInvitationIdentifyClientForm.bind(data)
       ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1

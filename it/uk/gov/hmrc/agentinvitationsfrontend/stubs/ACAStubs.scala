@@ -304,7 +304,7 @@ trait ACAStubs {
                          |}
            """.stripMargin)))
 
-  def givenNotEnrolledClient(nino: Nino, postcode: String) =
+  def givenNotEnrolledClientITSA(nino: Nino, postcode: String) =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
         .willReturn(
@@ -316,6 +316,13 @@ trait ACAStubs {
                          |   "message":"The Client's MTDfB registration was not found."
                          |}
            """.stripMargin)))
+
+  def givenServiceUnavailableITSA(nino: Nino, postcode: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
+        .willReturn(
+          aResponse()
+            .withStatus(502)))
 
   def checkVatRegisteredClientStub(vrn: Vrn, date: LocalDate, responseStatus: Int) =
     stubFor(
@@ -332,6 +339,16 @@ trait ACAStubs {
       getRequestedFor(
         urlEqualTo(
           s"/agent-client-authorisation/agencies/check-vat-known-fact/$vrnEncoded/registration-date/$dateEncoded")))
+  }
+
+  def verifyCheckItsaRegisteredClientStubAttempt(nino: Nino, postcode: String): Unit = {
+    val ninoEncoded = encodePathSegment(nino.value)
+    val postEncoded = encodePathSegment(postcode)
+    verify(
+      1,
+      getRequestedFor(
+        urlEqualTo(
+          s"/agent-client-authorisation/agencies/check-sa-known-fact/$ninoEncoded/postcode/$postEncoded")))
   }
 
   def verifyNoCheckVatRegisteredClientStubAttempt(): Unit =
