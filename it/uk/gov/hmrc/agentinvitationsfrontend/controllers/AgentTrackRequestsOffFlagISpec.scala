@@ -137,10 +137,6 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     val request = FakeRequest("GET", "/track/")
 
     "return a bad request when the enable-track-requests flag is off" in {
-      givenAllInvitationsStub(arn)
-      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
-      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-      givenClientDetails(Vrn("101747696"))
       val result = requestTrackingController.showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 400
     }
