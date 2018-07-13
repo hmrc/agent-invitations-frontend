@@ -28,6 +28,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.recent_invitations
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
+import scala.concurrent.Future
+
 @Singleton
 class AgentsRequestTrackingController @Inject()(
   val auditService: AuditService,
@@ -42,12 +44,13 @@ class AgentsRequestTrackingController @Inject()(
     extends FrontendController with I18nSupport with AuthActions {
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      implicit val now: LocalDate = LocalDate.now()
-      requestsTrackingService
-        .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
-        .map(invitations => Ok(recent_invitations(invitations, trackRequestsShowLastDays)))
-    }
+    if (featureFlags.enableTrackRequests) {
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        implicit val now: LocalDate = LocalDate.now()
+        requestsTrackingService
+          .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
+          .map(invitations => Ok(recent_invitations(invitations, trackRequestsShowLastDays)))
+      }
+    } else Future successful BadRequest
   }
-
 }
