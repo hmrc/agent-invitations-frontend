@@ -61,7 +61,7 @@ abstract class BaseISpec
         "features.show-personal-income"                                       -> true,
         "features.show-hmrc-mtd-vat"                                          -> true,
         "features.show-kfc-mtd-it"                                            -> true,
-        "features.show-kfc-personal-income"                                   -> false,
+        "features.show-kfc-personal-income"                                   -> true,
         "features.show-kfc-mtd-vat"                                           -> true,
         "features.enable-fast-track"                                          -> true,
         "features.enable-track-requests"                                      -> true,

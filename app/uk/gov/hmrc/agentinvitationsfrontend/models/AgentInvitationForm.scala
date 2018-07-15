@@ -28,3 +28,6 @@ case class UserInputNinoAndPostcode(service: String, clientIdentifier: Option[St
 
 case class UserInputVrnAndRegDate(service: String, clientIdentifier: Option[String], registrationDate: Option[String])
     extends AgentInvitationForm
+
+case class UserInputNinoAndDob(service: String, clientIdentifier: Option[String], dob: Option[String])
+    extends AgentInvitationForm

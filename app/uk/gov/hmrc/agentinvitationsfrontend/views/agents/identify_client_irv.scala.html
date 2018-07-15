@@ -15,16 +15,35 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndDob
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[UserInputNinoAndDob])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.nino.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@featureSwitchOn(featureName: String)(content: Html) = {
+@if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
+}
+
+
+@featureSwitchOff(featureName: String)(content: Html) = {
+@if(!configuration.getBoolean(featureName).getOrElse(false)) { @content }
+}
+
+@titleSwitch = @{
+    if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"identify-client.header"}
+    else if(!configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)){"identify-client.nino.header"}
+}
+
+@noJsDateFieldsError = @{
+    if(agentInvitationsForm("knownFact.day").hasErrors || agentInvitationsForm("knownFact.month").hasErrors || agentInvitationsForm("knownFact.year").hasErrors)
+        "nojs-date-fields-error"
+}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(s"${routes.AgentsInvitationController.selectService()}")
 
@@ -34,15 +53,38 @@
         action = routes.AgentsInvitationController.submitIdentifyClient,
         'class -> "form js-form") {
 
-        <div class="form-group margin-top-30">
-        @input(
-            agentInvitationsForm("clientIdentifier"),
-            '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.nino.header") + """</h1>"""),
-            '_inputClass -> "input--medium input--cleared",
-            '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
-            '_labelClass -> "soft--ends"
-        )
-        </div>
+        @featureSwitchOff("features.show-kfc-personal-income") {
+            <div class="form-group margin-top-30">
+            @input(
+                agentInvitationsForm("clientIdentifier"),
+                '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.nino.header") + """</h1>"""),
+                '_inputClass -> "input--medium input--cleared",
+                '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
+                '_labelClass -> "soft--ends"
+            )
+            </div>
+        }
+
+        @featureSwitchOn("features.show-kfc-personal-income") {
+            <div class="form-group margin-top-30">
+            @input(
+                agentInvitationsForm("clientIdentifier"),
+                '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.header") + """</h1>"""),
+                '_inputClass -> "input--medium input--cleared",
+                '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
+                '_labelClass -> "soft--ends"
+            )
+            </div>
+
+            <div class="@noJsDateFieldsError">
+            @dateFieldsFreeInlineLegend(agentInvitationsForm, "knownFact",
+                '_legend -> Messages("identify-client.irv-date-of-birth.label"),
+                '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
+                '_legendSpanClass -> "heading-medium",
+                '_legendClass -> "flush--ends"
+            )
+            </div>
+        }
 
         <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 

@@ -27,6 +27,7 @@ trait KnownFact {
 
 case class Postcode(value: String) extends KnownFact
 case class VatRegDate(value: String) extends KnownFact
+case class DOB(value: String) extends KnownFact
 
 case class CurrentInvitationInput(
   service: Option[String],
@@ -68,10 +69,10 @@ case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[Post
   val knownFact = postcode
 }
 
-case class FastTrackPirInvitation(clientIdentifier: Nino) extends FastTrackInvitation[Nino] {
+case class FastTrackPirInvitation(clientIdentifier: Nino, dob: Option[DOB]) extends FastTrackInvitation[Nino] {
   val service = Services.HMRCPIR
   val clientIdentifierType = "ni"
-  val knownFact = None
+  val knownFact = dob
 }
 
 case class FastTrackVatInvitation(clientIdentifier: Vrn, vatRegDate: Option[VatRegDate])

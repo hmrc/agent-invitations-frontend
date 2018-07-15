@@ -5,8 +5,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate, UserInputNinoAndDob}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,7 +42,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
         "features.show-personal-income"                                       -> true,
         "features.show-hmrc-mtd-vat"                                          -> true,
         "features.show-kfc-mtd-it"                                            -> false,
-        "features.show-kfc-personal-income"                                   -> true,
+        "features.show-kfc-personal-income"                                   -> false,
         "features.show-kfc-mtd-vat"                                           -> false,
         "features.enable-fast-track"                                          -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
@@ -106,6 +106,24 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.label")
       bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.hint")
     }
+
+    "not show a date of birth entry field if service is IRV" in {
+      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
+
+      val form = controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(servicePIR, None, None))
+      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+
+      status(resultFuture) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        resultFuture,
+        "identify-client.nino.header",
+        "identify-client.itsa.p1",
+        "identify-client.nino.hint")
+
+      val result = await(resultFuture)
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.label")
+      bodyOf(result) should not include htmlEscapedMessage("identify-client.vat-registration-date.hint")
+    }
   }
 
   "POST /agents/identify-client" should {
@@ -146,7 +164,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
-          UserInputNinoAndPostcode(servicePIR, Some(validNino.nino), None))
+          UserInputNinoAndDob(servicePIR, Some(validNino.nino), None))
       createInvitationStub(
         arn,
         validNino.value,

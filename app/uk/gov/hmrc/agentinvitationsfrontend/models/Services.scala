@@ -46,6 +46,8 @@ object Services {
   val VRN = "VRN"
   val messageKeyForVAT = "vat"
 
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
+
   def determineService(invitationId: InvitationId): Service =
     invitationId.value.head match {
       case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)

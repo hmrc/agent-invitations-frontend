@@ -90,7 +90,7 @@ class AgentsInvitationController @Inject()(
   val agentInvitationIdentifyClientFormVat: Form[UserInputVrnAndRegDate] =
     AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
 
-  val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndPostcode] =
+  val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
     AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
@@ -146,7 +146,7 @@ class AgentsInvitationController @Inject()(
   private val fastTrackToIdentifyClientFormIrv = (fastTrackDetails: CurrentInvitationInput) => {
     val service = fastTrackDetails.service.getOrElse("")
     val clientId = fastTrackDetails.clientIdentifier
-    agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndPostcode(service, clientId, None))
+    agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(service, clientId, fastTrackDetails.knownFact))
   }
 
   val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
@@ -239,7 +239,8 @@ class AgentsInvitationController @Inject()(
               .getOrElse(CurrentInvitationInput())
               .copy(
                 clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = Some("ni")
+                clientIdentifierType = Some("ni"),
+                knownFact = userInput.dob
               )
             _              <- fastTrackCache.save(invitationWithClientDetails)
             redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
@@ -442,21 +443,27 @@ class AgentsInvitationController @Inject()(
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
       Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
-      invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
-        case Some(_) =>
-          createInvitation(arn, fastTrackPirInvitation)
+      fastTrackPirInvitation.dob match {
+        case Some(dob) =>
+          invitationsService
+            .checkCitizenRecordMatches(fastTrackPirInvitation.clientIdentifier, LocalDate.parse(dob.value))
+            .flatMap {
+              case Some(true) =>
+                createInvitation(arn, fastTrackPirInvitation)
+              case Some(false) =>
+                Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
+                Future successful Redirect(routes.AgentsInvitationController.notMatched())
+              case None =>
+                Logger(getClass).warn(
+                  s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
+                Future successful Redirect(routes.AgentsInvitationController.notMatched())
+            }
         case None =>
-          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
     } else {
-      invitationsService.getCitizenRecord(fastTrackPirInvitation.clientIdentifier).map(_.nino).flatMap {
-        case Some(_) =>
-          createInvitation(arn, fastTrackPirInvitation)
-        case None =>
-          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Record found from Citizen-Details.")
-          Future successful Redirect(routes.AgentsInvitationController.notMatched())
-      }
+      createInvitation(arn, fastTrackPirInvitation)
     }
 
   private[controllers] def confirmAndRedirect(
@@ -487,7 +494,7 @@ class AgentsInvitationController @Inject()(
         knownFactCheckItsa(arn, currentInvitationInput, completeItsaInvitation, isWhitelisted)
 
       case CurrentInvitationInputPirReady(completePirInvitation) =>
-        createInvitation(arn, completePirInvitation)
+        knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
 
       case CurrentInvitationInputNeedsService(_) =>
         Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -549,6 +556,7 @@ class AgentsInvitationController @Inject()(
 object AgentsInvitationController {
 
   import ValidateHelper._
+  import DateFieldHelper._
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
@@ -620,23 +628,27 @@ object AgentsInvitationController {
       mapping(
         "service"          -> text,
         "clientIdentifier" -> normalizedText.verifying(validVrn),
-        "knownFact"        -> optionalIf(featureFlags.showKfcMtdVat, DateFieldHelper.dateFieldsMapping)
+        "knownFact"        -> optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
       )({ (service, clientIdentifier, registrationDate) =>
         UserInputVrnAndRegDate(service, Some(clientIdentifier.trim.toUpperCase()), registrationDate)
       })({ user =>
         Some((user.service, user.clientIdentifier.getOrElse(""), user.registrationDate))
       }))
 
-  def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =
+  def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndDob] =
     Form(
       mapping(
         "service" -> text,
         "clientIdentifier" -> normalizedText.verifying(
-          validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format"))
-      )({ (service, clientIdentifier) =>
-        UserInputNinoAndPostcode(service, Some(clientIdentifier.trim.toUpperCase()), None)
+          validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format")),
+        "knownFact" -> optionalIf(
+          featureFlags.showKfcPersonalIncome,
+          dateFieldsMapping(validDobDateFormat)
+        )
+      )({ (service, clientIdentifier, dob) =>
+        UserInputNinoAndDob(service, Some(clientIdentifier.trim.toUpperCase()), dob)
       })({ user =>
-        Some((user.service, user.clientIdentifier.getOrElse("")))
+        Some((user.service, user.clientIdentifier.getOrElse(""), user.dob))
       }))
 
   val agentInvitationServiceForm: Form[UserInputNinoAndPostcode] = {
@@ -752,12 +764,17 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputPirReady {
-    def unapply(arg: CurrentInvitationInput): Option[FastTrackPirInvitation] = arg match {
-      case CurrentInvitationInput(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), _, _)
-          if Nino.isValid(clientIdentifier) =>
-        Some(FastTrackPirInvitation(Nino(clientIdentifier)))
-      case _ => None
-    }
+    def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
+      arg match {
+        case CurrentInvitationInput(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), dobOpt, _)
+            if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcPersonalIncome || dobOpt.exists(
+              DateFieldHelper.validateDate)) =>
+          Some(
+            FastTrackPirInvitation(
+              Nino(clientIdentifier),
+              if (featureFlags.showKfcPersonalIncome) dobOpt.map(DOB) else None))
+        case _ => None
+      }
   }
 
   object CurrentInvitationInputVatReady {
@@ -804,7 +821,12 @@ object AgentsInvitationController {
             if !postcode.matches(postcodeRegex) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(Some(service), Some(_), Some(_), _, _) if service != Services.HMRCPIR =>
+        case CurrentInvitationInput(Some(HMRCPIR), Some(_), Some(_), Some(dob), _)
+            if !DateFieldHelper.validateDate(dob) =>
+          Some(currentInvitationInput.copy(knownFact = None))
+
+        case CurrentInvitationInput(Some(service), Some(_), Some(_), _, _)
+            if Services.supportedServices.contains(service) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
         case _ => None

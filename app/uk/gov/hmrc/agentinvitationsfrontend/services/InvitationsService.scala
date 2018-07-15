@@ -98,6 +98,11 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
+  def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    invitationsConnector.checkCitizenRecord(nino, dob)
+
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
 
