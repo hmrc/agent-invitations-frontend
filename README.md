@@ -52,11 +52,11 @@ POST   /invitations/agents/fast-track
 
 The following are the supported services and relevant mandatory fields required to create a fast-track invitation:
 
-|service|clientIdentifierType|clientIdentifier|postcode|vatRegDate|
-|--------|---------|-------|-------|-------|
-|HMRC-MTD-IT|ni|Valid Nino|Valid code|N/A|
-|PERSONAL-INCOME-RECORD|ni|Valid Nino|N/A|N/A|
-|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|N/A|Date of Client's VAT Registration|
+|service|clientIdentifierType|clientIdentifier|knownFact|
+|--------|---------|-------|-------|
+|HMRC-MTD-IT|ni|Valid Nino|Valid Postcode|
+|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
+|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
 
 Note: If any information is missing / invalid / unsupported, you will be redirected to the appropriate page to fill in.
 
