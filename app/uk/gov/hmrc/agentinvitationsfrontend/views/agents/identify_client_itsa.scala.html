@@ -22,20 +22,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[UserInputNinoAndPostcode], knownFactFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@featureSwitchOn(featureName: String)(content: Html) = {
-  @if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@featureSwitchOn()(content: Html) = {
+  @if(knownFactFlag) { @content }
 }
 
 
-@featureSwitchOff(featureName: String)(content: Html) = {
-@if(!configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@featureSwitchOff()(content: Html) = {
+@if(!knownFactFlag) { @content }
 }
 
 @titleSwitch = @{
-if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"identify-client.header"}
-    else if(!configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)){"identify-client.nino.header"}
+if(knownFactFlag) {"identify-client.header"}
+    else if(!knownFactFlag){"identify-client.nino.header"}
 }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
@@ -44,7 +44,7 @@ if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"iden
 
 @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
 
-  @featureSwitchOn("features.show-kfc-mtd-it"){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
+  @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 
   <p>@Messages("identify-client.itsa.p1")</p>}
 
@@ -52,7 +52,7 @@ if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"iden
   action = routes.AgentsInvitationController.submitIdentifyClient,
   'class -> "form js-form") {
 
-     @featureSwitchOff("features.show-kfc-mtd-it") {
+     @featureSwitchOff() {
          <div class="form-group margin-top-30">
          @input(
              agentInvitationsForm("clientIdentifier"),
@@ -64,7 +64,7 @@ if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"iden
          </div>
      }
 
-    @featureSwitchOn("features.show-kfc-mtd-it") {
+    @featureSwitchOn() {
 
      <div class="form-group">
      @input(

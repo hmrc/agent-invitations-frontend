@@ -59,10 +59,15 @@ object DateFieldHelper {
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
       vatRegistrationDate => validateDate(vatRegistrationDate))
 
-  val dateFieldsMapping: Mapping[String] = mapping(
-    "year"  -> text.verifying("error.year.invalid-format", y => y.isEmpty || y.matches("^[0-9]{1,4}$")),
-    "month" -> text.verifying("error.month.invalid-format", m => m.isEmpty || m.matches("^[0-9]{1,2}$")),
-    "day"   -> text.verifying("error.day.invalid-format", d => d.isEmpty || d.matches("^[0-9]{1,2}$"))
-  )(formatDateFromFields)(parseDateIntoFields).verifying(validVatDateFormat)
+  val validDobDateFormat: Constraint[String] =
+    ValidateHelper.validateField("error.irv-date-of-birth.required", "enter-irv-date-of-birth.invalid-format")(
+      vatRegistrationDate => validateDate(vatRegistrationDate))
+
+  def dateFieldsMapping(constraintDate: Constraint[String]): Mapping[String] =
+    mapping(
+      "year"  -> text.verifying("error.year.invalid-format", y => y.isEmpty || y.matches("^[0-9]{1,4}$")),
+      "month" -> text.verifying("error.month.invalid-format", m => m.isEmpty || m.matches("^[0-9]{1,2}$")),
+      "day"   -> text.verifying("error.day.invalid-format", d => d.isEmpty || d.matches("^[0-9]{1,2}$"))
+    )(formatDateFromFields)(parseDateIntoFields).verifying(constraintDate)
 
 }

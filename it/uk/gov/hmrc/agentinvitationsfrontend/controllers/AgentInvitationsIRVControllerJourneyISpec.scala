@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import org.joda.time.LocalDate
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
@@ -45,13 +46,15 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "title.suffix.agents")
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "title.suffix.agents")
 
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-client.nino.header",
         "identify-client.itsa.p1",
-        "identify-client.nino.hint")
+        "identify-client.nino.hint",
+        "identify-client.irv-date-of-birth.label",
+        "identify-client.irv-date-of-birth.hint"
+      )
 
       checkHasAgentSignOutLink(result)
     }
@@ -74,12 +77,17 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
           "ni",
           servicePIR,
           "NI")
-        givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), None, Some(validNino.value), None))
+        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
         val requestWithForm =
-          request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> validNino.value)
+          request.withFormUrlEncodedBody(
+            "service" -> servicePIR,
+            "clientIdentifier" -> validNino.value,
+            "knownFact.year" -> "1980",
+            "knownFact.month" -> "07",
+            "knownFact.day" -> "07")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -91,7 +99,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "error.nino.required")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.nino.required")
         checkHasAgentSignOutLink(result)
       }
 
@@ -100,7 +108,37 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
-        checkHtmlResultWithBodyMsgs(result, "identify-client.nino.header", "enter-nino.invalid-format")
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-nino.invalid-format")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an no date of birth is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> servicePIR,
+          "clientIdentifier" -> validNino.value,
+          "knownFact.year" -> "",
+          "knownFact.month" -> "",
+          "knownFact.day" -> ""
+        )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.irv-date-of-birth.required")
+        checkHasAgentSignOutLink(result)
+      }
+
+      "redisplay page with errors when an invalid date of birth is submitted" in {
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "service" -> servicePIR,
+          "clientIdentifier" -> validNino.value,
+          "knownFact.year" -> "9999",
+          "knownFact.month" -> "99",
+          "knownFact.day" -> "99"
+        )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-irv-date-of-birth.invalid-format")
         checkHasAgentSignOutLink(result)
       }
 

@@ -287,13 +287,13 @@ trait ACAStubs {
 
   def givenMatchingClientIdAndPostcode(nino: Nino, postcode: String) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode"))
         .willReturn(aResponse()
           .withStatus(204)))
 
   def givenNonMatchingClientIdAndPostcode(nino: Nino, postcode: String) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode"))
         .willReturn(
           aResponse()
             .withStatus(403)
@@ -306,7 +306,7 @@ trait ACAStubs {
 
   def givenNotEnrolledClientITSA(nino: Nino, postcode: String) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode"))
         .willReturn(
           aResponse()
             .withStatus(403)
@@ -319,7 +319,7 @@ trait ACAStubs {
 
   def givenServiceUnavailableITSA(nino: Nino, postcode: String) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/agencies/check-sa-known-fact/${nino.value}/postcode/$postcode"))
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode"))
         .willReturn(
           aResponse()
             .withStatus(502)))
@@ -327,9 +327,38 @@ trait ACAStubs {
   def checkVatRegisteredClientStub(vrn: Vrn, date: LocalDate, responseStatus: Int) =
     stubFor(
       get(urlEqualTo(
-        s"/agent-client-authorisation/agencies/check-vat-known-fact/${vrn.value}/registration-date/${date.toString}"))
+        s"/agent-client-authorisation/known-facts/organisations/vat/${vrn.value}/registration-date/${date.toString}"))
         .willReturn(aResponse()
           .withStatus(responseStatus)))
+
+  def givenMatchingCitizenRecord(nino: Nino, dob: LocalDate) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/${nino.value}/dob/${dob.toString}"))
+        .willReturn(
+          aResponse()
+            .withStatus(204)))
+
+
+  def givenNonMatchingCitizenRecord(nino: Nino, dob: LocalDate) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/${nino.value}/dob/${dob.toString}"))
+        .willReturn(
+          aResponse()
+            .withStatus(403)
+            .withBody(
+              s"""
+                 |{
+                 |  "code":"DATE_OF_BIRTH_DOES_NOT_MATCH",
+                 |  "message":"The submitted date of birth did not match the client's date of birth as held by HMRC."
+                 |}
+               """.stripMargin)))
+
+  def givenNotFoundCitizenRecord(nino: Nino, dob: LocalDate) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/${nino.value}/dob/${dob.toString}"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)))
 
   def verifyCheckVatRegisteredClientStubAttempt(vrn: Vrn, date: LocalDate): Unit = {
     val vrnEncoded = encodePathSegment(vrn.value)
@@ -338,7 +367,7 @@ trait ACAStubs {
       1,
       getRequestedFor(
         urlEqualTo(
-          s"/agent-client-authorisation/agencies/check-vat-known-fact/$vrnEncoded/registration-date/$dateEncoded")))
+          s"/agent-client-authorisation/known-facts/organisations/vat/$vrnEncoded/registration-date/$dateEncoded")))
   }
 
   def verifyCheckItsaRegisteredClientStubAttempt(nino: Nino, postcode: String): Unit = {
@@ -348,14 +377,14 @@ trait ACAStubs {
       1,
       getRequestedFor(
         urlEqualTo(
-          s"/agent-client-authorisation/agencies/check-sa-known-fact/$ninoEncoded/postcode/$postEncoded")))
+          s"/agent-client-authorisation/known-facts/individuals/nino/$ninoEncoded/sa/postcode/$postEncoded")))
   }
 
   def verifyNoCheckVatRegisteredClientStubAttempt(): Unit =
     verify(
       0,
       getRequestedFor(
-        urlPathMatching("/agent-client-authorisation/agencies/check-vat-known-fact/.*/registration-date/.*")))
+        urlPathMatching("/agent-client-authorisation/known-facts/organisations/.*/registration-date/.*")))
 
   def givenAllInvitationsStub(arn: Arn): Unit =
     stubFor(

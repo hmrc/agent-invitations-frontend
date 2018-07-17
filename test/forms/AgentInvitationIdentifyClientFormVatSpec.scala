@@ -19,7 +19,6 @@ package forms
 import play.api.data.FormError
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AgentsInvitationController, DateFieldHelper, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {

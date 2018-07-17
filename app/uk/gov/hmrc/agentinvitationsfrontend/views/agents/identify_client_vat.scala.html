@@ -22,19 +22,19 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
-@(agentInvitationsForm : Form[UserInputVrnAndRegDate])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[UserInputVrnAndRegDate], knownFactFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@featureSwitchOn(featureName: String)(content: Html) = {
-    @if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@featureSwitchOn()(content: Html) = {
+    @if(knownFactFlag) { @content }
 }
 
 @featureSwitchOff(featureName: String)(content: Html) = {
-@if(!configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@if(!knownFactFlag) { @content }
 }
 
 @titleSwitch = @{
-    if(configuration.getBoolean("features.show-kfc-mtd-vat").getOrElse(false)) {"identify-client.header"}
-    else if(!configuration.getBoolean("features.show-kfc-mtd-vat").getOrElse(false)){"identify-client.vrn.header"}
+    if(knownFactFlag) {"identify-client.header"}
+    else {"identify-client.vrn.header"}
 }
 
 @noJsDateFieldsError = @{
@@ -49,7 +49,7 @@
 
     @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
 
-  @featureSwitchOn("features.show-kfc-mtd-vat"){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
+  @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 
   <p>@Messages("identify-client.vat.p1")</p>}
 
@@ -72,7 +72,7 @@
          </div>
      }
 
-     @featureSwitchOn("features.show-kfc-mtd-vat") {
+     @featureSwitchOn() {
 
          <div class="form-group">
              @input(

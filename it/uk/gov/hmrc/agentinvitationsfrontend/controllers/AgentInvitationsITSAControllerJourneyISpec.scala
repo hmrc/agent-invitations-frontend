@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputNinoAndDob}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -236,7 +236,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client" in {
         testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
         val ninoForm =
-          agentInvitationIdentifyClientFormIrv(featureFlags).fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+          agentInvitationIdentifyClientFormItsa(featureFlags).fill(UserInputNinoAndPostcode(serviceITSA, None, None))
         val result =
           notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
