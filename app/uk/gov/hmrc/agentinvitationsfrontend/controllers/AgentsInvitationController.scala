@@ -154,10 +154,16 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetch().map {
         case Some(inviteDetails) =>
           inviteDetails.service match {
-            case Some(HMRCMTDIT)  => Ok(identify_client_itsa(fastTrackToIdentifyClientFormItsa(inviteDetails)))
-            case Some(HMRCMTDVAT) => Ok(identify_client_vat(fastTrackToIdentifyClientFormVat(inviteDetails)))
-            case Some(HMRCPIR)    => Ok(identify_client_irv(fastTrackToIdentifyClientFormIrv(inviteDetails)))
-            case _                => Redirect(routes.AgentsInvitationController.selectService())
+            case Some(HMRCMTDIT) =>
+              Ok(identify_client_itsa(fastTrackToIdentifyClientFormItsa(inviteDetails), featureFlags.showKfcMtdIt))
+            case Some(HMRCMTDVAT) =>
+              Ok(identify_client_vat(fastTrackToIdentifyClientFormVat(inviteDetails), featureFlags.showKfcMtdVat))
+            case Some(HMRCPIR) =>
+              Ok(
+                identify_client_irv(
+                  fastTrackToIdentifyClientFormIrv(inviteDetails),
+                  featureFlags.showKfcPersonalIncome))
+            case _ => Redirect(routes.AgentsInvitationController.selectService())
           }
 
         case None =>
@@ -186,7 +192,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_itsa(formWithErrors))
+          Future successful Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt))
         },
         userInput =>
           for {
@@ -208,7 +214,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_vat(formWithErrors))
+          Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat))
         },
         userInput =>
           for {
@@ -230,7 +236,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_irv(formWithErrors))
+          Future successful Ok(identify_client_irv(formWithErrors, featureFlags.showKfcPersonalIncome))
         },
         userInput =>
           for {

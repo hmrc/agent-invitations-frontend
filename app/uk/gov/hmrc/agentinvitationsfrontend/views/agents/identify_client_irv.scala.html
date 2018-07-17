@@ -22,20 +22,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndDob])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[UserInputNinoAndDob], knownFactFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@featureSwitchOn(featureName: String)(content: Html) = {
-@if(configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@featureSwitchOn()(content: Html) = {
+@if(knownFactFlag) { @content }
 }
 
 
-@featureSwitchOff(featureName: String)(content: Html) = {
-@if(!configuration.getBoolean(featureName).getOrElse(false)) { @content }
+@featureSwitchOff()(content: Html) = {
+@if(!knownFactFlag) { @content }
 }
 
 @titleSwitch = @{
-    if(configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)) {"identify-client.header"}
-    else if(!configuration.getBoolean("features.show-kfc-mtd-it").getOrElse(false)){"identify-client.nino.header"}
+    if(knownFactFlag) {"identify-client.header"}
+    else {"identify-client.nino.header"}
 }
 
 @noJsDateFieldsError = @{
@@ -53,7 +53,7 @@
         action = routes.AgentsInvitationController.submitIdentifyClient,
         'class -> "form js-form") {
 
-        @featureSwitchOff("features.show-kfc-personal-income") {
+        @featureSwitchOff() {
             <div class="form-group margin-top-30">
             @input(
                 agentInvitationsForm("clientIdentifier"),
@@ -65,7 +65,7 @@
             </div>
         }
 
-        @featureSwitchOn("features.show-kfc-personal-income") {
+        @featureSwitchOn() {
             <div class="form-group margin-top-30">
             @input(
                 agentInvitationsForm("clientIdentifier"),
