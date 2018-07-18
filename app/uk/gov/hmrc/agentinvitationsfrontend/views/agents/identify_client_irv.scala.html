@@ -58,7 +58,7 @@
             @input(
                 agentInvitationsForm("clientIdentifier"),
                 '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.nino.header") + """</h1>"""),
-                '_inputClass -> "input--medium input--cleared",
+                '_inputClass -> "form-control",
                 '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
                 '_labelClass -> "soft--ends"
             )
@@ -66,12 +66,15 @@
         }
 
         @featureSwitchOn() {
-            <div class="form-group margin-top-30">
+            @Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.header") + """</h1>""")
+
+            <div class="form-group">
             @input(
                 agentInvitationsForm("clientIdentifier"),
-                '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.header") + """</h1>"""),
-                '_inputClass -> "input--medium input--cleared",
-                '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
+                '_label -> Messages("identify-client.nino.label"),
+                '_inputClass -> "form-control",
+                '_labelTextClass -> "h2-heading",
+                '_inputHint -> Html("""<p>""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
                 '_labelClass -> "soft--ends"
             )
             </div>
