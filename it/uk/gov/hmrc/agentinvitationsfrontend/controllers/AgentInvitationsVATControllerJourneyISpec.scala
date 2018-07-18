@@ -275,7 +275,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceVAT)
     }
   }
 
