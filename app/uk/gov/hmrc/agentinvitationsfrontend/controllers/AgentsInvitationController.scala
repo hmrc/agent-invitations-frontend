@@ -307,7 +307,7 @@ class AgentsInvitationController @Inject()(
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch().map {
+      fastTrackCache.fetchAndClear().map {
         case Some(aggregate) =>
           aggregate.service match {
             case Some(HMRCMTDVAT) =>
