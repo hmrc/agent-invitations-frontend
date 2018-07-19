@@ -224,7 +224,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
         checkHasAgentSignOutLink(result)
         verifyAuthoriseAttempt()
-        await(testFastTrackCache.fetch()).get shouldBe invitation
+        await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceITSA)
       }
     }
 
