@@ -324,15 +324,23 @@ class AgentsInvitationController @Inject()(
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch().flatMap {
+      fastTrackCache.fetchAndClear().flatMap {
         case Some(aggregate) =>
           aggregate.service match {
             case Some(HMRCMTDVAT) =>
-              Future successful Forbidden(not_matched(Services.messageKeyForVAT))
+              fastTrackCache
+                .save(CurrentInvitationInput(HMRCMTDVAT))
+                .map(
+                  _ => Forbidden(not_matched(Services.messageKeyForVAT))
+                )
             case Some(HMRCMTDIT) =>
-              Future successful Forbidden(not_matched(Services.messageKeyForITSA))
+              fastTrackCache
+                .save(CurrentInvitationInput(HMRCMTDIT))
+                .map(_ => Forbidden(not_matched(Services.messageKeyForITSA)))
             case Some(HMRCPIR) =>
-              Future successful Forbidden(not_matched(Services.messageKeyForAfi))
+              fastTrackCache
+                .save(CurrentInvitationInput(HMRCPIR))
+                .map(_ => Forbidden(not_matched(Services.messageKeyForAfi)))
             case _ =>
               throw new Exception("Unsupported Service")
           }
