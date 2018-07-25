@@ -44,7 +44,7 @@ error.year.invalid-format=Year must only include numbers
 
 
 # Date of Birth
-identify-client.irv-date-of-birth.label=Date of Birth
+identify-client.irv-date-of-birth.label=Date of birth
 identify-client.irv-date-of-birth.hint=For example, 31 3 1980
 error.irv-date-of-birth.required=Enter your client''s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
