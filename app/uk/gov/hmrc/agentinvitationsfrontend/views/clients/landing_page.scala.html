@@ -30,7 +30,9 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceId.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
- @errorSummary(Messages("error.summary.heading"), confirmAuthorisationForm, Seq.empty, Some("confirmAuthorisation"))
+ @if(confirmAuthorisationForm.hasErrors) {
+     @errorSummary(Messages("error.summary.heading"), confirmAuthorisationForm, Seq.empty, Some("confirmAuthorisation"))
+ }
 
  @form(routes.ClientsInvitationController.submitStart(invitationId)) {
 

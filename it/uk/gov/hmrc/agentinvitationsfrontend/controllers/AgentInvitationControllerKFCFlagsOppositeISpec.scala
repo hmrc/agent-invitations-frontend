@@ -215,7 +215,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     val request = FakeRequest("POST", "/agents/fast-track")
     val fastTrack = controller.agentFastTrack()
 
-    "return 303 invitation-sent when service and valid nino are provided and kfc flag is off for ITSA service" in {
+    "return 303 check-details when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
       val formData =
         CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, fromFastTrack)
@@ -235,10 +235,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
     }
 
-    "return 303 invitation-sent when service and valid vrn are provided and kfc flag is true for VAT service" in {
+    "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
         CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -256,10 +256,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
     }
 
-    "return 303 invitation-sent if service calling fast-track is correct for IRV and kfc flag is on" in {
+    "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
       val formData =
         CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -278,9 +278,53 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
     }
 
+  }
+
+  "GET /agents/check-details" should {
+
+    val request = FakeRequest()
+
+    "display the check details page without known fact when KFC flag is off for ITSA" in {
+      val formData =
+        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
+      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithNotBodyText(result, validPostcode)
+    }
+
+    "display the check details page without known fact when KFC flag is off for IRV" in {
+      val formData =
+        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
+      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("Date of birth"))
+      checkHtmlResultWithNotBodyText(result, dateOfBirth)
+    }
+
+    "display the check details page without known fact when KFC flag is off for VAT" in {
+      val formData =
+        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
+      checkHtmlResultWithBodyText(result, validVrn.value)
+      checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("VAT registration date"))
+      checkHtmlResultWithNotBodyText(result, validRegistrationDate)
+    }
   }
 
   def verifyAgentClientInvitationSubmittedEvent(

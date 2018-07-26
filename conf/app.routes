@@ -11,6 +11,8 @@ GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.age
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectService
 POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
 POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrack
+GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.checkDetails
+POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDetails
 
 # Error Agent Endpoints
 GET         /agents/not-enrolled                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
