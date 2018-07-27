@@ -310,7 +310,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
       checkHtmlResultWithBodyText(result, validNino.value)
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("Date of birth"))
-      checkHtmlResultWithNotBodyText(result, dateOfBirth)
+      checkHtmlResultWithNotBodyText(result, "07 July 1980")
     }
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
@@ -323,7 +323,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("VAT registration date"))
-      checkHtmlResultWithNotBodyText(result, validRegistrationDate)
+      checkHtmlResultWithNotBodyText(result, "07 July 2007")
     }
   }
 

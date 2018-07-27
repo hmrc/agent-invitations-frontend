@@ -65,9 +65,10 @@
                 @{currentInvitationInput.clientIdentifierType match {
                     case Some("ni") => Messages("check-details.nino")
                     case Some("vrn") => Messages("check-details.vrn")
+                    case _ => throw new IllegalArgumentException("client identifier type not supported")
                 }}
             </dt>
-            <dd class="cya-answer" id="registration-name">
+            <dd class="cya-answer" id="client-identifier">
                 @currentInvitationInput.clientIdentifier.get
             </dd>
         </div>
@@ -82,7 +83,7 @@
                     }
                 }
                 </dt>
-                <dd class="cya-answer" id="postcode">
+                <dd class="cya-answer" id="known-fact">
                 @if(currentInvitationInput.service.getOrElse("") == "HMRC-MTD-IT"){
                     @currentInvitationInput.knownFact.get
                 }else{

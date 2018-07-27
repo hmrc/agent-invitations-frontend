@@ -379,6 +379,15 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
     }
+
+    "return 303 select-service if the form is invalid" in {
+      val requestWithForm = request
+        .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
+      val result = fastTrack(authorisedAsValidAgent(requestWithForm, arn.value))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectService().url
+    }
   }
 
   "GET /agents/check-details" should {
@@ -408,7 +417,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
       checkHtmlResultWithBodyText(result, validNino.value)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Date of birth"))
-      checkHtmlResultWithBodyText(result, dateOfBirth)
+      checkHtmlResultWithBodyText(result, "07 July 1980")
     }
 
     "display the check details page when known fact is required and provided for VAT" in {
@@ -421,14 +430,23 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn97.value)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration date"))
-      checkHtmlResultWithBodyText(result, validRegDateForVrn97.get)
+      checkHtmlResultWithBodyText(result, "07 July 2007")
     }
 
     "Redirect to select service when there is nothing in the cache" in {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+    }
 
+    "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
+      val formData =
+        CurrentInvitationInput(Some(serviceVAT), Some("foo"), Some(validVrn97.value), validRegDateForVrn97, fromFastTrack)
+      testFastTrackCache.save(formData)
+
+      an[IllegalArgumentException] shouldBe thrownBy {
+        await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      }
     }
   }
 
