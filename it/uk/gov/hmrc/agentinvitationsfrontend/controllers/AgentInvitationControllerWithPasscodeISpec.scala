@@ -149,7 +149,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        testFastTrackCache.save(CurrentInvitationInput(None, None, None, None))
+        testFastTrackCache.save(CurrentInvitationInput())
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode("PERSONAL-INCOME-RECORD", None, None))
