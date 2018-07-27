@@ -44,7 +44,6 @@
     }
 }
 
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(s"${requestPage}")
@@ -95,20 +94,30 @@
             </div>
         }
     </dl>
+    @if(shouldShowKF && currentInvitationInput.knownFact.isEmpty) {
 
-    @form(routes.AgentsInvitationController.submitDetails()) {
+        <div class="margin-top-40 margin-bottom-40"><a href="@routes.AgentsInvitationController.submitIdentifyClient()">@Messages("check-details.change.link")</a></div>
 
-        @inputRadioGroup(
-            confirmForm("checkDetails"),
-            Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
-            '_legend -> Html("""<h1 class="heading-medium">""" + Messages("confirm-details.sub-header") + """</h1>"""),
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='confirmDetails'""")
-        )
+        <p>@Messages("check-details.change.p1")</p>
 
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-        </div>
+        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+    }
+
+    @if(currentInvitationInput.knownFact.isDefined && shouldShowKF) {
+        @form(routes.AgentsInvitationController.submitDetails()) {
+
+            @inputRadioGroup(
+                confirmForm("checkDetails"),
+                Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
+                '_legend -> Html("""<h1 class="heading-medium">""" + Messages("confirm-details.sub-header") + """</h1>"""),
+                '_groupDivClass -> "form-group soft--ends",
+                '_fieldsetAttributes -> Html("""id='confirmDetails'""")
+            )
+
+            <div class="form-group">
+                <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+            </div>
+        }
     }
 
 }
