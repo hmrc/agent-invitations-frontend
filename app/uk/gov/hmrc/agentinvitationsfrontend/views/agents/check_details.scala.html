@@ -1,0 +1,115 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+
+@import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+@import org.joda.time.LocalDate
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentInvitationInput, featureFlags: FeatureFlags)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}
+
+@displayDate(date: String) = @{
+    val localDate = LocalDate.parse(date)
+    localDate.toString("dd MMMM yyyy", messages.lang.locale)
+}
+
+@shouldShowKF = @{
+    currentInvitationInput.service match {
+        case Some("HMRC-MTD-IT") if featureFlags.showKfcMtdIt => true
+        case Some("PERSONAL-INCOME-RECORD") if featureFlags.showKfcPersonalIncome => true
+        case Some("HMRC-MTD-VAT") if featureFlags.showKfcMtdVat => true
+        case _ => false
+    }
+}
+
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+
+    @back_link(s"${requestPage}")
+
+    @if(confirmForm.hasErrors) {
+        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("check-details"))
+    }
+
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
+
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service.get}")</p>
+
+    <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
+
+    <dl class="govuk-check-your-answers cya-questions-long">
+        <div>
+            <dt class="cya-question">
+                @{currentInvitationInput.clientIdentifierType match {
+                    case Some("ni") => Messages("check-details.nino")
+                    case Some("vrn") => Messages("check-details.vrn")
+                    case _ => throw new IllegalArgumentException("client identifier type not supported")
+                }}
+            </dt>
+            <dd class="cya-answer" id="client-identifier">
+                @currentInvitationInput.clientIdentifier.get
+            </dd>
+        </div>
+        @if(currentInvitationInput.knownFact.isDefined && shouldShowKF) {
+            <div>
+                <dt class="cya-question">
+                @{
+                    currentInvitationInput.service match {
+                        case Some("HMRC-MTD-IT") => Messages("check-details.postcode")
+                        case Some("PERSONAL-INCOME-RECORD") => Messages("check-details.dob")
+                        case Some("HMRC-MTD-VAT") => Messages("check-details.vat-reg-date")
+                    }
+                }
+                </dt>
+                <dd class="cya-answer" id="known-fact">
+                @if(currentInvitationInput.service.getOrElse("") == "HMRC-MTD-IT"){
+                    @currentInvitationInput.knownFact.get
+                }else{
+                    @displayDate(currentInvitationInput.knownFact.get)
+                }
+
+
+                </dd>
+            </div>
+        }
+    </dl>
+
+    @form(routes.AgentsInvitationController.submitDetails()) {
+
+        @inputRadioGroup(
+            confirmForm("checkDetails"),
+            Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
+            '_legend -> Html("""<h1 class="heading-medium">""" + Messages("confirm-details.sub-header") + """</h1>"""),
+            '_groupDivClass -> "form-group soft--ends",
+            '_fieldsetAttributes -> Html("""id='confirmDetails'""")
+        )
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        </div>
+    }
+
+}
+

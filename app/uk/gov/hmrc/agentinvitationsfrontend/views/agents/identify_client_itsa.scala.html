@@ -42,7 +42,10 @@ if(knownFactFlag) {"identify-client.header"}
 
     @back_link(s"${routes.AgentsInvitationController.selectService()}")
 
-@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+
+    @if(agentInvitationsForm.hasErrors){
+        @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+    }
 
   @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 

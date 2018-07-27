@@ -187,6 +187,39 @@ class AgentsInvitationController @Inject()(
     }
   }
 
+  val checkDetails: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      fastTrackCache.fetch().map {
+        case Some(currentInvitation) =>
+          Ok(check_details(checkDetailsForm, currentInvitation, featureFlags))
+        case None => Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
+  val submitDetails: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      val cachedCurrentInvitationInput = fastTrackCache.fetch().map(_.getOrElse(CurrentInvitationInput()))
+      checkDetailsForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
+            cachedCurrentInvitationInput.flatMap { cii =>
+              Future successful Ok(check_details(formWithErrors, cii, featureFlags))
+            }
+          },
+          data => {
+            if (data.value.getOrElse(false)) {
+              cachedCurrentInvitationInput.flatMap { cii =>
+                redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+              }
+            } else
+              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+          }
+        )
+    }
+  }
+
   def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
     agentInvitationIdentifyClientFormItsa
       .bindFromRequest()
@@ -358,12 +391,19 @@ class AgentsInvitationController @Inject()(
             _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
             currentInvitationInput => {
               val fastTrackInput = currentInvitationInput.copy(fromFastTrack = true)
-              fastTrackCache.save(fastTrackInput).flatMap { _ =>
-                withMaybeContinueUrlCached {
-                  ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
-                    redirectBasedOnCurrentInputState(arn, fastTrackInput, isWhitelisted)
+              fastTrackCache.save(fastTrackInput).flatMap {
+                _ =>
+                  withMaybeContinueUrlCached {
+                    ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
+                      currentInvitationInput match {
+                        case CurrentInvitationInputItsaReady(_)
+                             | CurrentInvitationInputPirReady(_)
+                             | CurrentInvitationInputVatReady(_) =>
+                          Future successful Redirect(routes.AgentsInvitationController.checkDetails())
+                        case _ => redirectBasedOnCurrentInputState(arn, fastTrackInput, isWhitelisted)
+                      }
+                    }
                   }
-                }
               }
             }
           )
@@ -568,6 +608,13 @@ object AgentsInvitationController {
 
   private val postcodeCharactersRegex = "^[a-zA-Z0-9 ]+$"
 
+  val detailsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError("error.confirmDetails.invalid"))
+  }
+
   private val serviceChoice: Constraint[String] = Constraint[String] { fieldValue: String =>
     if (fieldValue.trim.nonEmpty)
       Valid
@@ -581,6 +628,10 @@ object AgentsInvitationController {
     else
       Invalid(ValidationError("error.confirm-client.required"))
   }
+
+  val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping("checkDetails" -> optional(boolean)
+      .verifying(detailsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 
   private def validNino(
     nonEmptyFailure: String = "error.nino.required",

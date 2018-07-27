@@ -160,6 +160,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
       }
+
+      "redirect to /agents/select-service when there are errors in the form" in {
+        val requestWithForm = request
+          .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      }
     }
   }
 
