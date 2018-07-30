@@ -86,9 +86,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
         testFastTrackCache.save(
           CurrentInvitationInput(
-            Some("HMRC-MTD-VAT"),
-            Some("vrn"),
-            Some(validVrn.value),
+            "HMRC-MTD-VAT",
+            "vrn",
+            validVrn.value,
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
@@ -194,7 +194,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(Some(serviceVAT), Some("ni"), Some(validVrn.value), Some(validRegistrationDate))
+        CurrentInvitationInput(serviceVAT, "ni", validVrn.value, Some(validRegistrationDate))
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 

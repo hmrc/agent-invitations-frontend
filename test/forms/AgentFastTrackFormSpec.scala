@@ -1,0 +1,243 @@
+/*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package forms
+
+import play.api.data.FormError
+import play.api.libs.json.Json
+import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackGenericForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+
+class AgentFastTrackFormSpec extends UnitSpec {
+
+  "agentFastTrackGenericForm" when {
+    "feature flags are on" when {
+      val featureFlags = FeatureFlags()
+
+      "return no error message" when {
+        "provided correct ITSA Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided correct IRV Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "2000-01-01"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided correct VAT Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> "1970-01-01"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+      }
+
+      "return error message" when {
+        "provided incorrect NINO" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "ZZ123456A",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("Invalid Nino")))
+        }
+
+        "provided incorrect VRN" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747695",
+            "knownFact"            -> "1970-01-01"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("Invalid Vrn")))
+        }
+
+        "provided incorrect clientIdentifierType" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "invalid type",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+        }
+
+        "provided no clientIdentifier" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "",
+            "knownFact"            -> "1970-01-01"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(
+            FormError("clientIdentifier", List("A Valid Client Identifier is Required. Received: Nothing")))
+        }
+
+        "provided incorrect postcode for ITSA" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "ZH14"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Postcode")))
+
+        }
+
+        "provided incorrect date of birth for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "1970-01-99"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Date of birth")))
+        }
+
+        "provided incorrect vat registration date for VAT" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> "1970-01-99"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Vat Registration Date")))
+
+        }
+
+        "provided no known fact for ITSA" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Postcode is Required")))
+        }
+
+        "provided no known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Date of birth is Required")))
+        }
+
+        "provided no known fact for VAT" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("Vat Registration Date is Required")))
+        }
+
+        "provided mixed data" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(
+            FormError("", List("Fast Track Form was submitted with mixed or invalid data")))
+        }
+      }
+    }
+
+    "when feature flags are switched off" when {
+      val featureFlags = FeatureFlags(showKfcMtdIt = false, showKfcMtdVat = false, showKfcPersonalIncome = false)
+      "return no error message" when {
+        "provided correct ITSA Data without postcode" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided correct IRV Data without Date of birth" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided correct VAT Data without Vat Registation Date" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+      }
+    }
+  }
+}

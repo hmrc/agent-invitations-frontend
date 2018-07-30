@@ -30,9 +30,9 @@ case class VatRegDate(value: String) extends KnownFact
 case class DOB(value: String) extends KnownFact
 
 case class CurrentInvitationInput(
-  service: Option[String],
-  clientIdentifierType: Option[String],
-  clientIdentifier: Option[String],
+  service: String,
+  clientIdentifierType: String,
+  clientIdentifier: String,
   knownFact: Option[String],
   fromFastTrack: Boolean = false)
 
@@ -41,16 +41,16 @@ object CurrentInvitationInput {
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false
 
-  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, None, None, None, fromManual)
+  def apply(): CurrentInvitationInput = CurrentInvitationInput("", "", "", None, fromManual)
   def apply(service: String): CurrentInvitationInput =
-    CurrentInvitationInput(Some(service), None, None, None, fromManual)
+    CurrentInvitationInput(service, "", "", None, fromManual)
 
   implicit val format = Json.format[CurrentInvitationInput]
 
   implicit val reads: Reads[CurrentInvitationInput] = {
-    ((JsPath \ "service").readNullable[String] and
-      (JsPath \ "clientIdentifierType").readNullable[String] and
-      (JsPath \ "clientIdentifier").readNullable[String] and
+    ((JsPath \ "service").read[String] and
+      (JsPath \ "clientIdentifierType").read[String] and
+      (JsPath \ "clientIdentifier").read[String] and
       (JsPath \ "knownFact").readNullable[String])((a, b, c, d) => CurrentInvitationInput(a, b, c, d))
   }
 }

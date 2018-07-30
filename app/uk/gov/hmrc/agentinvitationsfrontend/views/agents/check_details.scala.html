@@ -37,11 +37,16 @@
 
 @shouldShowKF = @{
     currentInvitationInput.service match {
-        case Some("HMRC-MTD-IT") if featureFlags.showKfcMtdIt => true
-        case Some("PERSONAL-INCOME-RECORD") if featureFlags.showKfcPersonalIncome => true
-        case Some("HMRC-MTD-VAT") if featureFlags.showKfcMtdVat => true
+        case "HMRC-MTD-IT" if featureFlags.showKfcMtdIt => true
+        case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
+        case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat => true
         case _ => false
     }
+}
+
+@postcodeSpace = @{
+    if(currentInvitationInput.knownFact.get.replaceAll(" ", "").length == 6) 3
+    else 4
 }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
@@ -49,76 +54,71 @@
     @back_link(s"${requestPage}")
 
     @if(confirmForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("check-details"))
+        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
     }
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service.get}")</p>
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service}")</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long">
+    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-40">
         <div>
             <dt class="cya-question">
                 @{currentInvitationInput.clientIdentifierType match {
-                    case Some("ni") => Messages("check-details.nino")
-                    case Some("vrn") => Messages("check-details.vrn")
+                    case "ni" => Messages("check-details.nino")
+                    case "vrn" => Messages("check-details.vrn")
                     case _ => throw new IllegalArgumentException("client identifier type not supported")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
-                @currentInvitationInput.clientIdentifier.get
+                @if(currentInvitationInput.service == "HMRC-MTD-VAT") {
+                    @currentInvitationInput.clientIdentifier
+                }else{
+                    @currentInvitationInput.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                }
             </dd>
         </div>
-        @if(currentInvitationInput.knownFact.isDefined && shouldShowKF) {
             <div>
                 <dt class="cya-question">
                 @{
                     currentInvitationInput.service match {
-                        case Some("HMRC-MTD-IT") => Messages("check-details.postcode")
-                        case Some("PERSONAL-INCOME-RECORD") => Messages("check-details.dob")
-                        case Some("HMRC-MTD-VAT") => Messages("check-details.vat-reg-date")
+                        case "HMRC-MTD-IT" => Messages("check-details.postcode")
+                        case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
+                        case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
                     }
                 }
                 </dt>
                 <dd class="cya-answer" id="known-fact">
-                @if(currentInvitationInput.service.getOrElse("") == "HMRC-MTD-IT"){
-                    @currentInvitationInput.knownFact.get
+                @if(currentInvitationInput.service == "HMRC-MTD-IT"){
+                    @currentInvitationInput.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
                 }else{
                     @displayDate(currentInvitationInput.knownFact.get)
                 }
-
-
                 </dd>
             </div>
-        }
     </dl>
-    @if(shouldShowKF && currentInvitationInput.knownFact.isEmpty) {
+    @if(shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty) {
 
         <div class="margin-top-40 margin-bottom-40"><a href="@routes.AgentsInvitationController.submitIdentifyClient()">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
-
-        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
 
-    @if(currentInvitationInput.knownFact.isDefined && shouldShowKF) {
-        @form(routes.AgentsInvitationController.submitDetails()) {
+        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF) {
 
             @inputRadioGroup(
                 confirmForm("checkDetails"),
                 Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
-                '_legend -> Html("""<h1 class="heading-medium">""" + Messages("confirm-details.sub-header") + """</h1>"""),
+                '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),
                 '_groupDivClass -> "form-group soft--ends",
-                '_fieldsetAttributes -> Html("""id='confirmDetails'""")
+                '_fieldsetAttributes -> Html("""id='checkDetails'""")
             )
 
-            <div class="form-group">
-                <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-            </div>
-        }
+        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
+
 
 }
 

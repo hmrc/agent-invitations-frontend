@@ -80,7 +80,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
+        testFastTrackCache.save(CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "service" -> servicePIR,
@@ -158,7 +158,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None)
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None)
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
