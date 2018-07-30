@@ -25,6 +25,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val validPostcode = "DH14EJ"
+  val validPostcodeLong = "DH14EJH"
+  val validPostcodeSpaces = "DH1 4EJ"
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
 
@@ -379,17 +381,43 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     val request = FakeRequest()
 
-    "display the check details page when known fact is required and provided for ITSA" in {
+    "display the check details page when known fact is required and provided for ITSA for short postcode without spaces" in {
       val formData =
         CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software."))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithBodyText(result, validPostcode)
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
+    }
+
+    "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcodeSpaces), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
+    }
+
+    "display the check details page when known fact is required and provided for ITSA for long postcode" in {
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcodeLong), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithBodyText(result, "DH14 EJH")
     }
 
     "display the check details page when known fact is required and provided for IRV" in {
@@ -399,8 +427,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Date of birth"))
       checkHtmlResultWithBodyText(result, "07 July 1980")
     }
@@ -411,7 +439,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn97.value)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration date"))
