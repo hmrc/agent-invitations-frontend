@@ -85,7 +85,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
-          CurrentInvitationInput(Some("HMRC-MTD-IT"), None, Some(validNino.value), Some(validPostcode)))
+          CurrentInvitationInput("HMRC-MTD-IT", "", validNino.value, Some(validPostcode)))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service" -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
@@ -178,7 +178,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
       "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
         val invitation =
-          CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
+          CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
         testFastTrackCache.save(invitation)
         testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
@@ -217,7 +217,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
       "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
         val invitation =
-          CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
+          CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
         testFastTrackCache.save(invitation)
 
         val result = notMatched(authorisedAsValidAgent(request, arn.value))

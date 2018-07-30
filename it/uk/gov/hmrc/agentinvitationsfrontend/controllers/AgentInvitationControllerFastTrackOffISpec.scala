@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -85,8 +84,8 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
+          CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcode))
+        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -95,8 +94,8 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None)
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
+        val formData = CurrentInvitationInput(servicePIR, "ni", validNino.value, None)
+        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -106,8 +105,8 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn97.value), validRegDateForVrn97)
-        val fastTrackFormData = agentFastTrackForm.fill(formData)
+          CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, validRegDateForVrn97)
+        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))

@@ -5,7 +5,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate, UserInputNinoAndDob}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
@@ -133,7 +132,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for ITSA" in {
       givenTradingName(validNino, "64 Bit")
       val formData =
-        CurrentInvitationInput(Some(serviceITSA), None, None, None, fromManual)
+        CurrentInvitationInput(serviceITSA, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
@@ -160,7 +159,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
-        CurrentInvitationInput(Some(servicePIR), None, None, None, fromManual)
+        CurrentInvitationInput(servicePIR, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
@@ -186,7 +185,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for VAT" in {
       givenClientDetails(validVrn)
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), None, None, None, fromManual)
+        CurrentInvitationInput(serviceVAT, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
@@ -218,8 +217,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 check-details when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
       val formData =
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
         validNino.value,
@@ -240,8 +239,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+        CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
         validVrn.value,
@@ -261,8 +260,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
       val formData =
-        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       createInvitationStub(
         arn,
@@ -289,7 +288,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "display the check details page without known fact when KFC flag is off for ITSA" in {
       val formData =
-        CurrentInvitationInput(Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack)
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -302,7 +301,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "display the check details page without known fact when KFC flag is off for IRV" in {
       val formData =
-        CurrentInvitationInput(Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack)
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -315,7 +314,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
       val formData =
-        CurrentInvitationInput(Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))

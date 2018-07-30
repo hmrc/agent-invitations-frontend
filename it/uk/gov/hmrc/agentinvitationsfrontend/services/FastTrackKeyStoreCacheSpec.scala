@@ -12,9 +12,9 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session1234356")))
 
   val currentInvitationInput = CurrentInvitationInput(
-    Some("service"),
-    Some("clientIdentifierType"),
-    Some("clientIdentifier"),
+    "service",
+    "clientIdentifierType",
+    "clientIdentifier",
     Some("knownFact"))
 
   "FastTrackKeyStoreCache" should {

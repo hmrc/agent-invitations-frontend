@@ -93,6 +93,9 @@ class AgentsInvitationController @Inject()(
   val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
     AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
 
+  val agentFastTrackForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackGenericForm(featureFlags)
+
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
   }
@@ -116,7 +119,7 @@ class AgentsInvitationController @Inject()(
             val updateAggregate = fastTrackCache
               .fetch()
               .map(_.getOrElse(CurrentInvitationInput()))
-              .map(_.copy(service = Some(userInput.service)))
+              .map(_.copy(service = userInput.service))
 
             updateAggregate.flatMap(
               updateFastTrack =>
@@ -132,21 +135,23 @@ class AgentsInvitationController @Inject()(
   }
 
   private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service.getOrElse("")
+    val service = fastTrackDetails.service
     val clientId = fastTrackDetails.clientIdentifier
-    agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(service, clientId, fastTrackDetails.knownFact))
+    agentInvitationIdentifyClientFormItsa.fill(
+      UserInputNinoAndPostcode(service, Some(clientId), fastTrackDetails.knownFact))
   }
 
   private val fastTrackToIdentifyClientFormVat = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service.getOrElse("")
+    val service = fastTrackDetails.service
     val clientId = fastTrackDetails.clientIdentifier
-    agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(service, clientId, fastTrackDetails.knownFact))
+    agentInvitationIdentifyClientFormVat.fill(
+      UserInputVrnAndRegDate(service, Some(clientId), fastTrackDetails.knownFact))
   }
 
   private val fastTrackToIdentifyClientFormIrv = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service.getOrElse("")
+    val service = fastTrackDetails.service
     val clientId = fastTrackDetails.clientIdentifier
-    agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(service, clientId, fastTrackDetails.knownFact))
+    agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(service, Some(clientId), fastTrackDetails.knownFact))
   }
 
   val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
@@ -154,11 +159,11 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetch().map {
         case Some(inviteDetails) =>
           inviteDetails.service match {
-            case Some(HMRCMTDIT) =>
+            case HMRCMTDIT =>
               Ok(identify_client_itsa(fastTrackToIdentifyClientFormItsa(inviteDetails), featureFlags.showKfcMtdIt))
-            case Some(HMRCMTDVAT) =>
+            case HMRCMTDVAT =>
               Ok(identify_client_vat(fastTrackToIdentifyClientFormVat(inviteDetails), featureFlags.showKfcMtdVat))
-            case Some(HMRCPIR) =>
+            case HMRCPIR =>
               Ok(
                 identify_client_irv(
                   fastTrackToIdentifyClientFormIrv(inviteDetails),
@@ -233,8 +238,8 @@ class AgentsInvitationController @Inject()(
             invitationWithClientDetails = maybeCachedInvitation
               .getOrElse(CurrentInvitationInput())
               .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = Some("ni"),
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "ni",
                 knownFact = userInput.postcode
               )
             _              <- fastTrackCache.save(invitationWithClientDetails)
@@ -255,8 +260,8 @@ class AgentsInvitationController @Inject()(
             invitationWithClientDetails = maybeCachedInvitation
               .getOrElse(CurrentInvitationInput())
               .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = Some("vrn"),
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "vrn",
                 knownFact = userInput.registrationDate
               )
             _              <- fastTrackCache.save(invitationWithClientDetails)
@@ -277,8 +282,8 @@ class AgentsInvitationController @Inject()(
             invitationWithClientDetails = maybeCachedInvitation
               .getOrElse(CurrentInvitationInput())
               .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = Some("ni"),
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "ni",
                 knownFact = userInput.dob
               )
             _              <- fastTrackCache.save(invitationWithClientDetails)
@@ -343,9 +348,9 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetchAndClear().map {
         case Some(aggregate) =>
           aggregate.service match {
-            case Some(HMRCMTDVAT) =>
+            case HMRCMTDVAT =>
               Forbidden(not_enrolled(Services.messageKeyForVAT))
-            case Some(HMRCMTDIT) =>
+            case HMRCMTDIT =>
               Forbidden(not_enrolled(Services.messageKeyForITSA))
             case _ =>
               throw new Exception("Unsupported Service")
@@ -360,17 +365,17 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetchAndClear().flatMap {
         case Some(aggregate) =>
           aggregate.service match {
-            case Some(HMRCMTDVAT) =>
+            case HMRCMTDVAT =>
               fastTrackCache
                 .save(CurrentInvitationInput(HMRCMTDVAT))
                 .map(
                   _ => Forbidden(not_matched(Services.messageKeyForVAT))
                 )
-            case Some(HMRCMTDIT) =>
+            case HMRCMTDIT =>
               fastTrackCache
                 .save(CurrentInvitationInput(HMRCMTDIT))
                 .map(_ => Forbidden(not_matched(Services.messageKeyForITSA)))
-            case Some(HMRCPIR) =>
+            case HMRCPIR =>
               fastTrackCache
                 .save(CurrentInvitationInput(HMRCPIR))
                 .map(_ => Forbidden(not_matched(Services.messageKeyForAfi)))
@@ -388,7 +393,9 @@ class AgentsInvitationController @Inject()(
         agentFastTrackForm
           .bindFromRequest()
           .fold(
-            _ => Future successful Redirect(routes.AgentsInvitationController.selectService()),
+            _ => {
+              Future successful BadRequest
+            },
             currentInvitationInput => {
               val fastTrackInput = currentInvitationInput.copy(fromFastTrack = true)
               fastTrackCache.save(fastTrackInput).flatMap {
@@ -541,12 +548,9 @@ class AgentsInvitationController @Inject()(
       case CurrentInvitationInputPirReady(completePirInvitation) =>
         knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
 
-      case CurrentInvitationInputNeedsService(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.selectService())
-
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
-          case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
+          case service if isSupportedWhitelistedService(service, isWhitelisted) =>
             Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
           case _ =>
             Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -554,7 +558,7 @@ class AgentsInvitationController @Inject()(
 
       case CurrentInvitationInputNeedsKnownFact(invitationNeedsKnownFact) =>
         invitationNeedsKnownFact.service match {
-          case Some(service) if isSupportedWhitelistedService(service, isWhitelisted) =>
+          case service if isSupportedWhitelistedService(service, isWhitelisted) =>
             Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
           case _ =>
             Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -572,16 +576,16 @@ class AgentsInvitationController @Inject()(
     featureFlags: FeatureFlags,
     isWhitelisted: Boolean)(body: => Future[Result]): Future[Result] =
     currentInvitationInput.service match {
-      case Some(HMRCPIR) if !isWhitelisted =>
+      case HMRCPIR if !isWhitelisted =>
         Logger(getClass).warn(s"User is not whitelisted to create $HMRCPIR invitation")
         Future successful BadRequest
-      case Some(HMRCMTDVAT) if !featureFlags.showHmrcMtdVat =>
+      case HMRCMTDVAT if !featureFlags.showHmrcMtdVat =>
         Logger(getClass).warn(s"Service: $HMRCMTDVAT feature flagged is switched off")
         Future successful BadRequest
-      case Some(HMRCMTDIT) if !featureFlags.showHmrcMtdIt =>
+      case HMRCMTDIT if !featureFlags.showHmrcMtdIt =>
         Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
         Future successful BadRequest
-      case Some(HMRCPIR) if !featureFlags.showPersonalIncome =>
+      case HMRCPIR if !featureFlags.showPersonalIncome =>
         Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")
         Future successful BadRequest
       case _ => body
@@ -602,6 +606,7 @@ object AgentsInvitationController {
 
   import ValidateHelper._
   import DateFieldHelper._
+  import Services._
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 
@@ -748,19 +753,68 @@ object AgentsInvitationController {
         Some((user.service, user.clientIdentifier.getOrElse(""), user.postcode))
       }))
 
-  val agentFastTrackForm: Form[CurrentInvitationInput] = {
+  private val vrnRegex = "[0-9]{9}"
+  private val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
+
+  private val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
+    fieldValue match {
+      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
+        if (Vrn.isValid(clientId)) Valid
+        else Invalid(ValidationError("Invalid Vrn"))
+      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
+        if (Nino.isValid(clientId)) Valid
+        else Invalid(ValidationError("Invalid Nino"))
+      case _ =>
+        Invalid(
+          ValidationError(
+            s"A Valid Client Identifier is Required. Received: ${if (fieldValue.nonEmpty) fieldValue else "Nothing"}"))
+    }
+  }
+
+  private def validateFastTrackForm(featureFlags: FeatureFlags): Constraint[CurrentInvitationInput] =
+    Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
+      formData match {
+        case CurrentInvitationInput(HMRCMTDIT, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
+          if (featureFlags.showKfcMtdIt) {
+            knownFactOpt match {
+              case Some(knownFact) if knownFact.matches(postcodeRegex) => Valid
+              case Some(_)                                             => Invalid(ValidationError("Invalid Postcode"))
+              case None                                                => Invalid(ValidationError("Postcode is Required"))
+            }
+          } else Valid
+        case CurrentInvitationInput(HMRCPIR, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
+          if (featureFlags.showKfcPersonalIncome) {
+            knownFactOpt match {
+              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
+              case Some(_)                                                    => Invalid(ValidationError("Invalid Date of birth"))
+              case None                                                       => Invalid(ValidationError("Date of birth is Required"))
+            }
+          } else Valid
+        case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientId, knownFactOpt, _) if Vrn.isValid(clientId) =>
+          if (featureFlags.showKfcMtdVat) {
+            knownFactOpt match {
+              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
+              case Some(_)                                                    => Invalid(ValidationError("Invalid Vat Registration Date"))
+              case None                                                       => Invalid(ValidationError("Vat Registration Date is Required"))
+            }
+          } else Valid
+        case _ => Invalid(ValidationError("Fast Track Form was submitted with mixed or invalid data"))
+      }
+    }
+
+  def agentFastTrackGenericForm(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(
       mapping(
-        "service"              -> optional(text),
-        "clientIdentifierType" -> optional(text),
-        "clientIdentifier"     -> optional(normalizedText),
-        "knownFact"            -> optional(text)
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientIdentifierType" -> text
+          .verifying("Unsupported Client Type", clientType => supportedTypes.contains(clientType)),
+        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+        "knownFact"        -> optional(text)
       )({ (service, clientIdType, clientId, knownFact) =>
         CurrentInvitationInput(service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
-      }))
-  }
+      }).verifying(validateFastTrackForm(featureFlags)))
 
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {
@@ -808,7 +862,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputItsaReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackItsaInvitation] =
       arg match {
-        case CurrentInvitationInput(Some(HMRCMTDIT), Some("ni"), Some(clientIdentifier), postcodeOpt, _)
+        case CurrentInvitationInput(HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcMtdIt || postcodeOpt.exists(
               _.matches(postcodeRegex))) =>
           Some(
@@ -822,7 +876,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputPirReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
       arg match {
-        case CurrentInvitationInput(Some(HMRCPIR), Some("ni"), Some(clientIdentifier), dobOpt, _)
+        case CurrentInvitationInput(HMRCPIR, "ni", clientIdentifier, dobOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcPersonalIncome || dobOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
@@ -836,7 +890,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputVatReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
       arg match {
-        case CurrentInvitationInput(Some(HMRCMTDVAT), Some("vrn"), Some(clientIdentifier), vatRegDateOpt, _)
+        case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
             if Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
@@ -850,17 +904,17 @@ object AgentsInvitationController {
   object CurrentInvitationInputNeedsClientIdentifier {
     def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
       currentInvitationInput match {
-        case CurrentInvitationInput(Some(service), _, Some(clientIdentifier), _, _) =>
+        case CurrentInvitationInput(service, _, clientIdentifier, _, _) =>
           service match {
             case HMRCMTDVAT if !Vrn.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(Some(HMRCMTDVAT), Some("vrn"), None, None))
+              Some(CurrentInvitationInput(HMRCMTDVAT, "vrn", "", None))
             case HMRCMTDIT if !Nino.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(Some(HMRCMTDIT), Some("ni"), None, None))
+              Some(CurrentInvitationInput(HMRCMTDIT, "ni", "", None))
             case HMRCPIR if !Nino.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(Some(HMRCPIR), Some("ni"), None, None))
+              Some(CurrentInvitationInput(HMRCPIR, "ni", "", None))
             case _ => None
           }
-        case CurrentInvitationInput(Some(service), _, None, _, _) =>
+        case CurrentInvitationInput(service, _, _, _, _) =>
           Some(CurrentInvitationInput(service))
         case _ => None
       }
@@ -869,35 +923,20 @@ object AgentsInvitationController {
   object CurrentInvitationInputNeedsKnownFact {
     def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
       currentInvitationInput match {
-        case CurrentInvitationInput(Some(HMRCMTDVAT), Some(_), Some(_), Some(vatRegDate), _)
+        case CurrentInvitationInput(HMRCMTDVAT, _, _, Some(vatRegDate), _)
             if !DateFieldHelper.validateDate(vatRegDate) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(Some(HMRCMTDIT), Some(_), Some(_), Some(postcode), _)
-            if !postcode.matches(postcodeRegex) =>
+        case CurrentInvitationInput(HMRCMTDIT, _, _, Some(postcode), _) if !postcode.matches(postcodeRegex) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(Some(HMRCPIR), Some(_), Some(_), Some(dob), _)
-            if !DateFieldHelper.validateDate(dob) =>
+        case CurrentInvitationInput(HMRCPIR, _, _, Some(dob), _) if !DateFieldHelper.validateDate(dob) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(Some(service), Some(_), Some(_), _, _)
-            if Services.supportedServices.contains(service) =>
-          Some(currentInvitationInput.copy(knownFact = None))
+        case CurrentInvitationInput(service, _, _, None, _) if Services.supportedServices.contains(service) =>
+          Some(currentInvitationInput)
 
         case _ => None
       }
   }
-
-  object CurrentInvitationInputNeedsService {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput.service match {
-        case Some(_) =>
-          None
-        case None =>
-          Some(currentInvitationInput)
-      }
-
-  }
-
 }
