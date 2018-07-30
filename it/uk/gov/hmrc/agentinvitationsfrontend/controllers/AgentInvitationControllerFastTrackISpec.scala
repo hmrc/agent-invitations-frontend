@@ -395,6 +395,20 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
+
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcodeSpaces), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
+    }
+
+    "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
       val formData =
         CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcodeSpaces), fromFastTrack)
       testFastTrackCache.save(formData)
