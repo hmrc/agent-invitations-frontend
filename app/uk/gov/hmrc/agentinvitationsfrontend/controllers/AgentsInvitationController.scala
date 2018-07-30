@@ -93,6 +93,9 @@ class AgentsInvitationController @Inject()(
   val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
     AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
 
+  val agentFastTrackForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackGenericForm(featureFlags)
+
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
   }
@@ -754,18 +757,52 @@ object AgentsInvitationController {
   private val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
 
   private val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
-    if (fieldValue.nonEmpty) {
-      if (fieldValue.matches(vrnRegex)) {
-        if (Vrn.isValid(fieldValue)) Valid
+    fieldValue match {
+      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
+        if (Vrn.isValid(clientId)) Valid
         else Invalid(ValidationError("Invalid Vrn"))
-      } else if (fieldValue.matches(ninoRegex)) {
-        if (Nino.isValid(fieldValue)) Valid
+      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
+        if (Nino.isValid(clientId)) Valid
         else Invalid(ValidationError("Invalid Nino"))
-      } else Invalid(ValidationError("Invalid Client Identifier"))
-    } else Invalid(ValidationError("Client Identifier Required"))
+      case _ =>
+        Invalid(
+          ValidationError(
+            s"A Valid Client Identifier is Required. Received: ${if (fieldValue.nonEmpty) fieldValue else "Nothing"}"))
+    }
   }
 
-  val agentFastTrackForm: Form[CurrentInvitationInput] = {
+  private def validateFastTrackForm(featureFlags: FeatureFlags): Constraint[CurrentInvitationInput] =
+    Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
+      formData match {
+        case CurrentInvitationInput(HMRCMTDIT, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
+          if (featureFlags.showKfcMtdIt) {
+            knownFactOpt match {
+              case Some(knownFact) if knownFact.matches(postcodeRegex) => Valid
+              case Some(_)                                             => Invalid(ValidationError("Invalid Postcode"))
+              case None                                                => Invalid(ValidationError("Postcode is Required"))
+            }
+          } else Valid
+        case CurrentInvitationInput(HMRCPIR, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
+          if (featureFlags.showKfcPersonalIncome) {
+            knownFactOpt match {
+              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
+              case Some(_)                                                    => Invalid(ValidationError("Invalid Date of birth"))
+              case None                                                       => Invalid(ValidationError("Date of birth is Required"))
+            }
+          } else Valid
+        case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientId, knownFactOpt, _) if Vrn.isValid(clientId) =>
+          if (featureFlags.showKfcMtdVat) {
+            knownFactOpt match {
+              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
+              case Some(_)                                                    => Invalid(ValidationError("Invalid Vat Registration Date"))
+              case None                                                       => Invalid(ValidationError("Vat Registration Date is Required"))
+            }
+          } else Valid
+        case _ => Invalid(ValidationError("Fast Track Form was submitted with mixed or invalid data"))
+      }
+    }
+
+  def agentFastTrackGenericForm(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
@@ -777,8 +814,7 @@ object AgentsInvitationController {
         CurrentInvitationInput(service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
-      }))
-  }
+      }).verifying(validateFastTrackForm(featureFlags)))
 
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {

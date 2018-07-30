@@ -5,7 +5,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate, UserInputNinoAndDob}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
@@ -219,7 +218,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
       val formData =
         CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
         validNino.value,
@@ -241,7 +240,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
         CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
         validVrn.value,
@@ -262,7 +261,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
       val formData =
         CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
-      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       createInvitationStub(
         arn,
