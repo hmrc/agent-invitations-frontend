@@ -396,9 +396,8 @@ class AgentsInvitationController @Inject()(
                   withMaybeContinueUrlCached {
                     ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
                       currentInvitationInput match {
-                        case CurrentInvitationInputItsaReady(_)
-                             | CurrentInvitationInputPirReady(_)
-                             | CurrentInvitationInputVatReady(_) =>
+                        case CurrentInvitationInputItsaReady(_) | CurrentInvitationInputPirReady(_) |
+                            CurrentInvitationInputVatReady(_) =>
                           Future successful Redirect(routes.AgentsInvitationController.checkDetails())
                         case _ => redirectBasedOnCurrentInputState(arn, fastTrackInput, isWhitelisted)
                       }

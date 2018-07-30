@@ -293,11 +293,11 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software."))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, validNinoSpace.value)
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithNotBodyText(result, validPostcode)
+      checkHtmlResultWithNotBodyText(result, "DH1 4EJ")
     }
 
     "display the check details page without known fact when KFC flag is off for IRV" in {
@@ -307,8 +307,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, validNinoSpace.value)
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("Date of birth"))
       checkHtmlResultWithNotBodyText(result, "07 July 1980")
     }
@@ -319,7 +319,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
       checkHtmlResultWithNotBodyText(result, htmlEscapedMessage("VAT registration date"))

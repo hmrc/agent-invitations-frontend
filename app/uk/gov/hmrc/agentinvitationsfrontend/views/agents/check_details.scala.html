@@ -44,13 +44,17 @@
     }
 }
 
+@postcodeSpace = @{
+    if(currentInvitationInput.knownFact.get.replaceAll(" ", "").length == 6) 3
+    else 4
+}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(s"${requestPage}")
 
     @if(confirmForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("check-details"))
+        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
     }
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
@@ -59,7 +63,7 @@
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long">
+    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-40">
         <div>
             <dt class="cya-question">
                 @{currentInvitationInput.clientIdentifierType match {
@@ -69,7 +73,11 @@
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
-                @currentInvitationInput.clientIdentifier.get
+                @if(currentInvitationInput.service.get == "HMRC-MTD-VAT") {
+                    @currentInvitationInput.clientIdentifier.get
+                }else{
+                    @currentInvitationInput.clientIdentifier.get.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                }
             </dd>
         </div>
         @if(currentInvitationInput.knownFact.isDefined && shouldShowKF) {
@@ -85,7 +93,7 @@
                 </dt>
                 <dd class="cya-answer" id="known-fact">
                 @if(currentInvitationInput.service.getOrElse("") == "HMRC-MTD-IT"){
-                    @currentInvitationInput.knownFact.get
+                    @currentInvitationInput.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
                 }else{
                     @displayDate(currentInvitationInput.knownFact.get)
                 }
@@ -98,13 +106,13 @@
 
     @form(routes.AgentsInvitationController.submitDetails()) {
 
-        @inputRadioGroup(
-            confirmForm("checkDetails"),
-            Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
-            '_legend -> Html("""<h1 class="heading-medium">""" + Messages("confirm-details.sub-header") + """</h1>"""),
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='confirmDetails'""")
-        )
+            @inputRadioGroup(
+                confirmForm("checkDetails"),
+                Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
+                '_legend -> Html("""<h1 class="heading-medium flush--ends">""" + Messages("confirm-details.sub-header") + """</h1>"""),
+                '_groupDivClass -> "form-group soft--ends",
+                '_fieldsetAttributes -> Html("""id='checkDetails'""")
+            )
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
