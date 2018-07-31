@@ -210,6 +210,65 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
     }
 
+    "return 303 check-details if service calling fast-track for does not contain postcode for ITSA" in {
+
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+    }
+
+    "return 303 if service calling fast-track contains invalid postcode for ITSA" in {
+      val formData =
+        CurrentInvitationInput(
+          serviceITSA,
+          "ni",
+          validNino.value,
+          Some("Invalid_Postcode"),
+          fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+    }
+
+    "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
+      val formData =
+        CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, None, fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+    }
+
+    "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
+      val formData =
+        CurrentInvitationInput(
+          serviceVAT,
+          "vrn",
+          validVrn97.value,
+          Some("Invalid_Reg_Date"),
+          fromFastTrack)
+      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+    }
+
     "return 400 if service calling fast-track does not have supported service in payload" in {
       val formData = CurrentInvitationInput("INVALID_SERVICE").copy(fromFastTrack = fromFastTrack)
       val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
@@ -274,61 +333,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 400 if service calling fast-track for VAT does not contain vrn" in {
       val formData = CurrentInvitationInput(serviceVAT).copy(fromFastTrack = fromFastTrack)
-      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
-      val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-      status(result) shouldBe BAD_REQUEST
-    }
-
-    "return 400 if service calling fast-track for does not contain postcode for ITSA" in {
-
-      val formData =
-        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
-      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
-      val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-      status(result) shouldBe BAD_REQUEST
-    }
-
-    "return 400 if service calling fast-track contains invalid postcode for ITSA" in {
-      val formData =
-        CurrentInvitationInput(
-          serviceITSA,
-          "ni",
-          validNino.value,
-          Some("Invalid_Postcode"),
-          fromFastTrack)
-      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
-      val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-      status(result) shouldBe BAD_REQUEST
-    }
-
-    "return 400 if service calling fast-track does not contain vat-reg-date for VAT" in {
-      val formData =
-        CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, None, fromFastTrack)
-      val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
-      val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-      status(result) shouldBe BAD_REQUEST
-    }
-
-    "return 400 if service calling fast-track contains invalid vat-reg-date for VAT" in {
-      val formData =
-        CurrentInvitationInput(
-          serviceVAT,
-          "vrn",
-          validVrn97.value,
-          Some("Invalid_Reg_Date"),
-          fromFastTrack)
       val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -427,9 +431,9 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software."))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
     }
@@ -454,8 +458,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance Number"))
-      checkHtmlResultWithBodyText(result, validNino.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
     }
@@ -479,7 +483,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn97.value)
       checkHtmlResultWithBodyText(result, "Change this information")

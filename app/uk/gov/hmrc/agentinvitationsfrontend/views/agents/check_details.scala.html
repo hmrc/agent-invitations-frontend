@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import scala.util.Try
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 
@@ -30,9 +31,11 @@
 
 @requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}
 
+@postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
+
 @displayDate(date: String) = @{
-    val localDate = LocalDate.parse(date)
-    localDate.toString("dd MMMM yyyy", messages.lang.locale)
+    val localDate = Try(LocalDate.parse(date))
+    localDate.map(_.toString("dd MMMM yyyy", messages.lang.locale)).getOrElse(date)
 }
 
 @shouldShowKF = @{
@@ -80,6 +83,7 @@
                 }
             </dd>
         </div>
+        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty) {
             <div>
                 <dt class="cya-question">
                 @{
@@ -91,33 +95,44 @@
                 }
                 </dt>
                 <dd class="cya-answer" id="known-fact">
-                @if(currentInvitationInput.service == "HMRC-MTD-IT"){
-                    @currentInvitationInput.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
-                }else{
+                @if(currentInvitationInput.service == "HMRC-MTD-IT") {
+                    @if(currentInvitationInput.knownFact.get.matches(postcodeRegex)) {
+                        @currentInvitationInput.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
+                    }else{
+                        @currentInvitationInput.knownFact.get
+                    }
+                } else {
                     @displayDate(currentInvitationInput.knownFact.get)
                 }
                 </dd>
             </div>
+        }
     </dl>
+
     @if(shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty) {
 
         <div class="margin-top-40 margin-bottom-40"><a href="@routes.AgentsInvitationController.submitIdentifyClient()">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
+
+        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
 
         @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF) {
 
-            @inputRadioGroup(
-                confirmForm("checkDetails"),
-                Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
-                '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),
-                '_groupDivClass -> "form-group soft--ends",
-                '_fieldsetAttributes -> Html("""id='checkDetails'""")
-            )
+            @form(routes.AgentsInvitationController.submitDetails()) {
 
-        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
-    }
+                @inputRadioGroup(
+                    confirmForm("checkDetails"),
+                    Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
+                    '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),
+                    '_groupDivClass -> "form-group soft--ends",
+                    '_fieldsetAttributes -> Html("""id='checkDetails'""")
+                )
+
+                <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+            }
+        }
 
 
 }
