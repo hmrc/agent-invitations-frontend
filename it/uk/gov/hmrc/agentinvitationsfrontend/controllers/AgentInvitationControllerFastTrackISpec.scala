@@ -25,7 +25,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val validPostcode = "DH14EJ"
-  val validPostcodeLong = "DH14EJH"
+  val validPostcodeLong = "BN114AW"
   val validPostcodeSpaces = "DH1 4EJ"
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
@@ -422,7 +422,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithBodyText(result, "DH14 EJH")
+      checkHtmlResultWithBodyText(result, "BN11 4AW")
     }
 
     "display alternate check details page when known fact is required but not provided for ITSA" in {
