@@ -406,6 +406,8 @@ class AgentsInvitationController @Inject()(
                         case CurrentInvitationInputItsaReady(_) | CurrentInvitationInputPirReady(_) |
                             CurrentInvitationInputVatReady(_) =>
                           Future successful Redirect(routes.AgentsInvitationController.checkDetails())
+                        case CurrentInvitationInputNeedsKnownFact(_) =>
+                          Future successful Redirect(routes.AgentsInvitationController.checkDetails())
                         case _ => redirectBasedOnCurrentInputState(arn, fastTrackInput, isWhitelisted)
                       }
                     }
@@ -774,31 +776,10 @@ object AgentsInvitationController {
   private def validateFastTrackForm(featureFlags: FeatureFlags): Constraint[CurrentInvitationInput] =
     Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
       formData match {
-        case CurrentInvitationInput(HMRCMTDIT, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
-          if (featureFlags.showKfcMtdIt) {
-            knownFactOpt match {
-              case Some(knownFact) if knownFact.matches(postcodeRegex) => Valid
-              case Some(_)                                             => Invalid(ValidationError("Invalid Postcode"))
-              case None                                                => Invalid(ValidationError("Postcode is Required"))
-            }
-          } else Valid
-        case CurrentInvitationInput(HMRCPIR, "ni", clientId, knownFactOpt, _) if Nino.isValid(clientId) =>
-          if (featureFlags.showKfcPersonalIncome) {
-            knownFactOpt match {
-              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
-              case Some(_)                                                    => Invalid(ValidationError("Invalid Date of birth"))
-              case None                                                       => Invalid(ValidationError("Date of birth is Required"))
-            }
-          } else Valid
-        case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientId, knownFactOpt, _) if Vrn.isValid(clientId) =>
-          if (featureFlags.showKfcMtdVat) {
-            knownFactOpt match {
-              case Some(knownFact) if DateFieldHelper.validateDate(knownFact) => Valid
-              case Some(_)                                                    => Invalid(ValidationError("Invalid Vat Registration Date"))
-              case None                                                       => Invalid(ValidationError("Vat Registration Date is Required"))
-            }
-          } else Valid
-        case _ => Invalid(ValidationError("Fast Track Form was submitted with mixed or invalid data"))
+        case CurrentInvitationInput(HMRCMTDIT, "ni", clientId, _, _) if Nino.isValid(clientId)  => Valid
+        case CurrentInvitationInput(HMRCPIR, "ni", clientId, _, _) if Nino.isValid(clientId)    => Valid
+        case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
+        case _                                                                                  => Invalid(ValidationError("Fast Track Form was submitted with mixed or invalid data"))
       }
     }
 

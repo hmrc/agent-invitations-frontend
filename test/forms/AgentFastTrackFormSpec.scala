@@ -62,6 +62,72 @@ class AgentFastTrackFormSpec extends UnitSpec {
           val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
+
+        "provided no known fact for ITSA" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided no known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided no known fact for VAT" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> ""
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided nonsense known fact for ITSA" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "foo"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided nonsense known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "foo"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided nonsense known fact for VAT" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> "foo"
+          )
+          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
       }
 
       "return error message" when {
@@ -111,80 +177,6 @@ class AgentFastTrackFormSpec extends UnitSpec {
           fastTrackForm.errors.nonEmpty shouldBe true
           fastTrackForm.errors shouldBe Seq(
             FormError("clientIdentifier", List("A Valid Client Identifier is Required. Received: Nothing")))
-        }
-
-        "provided incorrect postcode for ITSA" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDIT,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> "ZH14"
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Postcode")))
-
-        }
-
-        "provided incorrect date of birth for IRV" in {
-          val data = Json.obj(
-            "service"              -> HMRCPIR,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> "1970-01-99"
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Date of birth")))
-        }
-
-        "provided incorrect vat registration date for VAT" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDVAT,
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "101747696",
-            "knownFact"            -> "1970-01-99"
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Invalid Vat Registration Date")))
-
-        }
-
-        "provided no known fact for ITSA" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDIT,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Postcode is Required")))
-        }
-
-        "provided no known fact for IRV" in {
-          val data = Json.obj(
-            "service"              -> HMRCPIR,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Date of birth is Required")))
-        }
-
-        "provided no known fact for VAT" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDVAT,
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "101747696",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("", List("Vat Registration Date is Required")))
         }
 
         "provided mixed data" in {
