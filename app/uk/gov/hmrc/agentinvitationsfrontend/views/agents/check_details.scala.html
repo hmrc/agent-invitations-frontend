@@ -83,7 +83,7 @@
                 }
             </dd>
         </div>
-        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty) {
+        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF) {
             <div>
                 <dt class="cya-question">
                 @{
@@ -116,9 +116,7 @@
         <p>@Messages("check-details.change.p1")</p>
 
         <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
-    }
-
-        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF) {
+    }else{
 
             @form(routes.AgentsInvitationController.submitDetails()) {
 
