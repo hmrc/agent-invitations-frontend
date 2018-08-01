@@ -81,6 +81,9 @@ class AgentsInvitationController @Inject()(
   private[controllers] val agentServicesAccountUrl: String =
     if (isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
 
+  val agentInvitationIdentifyKnownFact: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
+
   val agentInvitationIdentifyClientFormItsa: Form[UserInputNinoAndPostcode] =
     AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
 
@@ -132,6 +135,16 @@ class AgentsInvitationController @Inject()(
           }
         )
     }
+  }
+
+  private val fastTrackToIdentifyKnownFact = (fastTrackDetials: CurrentInvitationInput) => {
+    val service = fastTrackDetials.service
+    val clientId = fastTrackDetials.clientIdentifier
+    val clientIdType = fastTrackDetials.clientIdentifierType
+    agentInvitationIdentifyKnownFact.fill(
+      CurrentInvitationInput(service, clientIdType, clientId, fastTrackDetials.knownFact)
+    )
+
   }
 
   private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: CurrentInvitationInput) => {
@@ -221,6 +234,27 @@ class AgentsInvitationController @Inject()(
             } else
               Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
           }
+        )
+    }
+  }
+
+  val knownFact: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      fastTrackCache.fetch().map {
+        case Some(currentInvitation) =>
+          Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
+        case None => Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
+  val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      agentInvitationIdentifyKnownFact
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Future successful Ok(known_fact(formWithErrors)),
+          data => redirectBasedOnCurrentInputState(arn, data, isWhitelisted)
         )
     }
   }
@@ -783,6 +817,26 @@ object AgentsInvitationController {
       }
     }
 
+  private def validateKnownFactForm(featureFlags: FeatureFlags): Constraint[CurrentInvitationInput] =
+    Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
+      formData match {
+        case CurrentInvitationInput(HMRCMTDIT, _, _, None, _) => Invalid(ValidationError("error.postcode.required"))
+        case CurrentInvitationInput(HMRCPIR, _, _, None, _) =>
+          Invalid(ValidationError("error.irv-date-of-birth.required"))
+        case CurrentInvitationInput(HMRCMTDVAT, _, _, None, _) =>
+          Invalid(ValidationError("error.vat-registration-date.required"))
+        case CurrentInvitationInput(HMRCMTDIT, _, _, Some(kf), _) if !kf.matches(postcodeCharactersRegex) =>
+          Invalid(ValidationError("enter-postcode.invalid-characters"))
+        case CurrentInvitationInput(HMRCMTDIT, _, _, Some(kf), _) if !kf.matches(postcodeRegex) =>
+          Invalid(ValidationError("enter-postcode.invalid-format"))
+        case CurrentInvitationInput(HMRCPIR, _, _, Some(kf), _) if !validateDate(kf) =>
+          Invalid(ValidationError("enter-irv-date-of-birth.invalid-format"))
+        case CurrentInvitationInput(HMRCMTDVAT, _, _, Some(kf), _) if !validateDate(kf) =>
+          Invalid(ValidationError("enter.vat-registration-date.invalid-format"))
+        case _ => Valid
+      }
+    }
+
   def agentFastTrackGenericForm(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(
       mapping(
@@ -796,6 +850,30 @@ object AgentsInvitationController {
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
       }).verifying(validateFastTrackForm(featureFlags)))
+
+  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
+    Form(
+      MappingOps
+        .errorAwareMapping(mapping(
+          "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+          "clientIdentifierType" -> text
+            .verifying("Unsupported Client Type", clientType => supportedTypes.contains(clientType)),
+          "clientIdentifier" -> normalizedText.verifying(validateClientId),
+          "knownFact"        -> optional(text)
+        )({ (service, clientIdType, clientId, knownFact) =>
+          CurrentInvitationInput(service, clientIdType, clientId, knownFact)
+        })({ fastTrack =>
+          Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
+        }))
+        .verifyingWithErrorMap(validateKnownFactForm(featureFlags) -> Map(
+          "error.postcode.required"                    -> "knownFact",
+          "error.irv-date-of-birth.required"           -> "knownFact",
+          "error.vat-registration-date.required"       -> "knownFact",
+          "enter-postcode.invalid-characters"          -> "knownFact",
+          "enter-postcode.invalid-format"              -> "knownFact",
+          "enter-irv-date-of-birth.invalid-format"     -> "knownFact",
+          "enter.vat-registration-date.invalid-format" -> "knownFact"
+        )))
 
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {

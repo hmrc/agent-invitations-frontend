@@ -115,7 +115,7 @@
 
         <p>@Messages("check-details.change.p1")</p>
 
-        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+        <a href="@routes.AgentsInvitationController.knownFact()"><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
     }else{
 
             @form(routes.AgentsInvitationController.submitDetails()) {
