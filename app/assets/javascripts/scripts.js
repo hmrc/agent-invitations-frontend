@@ -33,4 +33,6 @@ $(function() {
             $(this).find('.error-notification').appendTo($relocate)
 
     })
+
+    GOVUK.details.init()
 });
