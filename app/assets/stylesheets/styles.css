@@ -79,4 +79,8 @@ caption.caption-normal{
     border: 0;
 }
 /*IE10 Fix for DetailsPloyFill*/
-.no-details details summary  .arrow-open {  display: inline-block}
+.no-details details summary .arrow-open,
+.no-details details summary .arrow-closed{
+    display: none;
+}
+
