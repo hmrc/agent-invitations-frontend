@@ -4,6 +4,11 @@ $(function() {
         // dont track any elements with data-ga-event="false"
         var exclude = '[data-ga-event="false"]';
 
+        // strips out any text form elements with .visuallyhidden
+        function striptext(element){
+            return element.clone().children('.visuallyhidden').remove().end().text();
+        }
+
         // is it a button, error, or link?
         function cat(_this){
         	if($(_this).hasClass('button')){
@@ -34,21 +39,21 @@ $(function() {
         // links
         $('a:not('+exclude+')').each(function(){
             $(this).click(function(e){
-                ga('send', 'event', cat(this), title, $(this).text())
+                ga('send', 'event', cat(this), title, striptext($(this)))
             });
         });
 
         // submit buttons
         $('button, input[type="submit"]').not(''+exclude+'').each(function(){
             $(this).click(function(e){
-                ga('send', 'event', 'button-click', title, $(this).text())
+                ga('send', 'event', 'button-click', title, striptext($(this)))
             });
         });
 
         // details summary
         $('details summary:not('+exclude+')').each(function(){
             $(this).click(function(e){
-        		ga('send', 'event', 'disclosure-click-'+disclosureOpenClose(this), title, $(this).text())
+        		ga('send', 'event', 'disclosure-click-'+disclosureOpenClose(this), title, striptext($(this)))
         	});
         })
 
