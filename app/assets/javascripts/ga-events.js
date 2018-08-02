@@ -51,7 +51,7 @@ $(function() {
         });
 
         // details summary
-        $('details summary:not('+exclude+')').each(function(){
+        $('details summary .summary:not('+exclude+')').each(function(){
             $(this).click(function(e){
         		ga('send', 'event', 'disclosure-click-'+disclosureOpenClose(this), title, striptext($(this)))
         	});
