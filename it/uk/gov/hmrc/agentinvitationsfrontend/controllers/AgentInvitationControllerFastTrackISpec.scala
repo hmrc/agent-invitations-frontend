@@ -806,6 +806,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
     "redirect to invitation sent when client details are valid and match for IRV" in {
@@ -822,12 +823,13 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       val requestWithForm = request.withFormUrlEncodedBody("service" -> "PERSONAL-INCOME-RECORD", "clientIdentifierType" -> "ni",
         "clientIdentifier" -> validNino.value,
-        "knownFact" -> dateOfBirth)
+        "knownFact.year" -> "1980", "knownFact.month" -> "07", "knownFact.day" -> "07")
       val formData =
         CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
     "redirect to invitation sent when client details are valid and match for VAT" in {
@@ -844,20 +846,96 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
         "clientIdentifier" -> validVrn97.value,
-        "knownFact" -> validRegDateForVrn97.get)
+        "knownFact.year" -> "2007", "knownFact.month" -> "07", "knownFact.day" -> "07")
       val formData =
         CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
     "redisplay the page with errors when the known fact is not provided" in {
       val formData =
         CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
-      val result = await(controller.submitKnownFact(authorisedAsValidAgent(request, arn.value)))
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact" -> "")
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Enter your client's postcode"))
+    }
+
+    "redisplay the page with errors when known fact is not valid for IRV" in {
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse(validRegDateForVrn97.get), 204)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
+        "clientIdentifier" -> validVrn97.value,
+        "knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+      val formData =
+        CurrentInvitationInput(serviceVAT, "ni", validVrn97.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Year must only include numbers")
+      checkHtmlResultWithBodyText(result, "Month must only include numbers")
+      checkHtmlResultWithBodyText(result, "Day must only include numbers")
+    }
+
+    "redisplay the page with errors when known fact is not valid for VAT" in {
+      createInvitationStub(
+        arn,
+        validVrn97.value,
+        invitationIdVAT,
+        validVrn97.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "PERSONAL-INCOME-RECORD", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Year must only include numbers")
+      checkHtmlResultWithBodyText(result, "Month must only include numbers")
+      checkHtmlResultWithBodyText(result, "Day must only include numbers")
+    }
+
+    "redirect to select service when form data is invalid" in {
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
     }
   }
 

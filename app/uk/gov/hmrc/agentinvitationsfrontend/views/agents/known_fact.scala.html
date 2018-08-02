@@ -16,11 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup, dateFieldsFreeInlineLegend}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, dateFieldsFreeInlineLegend}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
+@import uk.gov.hmrc.play.views.html.helpers.input
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 @(knownFactForm: Form[CurrentInvitationInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -30,10 +30,12 @@
   "nojs-date-fields-error"
 }
 
-@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30">""" + Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
+@flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
+
+@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
  @back_link(s"${routes.AgentsInvitationController.checkDetails()}")
 
@@ -52,7 +54,6 @@
     knownFactForm("knownFact"),
     '_label -> Html(pageHeading),
     '_inputClass -> "form-control",
-    '_labelTextClass -> "h2-heading",
     '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper"),
     '_labelClass -> "soft--ends"
    )
@@ -61,9 +62,7 @@
    <div class="@noJsDateFieldsError">
    @dateFieldsFreeInlineLegend(knownFactForm, "knownFact",
     '_legend -> Html(pageHeading),
-    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper"),
-    '_legendSpanClass -> "heading-medium",
-    '_legendClass -> "flush--ends"
+    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper")
    )
    </div>
   }

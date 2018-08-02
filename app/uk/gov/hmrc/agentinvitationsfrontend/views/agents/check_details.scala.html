@@ -52,7 +52,7 @@
     else 4
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(s"${requestPage}")
 
@@ -115,7 +115,7 @@
 
         <p>@Messages("check-details.change.p1")</p>
 
-        <a href="@routes.AgentsInvitationController.knownFact()"><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
+        <a href="@routes.AgentsInvitationController.knownFact()" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
     }else{
 
             @form(routes.AgentsInvitationController.submitDetails()) {

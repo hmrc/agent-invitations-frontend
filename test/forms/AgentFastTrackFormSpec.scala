@@ -19,7 +19,7 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackGenericForm, agentFastTrackGenericFormKnownFact}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackDateOfBirthForm, agentFastTrackGenericForm, agentFastTrackGenericFormKnownFact, agentFastTrackPostcodeForm, agentFastTrackVatRegDateForm}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
@@ -273,84 +273,194 @@ class AgentFastTrackFormSpec extends UnitSpec {
       }
 
       "return error messages" when {
-        "known fact is empty for ITSA" in {
+        "there is an unsupported service" in {
+          val data = Json.obj(
+            "service"              -> "foo",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
+        }
+
+        "there is an unsupported client identifier" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "foo",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifierType", List("Unsupported Client Type")))
+        }
+
+        "clientId is invalid" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "foo",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(
+            FormError("clientIdentifier", List("A Valid Client Identifier is Required. Received: foo")))
+        }
+      }
+    }
+  }
+  "agentFastTrackPostcodeForm" when {
+    "feature flags are on" when {
+      val featureFlags = FeatureFlags()
+
+      "return no error message" when {
+        "provided correct ITSA Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackPostcodeForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+      }
+      "return error message" when {
+        "provided empty known fact for ITSA" in {
           val data = Json.obj(
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackPostcodeForm(featureFlags).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.postcode.required")))
         }
-
-        "known fact has invalid character for ITSA" in {
+        "provided invalid characters in known fact for ITSA" in {
           val data = Json.obj(
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH!4EJ"
           )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackPostcodeForm(featureFlags).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-characters")))
         }
-
-        "known fact is invalid for ITSA" in {
+        "provided invalid format in known fact for ITSA" in {
           val data = Json.obj(
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> "DH14EJXXXXX"
+            "knownFact"            -> "DH14EJXXX"
           )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackPostcodeForm(featureFlags).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
         }
 
-        "known fact is empty for IRV" in {
-          val data = Json.obj(
-            "service"              -> HMRCPIR,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.irv-date-of-birth.required")))
-        }
-
-        "known fact is invalid for IRV" in {
-          val data = Json.obj(
-            "service"              -> HMRCPIR,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> "XXX"
-          )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-irv-date-of-birth.invalid-format")))
-        }
-
-        "known fact is empty for VAT" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDVAT,
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.vat-registration-date.required")))
-        }
-
-        "known fact is invalid for VAT" in {
-          val data = Json.obj(
-            "service"              -> HMRCMTDVAT,
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> "XXX"
-          )
-          val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter.vat-registration-date.invalid-format")))
-        }
       }
     }
 
+  }
+
+  "agentFastTrackDateOfBirthForm" when {
+    "feature flags are on" when {
+      val featureFlags = FeatureFlags()
+
+      "return no error message" when {
+        "provided correct IRV Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact.year"       -> "2000",
+            "knownFact.month"      -> "01",
+            "knownFact.day"        -> "01"
+          )
+          val fastTrackForm = agentFastTrackDateOfBirthForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+      }
+      "return error message" when {
+        "provided empty known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact.year"       -> "",
+            "knownFact.month"      -> "",
+            "knownFact.day"        -> ""
+          )
+          val fastTrackForm = agentFastTrackDateOfBirthForm(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.irv-date-of-birth.required")))
+        }
+        "provided invalid known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact.year"       -> "aaaa",
+            "knownFact.month"      -> "aa",
+            "knownFact.day"        -> "aa"
+          )
+          val fastTrackForm = agentFastTrackDateOfBirthForm(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(
+            FormError("knownFact.year", List("error.year.invalid-format")),
+            FormError("knownFact.month", List("error.month.invalid-format")),
+            FormError("knownFact.day", List("error.day.invalid-format"))
+          )
+        }
+      }
+    }
+  }
+
+  "agentFastTrackVatRegDateForm" when {
+    "feature flags are on" when {
+      val featureFlags = FeatureFlags()
+
+      "return no error message" when {
+        "provided correct VAT Data" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact.year"       -> "2000",
+            "knownFact.month"      -> "01",
+            "knownFact.day"        -> "01"
+          )
+          val fastTrackForm = agentFastTrackVatRegDateForm(featureFlags).bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+      }
+      "return error message" when {
+        "provided empty known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact.year"       -> "",
+            "knownFact.month"      -> "",
+            "knownFact.day"        -> ""
+          )
+          val fastTrackForm = agentFastTrackVatRegDateForm(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.vat-registration-date.required")))
+        }
+        "provided invalid known fact for IRV" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact.year"       -> "aaaa",
+            "knownFact.month"      -> "aa",
+            "knownFact.day"        -> "aa"
+          )
+          val fastTrackForm = agentFastTrackVatRegDateForm(featureFlags).bind(data)
+          fastTrackForm.errors shouldBe Seq(
+            FormError("knownFact.year", List("error.year.invalid-format")),
+            FormError("knownFact.month", List("error.month.invalid-format")),
+            FormError("knownFact.day", List("error.day.invalid-format"))
+          )
+        }
+      }
+    }
   }
 }
