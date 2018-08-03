@@ -99,7 +99,14 @@ class AgentsInvitationController @Inject()(
   val agentFastTrackForm: Form[CurrentInvitationInput] =
     AgentsInvitationController.agentFastTrackGenericForm(featureFlags)
 
-  val agentFastTrackKnownFactForm = AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags) _
+  val agentFastTrackPostcodeForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags))
+
+  val agentFastTrackDateOfBirthForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags))
+
+  val agentFastTrackVatRegDateForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
@@ -257,28 +264,26 @@ class AgentsInvitationController @Inject()(
         .fold(
           _ => {
             Future successful Redirect(routes.AgentsInvitationController.selectService())
-          },
-          data => {
-            def bindKnownFactForm(knownFactForm: Form[CurrentInvitationInput]) =
-              knownFactForm
-                .bindFromRequest()
-                .fold(
-                  formWithErrors => Future successful Ok(known_fact(formWithErrors)),
-                  data => redirectBasedOnCurrentInputState(arn, data, isWhitelisted)
-                )
-
-            data match {
-              case "HMRC-MTD-IT" =>
-                bindKnownFactForm(agentFastTrackKnownFactForm(postcodeMapping(featureFlags)))
-              case "PERSONAL-INCOME-RECORD" =>
-                bindKnownFactForm(agentFastTrackKnownFactForm(dateOfBirthMapping(featureFlags)))
-              case "HMRC-MTD-VAT" =>
-                bindKnownFactForm(agentFastTrackKnownFactForm(vatRegDateMapping(featureFlags)))
-            }
+          }, {
+            case "HMRC-MTD-IT" =>
+              bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted)
+            case "PERSONAL-INCOME-RECORD" =>
+              bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted)
+            case "HMRC-MTD-VAT" =>
+              bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted)
           }
         )
     }
   }
+
+  def bindKnownFactForm(knownFactForm: Form[CurrentInvitationInput], arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent]) =
+    knownFactForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future successful Ok(known_fact(formWithErrors)),
+        data => redirectBasedOnCurrentInputState(arn, data, isWhitelisted)
+      )
 
   def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
     agentInvitationIdentifyClientFormItsa
@@ -807,7 +812,8 @@ object AgentsInvitationController {
       }
     }
 
-  def agentFastTrackKnownFactForm(featureFlags: FeatureFlags)(
+  def agentFastTrackKnownFactForm(
+    featureFlags: FeatureFlags,
     knownFactMapping: Mapping[Option[String]]): Form[CurrentInvitationInput] =
     Form(
       mapping(
