@@ -250,9 +250,10 @@ class AgentsInvitationController @Inject()(
   val knownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
-        case Some(currentInvitation) =>
+        case Some(currentInvitation) if currentInvitation.service.nonEmpty =>
           Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
-        case None => Redirect(routes.AgentsInvitationController.selectService())
+        case Some(_) => throw new Exception("no content in cache")
+        case None    => Redirect(routes.AgentsInvitationController.selectService())
       }
     }
   }
