@@ -490,7 +490,15 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "We need some more details")
     }
 
-    "Redirect to select service when there is nothing in the cache" in {
+    "Throw an exception when the cache is empty" in {
+      val formData = CurrentInvitationInput()
+      testFastTrackCache.save(formData)
+      an[Exception] shouldBe thrownBy {
+        await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      }
+    }
+
+    "Redirect to select service when there is None in the cache" in {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")

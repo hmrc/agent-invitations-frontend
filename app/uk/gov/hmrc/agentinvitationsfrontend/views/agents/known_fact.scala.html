@@ -67,9 +67,9 @@
    </div>
   }
 
-  <input type="hidden" name="service" id="service" value="@knownFactForm("service").value">
-  <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@knownFactForm("clientIdentifier").value">
-  <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="@knownFactForm("clientIdentifierType").value">
+  <input type="hidden" name="service" id="service" value="@knownFactForm("service").value.getOrElse("")">
+  <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@knownFactForm("clientIdentifier").value.getOrElse("")">
+  <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="@knownFactForm("clientIdentifierType").value.getOrElse("")">
 
   <div class="form-group">
    <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
