@@ -745,6 +745,200 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
   }
 
+  "GET agents/more-details" should {
+    val request = FakeRequest()
+    "display the known fact page when known fact is required and not provided for ITSA" in {
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, "What is your client's postcode?")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("This will help us match their details against information we hold."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("This is the postcode of your client's registered address"))
+    }
+
+    "display the known fact page when known fact is required and provided for IRV" in {
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, "What is your client's date of birth?")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("This will help us match their details against information we hold."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("For example, 31 3 1980"))
+    }
+
+    "display the known fact page when known fact is required and provided for VAT" in {
+      val formData =
+        CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("This will help us match their details against information we hold."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("For example, 31 8 2015"))
+    }
+
+    "redirect to select-service if there is no invitation in the cache" in {
+      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+    }
+  }
+
+  "POST /agents/more-details" should {
+    val request = FakeRequest("POST", "/agents/identify-client")
+    "redirect to invitation sent when client details are valid and match for ITSA" in {
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        "HMRC-MTD-IT",
+        "NI")
+      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact" -> "DH14EJ")
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+    }
+
+    "redirect to invitation sent when client details are valid and match for IRV" in {
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "PERSONAL-INCOME-RECORD", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact.year" -> "1980", "knownFact.month" -> "07", "knownFact.day" -> "07")
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+    }
+
+    "redirect to invitation sent when client details are valid and match for VAT" in {
+      createInvitationStub(
+        arn,
+        validVrn97.value,
+        invitationIdVAT,
+        validVrn97.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse(validRegDateForVrn97.get), 204)
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
+        "clientIdentifier" -> validVrn97.value,
+        "knownFact.year" -> "2007", "knownFact.month" -> "07", "knownFact.day" -> "07")
+      val formData =
+        CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+    }
+
+    "redisplay the page with errors when the known fact is not provided" in {
+      val formData =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact" -> "")
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Enter your client's postcode"))
+    }
+
+    "redisplay the page with errors when known fact is not valid for IRV" in {
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      checkVatRegisteredClientStub(validVrn97, LocalDate.parse(validRegDateForVrn97.get), 204)
+      getInvitationStub(arn, validVrn97.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
+        "clientIdentifier" -> validVrn97.value,
+        "knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+      val formData =
+        CurrentInvitationInput(serviceVAT, "ni", validVrn97.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Year must only include numbers")
+      checkHtmlResultWithBodyText(result, "Month must only include numbers")
+      checkHtmlResultWithBodyText(result, "Day must only include numbers")
+    }
+
+    "redisplay the page with errors when known fact is not valid for VAT" in {
+      createInvitationStub(
+        arn,
+        validVrn97.value,
+        invitationIdVAT,
+        validVrn97.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("service" -> "PERSONAL-INCOME-RECORD", "clientIdentifierType" -> "ni",
+        "clientIdentifier" -> validNino.value,
+        "knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Year must only include numbers")
+      checkHtmlResultWithBodyText(result, "Month must only include numbers")
+      checkHtmlResultWithBodyText(result, "Day must only include numbers")
+    }
+
+    "redirect to select service when form data is invalid" in {
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
+      val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
+      val formData =
+        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+    }
+  }
+
   def verifyAgentClientInvitationSubmittedEvent(
     arn: String,
     clientId: String,

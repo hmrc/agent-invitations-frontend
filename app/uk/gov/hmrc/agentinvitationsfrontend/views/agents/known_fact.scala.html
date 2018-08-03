@@ -1,0 +1,80 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, dateFieldsFreeInlineLegend}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.play.views.html.helpers.input
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+@(knownFactForm: Form[CurrentInvitationInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@noJsDateFieldsError = @{
+ if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
+  "nojs-date-fields-error"
+}
+
+@flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
+
+@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
+
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+
+ @back_link(s"${routes.AgentsInvitationController.checkDetails()}")
+
+ @if(knownFactForm.hasErrors) {
+  @errorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
+ }
+
+
+ @form(
+  action = routes.AgentsInvitationController.submitKnownFact(),
+  'class -> "form js-form") {
+
+  @if(knownFactForm("service").value.getOrElse("") == "HMRC-MTD-IT") {
+   <div class="form-group">
+   @input(
+    knownFactForm("knownFact"),
+    '_label -> Html(pageHeading),
+    '_inputClass -> "form-control",
+    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper"),
+    '_labelClass -> "soft--ends"
+   )
+   </div>
+  }else {
+   <div class="@noJsDateFieldsError">
+   @dateFieldsFreeInlineLegend(knownFactForm, "knownFact",
+    '_legend -> Html(pageHeading),
+    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper")
+   )
+   </div>
+  }
+
+  <input type="hidden" name="service" id="service" value="@knownFactForm("service").value">
+  <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@knownFactForm("clientIdentifier").value">
+  <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="ni">
+
+  <div class="form-group">
+   <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+  </div>
+
+ }
+}
+

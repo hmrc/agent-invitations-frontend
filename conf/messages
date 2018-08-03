@@ -79,6 +79,33 @@ invitation-sent.trackRequests.button=Track your recent authorisation requests
 invitation-sent.new-window=(opens a new window or tab)
 invitation-sent.startNewAuthRequest=Start new authorisation request
 
+#Check Details
+check-details.heading=Check your client''s details before you continue
+check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to report a client''s income or expenses through software
+check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client''s PAYE income record
+check-details.p.HMRC-MTD-VAT=You are about to set up a request for authorisation to report a client''s VAT returns through software
+check-details.table.heading=Client''s details
+check-details.nino=National Insurance number
+check-details.vrn=VAT registration number
+check-details.postcode=Postcode
+check-details.dob=Date of birth
+check-details.vat-reg-date=VAT registration date
+check-details.change.link=Change this information
+check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
+confirm-details.sub-header=Are these details correct?
+confirm-details.radio1=Yes - I want to ask this client for authorisation
+confirm-details.radio2=No - I need to change them
+error.confirmDetails.invalid=Select yes if the details are correct
+
+#Known fact
+known-fact.HMRC-MTD-IT.heading=What is your client''s postcode?
+known-fact.PERSONAL-INCOME-RECORD.heading=What is your client''s date of birth?
+known-fact.HMRC-MTD-VAT.heading=What is your client''s VAT registration date?
+known-fact.p1=This will help us match their details against information we hold.
+known-fact.HMRC-MTD-IT.helper=This is the postcode of your client''s registered address
+known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
+known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
+
 # Not Enrolled
 not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
 not-enrolled.itsa.description=You cannot ask for authorisation to represent them until they have signed up.
@@ -186,24 +213,6 @@ decide-later.p2=If you meant to accept this request, you can <a href="{0}">go ba
 #Invitation Expired
 invitation-expired.heading=Invitation Expired
 invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
-
-#Check Details
-check-details.heading=Check your client''s details before you continue
-check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to report a client''s income or expenses through software
-check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client''s PAYE income record
-check-details.p.HMRC-MTD-VAT=You are about to set up a request for authorisation to report a client''s VAT returns through software
-check-details.table.heading=Client''s details
-check-details.nino=National Insurance number
-check-details.vrn=VAT registration number
-check-details.postcode=Postcode
-check-details.dob=Date of birth
-check-details.vat-reg-date=VAT registration date
-check-details.change.link=Change this information
-check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
-confirm-details.sub-header=Are these details correct?
-confirm-details.radio1=Yes - I want to ask this client for authorisation
-confirm-details.radio2=No - I need to change them
-error.confirmDetails.invalid=Select yes if the details are correct
 
 # Complete
 client-complete.header=Your agent has been authorised

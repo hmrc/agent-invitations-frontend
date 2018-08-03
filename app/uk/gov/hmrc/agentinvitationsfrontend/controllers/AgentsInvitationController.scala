@@ -81,6 +81,9 @@ class AgentsInvitationController @Inject()(
   private[controllers] val agentServicesAccountUrl: String =
     if (isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
 
+  val agentInvitationIdentifyKnownFactForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
+
   val agentInvitationIdentifyClientFormItsa: Form[UserInputNinoAndPostcode] =
     AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
 
@@ -95,6 +98,15 @@ class AgentsInvitationController @Inject()(
 
   val agentFastTrackForm: Form[CurrentInvitationInput] =
     AgentsInvitationController.agentFastTrackGenericForm(featureFlags)
+
+  val agentFastTrackPostcodeForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags))
+
+  val agentFastTrackDateOfBirthForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags))
+
+  val agentFastTrackVatRegDateForm: Form[CurrentInvitationInput] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
     Redirect(routes.AgentsInvitationController.selectService())
@@ -132,6 +144,16 @@ class AgentsInvitationController @Inject()(
           }
         )
     }
+  }
+
+  private val fastTrackToIdentifyKnownFact = (fastTrackDetails: CurrentInvitationInput) => {
+    val service = fastTrackDetails.service
+    val clientId = fastTrackDetails.clientIdentifier
+    val clientIdType = fastTrackDetails.clientIdentifierType
+    agentInvitationIdentifyKnownFactForm.fill(
+      CurrentInvitationInput(service, clientIdType, clientId, fastTrackDetails.knownFact)
+    )
+
   }
 
   private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: CurrentInvitationInput) => {
@@ -224,6 +246,44 @@ class AgentsInvitationController @Inject()(
         )
     }
   }
+
+  val knownFact: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      fastTrackCache.fetch().map {
+        case Some(currentInvitation) =>
+          Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
+        case None => Redirect(routes.AgentsInvitationController.selectService())
+      }
+    }
+  }
+
+  val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      serviceNameForm
+        .bindFromRequest()
+        .fold(
+          _ => {
+            Future successful Redirect(routes.AgentsInvitationController.selectService())
+          }, {
+            case "HMRC-MTD-IT" =>
+              bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted)
+            case "PERSONAL-INCOME-RECORD" =>
+              bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted)
+            case "HMRC-MTD-VAT" =>
+              bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted)
+          }
+        )
+    }
+  }
+
+  def bindKnownFactForm(knownFactForm: Form[CurrentInvitationInput], arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent]) =
+    knownFactForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future successful Ok(known_fact(formWithErrors)),
+        data => redirectBasedOnCurrentInputState(arn, data, isWhitelisted)
+      )
 
   def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
     agentInvitationIdentifyClientFormItsa
@@ -398,20 +458,12 @@ class AgentsInvitationController @Inject()(
             },
             currentInvitationInput => {
               val fastTrackInput = currentInvitationInput.copy(fromFastTrack = true)
-              fastTrackCache.save(fastTrackInput).flatMap {
-                _ =>
-                  withMaybeContinueUrlCached {
-                    ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
-                      currentInvitationInput match {
-                        case CurrentInvitationInputItsaReady(_) | CurrentInvitationInputPirReady(_) |
-                            CurrentInvitationInputVatReady(_) =>
-                          Future successful Redirect(routes.AgentsInvitationController.checkDetails())
-                        case CurrentInvitationInputNeedsKnownFact(_) =>
-                          Future successful Redirect(routes.AgentsInvitationController.checkDetails())
-                        case _ => redirectBasedOnCurrentInputState(arn, fastTrackInput, isWhitelisted)
-                      }
-                    }
+              fastTrackCache.save(fastTrackInput).flatMap { _ =>
+                withMaybeContinueUrlCached {
+                  ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
+                    Future successful Redirect(routes.AgentsInvitationController.checkDetails())
                   }
+                }
               }
             }
           )
@@ -520,22 +572,6 @@ class AgentsInvitationController @Inject()(
       createInvitation(arn, fastTrackPirInvitation)
     }
 
-  private[controllers] def confirmAndRedirect(
-    arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
-    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    currentInvitationInput match {
-      case CurrentInvitationInputItsaReady(completeItsaInvitation) =>
-        createInvitation(arn, completeItsaInvitation)
-      case CurrentInvitationInputVatReady(completeVatInvitation) =>
-        createInvitation(arn, completeVatInvitation)
-      case CurrentInvitationInputPirReady(completeIrvInvitation) =>
-        createInvitation(arn, completeIrvInvitation)
-      case _ =>
-        Logger(getClass).warn(s"Something has gone wrong. Redirected back to check current state.")
-        redirectBasedOnCurrentInputState(arn, currentInvitationInput, isWhitelisted)
-    }
-
   def redirectBasedOnCurrentInputState(
     arn: Arn,
     currentInvitationInput: CurrentInvitationInput,
@@ -557,15 +593,6 @@ class AgentsInvitationController @Inject()(
           case _ =>
             Future successful Redirect(routes.AgentsInvitationController.selectService())
         }
-
-      case CurrentInvitationInputNeedsKnownFact(invitationNeedsKnownFact) =>
-        invitationNeedsKnownFact.service match {
-          case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
-          case _ =>
-            Future successful Redirect(routes.AgentsInvitationController.selectService())
-        }
-
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")
         fastTrackCache
@@ -663,7 +690,9 @@ object AgentsInvitationController {
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
   val trimmedUppercaseText: Mapping[String] = of[String].transform(_.trim.toUpperCase, identity)
 
-  val serviceNameForm: Form[String] = Form(mapping("service" -> text)(identity)(Some(_)))
+  val serviceNameForm: Form[String] = Form(
+    mapping("service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)))(
+      identity)(Some(_)))
 
   def agentInvitationIdentifyClientFormItsa(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =
     Form(
@@ -783,6 +812,38 @@ object AgentsInvitationController {
       }
     }
 
+  def agentFastTrackKnownFactForm(
+    featureFlags: FeatureFlags,
+    knownFactMapping: Mapping[Option[String]]): Form[CurrentInvitationInput] =
+    Form(
+      mapping(
+        "service"              -> text,
+        "clientIdentifierType" -> text,
+        "clientIdentifier"     -> normalizedText,
+        "knownFact"            -> knownFactMapping
+      )({ (service, clientIdType, clientId, knownFact) =>
+        CurrentInvitationInput(service, clientIdType, clientId, knownFact)
+      })({ fastTrack =>
+        Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
+      }).verifying(validateFastTrackForm(featureFlags)))
+
+  def postcodeMapping(featureFlags: FeatureFlags) =
+    optionalIf(
+      featureFlags.showKfcMtdIt,
+      trimmedUppercaseText.verifying(
+        validPostcode(
+          featureFlags.showKfcMtdIt,
+          "enter-postcode.invalid-format",
+          "error.postcode.required",
+          "enter-postcode.invalid-characters"))
+    )
+
+  def dateOfBirthMapping(featureFlags: FeatureFlags) =
+    optionalIf(featureFlags.showKfcPersonalIncome, dateFieldsMapping(validDobDateFormat))
+
+  def vatRegDateMapping(featureFlags: FeatureFlags) =
+    optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
+
   def agentFastTrackGenericForm(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(
       mapping(
@@ -796,6 +857,20 @@ object AgentsInvitationController {
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
       }).verifying(validateFastTrackForm(featureFlags)))
+
+  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
+    Form(
+      mapping(
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientIdentifierType" -> text
+          .verifying("Unsupported Client Type", clientType => supportedTypes.contains(clientType)),
+        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+        "knownFact"        -> optional(text)
+      )({ (service, clientIdType, clientId, knownFact) =>
+        CurrentInvitationInput(service, clientIdType, clientId, knownFact)
+      })({ fastTrack =>
+        Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
+      }))
 
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {
