@@ -17,11 +17,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.Action
+import uk.gov.hmrc.agentinvitationsfrontend.models.ContinueUrlJsonFormat._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.SessionCache
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.agentinvitationsfrontend.models.ContinueUrlJsonFormat._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,5 +35,24 @@ class ContinueUrlStoreService @Inject()(continueUrlCache: SessionCache) {
 
   def remove()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     continueUrlCache.remove().map(_ => ())
+
+  def fetchErrorUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    continueUrlCache.fetchAndGetEntry[ContinueUrl]("errorUrl")
+
+  def cacheErrorUrl(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    continueUrlCache.cache("errorUrl", url).map(_ => ())
+
+  def cacheAndFetchErrorUrl(
+    url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    for {
+      _   <- cacheErrorUrl(url)
+      url <- fetchErrorUrl
+    } yield url
+
+  def fetchAndClearUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    for {
+      url <- fetchErrorUrl
+      _   <- remove()
+    } yield url
 
 }

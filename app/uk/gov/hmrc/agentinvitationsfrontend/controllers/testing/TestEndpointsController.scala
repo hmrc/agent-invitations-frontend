@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
 import javax.inject.Inject
-import play.api.Configuration
+import play.api.{Configuration, Environment, Mode}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
@@ -40,12 +40,16 @@ class TestEndpointsController @Inject()(
   pirRelationshipConnector: PirRelationshipConnector,
   fastTrackCache: FastTrackCache,
   val authConnector: AuthConnector,
+  val env: Environment,
   val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls)
     extends FrontendController with I18nSupport with AuthActions {
 
   import TestEndpointsController._
+
+  val isDevEnv: Boolean =
+    if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
@@ -97,7 +101,7 @@ class TestEndpointsController @Inject()(
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(test_fast_track(testAgentFastTrackForm))
+      Future successful Ok(test_fast_track(testAgentFastTrackForm, isDevEnv))
     }
   }
 }

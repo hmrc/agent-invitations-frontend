@@ -19,7 +19,7 @@ package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackGenericForm, agentFastTrackGenericFormKnownFact, agentFastTrackKnownFactForm, dateOfBirthMapping, postcodeMapping, vatRegDateMapping}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentFastTrackGenericFormKnownFact, agentFastTrackKnownFactForm, dateOfBirthMapping, postcodeMapping, vatRegDateMapping}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
@@ -37,7 +37,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH14EJ"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -48,7 +48,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "2000-01-01"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -59,7 +59,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> "1970-01-01"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -70,8 +70,20 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided incorrect VRN" in {
+          val data = Json.obj(
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747695",
+            "knownFact"            -> "1970-01-01"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_VRN")))
         }
 
         "provided no known fact for IRV" in {
@@ -81,8 +93,9 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
+
         }
 
         "provided no known fact for VAT" in {
@@ -92,7 +105,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -103,7 +116,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "foo"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -114,7 +127,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "foo"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -125,7 +138,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> "foo"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
       }
@@ -138,9 +151,9 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "ZZ123456A",
             "knownFact"            -> "DH14EJ"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("Invalid Nino")))
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_NINO")))
         }
 
         "provided incorrect VRN" in {
@@ -150,9 +163,9 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747695",
             "knownFact"            -> "1970-01-01"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("Invalid Vrn")))
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_VRN")))
         }
 
         "provided incorrect clientIdentifierType" in {
@@ -162,7 +175,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH14EJ"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
         }
 
@@ -173,10 +186,9 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "",
             "knownFact"            -> "1970-01-01"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(
-            FormError("clientIdentifier", List("A Valid Client Identifier is Required. Received: Nothing")))
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_CLIENT_ID_RECEIVED:NOTHING")))
         }
 
         "provided mixed data" in {
@@ -186,10 +198,9 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> "DH14EJ"
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(
-            FormError("", List("Fast Track Form was submitted with mixed or invalid data")))
+          fastTrackForm.errors shouldBe Seq(FormError("", List("INVALID_SUBMISSION")))
         }
       }
     }
@@ -204,7 +215,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -215,7 +226,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -226,7 +237,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackGenericForm(featureFlags).bind(data)
+          val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
       }
@@ -281,7 +292,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact"            -> "DH14EJ"
           )
           val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
+          fastTrackForm.errors shouldBe Seq(FormError("service", List("UNSUPPORTED_SERVICE")))
         }
 
         "there is an unsupported client identifier" in {
@@ -292,7 +303,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact"            -> "DH14EJ"
           )
           val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifierType", List("Unsupported Client Type")))
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifierType", List("UNSUPPORTED_CLIENT_ID_TYPE")))
         }
 
         "clientId is invalid" in {
@@ -303,8 +314,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact"            -> "DH14EJ"
           )
           val fastTrackForm = agentFastTrackGenericFormKnownFact(featureFlags).bind(data)
-          fastTrackForm.errors shouldBe Seq(
-            FormError("clientIdentifier", List("A Valid Client Identifier is Required. Received: foo")))
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_CLIENT_ID_RECEIVED:foo")))
         }
       }
     }

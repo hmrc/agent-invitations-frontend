@@ -1,13 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import uk.gov.hmrc.agentinvitationsfrontend.services.ContinueUrlStoreService
-import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.binders.ContinueUrl
 
-import scala.concurrent.Future
-
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class TestContinueUrlKeyStoreCache extends ContinueUrlStoreService(null) {
 
@@ -36,5 +33,18 @@ class TestContinueUrlKeyStoreCache extends ContinueUrlStoreService(null) {
   override def remove()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = Future {
     sessions.remove(sessionKey)
   }
+
+  override def fetchErrorUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    Future successful currentSession.continueUrl
+
+  override def cacheErrorUrl(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    Future successful (currentSession.continueUrl = Some(continueUrl))
+
+  override def cacheAndFetchErrorUrl(url: ContinueUrl)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    for {
+      _ <- cacheErrorUrl(url)
+      url <- fetchErrorUrl
+    } yield url
 
 }
