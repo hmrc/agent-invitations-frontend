@@ -17,16 +17,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.Logger
-import play.api.mvc._
+import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, HostnameWhiteListService}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.invitation_sent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import play.api.mvc.{Action, AnyContent, Request, Result}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -35,6 +32,31 @@ import scala.util.{Failure, Success, Try}
 class ContinueUrlActions @Inject()(
   whiteListService: HostnameWhiteListService,
   continueUrlStoreService: ContinueUrlStoreService) {
+
+  def extractErrorUrl[A](implicit request: Request[A]): Future[Option[ContinueUrl]] = {
+    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
+
+    request.getQueryString("error") match {
+      case Some(continueUrl) =>
+        Try(ContinueUrl(continueUrl)) match {
+          case Success(url) =>
+            isRelativeOrAbsoluteWhiteListed(url)
+              .collect {
+                case true => Some(url)
+              }
+              .recover {
+                case NonFatal(e) =>
+                  Logger(getClass).warn(s"Check for whitelisted hostname failed", e)
+                  None
+              }
+          case Failure(e) =>
+            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
+            Future.successful(None)
+        }
+      case None =>
+        Future.successful(None)
+    }
+  }
 
   def extractContinueUrl[A](implicit request: Request[A]): Future[Option[ContinueUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
@@ -68,6 +90,12 @@ class ContinueUrlActions @Inject()(
   def withMaybeContinueUrl[A](
     block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
     val continueUrl: Future[Option[ContinueUrl]] = extractContinueUrl
+    continueUrl.flatMap(block(_))
+  }
+
+  def withMaybeErrorUrl[A](
+    block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+    val continueUrl: Future[Option[ContinueUrl]] = extractErrorUrl
     continueUrl.flatMap(block(_))
   }
 

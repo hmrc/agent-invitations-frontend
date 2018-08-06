@@ -5,6 +5,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -85,7 +86,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       "creating an ITSA invitation" in {
         val formData =
           CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcode))
-        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+        val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -95,7 +96,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an IRV invitation" in {
         val formData = CurrentInvitationInput(servicePIR, "ni", validNino.value, None)
-        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+        val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -106,7 +107,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       "creating an VAT invitation" in {
         val formData =
           CurrentInvitationInput(serviceVAT, "vrn", validVrn97.value, validRegDateForVrn97)
-        val fastTrackFormData = controller.agentFastTrackForm.fill(formData)
+        val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))

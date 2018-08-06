@@ -96,9 +96,6 @@ class AgentsInvitationController @Inject()(
   val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
     AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
 
-  val agentFastTrackForm: Form[CurrentInvitationInput] =
-    AgentsInvitationController.agentFastTrackGenericForm(featureFlags)
-
   val agentFastTrackPostcodeForm: Form[CurrentInvitationInput] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags))
 
@@ -250,7 +247,8 @@ class AgentsInvitationController @Inject()(
   val knownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
-        case Some(currentInvitation) if currentInvitation.service.nonEmpty =>
+        case Some(currentInvitation)
+            if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
           Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
         case Some(_) => throw new Exception("no content in cache")
         case None    => Redirect(routes.AgentsInvitationController.selectService())
@@ -454,8 +452,16 @@ class AgentsInvitationController @Inject()(
         agentFastTrackForm
           .bindFromRequest()
           .fold(
-            _ => {
-              Future successful BadRequest
+            formErrors => {
+              withMaybeErrorUrlCached {
+                case Some(continue) =>
+                  println(formErrors.errorsAsJson)
+                  println(formErrors.globalError)
+                  Future successful Redirect(
+                    continue.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
+                case None =>
+                  throw new IllegalStateException("No Error Url Provided")
+              }
             },
             currentInvitationInput => {
               val fastTrackInput = currentInvitationInput.copy(fromFastTrack = true)
@@ -549,7 +555,6 @@ class AgentsInvitationController @Inject()(
     fastTrackPirInvitation: FastTrackPirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
-      Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
       fastTrackPirInvitation.dob match {
         case Some(dob) =>
           invitationsService
@@ -629,6 +634,13 @@ class AgentsInvitationController @Inject()(
     withMaybeContinueUrl {
       case None      => block
       case Some(url) => continueUrlStoreService.cacheContinueUrl(url).flatMap(_ => block)
+    }
+
+  private def withMaybeErrorUrlCached[A](
+    block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
+    withMaybeErrorUrl {
+      case None      => block(None)
+      case Some(url) => continueUrlStoreService.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
     }
 }
 
@@ -792,24 +804,22 @@ object AgentsInvitationController {
     fieldValue match {
       case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
         if (Vrn.isValid(clientId)) Valid
-        else Invalid(ValidationError("Invalid Vrn"))
+        else Invalid(ValidationError("INVALID_VRN"))
       case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
         if (Nino.isValid(clientId)) Valid
-        else Invalid(ValidationError("Invalid Nino"))
+        else Invalid(ValidationError("INVALID_NINO"))
       case _ =>
-        Invalid(
-          ValidationError(
-            s"A Valid Client Identifier is Required. Received: ${if (fieldValue.nonEmpty) fieldValue else "Nothing"}"))
+        Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
     }
   }
 
-  private def validateFastTrackForm(featureFlags: FeatureFlags): Constraint[CurrentInvitationInput] =
+  private val validateFastTrackForm: Constraint[CurrentInvitationInput] =
     Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
       formData match {
         case CurrentInvitationInput(HMRCMTDIT, "ni", clientId, _, _) if Nino.isValid(clientId)  => Valid
         case CurrentInvitationInput(HMRCPIR, "ni", clientId, _, _) if Nino.isValid(clientId)    => Valid
         case CurrentInvitationInput(HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
-        case _                                                                                  => Invalid(ValidationError("Fast Track Form was submitted with mixed or invalid data"))
+        case _                                                                                  => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -826,7 +836,7 @@ object AgentsInvitationController {
         CurrentInvitationInput(service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
-      }).verifying(validateFastTrackForm(featureFlags)))
+      }).verifying(validateFastTrackForm))
 
   def postcodeMapping(featureFlags: FeatureFlags) =
     optionalIf(
@@ -845,26 +855,26 @@ object AgentsInvitationController {
   def vatRegDateMapping(featureFlags: FeatureFlags) =
     optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
 
-  def agentFastTrackGenericForm(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
+  val agentFastTrackForm: Form[CurrentInvitationInput] =
     Form(
       mapping(
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
-          .verifying("Unsupported Client Type", clientType => supportedTypes.contains(clientType)),
+          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (service, clientIdType, clientId, knownFact) =>
         CurrentInvitationInput(service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
-      }).verifying(validateFastTrackForm(featureFlags)))
+      }).verifying(validateFastTrackForm))
 
   def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(
       mapping(
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
-          .verifying("Unsupported Client Type", clientType => supportedTypes.contains(clientType)),
+          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (service, clientIdType, clientId, knownFact) =>
