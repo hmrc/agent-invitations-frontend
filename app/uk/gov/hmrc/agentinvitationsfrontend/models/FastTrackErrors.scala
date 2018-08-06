@@ -22,10 +22,11 @@ import play.api.libs.functional.syntax._
 case class FastTrackErrors(
   service: Option[String],
   clientIdentifier: Option[String],
-  clientIdentifierType: Option[String]) {
+  clientIdentifierType: Option[String],
+  globalFormError: Option[String]) {
 
   def formErrorsMessages: String =
-    Seq(service, clientIdentifier, clientIdentifierType).flatten.filter(_.nonEmpty).mkString(s" ")
+    Seq(service, clientIdentifier, clientIdentifierType, globalFormError).flatten.filter(_.nonEmpty).mkString(s" ")
 
 }
 
@@ -34,12 +35,14 @@ object FastTrackErrors {
   implicit val reads: Reads[FastTrackErrors] = {
     ((JsPath \ "service").readNullable[Seq[String]] and
       (JsPath \ "clientIdentifier").readNullable[Seq[String]] and
-      (JsPath \ "clientIdentifierType").readNullable[Seq[String]])(
-      (serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts) =>
+      (JsPath \ "clientIdentifierType").readNullable[Seq[String]] and
+      (JsPath \ "").readNullable[Seq[String]])(
+      (serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts, globalFormErrorOpts) =>
         FastTrackErrors.apply(
           serviceOpts.getOrElse(Seq.empty).headOption,
           clientIdentifierOpts.getOrElse(Seq.empty).headOption,
-          clientIdentifierTypeOpts.getOrElse(Seq.empty).headOption
+          clientIdentifierTypeOpts.getOrElse(Seq.empty).headOption,
+          globalFormErrorOpts.getOrElse(Seq.empty).headOption
       )
     )
   }

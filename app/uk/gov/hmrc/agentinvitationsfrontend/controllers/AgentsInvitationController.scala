@@ -247,7 +247,8 @@ class AgentsInvitationController @Inject()(
   val knownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
-        case Some(currentInvitation) if currentInvitation.service.nonEmpty =>
+        case Some(currentInvitation)
+            if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
           Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
         case Some(_) => throw new Exception("no content in cache")
         case None    => Redirect(routes.AgentsInvitationController.selectService())
@@ -454,6 +455,8 @@ class AgentsInvitationController @Inject()(
             formErrors => {
               withMaybeErrorUrlCached {
                 case Some(continue) =>
+                  println(formErrors.errorsAsJson)
+                  println(formErrors.globalError)
                   Future successful Redirect(
                     continue.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
                 case None =>
@@ -552,7 +555,6 @@ class AgentsInvitationController @Inject()(
     fastTrackPirInvitation: FastTrackPirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
-      Logger(getClass).warn("KFC flagged as on, not implemented for personal-income-record")
       fastTrackPirInvitation.dob match {
         case Some(dob) =>
           invitationsService

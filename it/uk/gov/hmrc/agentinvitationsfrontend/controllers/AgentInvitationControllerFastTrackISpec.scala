@@ -397,6 +397,19 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         Some("http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
     }
 
+    "return 303 and redirect to error url with mixed form data" in {
+      val formData =
+        CurrentInvitationInput(serviceITSA, "vrn", validNino.value, None, fromFastTrack)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe
+        Some("http://localhost:9996/tax-history/not-authorised?issue=INVALID_SUBMISSION")
+    }
+
     "return 303 and redirect to error url if the form is invalid" in {
       val requestWithForm = request
         .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
