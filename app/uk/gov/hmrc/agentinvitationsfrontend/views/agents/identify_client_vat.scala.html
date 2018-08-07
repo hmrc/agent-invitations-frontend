@@ -53,7 +53,8 @@
 
   @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
 
-  <p>@Messages("identify-client.vat.p1")</p>}
+  <p>@Messages("identify-client.vat.p1")</p>
+}
 
 
 
@@ -81,8 +82,8 @@
                  agentInvitationsForm("clientIdentifier"),
                  '_label -> Messages("identify-client.vrn.label"),
                  '_inputClass -> "form-control",
-                 '_labelTextClass -> "heading-medium",
-                 '_inputHint -> Messages("identify-client.vrn.hint"),
+                 '_labelTextClass -> "form-label-bold",
+                 '_inputHint -> Html("""<span class="normal-text">""" + Messages("identify-client.vrn.hint") + """</span><br><span>""" + Messages("identify-client.vrn.example") + """</span>"""),
                  '_labelClass -> "soft--ends"
              )
          </div>
@@ -92,7 +93,7 @@
              @dateFieldsFreeInlineLegend(agentInvitationsForm, "knownFact",
                  '_legend -> Messages("identify-client.vat-registration-date.label"),
                  '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
-                 '_legendSpanClass -> "heading-medium",
+                 '_legendSpanClass -> "form-label-bold",
                  '_legendClass -> "flush--ends"
              )
         </div>
