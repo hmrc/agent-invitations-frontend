@@ -24,6 +24,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @(agentInvitationsForm : Form[UserInputNinoAndPostcode], knownFactFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@backLink = @{request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}
+
 @featureSwitchOn()(content: Html) = {
   @if(knownFactFlag) { @content }
 }
@@ -40,7 +42,7 @@ if(knownFactFlag) {"identify-client.header"}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(s"${routes.AgentsInvitationController.selectService()}")
+    @back_link(s"$backLink")
 
 
     @if(agentInvitationsForm.hasErrors){
