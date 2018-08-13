@@ -29,8 +29,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 @(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentInvitationInput, featureFlags: FeatureFlags)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}
-
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
 @displayDate(date: String) = @{
@@ -54,7 +52,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(s"${requestPage}")
+    @back_link_referer(request)
 
     @if(confirmForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))

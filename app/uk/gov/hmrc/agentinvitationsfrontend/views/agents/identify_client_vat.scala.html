@@ -24,8 +24,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
 @(agentInvitationsForm : Form[UserInputVrnAndRegDate], knownFactFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@backLink = @{request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}
-
 @featureSwitchOn()(content: Html) = {
     @if(knownFactFlag) { @content }
 }
@@ -47,7 +45,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(s"$backLink")
+    @back_link_referer(request)
 
     @if(agentInvitationsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
