@@ -196,7 +196,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     val notMatched = controller.notMatched()
 
     "return 403 for authorised Agent who enter nino for IRV but no record found" in {
-      val invitation = CurrentInvitationInput(servicePIR)
+      val invitation = CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth))
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
@@ -212,7 +212,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(servicePIR)
+      await(testFastTrackCache.fetch()).get shouldBe invitation
     }
 
     behave like anAuthorisedAgentEndpoint(request, notMatched)

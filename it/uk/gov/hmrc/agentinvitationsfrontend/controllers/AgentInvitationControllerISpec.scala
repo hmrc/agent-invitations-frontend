@@ -73,6 +73,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val selectService = controller.selectService()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
+      val invitation =
+        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
+      testFastTrackCache.save(invitation)
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -89,6 +92,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
 
     behave like anAuthorisedAgentEndpoint(request, selectService)

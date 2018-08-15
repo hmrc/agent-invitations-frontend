@@ -111,6 +111,7 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
+      fastTrackCache.fetchAndClear()
       Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
     }
   }
@@ -179,14 +180,23 @@ class AgentsInvitationController @Inject()(
         case Some(inviteDetails) =>
           inviteDetails.service match {
             case HMRCMTDIT =>
-              Ok(identify_client_itsa(fastTrackToIdentifyClientFormItsa(inviteDetails), featureFlags.showKfcMtdIt))
+              Ok(
+                identify_client_itsa(
+                  fastTrackToIdentifyClientFormItsa(inviteDetails),
+                  featureFlags.showKfcMtdIt,
+                  inviteDetails.fromFastTrack))
             case HMRCMTDVAT =>
-              Ok(identify_client_vat(fastTrackToIdentifyClientFormVat(inviteDetails), featureFlags.showKfcMtdVat))
+              Ok(
+                identify_client_vat(
+                  fastTrackToIdentifyClientFormVat(inviteDetails),
+                  featureFlags.showKfcMtdVat,
+                  inviteDetails.fromFastTrack))
             case HMRCPIR =>
               Ok(
                 identify_client_irv(
                   fastTrackToIdentifyClientFormIrv(inviteDetails),
-                  featureFlags.showKfcPersonalIncome))
+                  featureFlags.showKfcPersonalIncome,
+                  inviteDetails.fromFastTrack))
             case _ => Redirect(routes.AgentsInvitationController.selectService())
           }
 
@@ -289,7 +299,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt))
+          Future successful Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt, true))
         },
         userInput =>
           for {
@@ -311,7 +321,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat))
+          Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
         },
         userInput =>
           for {
@@ -333,7 +343,12 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_irv(formWithErrors, featureFlags.showKfcPersonalIncome))
+          Future successful Ok(
+            identify_client_irv(
+              formWithErrors,
+              featureFlags.showKfcPersonalIncome,
+              true
+            ))
         },
         userInput =>
           for {
@@ -421,25 +436,13 @@ class AgentsInvitationController @Inject()(
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndClear().flatMap {
+      fastTrackCache.fetch().flatMap {
         case Some(aggregate) =>
           aggregate.service match {
-            case HMRCMTDVAT =>
-              fastTrackCache
-                .save(CurrentInvitationInput(HMRCMTDVAT))
-                .map(
-                  _ => Forbidden(not_matched(Services.messageKeyForVAT))
-                )
-            case HMRCMTDIT =>
-              fastTrackCache
-                .save(CurrentInvitationInput(HMRCMTDIT))
-                .map(_ => Forbidden(not_matched(Services.messageKeyForITSA)))
-            case HMRCPIR =>
-              fastTrackCache
-                .save(CurrentInvitationInput(HMRCPIR))
-                .map(_ => Forbidden(not_matched(Services.messageKeyForAfi)))
-            case _ =>
-              throw new Exception("Unsupported Service")
+            case HMRCMTDVAT => Future successful Forbidden(not_matched(Services.messageKeyForVAT))
+            case HMRCMTDIT  => Future successful Forbidden(not_matched(Services.messageKeyForITSA))
+            case HMRCPIR    => Future successful Forbidden(not_matched(Services.messageKeyForAfi))
+            case _          => throw new Exception("Unsupported Service")
           }
         case None => throw new Exception("Empty Cache")
       }
@@ -455,8 +458,6 @@ class AgentsInvitationController @Inject()(
             formErrors => {
               withMaybeErrorUrlCached {
                 case Some(continue) =>
-                  println(formErrors.errorsAsJson)
-                  println(formErrors.globalError)
                   Future successful Redirect(
                     continue.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
                 case None =>

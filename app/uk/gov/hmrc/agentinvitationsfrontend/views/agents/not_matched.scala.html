@@ -16,6 +16,7 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @(serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-matched.$serviceId.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
@@ -24,6 +25,6 @@
 
   <p id="notMatched">@Messages(s"not-matched.$serviceId.description")</p>
 
-  <a href="/invitations/agents/identify-client" class="button">@Messages(s"not-matched.$serviceId.button")</a>
+  <a href="@routes.AgentsInvitationController.showIdentifyClientForm()" class="button">@Messages(s"not-matched.$serviceId.button")</a>
 
 }
