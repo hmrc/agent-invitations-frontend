@@ -232,7 +232,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val notMatched = controller.notMatched()
 
     "return 403 for authorised Agent who submitted not matching known facts for VAT" in {
-      val invitation = CurrentInvitationInput(serviceVAT)
+      val invitation = CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
@@ -248,7 +248,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput(serviceVAT)
+      await(testFastTrackCache.fetch()).get shouldBe invitation
     }
   }
 
