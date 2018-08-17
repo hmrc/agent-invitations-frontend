@@ -50,7 +50,7 @@ API to create a fast-track invitation.
 POST   /invitations/agents/fast-track
 ```
 
-The following are the supported services and relevant mandatory fields required to create a fast-track invitation:
+The following are the supported services and relevant mandatory fields required to create a fast track invitation:
 
 |service|clientIdentifierType|clientIdentifier|knownFact|
 |--------|---------|-------|-------|
