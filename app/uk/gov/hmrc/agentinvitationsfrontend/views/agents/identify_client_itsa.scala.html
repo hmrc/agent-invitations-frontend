@@ -41,7 +41,7 @@ if(knownFactFlag) {"identify-client.header"}
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @if(fromFastTrack){
-        @back_link_referer
+        @back_link_referer(request)
     }else {
         @back_link(s"${routes.AgentsInvitationController.selectService()}")
     }
