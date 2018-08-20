@@ -177,7 +177,7 @@ class AgentsInvitationController @Inject()(
   val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
-        case Some(inviteDetails) =>
+        case Some(inviteDetails) if inviteDetails.service.nonEmpty =>
           inviteDetails.service match {
             case HMRCMTDIT =>
               Ok(
@@ -199,7 +199,7 @@ class AgentsInvitationController @Inject()(
                   inviteDetails.fromFastTrack))
             case _ => Redirect(routes.AgentsInvitationController.selectService())
           }
-
+        case Some(_) => throw new Exception("no content in cache")
         case None =>
           Redirect(routes.AgentsInvitationController.selectService())
       }
