@@ -138,6 +138,14 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
+
+    "throw exception when there is no content in the cache" in {
+      testFastTrackCache.save(CurrentInvitationInput())
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
   }
 
   "POST /agents/identify-client" when {
