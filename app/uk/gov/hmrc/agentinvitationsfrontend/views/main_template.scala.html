@@ -24,7 +24,8 @@
         mainClass: Option[String] = None,
         scriptElem: Option[Html] = None,
         isAgent: Boolean,
-        completedInviteGoSurvey: Option[Boolean] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
+        completedInviteGoSurvey: Option[Boolean] = None,
+        mainDataAttributes: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
     @serviceInfoContent = {}
 
@@ -44,4 +45,5 @@
         scriptElem = scriptElem,
         cookies = Some(request.cookies),
         isAgent = isAgent,
-        completedInviteGoSurvey = completedInviteGoSurvey)
+        completedInviteGoSurvey = completedInviteGoSurvey,
+        mainDataAttributes = mainDataAttributes)

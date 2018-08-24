@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @(invitationId: InvitationId, serviceId: String, confirmAuthorisationForm: Form[ConfirmAuthForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -28,7 +29,7 @@
 
 @legend = @{ Html("""<h1 class="heading-large">""" + Messages(s"landing-page.$serviceId.header")+ """</h1>""" + (if(serviceId != "afi") legendSubtext else "") + """<p>""" + Messages("landing-page.subheading1") + """</p>""") }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceId.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceId.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages(s"landing-page.$serviceId.header"), serviceId))) {
 
  @if(confirmAuthorisationForm.hasErrors) {
      @errorSummary(Messages("error.summary.heading"), confirmAuthorisationForm, Seq.empty, Some("confirmAuthorisation"))
