@@ -23,13 +23,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(invitationId: InvitationId, serviceId: String, confirmAuthorisationForm: Form[ConfirmAuthForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(invitationId: InvitationId, serviceMessageKey: String, confirmAuthorisationForm: Form[ConfirmAuthForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legendSubtext = @{ """<div class="panel panel-border-wide margin-bottom-40"><span>"""+Messages("landing-page.reminder")+"""</span></div>""" }
 
-@legend = @{ Html("""<h1 class="heading-large">""" + Messages(s"landing-page.$serviceId.header")+ """</h1>""" + (if(serviceId != "afi") legendSubtext else "") + """<p>""" + Messages("landing-page.subheading1") + """</p>""") }
+@legend = @{ Html("""<h1 class="heading-large">""" + Messages(s"landing-page.$serviceMessageKey.header")+ """</h1>""" + (if(serviceMessageKey != "afi") legendSubtext else "") + """<p>""" + Messages("landing-page.subheading1") + """</p>""") }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceId.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages(s"landing-page.$serviceId.header"), serviceId))) {
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceMessageKey.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages(s"landing-page.$serviceMessageKey.header"), serviceMessageKey))) {
+
 
  @if(confirmAuthorisationForm.hasErrors) {
      @errorSummary(Messages("error.summary.heading"), confirmAuthorisationForm, Seq.empty, Some("confirmAuthorisation"))
@@ -53,7 +55,7 @@
          </summary>
          <div class="panel panel-border-narrow" id="details-content-0" aria-hidden="true">
              <p id="selectServiceSuggestion">@Messages("landing-page.alt-suggestion")</p>
-             <p id="selectServiceGuidance">@Html(Messages(s"landing-page.$serviceId.guidance"))</p>
+             <p id="selectServiceGuidance">@Html(Messages(s"landing-page.$serviceMessageKey.guidance"))</p>
          </div>
      </details>
 

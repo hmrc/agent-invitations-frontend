@@ -56,4 +56,12 @@ object Services {
       case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, messageKeyForVAT)
       case _   => InvalidService
     }
+
+  def determineServiceMessageKey(invitationId: InvitationId): String =
+    invitationId.value.head match {
+      case 'A' => messageKeyForITSA
+      case 'B' => messageKeyForAfi
+      case 'C' => messageKeyForVAT
+      case _   => "Service is missing"
+    }
 }

@@ -61,6 +61,8 @@ class ClientsInvitationController @Inject()(
         Ok(landing_page(invitationId, messageKey, confirmAuthorisationForm))
       case _ =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
+
     }
   }
 
@@ -74,6 +76,7 @@ class ClientsInvitationController @Inject()(
               Ok(landing_page(invitationId, messageKey, formWithErrors))
             case _ =>
               Redirect(routes.ClientsInvitationController.notFoundInvitation())
+                .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
           }
         },
         data => {
@@ -92,7 +95,9 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case IsServiceMessageKeyValid(messageKey) =>
         Future successful Ok(decide_later(invitationId, messageKey))
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
@@ -100,27 +105,30 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(serviceName, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            invitationsService.getAgencyName(invitation.arn).flatMap {
-              agencyName =>
-                rejectInvitation(serviceName, invitationId, clientId).map {
-                  case NO_CONTENT => {
-                    auditService.sendAgentInvitationResponse(
-                      invitationId.value,
-                      invitation.arn,
-                      "Declined",
-                      clientIdentifierType(invitation.clientId),
-                      clientId,
-                      serviceName,
-                      agencyName)
-                    Ok(invitation_declined(agencyName, invitationId, messageKey))
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
+            invitation =>
+              invitationsService.getAgencyName(invitation.arn).flatMap {
+                agencyName =>
+                  rejectInvitation(serviceName, invitationId, clientId).map {
+                    case NO_CONTENT => {
+                      auditService.sendAgentInvitationResponse(
+                        invitationId.value,
+                        invitation.arn,
+                        "Declined",
+                        clientIdentifierType(invitation.clientId),
+                        clientId,
+                        serviceName,
+                        agencyName)
+                      Ok(invitation_declined(agencyName, invitationId, messageKey))
+                    }
+                    case status => throw new Exception(s"Invitation rejection failed with status $status")
                   }
-                  case status => throw new Exception(s"Invitation rejection failed with status $status")
-                }
-            }
+              }
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
@@ -128,13 +136,16 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-              Ok(confirm_decline(confirmDeclineForm, agencyName, invitationId, messageKey))
-            }
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
+            invitation =>
+              invitationsService.getAgencyName(invitation.arn).map { agencyName =>
+                Ok(confirm_decline(confirmDeclineForm, agencyName, invitationId, messageKey))
+              }
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
@@ -142,28 +153,31 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            confirmDeclineForm
-              .bindFromRequest()
-              .fold(
-                formWithErrors => {
-                  invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                    Ok(confirm_decline(formWithErrors, agencyName, invitationId, messageKey))
-                  }
-                },
-                data => {
-                  val result =
-                    if (data.value.getOrElse(false))
-                      Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
-                    else
-                      Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
+            invitation =>
+              confirmDeclineForm
+                .bindFromRequest()
+                .fold(
+                  formWithErrors => {
+                    invitationsService.getAgencyName(invitation.arn).map { agencyName =>
+                      Ok(confirm_decline(formWithErrors, agencyName, invitationId, messageKey))
+                    }
+                  },
+                  data => {
+                    val result =
+                      if (data.value.getOrElse(false))
+                        Redirect(routes.ClientsInvitationController.getInvitationDeclined(invitationId))
+                      else
+                        Redirect(routes.ClientsInvitationController.getConfirmTerms(invitationId))
 
-                  Future successful result
-                }
-              )
+                    Future successful result
+                  }
+                )
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
@@ -171,13 +185,16 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-              Ok(confirm_terms(confirmTermsForm, agencyName, invitationId, messageKey))
-            }
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
+            invitation =>
+              invitationsService.getAgencyName(invitation.arn).map { agencyName =>
+                Ok(confirm_terms(confirmTermsForm, agencyName, invitationId, messageKey))
+              }
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
@@ -185,39 +202,43 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(serviceName, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsPending { invitation =>
-            invitationsService.getAgencyName(invitation.arn).flatMap {
-              agencyName =>
-                confirmTermsForm
-                  .bindFromRequest()
-                  .fold(
-                    formWithErrors => {
-                      Future successful Ok(confirm_terms(formWithErrors, agencyName, invitationId, messageKey))
-                    },
-                    data => {
-                      if (data.value.getOrElse(false)) {
-                        acceptInvitation(serviceName, invitationId, clientId).map {
-                          case NO_CONTENT =>
-                            auditService.sendAgentInvitationResponse(
-                              invitationId.value,
-                              invitation.arn,
-                              "Accepted",
-                              clientIdentifierType(clientId),
-                              clientId,
-                              serviceName,
-                              agencyName)
-                            Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
-                          case status => throw new Exception(s"Invitation acceptance failed with status $status")
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
+            invitation =>
+              invitationsService.getAgencyName(invitation.arn).flatMap {
+                agencyName =>
+                  confirmTermsForm
+                    .bindFromRequest()
+                    .fold(
+                      formWithErrors => {
+                        Future successful Ok(confirm_terms(formWithErrors, agencyName, invitationId, messageKey))
+                      },
+                      data => {
+                        if (data.value.getOrElse(false)) {
+                          acceptInvitation(serviceName, invitationId, clientId).map {
+                            case NO_CONTENT =>
+                              auditService.sendAgentInvitationResponse(
+                                invitationId.value,
+                                invitation.arn,
+                                "Accepted",
+                                clientIdentifierType(clientId),
+                                clientId,
+                                serviceName,
+                                agencyName)
+                              Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
+                            case status => throw new Exception(s"Invitation acceptance failed with status $status")
+                          }
+                        } else {
+                          Future successful Redirect(routes.ClientsInvitationController.getConfirmDecline(invitationId))
                         }
-                      } else {
-                        Future successful Redirect(routes.ClientsInvitationController.getConfirmDecline(invitationId))
                       }
-                    }
-                  )
-            }
+                    )
+              }
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
+
     }
   }
 
@@ -225,43 +246,56 @@ class ClientsInvitationController @Inject()(
     determineService(invitationId) match {
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
         withAuthorisedAsClient(enrolmentName, enrolmentIdentifier) { clientId =>
-          withValidInvitation(clientId, invitationId, apiIdentifier)(checkInvitationIsAccepted { invitation =>
-            invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-              Ok(complete(agencyName, messageKey))
-            }
+          withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsAccepted(messageKey) {
+            invitation =>
+              invitationsService.getAgencyName(invitation.arn).map { agencyName =>
+                Ok(complete(agencyName, messageKey))
+              }
           })
         }
-      case InvalidService => Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case InvalidService =>
+        Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+          .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
     }
   }
 
   val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
     request.session.get("clientService") match {
       case Some(Services.HMRCMTDVAT) =>
-        Forbidden(not_signed_up(Messages("not-signed-up-vat.description")))
+        Forbidden(not_signed_up(Messages("not-signed-up-vat.description"), Services.messageKeyForVAT))
+      case Some(Services.HMRCMTDIT) =>
+        Forbidden(not_signed_up(Messages("not-signed-up.description"), Services.messageKeyForITSA))
       case _ =>
-        Forbidden(not_signed_up(Messages("not-signed-up.description")))
+        Forbidden(not_signed_up(Messages("not-signed-up.description"), "Service is Missing"))
     }
   }
 
   val notAuthorised: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(not_authorised(Messages("not-authorised.header"), Messages("not-authorised.description")))
+    Forbidden(
+      not_authorised(
+        Messages("not-authorised.header"),
+        Messages("not-authorised.description"),
+        Services.messageKeyForAfi))
   }
 
   val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(incorrect_invitation())
+    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    Forbidden(incorrect_invitation(serviceMessageKey))
   }
 
   val notFoundInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
-    NotFound(not_found_invitation())
+    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    NotFound(not_found_invitation(serviceMessageKey))
   }
 
   val invitationAlreadyResponded: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Forbidden(invitation_already_responded())
+    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    Forbidden(invitation_already_responded(serviceMessageKey))
   }
 
   val invitationExpired: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Ok(invitation_expired())
+    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    Ok(invitation_expired(serviceMessageKey))
   }
 
   private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(
@@ -282,23 +316,33 @@ class ClientsInvitationController @Inject()(
       case _          => throw new IllegalStateException("Unsupported Service")
     }
 
-  private def checkInvitationIsPending(f: StoredInvitation => Future[Result]): StoredInvitation => Future[Result] = {
+  private def checkInvitationIsPending(serviceMessageKey: String)(f: StoredInvitation => Future[Result])(
+    implicit request: Request[_]): StoredInvitation => Future[Result] = {
     case invitation if invitation.status.contains("Pending") =>
       f(invitation)
     case invitation if invitation.status.contains("Expired") =>
       Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
+        .addingToSession("clientService" -> serviceMessageKey)
     case _ =>
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+        .addingToSession("clientService" -> serviceMessageKey)
   }
 
-  private def checkInvitationIsAccepted(f: StoredInvitation => Future[Result]): StoredInvitation => Future[Result] = {
+  private def checkInvitationIsAccepted(serviceMessageKey: String)(f: StoredInvitation => Future[Result])(
+    implicit request: Request[_]): StoredInvitation => Future[Result] = {
     case invitation if invitation.status.contains("Accepted") =>
       f(invitation)
     case _ =>
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+        .addingToSession("clientService" -> serviceMessageKey)
+
   }
 
-  private def withValidInvitation[A](clientId: String, invitationId: InvitationId, apiIdentifier: String)(
+  private def withValidInvitation[A](
+    clientId: String,
+    invitationId: InvitationId,
+    apiIdentifier: String,
+    serviceMessageKey: String)(
     body: StoredInvitation => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] =
     invitationsService
       .getClientInvitation(clientId, invitationId, apiIdentifier)
@@ -307,15 +351,19 @@ class ClientsInvitationController @Inject()(
         case ex: Upstream4xxResponse if ex.message.contains("NO_PERMISSION_ON_CLIENT") =>
           Logger(getClass).warn(s"${invitationId.value} Has been access by the wrong Client.")
           Redirect(routes.ClientsInvitationController.incorrectInvitation())
+            .addingToSession("clientService" -> serviceMessageKey)
         case ex: Upstream4xxResponse if ex.message.contains("INVALID_INVITATION_STATUS") =>
           Logger(getClass).warn(s"${invitationId.value} Has already been responded.")
           Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())
+            .addingToSession("clientService" -> serviceMessageKey)
         case ex: Upstream4xxResponse if ex.message.contains("INVITATION_NOT_FOUND") =>
           Logger(getClass).warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
+            .addingToSession("clientService" -> serviceMessageKey)
         case _: NotFoundException =>
           Logger(getClass).warn(s"${invitationId.value} is not found.")
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
+            .addingToSession("clientService" -> serviceMessageKey)
       }
 
   private def clientIdentifierType(clientId: String): String = clientId match {

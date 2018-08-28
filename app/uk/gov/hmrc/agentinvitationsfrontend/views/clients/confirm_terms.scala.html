@@ -22,11 +22,11 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Services
-@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, serviceMessageKey:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false) {
+    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.heading"), serviceMessageKey))) {
 
     @back_link(s"${routes.ClientsInvitationController.start(invitationId)}")
 
@@ -42,7 +42,7 @@
 
     <p>@Messages("confirm-terms.subheading1.p1", agencyName)</p>
 
-    @if(service == Services.messageKeyForITSA) {
+    @if(serviceMessageKey == Services.messageKeyForITSA) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.itsa.bullet1")</li>
@@ -53,7 +53,7 @@
 
         <p>@Messages("confirm-terms.subheading1.p2")</p>
 
-    } @if(service == Services.messageKeyForAfi) {
+    } @if(serviceMessageKey == Services.messageKeyForAfi) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.afi.bullet1")</li>
@@ -64,7 +64,7 @@
 
         <p>@Messages("confirm-terms.subheading1.p2")</p>
 
-    } @if(service == Services.messageKeyForVAT) {
+    } @if(serviceMessageKey == Services.messageKeyForVAT) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.vat.bullet1")</li>
