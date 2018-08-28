@@ -16,12 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agencyName: String, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agencyName: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), service))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), serviceMessageKey))) {
 
     <div class="transaction-banner--complete">
         <h1 class="transaction-banner__heading">@Messages("client-complete.header")</h1>
@@ -29,7 +28,7 @@
 
     <h2 class="heading-medium">@Messages("client-complete.p.title")</h2>
 
-    <p>@Messages(s"client-complete.${service}.p1", agencyName)</p>
+    <p>@Messages(s"client-complete.${serviceMessageKey}.p1", agencyName)</p>
 
     <br />
 

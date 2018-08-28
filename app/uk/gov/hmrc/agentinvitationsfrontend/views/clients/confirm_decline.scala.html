@@ -23,11 +23,11 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(confirmDeclineForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId, service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmDeclineForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.ClientsInvitationController.start(invitationId)}")}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), service))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), serviceMessageKey))) {
 
     @back_link(requestPage)
 
@@ -42,7 +42,7 @@
         @inputRadioGroup(
             confirmDeclineForm("confirmDecline"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
-            '_legend -> Messages(s"confirm-decline.$service.sub-header", agencyName),
+            '_legend -> Messages(s"confirm-decline.$serviceMessageKey.sub-header", agencyName),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmDecline'""")
         )

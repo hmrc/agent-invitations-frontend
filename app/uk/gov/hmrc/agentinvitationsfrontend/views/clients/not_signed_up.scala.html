@@ -16,9 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(message: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-problem.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@(message: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-problem.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages(s"client-problem.header"), serviceMessageKey))) {
 
   <h1 class="heading-xlarge">@Messages("client-problem.header")</h1>
 

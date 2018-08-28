@@ -19,20 +19,21 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.Services
-@(agencyName: String, invitationId: InvitationId, service:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@(agencyName: String, invitationId: InvitationId, serviceMessageKey:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("invitation-declined.header"), service))) {
+    bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("invitation-declined.header"), serviceMessageKey))) {
 
   <h1 class="heading-xlarge">@Messages("invitation-declined.header")</h1>
 
     @form(routes.ClientsInvitationController.submitStart(invitationId)) {
 
-        <p>@Messages(s"invitation-declined-$service.p1", agencyName)</p>
+        <p>@Messages(s"invitation-declined-$serviceMessageKey.p1", agencyName)</p>
 
         <div class="form-group">
-            <a class="button" href="@externalUrls.taxAccountRelativeUrl" id="continue" role="button">@Messages(s"invitation-declined-$service.button")</a>
+            <a class="button" href="@externalUrls.taxAccountRelativeUrl" id="continue" role="button">@Messages(s"invitation-declined-$serviceMessageKey.button")</a>
         </div>
 
         <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
