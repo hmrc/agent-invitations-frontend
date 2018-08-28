@@ -29,7 +29,9 @@
 
 @legend = @{ Html("""<h1 class="heading-large">""" + Messages(s"landing-page.$serviceMessageKey.header")+ """</h1>""" + (if(serviceMessageKey != "afi") legendSubtext else "") + """<p>""" + Messages("landing-page.subheading1") + """</p>""") }
 
+
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"landing-page.$serviceMessageKey.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages(s"landing-page.$serviceMessageKey.header"), serviceMessageKey))) {
+
 
  @if(confirmAuthorisationForm.hasErrors) {
      @errorSummary(Messages("error.summary.heading"), confirmAuthorisationForm, Seq.empty, Some("confirmAuthorisation"))
