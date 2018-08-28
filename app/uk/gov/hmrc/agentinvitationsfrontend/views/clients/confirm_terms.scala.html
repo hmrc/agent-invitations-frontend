@@ -26,7 +26,7 @@
 
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false) {
+    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.heading"), service))) {
 
     @back_link(s"${routes.ClientsInvitationController.start(invitationId)}")
 

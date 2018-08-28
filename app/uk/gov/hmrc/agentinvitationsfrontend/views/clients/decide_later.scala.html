@@ -19,12 +19,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @(invitationId: InvitationId, serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @startPage = @{s"${routes.ClientsInvitationController.start(invitationId)}"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"decide-later.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"decide-later.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("decide-later.header"), serviceId))) {
 
     @back_link(startPage)
 

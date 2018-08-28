@@ -27,7 +27,7 @@
 
 @requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.ClientsInvitationController.start(invitationId)}")}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), service))) {
 
     @back_link(requestPage)
 
