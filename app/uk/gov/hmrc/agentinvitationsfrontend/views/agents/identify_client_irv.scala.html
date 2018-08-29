@@ -43,7 +43,7 @@
         "nojs-date-fields-error"
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"$titleSwitch"), "afi"))) {
 
     @if(fromFastTrack){
         @back_link_referer(request)
