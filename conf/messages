@@ -72,7 +72,7 @@ error.confirm-client.required=Select yes if this is the client you want authoris
 invitation-sent-link.header=One more step
 invitation-sent.header=What you need to do next
 invitation-sent.l1=Copy this link and email it to your client:<br /><span id="invitationUrl" class="word-wrap">{0}</span>
-invitation-sent.l2=Ask your client to go to the link and sign in with their Government Gateway account to accept your authorisation request. They will be able to set up an account if they do not have one.
+invitation-sent.l2=Ask your client to go to the link to accept your authorisation request. They will need their Government Gateway login details to confirm who they are. They can set up an account if they do not have one.
 invitation-sent.p1=Your client cannot authorise you until this is done.
 invitation-sent.p2=The link expires 10 days from now.
 invitation-sent.continueToASAccount.button=Return to your agent services account
