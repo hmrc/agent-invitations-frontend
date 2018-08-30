@@ -28,7 +28,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -75,6 +75,13 @@ class AgentsInvitationController @Inject()(
     } else {
       mtdItId ++ vat
     }
+
+  private val serviceToMessageKey: String => String = {
+    case HMRCMTDIT  => messageKeyForITSA
+    case HMRCPIR    => messageKeyForAfi
+    case HMRCMTDVAT => messageKeyForVAT
+    case _          => "Service is missing"
+  }
 
   private[controllers] val isDevEnv =
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
@@ -225,7 +232,12 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch().map {
         case Some(currentInvitation) =>
-          Ok(check_details(checkDetailsForm, currentInvitation, featureFlags))
+          Ok(
+            check_details(
+              checkDetailsForm,
+              currentInvitation,
+              featureFlags,
+              serviceToMessageKey(currentInvitation.service)))
         case None => Redirect(routes.AgentsInvitationController.selectService())
       }
     }
@@ -239,7 +251,7 @@ class AgentsInvitationController @Inject()(
         .fold(
           formWithErrors => {
             cachedCurrentInvitationInput.flatMap { cii =>
-              Future successful Ok(check_details(formWithErrors, cii, featureFlags))
+              Future successful Ok(check_details(formWithErrors, cii, featureFlags, serviceToMessageKey(cii.service)))
             }
           },
           data => {
@@ -259,7 +271,8 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetch().map {
         case Some(currentInvitation)
             if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
-          Ok(known_fact(fastTrackToIdentifyKnownFact(currentInvitation)))
+          Ok(
+            known_fact(fastTrackToIdentifyKnownFact(currentInvitation), serviceToMessageKey(currentInvitation.service)))
         case Some(_) => throw new Exception("no content in cache")
         case None    => Redirect(routes.AgentsInvitationController.selectService())
       }
@@ -275,22 +288,25 @@ class AgentsInvitationController @Inject()(
             Future successful Redirect(routes.AgentsInvitationController.selectService())
           }, {
             case "HMRC-MTD-IT" =>
-              bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted)
+              bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
             case "PERSONAL-INCOME-RECORD" =>
-              bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted)
+              bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
             case "HMRC-MTD-VAT" =>
-              bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted)
+              bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
           }
         )
     }
   }
 
-  def bindKnownFactForm(knownFactForm: Form[CurrentInvitationInput], arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[AnyContent]) =
+  def bindKnownFactForm(
+    knownFactForm: Form[CurrentInvitationInput],
+    arn: Arn,
+    isWhitelisted: Boolean,
+    serviceMessageKey: String)(implicit request: Request[AnyContent]) =
     knownFactForm
       .bindFromRequest()
       .fold(
-        formWithErrors => Future successful Ok(known_fact(formWithErrors)),
+        formWithErrors => Future successful Ok(known_fact(formWithErrors, serviceMessageKey)),
         data => redirectBasedOnCurrentInputState(arn, data, isWhitelisted)
       )
 
@@ -400,7 +416,14 @@ class AgentsInvitationController @Inject()(
           for {
             _        <- fastTrackCache.save(CurrentInvitationInput())
             continue <- continueUrlStoreService.fetchContinueUrl
-          } yield Ok(invitation_sent(invitationUrl, deadline, continue.isDefined, featureFlags.enableTrackRequests))
+          } yield
+            Ok(
+              invitation_sent(
+                invitationUrl,
+                deadline,
+                continue.isDefined,
+                featureFlags.enableTrackRequests,
+                determineServiceMessageKey(InvitationId(id))))
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }

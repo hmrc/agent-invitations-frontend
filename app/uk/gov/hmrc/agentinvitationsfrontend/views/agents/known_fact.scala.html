@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
-@(knownFactForm: Form[CurrentInvitationInput])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(knownFactForm: Form[CurrentInvitationInput], serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
@@ -35,7 +35,7 @@
 @pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), serviceMessageKey))) {
 
  @back_link(s"${routes.AgentsInvitationController.checkDetails()}")
 
