@@ -38,7 +38,7 @@ All Endpoints require Authentication.
 
 ### For Agents
 
-Start Page for Agents:
+Start page for Agents:
 
     GET   	/invitations/agents/
 
