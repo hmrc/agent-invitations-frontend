@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, DesConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, ItsaTrackRelationship, TrackRelationship}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, ItsaTrackRelationship, TrackRelationship, VatTrackRelationship}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,57 +29,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class RelationshipsService @Inject()(
   relationshipsConnector: RelationshipsConnector,
   agentServicesAccountConnector: AgentServicesAccountConnector,
-  citizenDetailsConnector: CitizenDetailsConnector,
-  desConnector: DesConnector) {
+  citizenDetailsConnector: CitizenDetailsConnector) {
 
-  def getInvalidClients(nino: Option[Nino], vrn: Option[Vrn])(
+  def getInactiveClients(nino: Option[Nino], vrn: Option[Vrn])(
     implicit c: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[InactiveClient]] = {
     val itsaRelationships: Future[Seq[ItsaTrackRelationship]] = relationshipsConnector.getInactiveItsaRelationships
-    val vatRelationships = relationshipsConnector.getInactiveVatRelationships
-
-//    for {
-////      inactiveRelationships <- Future.sequence(Seq(itsaRelationships, vatRelationships)).map(_.flatten)
-//      ir           <- itsaRelationships
-//      inactiveItsa <- formatItsa(ir)
-//
-//    } yield inactiveItsa
+    val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
 
     for {
-      inactiveRelationships <- Future.sequence(Seq(itsaRelationships, vatRelationships)).map(_.flatten)
-      inactiveClients <- inactiveRelationships.map(inactiveRelationship => {
-                                                       if (inactiveRelationship.serviceName == "HMRC-MTD-IT") {
-                                                         for {
-                                                           ninoForMtdItId <- desConnector.getNinoFor(
-                                                                              MtdItId(inactiveRelationship.clientId))
-                                                           tradeName <- getTradingName(Some(ninoForMtdItId))
-                                                         } yield
-                                                           InactiveClient(
-                                                             "HMRC-MTD-IT",
-                                                             tradeName.getOrElse(""),
-                                                             inactiveRelationship.dateTo)
-                                                       } else if (inactiveRelationship.serviceName == "HMRC-MTD-VAT") {
-                                                         for {
-                                                           vatName <- getVatName(
-                                                                       Some(Vrn(inactiveRelationship.clientId)))
-                                                                       .map(_.getOrElse(""))
-                                                         } yield
-                                                           InactiveClient(
-                                                             "HMRC-MTD-VAT",
-                                                             vatName,
-                                                             inactiveRelationship.dateTo)
-                                                       } else Future successful Seq(InactiveClient("", "", None))
-                                                     })
-    } yield inactiveClients
-  }
+    relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships)).map(_.flatten)
 
-//  private def formatItsa(itsaRels: Seq[ItsaTrackRelationship]): Future[Seq[InactiveClient]] =
-//    for {
-//      itsaRelation <- Future.traverse(itsaRels)
-//      nino         <- desConnector.getNinoFor(MtdItId(itsaRelation))
-//      name         <- getTradingName(Some(nino))
-//
-//    } yield InactiveClient(itsaRelation, name.getOrElse(""), itsaRelation.dateTo)
+    inactiveClients <- Future.traverse(relationships) {
+      case ItsaTrackRelationship(_, dateTo, clientId) => for {
+      nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
+      name <- getTradingName(nino)
+      } yield InactiveClient("HMRC-MTD-IT", name.getOrElse(""), dateTo)
+      case VatTrackRelationship(_, dateTo, clientId) => for {
+      vatName <- getVatName(Some(Vrn(clientId)))
+      } yield InactiveClient("HMRC-MTD-VAT", vatName.getOrElse(""), dateTo)
+      case _ => Future successful InactiveClient("", "", None)
+    }
+    } yield inactiveClients.filter(_.serviceName.nonEmpty)
+  }
 
   def deleteITSAInvitation(arn: Arn, nino: Nino)(
     implicit hc: HeaderCarrier,
@@ -127,9 +99,4 @@ class RelationshipsService @Inject()(
         }
       }
       .getOrElse(Future.successful(None))
-
-//  def getNames(
-//    trackRelationships: Seq[TrackRelationship])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[Option[String]]] =
-//    trackRelationships.map(trackRelationship => getTradingName(Some(Nino(trackRelationship.clientId)))
-//    )
 }

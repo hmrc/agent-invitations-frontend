@@ -21,11 +21,12 @@ import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ContinueUrlActions
 import uk.gov.hmrc.agentinvitationsfrontend.models.CustomerDetails
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 
@@ -74,6 +75,18 @@ class AgentServicesAccountConnector @Inject()(
       case _: NotFoundException => CustomerDetails(None, None, None)
     }
 
+  def getNinoForMtdItId(mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Nino]] = {
+    monitor(s"ConsumedAPI-Get-NinoForMtdItId-GET") {
+      http.GET[JsObject](craftUrl(getNinoForMtdItIdUrl(mtdItId)).toString)
+        .map(obj => (obj \ "nino").asOpt[Nino])
+    }.recover {
+      case e => {
+        Logger(getClass).error(s"Unable to translate MtdItId: ${e.getMessage}")
+        None
+      }
+    }
+  }
+
   private def craftUrl(location: String) = new URL(baseUrl, location)
 
   private def getTradingNameWithNino(nino: Nino): String =
@@ -81,4 +94,7 @@ class AgentServicesAccountConnector @Inject()(
 
   private def getCustomerDetailsWithVrn(vrn: Vrn): String =
     s"/agent-services-account/client/vat-customer-details/vrn/${vrn.value}"
+
+  private def getNinoForMtdItIdUrl(mtdItId: MtdItId): String =
+    s"/agent-services-account/client/mtdItId/${mtdItId.value}"
 }

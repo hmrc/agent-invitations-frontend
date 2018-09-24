@@ -36,7 +36,7 @@ object ItsaTrackRelationship {
   implicit val relationshipWrites = Json.writes[ItsaTrackRelationship]
 
   implicit val reads: Reads[ItsaTrackRelationship] =
-    ((JsPath \ "agentReferenceNumber").read[Arn] and
+    ((JsPath \ "arn").read[Arn] and
       (JsPath \ "dateTo").readNullable[LocalDate] and
       (JsPath \ "referenceNumber").read[String])(ItsaTrackRelationship.apply _)
 
@@ -50,7 +50,7 @@ object VatTrackRelationship {
   implicit val relationshipWrites = Json.writes[VatTrackRelationship]
 
   implicit val reads: Reads[VatTrackRelationship] =
-    ((JsPath \ "agentReferenceNumber").read[Arn] and
+    ((JsPath \ "arn").read[Arn] and
       (JsPath \ "dateTo").readNullable[LocalDate] and
       (JsPath \ "referenceNumber").read[String])(VatTrackRelationship.apply _)
 
