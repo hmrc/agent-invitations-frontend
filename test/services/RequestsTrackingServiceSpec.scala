@@ -21,9 +21,9 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import org.mockito.Mockito.{mock, when}
 import org.mockito.ArgumentMatchers._
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual, StoredInvitation, TrackedInvitation}
-import uk.gov.hmrc.agentinvitationsfrontend.services.RequestsTrackingService
+import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,7 +37,14 @@ class RequestsTrackingServiceSpec extends UnitSpec {
   val invitationsConnector = mock(classOf[InvitationsConnector])
   val agentServicesAccountConnector = mock(classOf[AgentServicesAccountConnector])
   val citizenDetailsConnector = mock(classOf[CitizenDetailsConnector])
-  val tested = new RequestsTrackingService(invitationsConnector, agentServicesAccountConnector, citizenDetailsConnector)
+  val relationshipsConnector = mock(classOf[RelationshipsConnector])
+  val pirRelationshipConnector = mock(classOf[PirRelationshipConnector])
+  val tested = new TrackService(
+    invitationsConnector,
+    relationshipsConnector,
+    pirRelationshipConnector,
+    agentServicesAccountConnector,
+    citizenDetailsConnector)
 
   val vrn = Vrn("101747696")
   val nino = Nino("AB123456A")

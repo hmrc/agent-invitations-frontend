@@ -313,4 +313,4 @@ recent-invitations.invitation.status.accepted=Accepted
 recent-invitations.invitation.status.rejected=Declined
 recent-invitations.invitation.status.expired=Expired
 recent-invitations.invitation.status.cancelled=Cancelled
-recent-invitations.invitation.status.inactiveClient=You cancelled your authorisation
+recent-invitations.invitation.status.invalidrelationship=You cancelled your authorisation

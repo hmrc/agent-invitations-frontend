@@ -42,43 +42,11 @@ class RelationshipsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def deleteItsaRelationshipUrl(arn: Arn, nino: Nino): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-relationships/agent/${encodePathSegment(arn.value)}/service/HMRC-MTD-IT/client/NI/$nino")
-
-  def deleteVatRelationshipUrl(arn: Arn, vrn: Vrn): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-relationships/agent/${encodePathSegment(arn.value)}/service/HMRC-MTD-VAT/client/VRN/$vrn")
-
   val getInactiveItsaRelationshipUrl: URL =
     new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-IT")
 
   val getInactiveVatRelationshipUrl: URL =
     new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT")
-
-  def deleteItsaRelationship(arn: Arn, nino: Nino)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-Delete-ItsaRelationship-DELETE") {
-      val url = deleteItsaRelationshipUrl(arn, nino)
-      http.DELETE[HttpResponse](url.toString).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
-    }
-
-  def deleteVatRelationship(arn: Arn, vrn: Vrn)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-Delete-VatRelationship-DELETE") {
-      val url = deleteVatRelationshipUrl(arn, vrn)
-      http.DELETE[HttpResponse](url.toString).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
-    }
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,

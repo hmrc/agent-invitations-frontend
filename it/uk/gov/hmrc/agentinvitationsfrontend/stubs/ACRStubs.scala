@@ -37,6 +37,13 @@ trait ACRStubs {
         )
     )
 
+  def givenInactiveITSARelationshipsNotFound =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-IT"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)))
+
   def givenInactiveVATRelationships(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT"))
@@ -59,5 +66,12 @@ trait ACRStubs {
             )
         )
     )
+
+  def givenInactiveVATRelationshipsNotFound =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)))
 
 }

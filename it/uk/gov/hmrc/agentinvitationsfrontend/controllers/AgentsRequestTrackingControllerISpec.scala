@@ -56,9 +56,17 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing non-empty invitations with client's names resolved" in {
       givenAllInvitationsStub(arn)
+      givenInactiveITSARelationships(arn)
+      givenInactiveVATRelationships(arn)
+      givenInactiveRelationshipsIrv(arn)
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
       givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
       givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -68,10 +76,14 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Declined",
         "Expired",
         "Cancelled",
+        "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
+        "Cosmo Kramer",
         "GDT",
         "11 September 2018",
+        "21 September 2015",
+        "24 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
@@ -89,6 +101,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing non-empty invitations without client's names" in {
       givenAllInvitationsStub(arn)
+      givenInactiveITSARelationships(arn)
+      givenInactiveVATRelationships(arn)
       givenTradingNameNotFound(Nino("AB123456A"))
       givenCitizenDetailsReturns404For("AB123456B")
       givenClientDetailsNotFound(Vrn("101747696"))
@@ -101,6 +115,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Declined",
         "Expired",
         "Cancelled",
+        "You cancelled your authorisation",
         "11 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)

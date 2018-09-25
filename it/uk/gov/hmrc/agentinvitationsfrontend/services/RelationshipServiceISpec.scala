@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class RelationshipServiceISpec extends BaseISpec {
 
-  val service: RelationshipsService = app.injector.instanceOf[RelationshipsService]
+  val service: TrackService = app.injector.instanceOf[TrackService]
 
   implicit val headerCarrier = HeaderCarrier()
 
@@ -37,16 +37,21 @@ class RelationshipServiceISpec extends BaseISpec {
   val itsaRelationship2 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2018-09-24")))
   val vatRelationship1 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2015-09-21")))
   val vatRelationship2 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2018-09-24")))
+  val irvRelationship1 = InactiveClient("PERSONAL-INCOME-RECORD", "Serena Williams", Some(LocalDate.parse("2015-09-21")))
+  val irvRelationship2 = InactiveClient("PERSONAL-INCOME-RECORD", "Venus Williams", Some(LocalDate.parse("2018-09-24")))
 
-  val inactiveRelationships = List(itsaRelationship1, itsaRelationship2, vatRelationship1, vatRelationship2)
+  val inactiveRelationships = List(itsaRelationship1, itsaRelationship2, vatRelationship1, vatRelationship2, irvRelationship1, irvRelationship2)
 
   "getInactiveClients" should {
     "return list of relationships inactive for given agent" in {
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
+      givenInactiveRelationshipsIrv(arn)
       givenNinoForMtdItId(mtdItId, validNino)
       givenNinoForMtdItId(mtdItId2, validNino)
       givenTradingName(validNino, "Boolean Ltd")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Serena", "Williams")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Venus", "Williams")
       givenClientDetailsOnlyOrganisation(validVrn)
       givenClientDetailsOnlyOrganisation(validVrn9755)
 

@@ -55,3 +55,17 @@ object VatTrackRelationship {
       (JsPath \ "referenceNumber").read[String])(VatTrackRelationship.apply _)
 
 }
+
+case class IrvTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
+  val serviceName = Services.HMRCPIR
+}
+
+object IrvTrackRelationship {
+  implicit val relationshipWrites = Json.writes[IrvTrackRelationship]
+
+  implicit val reads: Reads[IrvTrackRelationship] =
+    ((JsPath \ "arn").read[Arn] and
+      (JsPath \ "endDate").readNullable[LocalDate] and
+      (JsPath \ "clientId").read[String])(IrvTrackRelationship.apply _)
+
+}

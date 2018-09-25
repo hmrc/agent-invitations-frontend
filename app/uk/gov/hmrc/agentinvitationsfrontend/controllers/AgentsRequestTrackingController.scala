@@ -23,8 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.InactiveClient
-import uk.gov.hmrc.agentinvitationsfrontend.services.{RelationshipsService, RequestsTrackingService}
+import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.recent_invitations
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -38,8 +37,7 @@ class AgentsRequestTrackingController @Inject()(
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
-  val requestsTrackingService: RequestsTrackingService,
-  val relationshipsService: RelationshipsService,
+  val trackingService: TrackService,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration)
@@ -50,10 +48,11 @@ class AgentsRequestTrackingController @Inject()(
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
         implicit val now: LocalDate = LocalDate.now()
         for {
-          inactiveClients <- relationshipsService.getInactiveClients
-          recentAgentInvitations <- requestsTrackingService
-                                     .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
-        } yield Ok(recent_invitations(recentAgentInvitations, trackRequestsShowLastDays, inactiveClients))
+          invitationsAndRelationships <- trackingService.bindInvitationsAndRelationships(
+                                          arn,
+                                          isWhitelisted,
+                                          trackRequestsShowLastDays)
+        } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
       }
     } else Future successful BadRequest
   }
