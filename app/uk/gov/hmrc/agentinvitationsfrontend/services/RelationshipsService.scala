@@ -31,25 +31,25 @@ class RelationshipsService @Inject()(
   agentServicesAccountConnector: AgentServicesAccountConnector,
   citizenDetailsConnector: CitizenDetailsConnector) {
 
-  def getInactiveClients(nino: Option[Nino], vrn: Option[Vrn])(
-    implicit c: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[InactiveClient]] = {
+  def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] = {
     val itsaRelationships: Future[Seq[ItsaTrackRelationship]] = relationshipsConnector.getInactiveItsaRelationships
     val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
 
     for {
-    relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships)).map(_.flatten)
+      relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships)).map(_.flatten)
 
-    inactiveClients <- Future.traverse(relationships) {
-      case ItsaTrackRelationship(_, dateTo, clientId) => for {
-      nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
-      name <- getTradingName(nino)
-      } yield InactiveClient("HMRC-MTD-IT", name.getOrElse(""), dateTo)
-      case VatTrackRelationship(_, dateTo, clientId) => for {
-      vatName <- getVatName(Some(Vrn(clientId)))
-      } yield InactiveClient("HMRC-MTD-VAT", vatName.getOrElse(""), dateTo)
-      case _ => Future successful InactiveClient("", "", None)
-    }
+      inactiveClients <- Future.traverse(relationships) {
+                          case ItsaTrackRelationship(_, dateTo, clientId) =>
+                            for {
+                              nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
+                              name <- getTradingName(nino)
+                            } yield InactiveClient("HMRC-MTD-IT", name.getOrElse(""), dateTo)
+                          case VatTrackRelationship(_, dateTo, clientId) =>
+                            for {
+                              vatName <- getVatName(Some(Vrn(clientId)))
+                            } yield InactiveClient("HMRC-MTD-VAT", vatName.getOrElse(""), dateTo)
+                          case _ => Future successful InactiveClient("", "", None)
+                        }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
   }
 

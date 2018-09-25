@@ -50,7 +50,7 @@ class RelationshipServiceISpec extends BaseISpec {
       givenClientDetailsOnlyOrganisation(validVrn)
       givenClientDetailsOnlyOrganisation(validVrn9755)
 
-      val result: Seq[InactiveClient] = await(service.getInactiveClients(Some(validNino), Some(validVrn)))
+      val result: Seq[InactiveClient] = await(service.getInactiveClients)
 
       result shouldBe inactiveRelationships
     }

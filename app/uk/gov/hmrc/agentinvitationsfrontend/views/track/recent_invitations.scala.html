@@ -19,7 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
 @import org.joda.time.{LocalDate,DateTime}
 
-@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
+@import uk.gov.hmrc.agentinvitationsfrontend.models.InactiveClient
+@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int, inactiveClients: Seq[InactiveClient])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -59,16 +60,29 @@
                         </td>
                     </tr>
                 }
+                @inactiveClients.map { inactiveClient =>
+                    <tr>
+                        <td id="taxpayerName">
+                            <span>@inactiveClient.clientName</span>
+                        </td>
+                        <td id="serviceInfo">
+                            <span>@Messages(s"recent-invitations.invitation.service.${inactiveClient.serviceName}")</span>
+                        </td>
+                        <td id="status">
+                            @Messages(s"recent-invitations.invitation.status.inactiveClient")
+                            <span class="supplementary-information">@displayDate(inactiveClient.dateTo.getOrElse(LocalDate.parse("")))</span>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     } else {
         <p class="text">@Messages(s"recent-invitations.description", trackRequestsShowLastDays)</p>
         <p>@Messages(s"recent-invitations.empty")</p>
         <p>
-            <a href="/invitations/agents/select-service">@Messages(s"recent-invitations.empty.continue")</a>.
+            <a href="/invitations/agents/select-service">@Messages(s"recent-invitations.empty.continue")</a>
         </p>
     }
-
 }
 
 @dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
@@ -81,7 +95,6 @@
             @displayDateTime(invitation.lastUpdated)
         }
     }
-
 }
 
 @clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {

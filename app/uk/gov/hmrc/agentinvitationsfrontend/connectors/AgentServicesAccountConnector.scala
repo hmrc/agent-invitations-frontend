@@ -75,9 +75,10 @@ class AgentServicesAccountConnector @Inject()(
       case _: NotFoundException => CustomerDetails(None, None, None)
     }
 
-  def getNinoForMtdItId(mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Nino]] = {
+  def getNinoForMtdItId(mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Nino]] =
     monitor(s"ConsumedAPI-Get-NinoForMtdItId-GET") {
-      http.GET[JsObject](craftUrl(getNinoForMtdItIdUrl(mtdItId)).toString)
+      http
+        .GET[JsObject](craftUrl(getNinoForMtdItIdUrl(mtdItId)).toString)
         .map(obj => (obj \ "nino").asOpt[Nino])
     }.recover {
       case e => {
@@ -85,7 +86,6 @@ class AgentServicesAccountConnector @Inject()(
         None
       }
     }
-  }
 
   private def craftUrl(location: String) = new URL(baseUrl, location)
 
