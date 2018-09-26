@@ -37,7 +37,7 @@ class AgentsRequestTrackingController @Inject()(
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
-  val trackingService: TrackService,
+  val trackService: TrackService,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration)
@@ -48,7 +48,7 @@ class AgentsRequestTrackingController @Inject()(
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
         implicit val now: LocalDate = LocalDate.now()
         for {
-          invitationsAndRelationships <- trackingService.bindInvitationsAndRelationships(
+          invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
                                           arn,
                                           isWhitelisted,
                                           trackRequestsShowLastDays)

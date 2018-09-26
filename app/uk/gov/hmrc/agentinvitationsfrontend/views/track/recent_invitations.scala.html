@@ -73,12 +73,12 @@
 
 @dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
     @if(invitation.effectiveStatus=="Pending") {
-        <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate.getOrElse(LocalDate.now()))
+        <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate)
     } else {
         @if(invitation.effectiveStatus=="Expired") {
-            @displayDate(invitation.expiryDate.getOrElse(LocalDate.now()))
+            @displayDate(invitation.expiryDate)
         } else {
-            @displayDate(invitation.date.getOrElse(LocalDate.now()))
+            @displayDate(invitation.date)
         }
     }
 }
@@ -92,8 +92,11 @@
     }}
 }
 
-@displayDate(date: LocalDate) = {
-    @date.toString("dd MMMM yyyy", messages.lang.locale)
+@displayDate(date: Option[LocalDate]) = {
+    @{date match {
+        case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
+        case None => ""
+    }}
 }
 
 @displayDateMaybe(maybeDate: Option[LocalDate]) = {

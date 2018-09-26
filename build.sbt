@@ -36,8 +36,7 @@ def testDeps(scope: String) = Seq(
   "org.jsoup" % "jsoup" % "1.11.3" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-  "org.mockito" % "mockito-core" % "2.18.3" % scope,
-  "org.jsoup" % "jsoup" % "1.8.1" % scope
+  "org.mockito" % "mockito-core" % "2.18.3" % scope
 )
 
 lazy val root = (project in file("."))

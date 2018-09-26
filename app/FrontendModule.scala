@@ -64,7 +64,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("sso")
     bindBaseUrl("citizen-details")
     bindBaseUrl("agent-client-relationships")
-    bindBaseUrl("des")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -84,8 +83,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
     bindProperty("survey.originTokenIdentifier.agent")
     bindProperty("survey.originTokenIdentifier.client")
-    bindProperty2Params("des.environment", "des.environment")
-    bindProperty2Params("des.authorizationToken", "des.authorization-token")
     bindIntegerProperty("track-requests-show-last-days")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
@@ -107,9 +104,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
   private def bindProperty(propertyName: String) =
     bind(classOf[String]).annotatedWith(Names.named(propertyName)).toProvider(new PropertyProvider(propertyName))
-
-  private def bindProperty2Params(objectName: String, propertyName: String) =
-    bind(classOf[String]).annotatedWith(Names.named(objectName)).toProvider(new PropertyProvider(propertyName))
 
   private class PropertyProvider(confKey: String) extends Provider[String] {
     override lazy val get = configuration
