@@ -54,8 +54,9 @@ class AgentsRequestTrackingController @Inject()(
                                           trackRequestsShowLastDays)
         } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
       }
-    } else
+    } else {
       Logger(getClass).warn("Feature flag to enable track page is off")
       Future successful BadRequest
+    }
   }
 }
