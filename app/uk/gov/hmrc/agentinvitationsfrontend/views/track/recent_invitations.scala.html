@@ -20,7 +20,7 @@
 @import org.joda.time.{LocalDate,DateTime}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
+@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -45,7 +45,7 @@
                     <th scope="col">@Messages("recent-invitations.table-row-header.status")</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-small">
                 @invitationsAndRelationships.map { invitationOrRelationship =>
                     <tr class="row-@invitationsAndRelationships.indexOf(invitationOrRelationship)">
                         <td class="taxpayerName">

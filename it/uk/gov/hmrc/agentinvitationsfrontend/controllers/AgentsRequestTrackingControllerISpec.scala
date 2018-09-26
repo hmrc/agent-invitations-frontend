@@ -72,11 +72,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Accepted",
-        "Pending",
-        "Declined",
-        "Expired",
-        "Cancelled",
+        "Accepted by client",
+        "Client has not yet responded",
+        "Declined by client",
+        "Request expired as client did not respond in time",
+        "You cancelled this request",
         "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
@@ -123,11 +123,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Accepted",
-        "Pending",
-        "Declined",
-        "Expired",
-        "Cancelled",
+        "Accepted by client",
+        "Client has not yet responded",
+        "Declined by client",
+        "Request expired as client did not respond in time",
+        "You cancelled this request",
         "You cancelled your authorisation",
         "11 September 2018",
         "01 January 2099",
