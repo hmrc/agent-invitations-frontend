@@ -23,6 +23,7 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
+import play.api.Logger
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
@@ -55,7 +56,9 @@ class RelationshipsConnector @Inject()(
       http
         .GET[Seq[ItsaTrackRelationship]](getInactiveItsaRelationshipUrl.toString)
         .recover {
-          case _: NotFoundException => Seq.empty
+          case _: NotFoundException =>
+            Logger(getClass).warn("No inactive relationships were found for ITSA")
+            Seq.empty
         }
     }
 
@@ -64,7 +67,9 @@ class RelationshipsConnector @Inject()(
       http
         .GET[Seq[VatTrackRelationship]](getInactiveVatRelationshipUrl.toString)
         .recover {
-          case _: NotFoundException => Seq.empty[VatTrackRelationship]
+          case _: NotFoundException =>
+            Logger(getClass).warn("No inactive relationships were found for VAT")
+            Seq.empty
         }
     }
 }

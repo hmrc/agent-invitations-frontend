@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -54,6 +54,8 @@ class AgentsRequestTrackingController @Inject()(
                                           trackRequestsShowLastDays)
         } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
       }
-    } else Future successful BadRequest
+    } else
+      Logger(getClass).warn("Feature flag to enable track page is off")
+      Future successful BadRequest
   }
 }
