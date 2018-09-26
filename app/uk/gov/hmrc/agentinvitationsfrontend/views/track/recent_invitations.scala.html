@@ -35,14 +35,16 @@
             <caption class="caption-normal text margin-bottom-20">
                 @Messages(s"recent-invitations.description", trackRequestsShowLastDays)
             </caption>
+            <col style="width: 22%">
             <col style="width: 30%">
-            <col>
+            <col style="width: 28%">
             <col style="width: 20%">
             <thead>
                 <tr>
                     <th scope="col">@Messages("recent-invitations.table-row-header.clientName")</th>
                     <th scope="col">@Messages("recent-invitations.table-row-header.service")</th>
                     <th scope="col">@Messages("recent-invitations.table-row-header.status")</th>
+                    <th scope="col">@Messages("recent-invitations.table-row-header.actions")</th>
                 </tr>
             </thead>
             <tbody class="text-small">
@@ -57,6 +59,9 @@
                         <td class="status">
                             @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.effectiveStatus.toLowerCase}")
                             <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
+                        </td>
+                        <td class="action">
+                            <a href=@Messages(s"recent-invitations.invitations.actions.href.${invitationOrRelationship.effectiveStatus.toLowerCase}")>@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</a>
                         </td>
                     </tr>
                 }
