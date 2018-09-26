@@ -24,7 +24,7 @@ class RelationshipsConnectorISpec extends BaseISpec with ACRStubs {
       result(0).clientId shouldBe "ABCDE1234567890"
       result(1).serviceName shouldBe "HMRC-MTD-IT"
       result(1).arn shouldBe arn
-      result(1).dateTo shouldBe Some(LocalDate.parse("2018-09-24"))
+      result(1).dateTo shouldBe Some(LocalDate.parse("2015-09-24"))
       result(1).clientId shouldBe "JKKL80894713304"
     }
 

@@ -24,6 +24,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import org.jsoup.Jsoup
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours with CitizenDetailsStub {
 
@@ -97,6 +98,18 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
+
+
+      val parseHtml = Jsoup.parse(contentAsString(result))
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income or expenses through software")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("GDT")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("Report their VAT returns through software")
+      parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("John Smith")
+      parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("View their PAYE income record")
+      parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("Rodney Jones")
+      parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("View their PAYE income record")
+
     }
 
     "render a page listing non-empty invitations without client's names" in {

@@ -124,20 +124,21 @@ class TrackService @Inject()(
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
                                case TrackedInvitation(service, _, _, clientName, status, _, expiryDate)
-                                   if status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate)) =>
+                                   if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
                                    service,
                                    clientName,
                                    effectiveStatus(status, expiryDate),
                                    None,
                                    Some(expiryDate))
-                               case TrackedInvitation(service, _, _, clientName, status, lastUpdated, expiryDate) =>
+
+                               case TrackedInvitation(service, _, _, clientName, status, lastUpdated, _) =>
                                  Future successful TrackInformationSorted(
                                    service,
                                    clientName,
                                    status,
                                    Some(LocalDate.parse(lastUpdated.toLocalDate.toString)),
-                                   Some(expiryDate))
+                                   None)
                                case _ => Future successful TrackInformationSorted("", None, "", None, None)
                              }
       relationships <- getInactiveClients

@@ -34,7 +34,7 @@ class RelationshipServiceISpec extends BaseISpec {
   val validVrn9755 = Vrn("101747641")
 
   val itsaRelationship1 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2015-09-21")))
-  val itsaRelationship2 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2018-09-24")))
+  val itsaRelationship2 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2015-09-24")))
   val vatRelationship1 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2015-09-21")))
   val vatRelationship2 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2018-09-24")))
   val irvRelationship1 = InactiveClient("PERSONAL-INCOME-RECORD", "Serena Williams", Some(LocalDate.parse("2015-09-21")))

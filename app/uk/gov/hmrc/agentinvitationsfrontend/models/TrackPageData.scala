@@ -32,6 +32,11 @@ case class TrackInformationSorted(
       case Some(_)                                                                                => status
       case None                                                                                   => status
     }
+
+  def sortDate: Option[LocalDate] =
+    if (date.isEmpty) expiryDate
+    else if (expiryDate.isEmpty) date
+    else None
 }
 
 object TrackInformationSorted {
@@ -40,5 +45,5 @@ object TrackInformationSorted {
 
   implicit def dateOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
 
-  val orderingByDate: Ordering[TrackInformationSorted] = Ordering.by(_.date)
+  val orderingByDate: Ordering[TrackInformationSorted] = Ordering.by(_.sortDate)
 }
