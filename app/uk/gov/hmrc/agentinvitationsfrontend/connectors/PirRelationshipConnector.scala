@@ -22,8 +22,10 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.DateTime
+import play.api.Logger
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -60,6 +62,20 @@ class PirRelationshipConnector @Inject()(
         .map(_.status)
         .recover {
           case _: Upstream5xxResponse => 500
+        }
+    }
+
+  val getInactiveIrvRelationshipUrl: URL =
+    new URL(baseUrl, "/agent-fi-relationships/relationships/inactive")
+
+  def getInactiveIrvRelationships(implicit hc: HeaderCarrier): Future[Seq[IrvTrackRelationship]] =
+    monitor("ConsumedApi-Get-InactiveIrvRelationships-GET") {
+      http
+        .GET[Seq[IrvTrackRelationship]](getInactiveIrvRelationshipUrl.toString)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No inactive relationships were found for IRV")
+            Seq.empty
         }
     }
 

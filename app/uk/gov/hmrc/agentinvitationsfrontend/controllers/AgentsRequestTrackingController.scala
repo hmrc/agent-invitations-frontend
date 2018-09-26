@@ -18,12 +18,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.services.RequestsTrackingService
+import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.recent_invitations
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -37,7 +37,7 @@ class AgentsRequestTrackingController @Inject()(
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
-  val requestsTrackingService: RequestsTrackingService,
+  val trackService: TrackService,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration)
@@ -47,10 +47,15 @@ class AgentsRequestTrackingController @Inject()(
     if (featureFlags.enableTrackRequests) {
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
         implicit val now: LocalDate = LocalDate.now()
-        requestsTrackingService
-          .getRecentAgentInvitations(arn, isWhitelisted, trackRequestsShowLastDays)
-          .map(invitations => Ok(recent_invitations(invitations, trackRequestsShowLastDays)))
+        for {
+          invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
+                                          arn,
+                                          isWhitelisted,
+                                          trackRequestsShowLastDays)
+        } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
       }
-    } else Future successful BadRequest
+    } else
+      Logger(getClass).warn("Feature flag to enable track page is off")
+      Future successful BadRequest
   }
 }

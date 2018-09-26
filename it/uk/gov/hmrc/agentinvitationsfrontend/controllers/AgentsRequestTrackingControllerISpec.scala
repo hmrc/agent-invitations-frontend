@@ -24,6 +24,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import org.jsoup.Jsoup
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours with CitizenDetailsStub {
 
@@ -56,9 +57,17 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing non-empty invitations with client's names resolved" in {
       givenAllInvitationsStub(arn)
+      givenInactiveITSARelationships(arn)
+      givenInactiveVATRelationships(arn)
+      givenInactiveRelationshipsIrv(arn)
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
       givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
       givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -68,10 +77,14 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Declined",
         "Expired",
         "Cancelled",
+        "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
+        "Cosmo Kramer",
         "GDT",
         "11 September 2018",
+        "21 September 2015",
+        "24 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
@@ -85,10 +98,24 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
+
+
+      val parseHtml = Jsoup.parse(contentAsString(result))
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income or expenses through software")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("GDT")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("Report their VAT returns through software")
+      parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("John Smith")
+      parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("View their PAYE income record")
+      parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("Rodney Jones")
+      parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("View their PAYE income record")
+
     }
 
     "render a page listing non-empty invitations without client's names" in {
       givenAllInvitationsStub(arn)
+      givenInactiveITSARelationships(arn)
+      givenInactiveVATRelationships(arn)
       givenTradingNameNotFound(Nino("AB123456A"))
       givenCitizenDetailsReturns404For("AB123456B")
       givenClientDetailsNotFound(Vrn("101747696"))
@@ -101,6 +128,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Declined",
         "Expired",
         "Cancelled",
+        "You cancelled your authorisation",
         "11 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)

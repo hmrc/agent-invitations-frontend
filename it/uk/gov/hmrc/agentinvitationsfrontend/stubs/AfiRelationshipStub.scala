@@ -74,4 +74,30 @@ trait AfiRelationshipStub {
       put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
         .willReturn(aResponse()
           .withStatus(500)))
+
+  def givenInactiveRelationshipsIrv(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationships/relationships/inactive"))
+        .willReturn(aResponse()
+          .withStatus(200)
+          .withBody(
+            s"""
+               |[{
+               |   "arn":"${arn.value}",
+               |   "endDate":"2015-09-21",
+               |   "clientId":"AB123456A"
+               |},
+               |{  "arn":"${arn.value}",
+               |   "endDate":"2018-09-24",
+               |   "clientId":"GZ753451B"
+               |}]""".stripMargin
+          )
+    ))
+
+  def givenInactiveRelationshipsIrvNotFound =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationships/relationships/inactive"))
+        .willReturn(aResponse()
+          .withStatus(404)
+    ))
 }

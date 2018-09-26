@@ -19,7 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
 @import org.joda.time.{LocalDate,DateTime}
 
-@(invitations: Seq[TrackedInvitation], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
+@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
+@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate))
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -28,7 +29,7 @@
    <div class="text">
        <h1 class="heading-xlarge margin-bottom-30">@Messages(s"recent-invitations.header")</h1>
     </div>
-    @if(invitations.nonEmpty) {
+    @if(invitationsAndRelationships.nonEmpty) {
 
         <table>
             <caption class="caption-normal text margin-bottom-20">
@@ -45,17 +46,17 @@
                 </tr>
             </thead>
             <tbody>
-                @invitations.map { invitation =>
-                    <tr>
-                        <td id="taxpayerName">
-                            <span>@invitation.clientName.getOrElse("")</span>
+                @invitationsAndRelationships.map { invitationOrRelationship =>
+                    <tr class="row-@invitationsAndRelationships.indexOf(invitationOrRelationship)">
+                        <td class="taxpayerName">
+                            <span>@invitationOrRelationship.clientName.getOrElse("")</span>
                         </td>
-                        <td id="serviceInfo">
-                            <span>@Messages(s"recent-invitations.invitation.service.${invitation.service}")</span>
+                        <td class="serviceInfo">
+                            <span>@Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
                         </td>
-                        <td id="status">
-                            @Messages(s"recent-invitations.invitation.status.${invitation.effectiveStatus.toLowerCase}")
-                            <span class="supplementary-information">@dateInfo(invitation)</span>
+                        <td class="status">
+                            @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.effectiveStatus.toLowerCase}")
+                            <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                         </td>
                     </tr>
                 }
@@ -65,23 +66,21 @@
         <p class="text">@Messages(s"recent-invitations.description", trackRequestsShowLastDays)</p>
         <p>@Messages(s"recent-invitations.empty")</p>
         <p>
-            <a href="/invitations/agents/select-service">@Messages(s"recent-invitations.empty.continue")</a>.
+            <a href="/invitations/agents/select-service">@Messages(s"recent-invitations.empty.continue")</a>
         </p>
     }
-
 }
 
-@dateInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
+@dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
     @if(invitation.effectiveStatus=="Pending") {
         <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate)
     } else {
         @if(invitation.effectiveStatus=="Expired") {
             @displayDate(invitation.expiryDate)
         } else {
-            @displayDateTime(invitation.lastUpdated)
+            @displayDate(invitation.date)
         }
     }
-
 }
 
 @clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
@@ -93,12 +92,18 @@
     }}
 }
 
-@displayDate(date: LocalDate) = {
-    @date.toString("dd MMMM yyyy", messages.lang.locale)
+@displayDate(date: Option[LocalDate]) = {
+    @{date match {
+        case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
+        case None => ""
+    }}
 }
 
-@displayDateTime(date: DateTime) = {
-    @date.toString("dd MMMM yyyy", messages.lang.locale)
+@displayDateMaybe(maybeDate: Option[LocalDate]) = {
+    @{maybeDate match {
+        case Some(date) => date.toString("dd MMMM yyyy", messages.lang.locale)
+        case None => ""
+    }}
 }
 
 @ninoIdentifier(nino: String)(implicit messages: Messages) = {

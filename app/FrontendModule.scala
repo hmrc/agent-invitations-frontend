@@ -63,6 +63,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("cachable.session-cache")
     bindBaseUrl("sso")
     bindBaseUrl("citizen-details")
+    bindBaseUrl("agent-client-relationships")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")

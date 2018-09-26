@@ -32,6 +32,8 @@ case class TrackedInvitation(
     if (status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate))) "Expired"
     else status
 
+  def lastUpdatedFormatted = LocalDate.parse(lastUpdated.toString)
+
 }
 
 object TrackedInvitation {

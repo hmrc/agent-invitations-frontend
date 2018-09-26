@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -13,6 +13,10 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[AgentServicesAccountConnector]
   val arn = Arn("TARN0000001")
+  val mtdItId = MtdItId("ABCDEF123456789")
+  private val validNino = Nino("AB123456A")
+
+
 
   "getAgencyName" should {
     "return agency name for a valid arn" in {
@@ -108,6 +112,14 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
 
       val result = await(connector.getCustomerDetails(vrn))
       result shouldBe customerDetailsNone
+    }
+  }
+
+  "getNinoForMtdItId" should {
+    "return nino for given mtditid" in {
+      givenNinoForMtdItId(mtdItId, validNino)
+      val result = await(connector.getNinoForMtdItId(mtdItId))
+      result shouldBe Some(validNino)
     }
   }
 

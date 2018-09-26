@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ASAStubs {
@@ -110,4 +110,19 @@ trait ASAStubs {
                          |    }
                          |}""".stripMargin)
         ))
+
+  def givenNinoForMtdItId(mtdItId: MtdItId, nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/mtdItId/${mtdItId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 | {
+                 |    "nino":"${nino.value}"
+                 | }
+               """.stripMargin)
+        )
+    )
 }
