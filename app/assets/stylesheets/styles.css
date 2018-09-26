@@ -29,6 +29,10 @@
     color: #0b0c0c !important;
 }
 
+tbody.text-small tr td {
+    font-size: 16px !important;
+}
+
 .form-field--error .form-date .form-field--error{
     border-left: none;
     padding: inherit;
