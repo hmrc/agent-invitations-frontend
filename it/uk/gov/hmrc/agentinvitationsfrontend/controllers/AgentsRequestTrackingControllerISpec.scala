@@ -176,9 +176,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     behave like anAuthorisedAgentEndpoint(request, showTrackRequests)
   }
 
-  "POST /track" should {
+  "POST /resend-link" should {
 
-    val request = FakeRequest("POST", "/track/")
+    val request = FakeRequest("POST", "/resend-link/")
     val postResendLink = controller.postToResendLink
 
     "return 200 and go to resend link page" in {
