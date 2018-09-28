@@ -16,6 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import org.joda.time.{DateTimeZone, LocalDate}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
@@ -86,6 +87,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "21 September 2015",
         "24 September 2018",
         "01 January 2099",
+        "Resend request to client",
+        "Cancel this request",
+        "Start new request",
+        "Cancel your authorisation",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
       checkHtmlResultWithBodyMsgs(
@@ -94,6 +99,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.table-row-header.clientName",
         "recent-invitations.table-row-header.service",
         "recent-invitations.table-row-header.status",
+        "recent-invitations.table-row-header.actions",
         "recent-invitations.invitation.service.HMRC-MTD-IT",
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
@@ -116,9 +122,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenAllInvitationsStub(arn)
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
+      givenInactiveRelationshipsIrv(arn)
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingNameNotFound(Nino("AB123456A"))
       givenCitizenDetailsReturns404For("AB123456B")
       givenClientDetailsNotFound(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -147,6 +160,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing empty invitations" in {
       givenAllInvitationsEmptyStub(arn)
+      givenInactiveITSARelationshipsNotFound
+      givenInactiveVATRelationshipsNotFound
+      givenInactiveRelationshipsIrvNotFound
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
@@ -158,5 +174,51 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     behave like anAuthorisedAgentEndpoint(request, showTrackRequests)
+  }
+
+  "POST /resend-link" should {
+
+    val request = FakeRequest("POST", "/resend-link/")
+    val postResendLink = controller.postToResendLink
+
+    "return 200 and go to resend link page" in {
+      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", invitationIdITSA.value, expirationDate))
+      val result = postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "Resend this link to your client",
+        "What you need to do next",
+        "The link expires 5 days from now.",
+        "Track your recent authorisation requests",
+        "Return to your agent services account",
+        "Start new authorisation request")
+    }
+
+    "return 400 BadRequest when form data contains errors in service" in {
+      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val formData = controller.trackInformationForm.fill(TrackResendForm("foo", invitationIdITSA.value, expirationDate))
+      val result = postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+
+    "return 400 BadRequest when form data contains errors in invitationId" in {
+      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", "foo", expirationDate))
+      val result = postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+
+    "return 400 BadRequest when form data contains errors in expiryDate" in {
+      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", invitationIdITSA.value, "foo"))
+      val result = postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
   }
 }

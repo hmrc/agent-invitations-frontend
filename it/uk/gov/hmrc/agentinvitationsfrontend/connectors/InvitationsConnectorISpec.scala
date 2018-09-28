@@ -119,6 +119,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
         DateTime.parse("2017-10-31T23:22:50.971Z"),
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
+        "foo1",
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo1")
       )
       result(4) shouldBe StoredInvitation(
@@ -129,6 +130,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
         DateTime.parse("2017-10-31T23:22:50.971Z"),
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
+        "foo5",
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo5")
       )
       result(8) shouldBe StoredInvitation(
@@ -139,6 +141,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
         DateTime.parse("2017-10-31T23:22:50.971Z"),
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
+        "foo8",
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo8")
       )
     }

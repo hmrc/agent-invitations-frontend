@@ -32,6 +32,7 @@ case class StoredInvitation(
   created: DateTime,
   lastUpdated: DateTime,
   expiryDate: LocalDate,
+  invitationId: String,
   selfUrl: URL)
     extends ServiceAndClient
 
@@ -52,6 +53,7 @@ object StoredInvitation {
     created: DateTime,
     lastUpdated: DateTime,
     expiryDate: LocalDate,
+    invitationId: String,
     selfUrl: URL): StoredInvitation =
     StoredInvitation(
       arn,
@@ -64,6 +66,8 @@ object StoredInvitation {
       created,
       lastUpdated,
       expiryDate,
-      selfUrl)
+      invitationId,
+      selfUrl
+    )
 
 }

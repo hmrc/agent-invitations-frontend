@@ -217,8 +217,9 @@ class InvitationsConnector @Inject()(
         (JsPath \ "created").read[DateTime] and
         (JsPath \ "lastUpdated").read[DateTime] and
         (JsPath \ "expiryDate").read[LocalDate] and
+        (JsPath \ "invitationId").read[String] and
         (JsPath \ "_links" \ "self").read[URL])(
-        (a, b, c, d, e, f, g, h, i, j, k) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k)
+        (a, b, c, d, e, f, g, h, i, j, k, l) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l)
       )
     }
   }

@@ -16,13 +16,13 @@ POST        /agents/check-details                               @uk.gov.hmrc.age
 GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.knownFact
 POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitKnownFact
 
-
 # Error Agent Endpoints
 GET         /agents/not-enrolled                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
 GET         /agents/not-matched                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
 
 # Request tracking
 GET         /track                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
+POST        /resend-link                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.postToResendLink
 
 # Client Endpoints
 GET         /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
