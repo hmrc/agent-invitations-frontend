@@ -25,7 +25,8 @@ case class TrackedInvitation(
   clientName: Option[String],
   status: String,
   lastUpdated: DateTime,
-  expiryDate: LocalDate
+  expiryDate: LocalDate,
+  invitationId: String
 ) extends ServiceAndClient {
 
   def effectiveStatus(implicit now: LocalDate): String =
@@ -48,6 +49,6 @@ object TrackedInvitation {
           || i.suppliedClientId.isEmpty) (i.clientId, i.clientIdType)
       else (i.suppliedClientId, i.suppliedClientIdType)
 
-    TrackedInvitation(i.service, clientId, clientIdType, None, i.status, i.lastUpdated, i.expiryDate)
+    TrackedInvitation(i.service, clientId, clientIdType, None, i.status, i.lastUpdated, i.expiryDate, i.invitationId)
   }
 }

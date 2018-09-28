@@ -18,9 +18,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
 @import org.joda.time.{LocalDate,DateTime}
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
+@import uk.gov.hmrc.play.views.html.helpers.form
+
+@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int, trackForm: Form[TrackResendForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -31,7 +35,7 @@
     </div>
     @if(invitationsAndRelationships.nonEmpty) {
 
-        <table>
+        <table class="text-small">
             <caption class="caption-normal text margin-bottom-20">
                 @Messages(s"recent-invitations.description", trackRequestsShowLastDays)
             </caption>
@@ -47,7 +51,7 @@
                     <th scope="col">@Messages("recent-invitations.table-row-header.actions")</th>
                 </tr>
             </thead>
-            <tbody class="text-small">
+            <tbody >
                 @invitationsAndRelationships.map { invitationOrRelationship =>
                     <tr class="row-@invitationsAndRelationships.indexOf(invitationOrRelationship)">
                         <td class="taxpayerName">
@@ -61,7 +65,24 @@
                             <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                         </td>
                         <td class="action">
-                            <a href=@Messages(s"recent-invitations.invitations.actions.href.${invitationOrRelationship.effectiveStatus.toLowerCase}")>@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</a>
+                            @if(invitationOrRelationship.effectiveStatus == "Pending") {
+                            @form(
+                                action = Call("POST", routes.AgentsRequestTrackingController.postToResendLink().url),
+                                'id -> "resendLink",
+                                'class -> "form js-form"
+                            ) {
+                                <input type="hidden" name="service" id="service" value="@{
+                                    invitationOrRelationship.service}">
+                                <input type="hidden" name="invitationId" id="invitationId" value="@{
+                                    invitationOrRelationship.invitationId}">
+                                <input type="hidden" name="expiryDate" id="expiryDate" value="@{
+                                    invitationOrRelationship.expiryDate}">
+                                <button class="button--link-style" type="submit" id="resendRequest">@Messages("recent-invitations.invitations.actions.pending")</button>
+                                <a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a>
+                            }
+                            }else {
+                                <a href="#">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</a>
+                            }
                         </td>
                     </tr>
                 }
@@ -71,7 +92,7 @@
         <p class="text">@Messages(s"recent-invitations.description", trackRequestsShowLastDays)</p>
         <p>@Messages(s"recent-invitations.empty")</p>
         <p>
-            <a href="/invitations/agents/select-service">@Messages(s"recent-invitations.empty.continue")</a>
+            <a href=>@Messages(s"recent-invitations.empty.continue")</a>
         </p>
     }
 }

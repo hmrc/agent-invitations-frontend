@@ -316,12 +316,13 @@ recent-invitations.invitation.status.expired=Request expired as client did not r
 recent-invitations.invitation.status.cancelled=You cancelled this request
 recent-invitations.invitation.status.invalidrelationship=You cancelled your authorisation
 recent-invitations.invitations.actions.pending=Resend request to client
+recent-invitations.invitations.actions.pending.cancel=Cancel this request
 recent-invitations.invitations.actions.accepted=Cancel your authorisation
 recent-invitations.invitations.actions.rejected=Start new request
 recent-invitations.invitations.actions.expired=Start new request
 recent-invitations.invitations.actions.invalidrelationship=Start new request
-recent-invitations.invitations.actions.href.pending=/agents/invitation-sent
-recent-invitations.invitations.actions.href.accepted=#
-recent-invitations.invitations.actions.href.rejected=#
-recent-invitations.invitations.actions.href.expired=#
-recent-invitations.invitations.actions.href.invalidrelationships=#
+
+#ResendLink page
+resend-link.header=Resend this link to your client
+resend-link.p2=The link expires {0} days from now.
+resend-link.returnToAsa=Return to your agent services account

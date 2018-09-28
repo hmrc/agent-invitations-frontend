@@ -24,7 +24,8 @@ case class TrackInformationSorted(
   clientName: Option[String],
   status: String,
   date: Option[LocalDate],
-  expiryDate: Option[LocalDate]) {
+  expiryDate: Option[LocalDate],
+  invitationId: Option[String]) {
 
   def effectiveStatus(implicit now: LocalDate): String =
     expiryDate match {

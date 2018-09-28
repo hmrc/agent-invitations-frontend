@@ -18,17 +18,23 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.{Configuration, Logger}
+import play.api.data.Form
+import play.api.data.Forms.{mapping, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.recent_invitations
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{recent_invitations, resend_link}
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
+
+case class TrackResendForm(service: String, invitationId: String, expiryDate: String)
 
 @Singleton
 class AgentsRequestTrackingController @Inject()(
@@ -38,7 +44,8 @@ class AgentsRequestTrackingController @Inject()(
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
-  @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int)(
+  @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
+  @Named("agent-invitations-frontend.external-url") externalUrl: String)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration)
     extends FrontendController with I18nSupport with AuthActions {
@@ -52,11 +59,33 @@ class AgentsRequestTrackingController @Inject()(
                                           arn,
                                           isWhitelisted,
                                           trackRequestsShowLastDays)
-        } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
+        } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays, trackInformationForm))
       }
     } else {
       Logger(getClass).warn("Feature flag to enable track page is off")
       Future successful BadRequest
     }
   }
+
+  def postToResendLink: Action[AnyContent] = Action.async { implicit request =>
+    trackInformationForm
+      .bindFromRequest()
+      .fold(
+        _ => {
+          Logger(getClass).error("Error in form when redirecting to resend-link page.")
+          Future successful BadRequest
+        },
+        data => Future successful Ok(resend_link(data.service, data.invitationId, data.expiryDate, externalUrl))
+      )
+  }
+
+  val trackInformationForm: Form[TrackResendForm] = {
+    Form(
+      mapping(
+        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
+        "expiryDate"   -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+      )(TrackResendForm.apply)(TrackResendForm.unapply))
+  }
+
 }

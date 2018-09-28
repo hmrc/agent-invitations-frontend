@@ -28,9 +28,14 @@
 .normal-text {
     color: #0b0c0c !important;
 }
+.text-small .button--link-style,
+.text-small thead tr th,
+.text-small tbody tr td {
+    font-size: 16.15px !important;
+}
 
-tbody.text-small tr td {
-    font-size: 16px !important;
+.text-small .button--link-style {
+    text-align: left;
 }
 
 .form-field--error .form-date .form-field--error{

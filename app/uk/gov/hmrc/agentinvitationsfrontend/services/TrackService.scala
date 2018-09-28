@@ -123,23 +123,33 @@ class TrackService @Inject()(
     for {
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
-                               case TrackedInvitation(service, _, _, clientName, status, _, expiryDate)
+                               case TrackedInvitation(service, _, _, clientName, status, _, expiryDate, invitationId)
                                    if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
                                    service,
                                    clientName,
                                    effectiveStatus(status, expiryDate),
                                    None,
-                                   Some(expiryDate))
+                                   Some(expiryDate),
+                                   Some(invitationId))
 
-                               case TrackedInvitation(service, _, _, clientName, status, lastUpdated, _) =>
+                               case TrackedInvitation(
+                                   service,
+                                   _,
+                                   _,
+                                   clientName,
+                                   status,
+                                   lastUpdated,
+                                   _,
+                                   invitationId) =>
                                  Future successful TrackInformationSorted(
                                    service,
                                    clientName,
                                    status,
                                    Some(LocalDate.parse(lastUpdated.toLocalDate.toString)),
-                                   None)
-                               case _ => Future successful TrackInformationSorted("", None, "", None, None)
+                                   None,
+                                   Some(invitationId))
+                               case _ => Future successful TrackInformationSorted("", None, "", None, None, None)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
@@ -149,8 +159,9 @@ class TrackService @Inject()(
                                      Some(clientName),
                                      "InvalidRelationship",
                                      dateTo,
+                                     None,
                                      None)
-                                 case _ => Future successful TrackInformationSorted("", None, "", None, None)
+                                 case _ => Future successful TrackInformationSorted("", None, "", None, None, None)
                                }
     } yield (trackInfoInvitations ++ trackInfoRelationships).sorted(TrackInformationSorted.orderingByDate)
   }
