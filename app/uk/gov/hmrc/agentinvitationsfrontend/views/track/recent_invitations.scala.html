@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, resend_link_form}
 @import uk.gov.hmrc.play.views.html.helpers.form
 
 @(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
@@ -65,25 +65,13 @@
                             <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                         </td>
                         <td class="action">
-                            @if(invitationOrRelationship.effectiveStatus == "Pending") {
-
-                            }
-                            @if(invitationOrRelationship.effectiveStatus == "Declined" || invitationOrRelationship.effectiveStatus == "Expired" || invitationOrRelationship.effectiveStatus.toLowerCase == "invalidrelationship"){
-                                @form(
-                                    action = Call("POST", routes.AgentsInvitationController.agentFastTrack().url),
-                                    'id -> "fastTrackInvitationCreate",
-                                    'class -> "form js-form"
-                                ) {
-                                    <input type="hidden" name="service" id="service" value="@{invitationOrRelationship.service}">
-                                    <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="@{invitationOrRelationship.clientIdType}">
-                                    <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@{invitationOrRelationship.clientId}">
-                                    <input type="hidden" name="knownFact" id="knownFact" value="">
-                                    <button class="button--link-style" type="submit" id="resendRequest">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</button>
-                                    <a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a>
-                                }
-                            }else {
-                                <a href="#">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</a>
-                            }
+                            @{invitationOrRelationship.effectiveStatus match {
+                                case "Pending" => resend_link_form(invitationOrRelationship)
+                                case _ if invitationOrRelationship.effectiveStatus.toLowerCase == "invalidrelationship" ||
+                                    invitationOrRelationship.effectiveStatus.toLowerCase == "declined" ||
+                                invitationOrRelationship.effectiveStatus.toLowerCase == "expired" => new_request_form(invitationOrRelationship)
+                                case _ => Html(s"""<a href="#">""" + Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}") + """</a>""")
+                                }}
                         </td>
                     </tr>
                 }
