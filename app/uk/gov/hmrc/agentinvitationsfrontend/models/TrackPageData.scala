@@ -21,6 +21,8 @@ import play.api.libs.json.Json
 
 case class TrackInformationSorted(
   service: String,
+  clientId: String,
+  clientIdType: String,
   clientName: Option[String],
   status: String,
   date: Option[LocalDate],

@@ -16,15 +16,13 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
-@import org.joda.time.{LocalDate,DateTime}
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import org.joda.time.LocalDate
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
-@import uk.gov.hmrc.play.views.html.helpers.form
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, resend_link_form}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
-@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int, trackForm: Form[TrackResendForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
+@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -65,24 +63,14 @@
                             <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                         </td>
                         <td class="action">
-                            @if(invitationOrRelationship.effectiveStatus == "Pending") {
-                            @form(
-                                action = Call("POST", routes.AgentsRequestTrackingController.postToResendLink().url),
-                                'id -> "resendLink",
-                                'class -> "form js-form"
-                            ) {
-                                <input type="hidden" name="service" id="service" value="@{
-                                    invitationOrRelationship.service}">
-                                <input type="hidden" name="invitationId" id="invitationId" value="@{
-                                    invitationOrRelationship.invitationId}">
-                                <input type="hidden" name="expiryDate" id="expiryDate" value="@{
-                                    invitationOrRelationship.expiryDate}">
-                                <button class="button--link-style" type="submit" id="resendRequest">@Messages("recent-invitations.invitations.actions.pending")</button>
-                                <a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a>
-                            }
-                            }else {
-                                <a href="#">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</a>
-                            }
+                            @{invitationOrRelationship.effectiveStatus match {
+                                case "Pending" => resend_link_form(invitationOrRelationship)
+                                case _ if invitationOrRelationship.effectiveStatus.toLowerCase == "invalidrelationship" ||
+                                    invitationOrRelationship.effectiveStatus.toLowerCase == "rejected" ||
+                                invitationOrRelationship.effectiveStatus.toLowerCase == "expired" ||
+                                invitationOrRelationship.effectiveStatus.toLowerCase == "cancelled" => new_request_form(invitationOrRelationship)
+                                case _ => Html(s"""<a href="#">""" + Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}") + """</a>""")
+                                }}
                         </td>
                     </tr>
                 }
@@ -109,41 +97,9 @@
     }
 }
 
-@clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @{invitation.clientIdType match {
-        case "ni" => ninoIdentifier(invitation.clientId)
-        case "vrn" => vrnIdentifier(invitation.clientId)
-        case "MTDITID" => mtditidIdentifier(invitation.clientId)
-        case _ => ""
-    }}
-}
-
 @displayDate(date: Option[LocalDate]) = {
     @{date match {
         case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
         case None => ""
     }}
-}
-
-@displayDateMaybe(maybeDate: Option[LocalDate]) = {
-    @{maybeDate match {
-        case Some(date) => date.toString("dd MMMM yyyy", messages.lang.locale)
-        case None => ""
-    }}
-}
-
-@ninoIdentifier(nino: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.nino")</span> <span>@{nino.sliding(2,2).mkString(" ")}</span>
-}
-
-@vrnIdentifier(vrn: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.vrn")</span> <span>@vrn</span>
-}
-
-@mtditidIdentifier(mtditid: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.mtditid")</span> <span>@mtditid</span>
-}
-
-@back_link(url: String)(implicit messages: Messages, config: Configuration) = {
-    <a id="identifiersBackLink" href="@url" class="link-back">@Messages("button.back")</a>
 }
