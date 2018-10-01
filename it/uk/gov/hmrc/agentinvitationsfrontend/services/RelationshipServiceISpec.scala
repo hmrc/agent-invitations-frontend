@@ -33,12 +33,12 @@ class RelationshipServiceISpec extends BaseISpec {
   val validRegistrationDate = "2007-07-07"
   val validVrn9755 = Vrn("101747641")
 
-  val itsaRelationship1 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2015-09-21")))
-  val itsaRelationship2 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", Some(LocalDate.parse("2015-09-24")))
-  val vatRelationship1 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2015-09-21")))
-  val vatRelationship2 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", Some(LocalDate.parse("2018-09-24")))
-  val irvRelationship1 = InactiveClient("PERSONAL-INCOME-RECORD", "Serena Williams", Some(LocalDate.parse("2015-09-21")))
-  val irvRelationship2 = InactiveClient("PERSONAL-INCOME-RECORD", "Venus Williams", Some(LocalDate.parse("2018-09-24")))
+  val itsaRelationship1 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", validNino.value, "ni", Some(LocalDate.parse("2015-09-21")))
+  val itsaRelationship2 = InactiveClient("HMRC-MTD-IT", "Boolean Ltd", validNino.value, "ni", Some(LocalDate.parse("2015-09-24")))
+  val vatRelationship1 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", validVrn.value, "vrn", Some(LocalDate.parse("2015-09-21")))
+  val vatRelationship2 = InactiveClient("HMRC-MTD-VAT", "Gadgetron", validVrn9755.value, "vrn", Some(LocalDate.parse("2018-09-24")))
+  val irvRelationship1 = InactiveClient("PERSONAL-INCOME-RECORD", "Serena Williams", validNino.value, "ni", Some(LocalDate.parse("2015-09-21")))
+  val irvRelationship2 = InactiveClient("PERSONAL-INCOME-RECORD", "Venus Williams", "GZ753451B", "ni", Some(LocalDate.parse("2018-09-24")))
 
   val inactiveRelationships = List(itsaRelationship1, itsaRelationship2, vatRelationship1, vatRelationship2, irvRelationship1, irvRelationship2)
 

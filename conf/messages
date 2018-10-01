@@ -320,6 +320,7 @@ recent-invitations.invitations.actions.pending.cancel=Cancel this request
 recent-invitations.invitations.actions.accepted=Cancel your authorisation
 recent-invitations.invitations.actions.rejected=Start new request
 recent-invitations.invitations.actions.expired=Start new request
+recent-invitations.invitations.actions.cancelled=Start new request
 recent-invitations.invitations.actions.invalidrelationship=Start new request
 
 #ResendLink page

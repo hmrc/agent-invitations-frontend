@@ -107,14 +107,25 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
 
       val parseHtml = Jsoup.parse(contentAsString(result))
+      println(parseHtml)
       parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("FooBar Ltd.")
       parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income or expenses through software")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("GDT")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("Report their VAT returns through software")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("resendRequest")
       parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("John Smith")
       parseHtml.getElementsByAttributeValue("class", "row-7").toString should include("View their PAYE income record")
       parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("Rodney Jones")
       parseHtml.getElementsByAttributeValue("class", "row-23").toString should include("View their PAYE income record")
+
+      parseHtml.getElementsByAttributeValue("class", "row-15").toString should include("expired")
+      parseHtml.getElementsByAttributeValue("class", "row-15").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("class", "row-8").toString should include("Declined")
+      parseHtml.getElementsByAttributeValue("class", "row-8").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("class", "row-11").toString should include("cancelled this request")
+      parseHtml.getElementsByAttributeValue("class", "row-11").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("cancelled your authorisation")
+      parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("fastTrackInvitationCreate")
 
     }
 

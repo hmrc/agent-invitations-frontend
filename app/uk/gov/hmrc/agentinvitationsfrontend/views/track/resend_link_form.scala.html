@@ -25,7 +25,7 @@
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.postToResendLink().url),
     'id -> "resendLink",
-    'class -> "form js-form"
+    'class -> "form js-form actionButtons"
 ) {
     <input type="hidden" name="service" id="service" value="@{
         invitationOrRelationship.service}">
@@ -33,6 +33,6 @@
         invitationOrRelationship.invitationId}">
     <input type="hidden" name="expiryDate" id="expiryDate" value="@{
         invitationOrRelationship.expiryDate}">
-    <button class="button--link-style" type="submit" id="resendRequest">@Messages("recent-invitations.invitations.actions.pending")</button>
-    <a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a>
+    <div><button class="button--link-style" type="submit" id="resendRequest">@Messages("recent-invitations.invitations.actions.pending")</button></div>
+    <div><a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a></div>
 }

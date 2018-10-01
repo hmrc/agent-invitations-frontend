@@ -16,13 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackedInvitation
-@import org.joda.time.{LocalDate,DateTime}
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import org.joda.time.LocalDate
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, resend_link_form}
-@import uk.gov.hmrc.play.views.html.helpers.form
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
@@ -68,8 +66,9 @@
                             @{invitationOrRelationship.effectiveStatus match {
                                 case "Pending" => resend_link_form(invitationOrRelationship)
                                 case _ if invitationOrRelationship.effectiveStatus.toLowerCase == "invalidrelationship" ||
-                                    invitationOrRelationship.effectiveStatus.toLowerCase == "declined" ||
-                                invitationOrRelationship.effectiveStatus.toLowerCase == "expired" => new_request_form(invitationOrRelationship)
+                                    invitationOrRelationship.effectiveStatus.toLowerCase == "rejected" ||
+                                invitationOrRelationship.effectiveStatus.toLowerCase == "expired" ||
+                                invitationOrRelationship.effectiveStatus.toLowerCase == "cancelled" => new_request_form(invitationOrRelationship)
                                 case _ => Html(s"""<a href="#">""" + Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}") + """</a>""")
                                 }}
                         </td>
@@ -98,41 +97,9 @@
     }
 }
 
-@clientIdentifierInfo(invitation: TrackedInvitation)(implicit messages: Messages) = {
-    @{invitation.clientIdType match {
-        case "ni" => ninoIdentifier(invitation.clientId)
-        case "vrn" => vrnIdentifier(invitation.clientId)
-        case "MTDITID" => mtditidIdentifier(invitation.clientId)
-        case _ => ""
-    }}
-}
-
 @displayDate(date: Option[LocalDate]) = {
     @{date match {
         case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
         case None => ""
     }}
-}
-
-@displayDateMaybe(maybeDate: Option[LocalDate]) = {
-    @{maybeDate match {
-        case Some(date) => date.toString("dd MMMM yyyy", messages.lang.locale)
-        case None => ""
-    }}
-}
-
-@ninoIdentifier(nino: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.nino")</span> <span>@{nino.sliding(2,2).mkString(" ")}</span>
-}
-
-@vrnIdentifier(vrn: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.vrn")</span> <span>@vrn</span>
-}
-
-@mtditidIdentifier(mtditid: String)(implicit messages: Messages) = {
-    <span>@Messages("recent-invitations.invitation.identifier.mtditid")</span> <span>@mtditid</span>
-}
-
-@back_link(url: String)(implicit messages: Messages, config: Configuration) = {
-    <a id="identifiersBackLink" href="@url" class="link-back">@Messages("button.back")</a>
 }
