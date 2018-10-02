@@ -327,3 +327,23 @@ recent-invitations.invitations.actions.invalidrelationship=Start new request
 resend-link.header=Resend this link to your client
 resend-link.p2=The link expires {0} days from now.
 resend-link.returnToAsa=Return to your agent services account
+
+#Confirm cancel page
+confirm-cancel.header=Are you sure you want to cancel this authorisation request?
+confirm-cancel.subheader.itsa=If you cancel this request, you will not be able to report their income or expenses through software.
+confirm-cancel.subheader.afi=If you cancel this request, you will not be able to view their PAYE income record.
+confirm-cancel.subheader.vat=If you cancel this request, you will not be able to report their VAT returns through software.
+confirm-cancel.radio.yes=Yes
+confirm-cancel.radio.no=No
+error.confirmCancel.invalid=This field is required
+
+#Request cancelled page
+request-cancelled.header=Authorisation request cancelled
+request-cancelled.p1.itsa=You have cancelled your authorisation request to report their income or expenses through software.
+request-cancelled.p1.afi=You have cancelled your authorisation request to view their PAYE income record.
+request-cancelled.p1.vat=You have cancelled your authorisation request to report their VAT returns through software.
+request-cancelled.panel={0} will not be able to respond to this request.
+request-cancelled.track.button=Track your recent authorisation requests
+request-cancelled.subheader=Made a mistake?
+request-cancelled.p2=If you want your client to authorise you, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
+

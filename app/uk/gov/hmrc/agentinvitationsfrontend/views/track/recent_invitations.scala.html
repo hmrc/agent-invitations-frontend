@@ -19,7 +19,7 @@
 @import org.joda.time.LocalDate
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, resend_link_form}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, pending_form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
@@ -64,7 +64,7 @@
                         </td>
                         <td class="action">
                             @{invitationOrRelationship.effectiveStatus match {
-                                case "Pending" => resend_link_form(invitationOrRelationship)
+                                case "Pending" => pending_form(invitationOrRelationship)
                                 case _ if invitationOrRelationship.effectiveStatus.toLowerCase == "invalidrelationship" ||
                                     invitationOrRelationship.effectiveStatus.toLowerCase == "rejected" ||
                                 invitationOrRelationship.effectiveStatus.toLowerCase == "expired" ||

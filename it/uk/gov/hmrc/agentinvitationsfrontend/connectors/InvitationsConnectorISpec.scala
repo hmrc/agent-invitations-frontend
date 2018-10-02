@@ -215,6 +215,27 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
     }
   }
 
+  "Cancel invitation" should {
+
+    "return true if 204 is returned from DES" in {
+      cancelInvitationStub(arn, invitationIdITSA, 204)
+      val result = await(connector.cancelInvitation(arn, invitationIdITSA))
+      result shouldBe Some(true)
+    }
+
+    "return false if invitation is not found" in {
+      cancelInvitationStub(arn, invitationIdITSA, 404)
+      val result = await(connector.cancelInvitation(arn, invitationIdITSA))
+      result shouldBe Some(false)
+    }
+
+    "return None if status returned is invalid" in {
+      cancelInvitationStub(arn, invitationIdITSA, 403)
+      val result = await(connector.cancelInvitation(arn, invitationIdITSA))
+      result shouldBe None
+    }
+  }
+
   "Accept invitation" should {
 
     "service is for ITSA" should {
