@@ -22,7 +22,10 @@ GET         /agents/not-matched                                               @u
 
 # Request tracking
 GET         /track                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
-POST        /resend-link                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.postToResendLink
+POST        /resend-link                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToResendLink
+POST        /confirm-cancel                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToConfirmCancel
+GET         /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.getConfirmCancel
+POST        /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitConfirmCancel
 
 # Client Endpoints
 GET         /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)

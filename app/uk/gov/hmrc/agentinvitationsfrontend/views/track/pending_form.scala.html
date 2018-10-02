@@ -14,16 +14,13 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.play.views.html.helpers.form
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import play.api.Configuration
-
-@import org.apache.http.HttpRequest
 @(invitationOrRelationship: TrackInformationSorted)(implicit messages: Messages, request: Request[_])
 
 @form(
-    action = Call("POST", routes.AgentsRequestTrackingController.postToResendLink().url),
+    action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
     'id -> "resendLink",
     'class -> "form js-form actionButtons"
 ) {
@@ -34,5 +31,16 @@
     <input type="hidden" name="expiryDate" id="expiryDate" value="@{
         invitationOrRelationship.expiryDate}">
     <div><button class="button--link-style" type="submit" id="resendRequest">@Messages("recent-invitations.invitations.actions.pending")</button></div>
-    <div><a href="#">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</a></div>
 }
+
+@form(
+    action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
+    'id -> "postToConfirmCancel",
+    'class -> "form js-form"
+) {
+    <input type="hidden" name="service" id="service" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="invitationId" id="clientIdentifier" value="@{invitationOrRelationship.invitationId}">
+    <input type="hidden" name="clientName" id="knownFact" value="@{invitationOrRelationship.clientName}">
+    <button class="button--link-style" type="submit" id="resendRequest">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
+}
+

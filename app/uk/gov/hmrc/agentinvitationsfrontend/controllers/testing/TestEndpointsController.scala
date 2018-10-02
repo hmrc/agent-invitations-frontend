@@ -25,7 +25,7 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
@@ -145,5 +145,15 @@ object TestEndpointsController {
         "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
         "expiryDate"   -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
+  }
+
+  val testCancelRequestForm: Form[CancelRequestForm] = {
+    Form(
+      mapping(
+        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
+        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientName"   -> text
+      )(CancelRequestForm.apply)(CancelRequestForm.unapply)
+    )
   }
 }

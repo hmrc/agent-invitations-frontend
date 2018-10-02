@@ -190,7 +190,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   "POST /resend-link" should {
 
     val request = FakeRequest("POST", "/resend-link/")
-    val postResendLink = controller.postToResendLink
+    val postResendLink = controller.submitToResendLink
 
     "return 200 and go to resend link page" in {
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
@@ -231,5 +231,98 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 400
     }
+  }
+
+  "POST /confirm-cancel" should {
+
+    val request = FakeRequest("POST", "/confirm-cancel/")
+    val postToConfirmCancel = controller.submitToConfirmCancel
+
+    "return 303 redirect to confirm cancel page when form is correct" in {
+      val formData = controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "HMRC-MTD-IT", "Johnny Gogo"))
+      val result = postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track/confirm-cancel")
+    }
+
+    "return 400 BadRequest when form data contains errors in invitationId" in {
+      val formData = controller.cancelRequestForm.fill(CancelRequestForm("foo", "HMRC-MTD-IT", "Johnny Gogo"))
+      val result = postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+
+    "return 400 BadRequest when form data contains errors in service" in {
+      val formData = controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "foo", "Johnny Gogo"))
+      val result = postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+
+  }
+
+  "GET /track/confirm-cancel" should {
+    val request = FakeRequest("GET", "/track/confirm-cancel")
+    val showConfirmCancel = controller.getConfirmCancel
+
+    "render a confirm cancel page" in {
+      val result = showConfirmCancel(authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this authorisation request?",
+        "If you cancel this request, you will not be able to report their income or expenses through software.",
+      "Yes", "No")
+    }
+
+  }
+
+  "POST /track/confirm-cancel" should {
+    val request = FakeRequest("POST", "/track/confirm-cancel")
+    val postConfirmCancel = controller.submitConfirmCancel
+
+    "when yes is selected on confirm cancel page, cancel the invitation and send to invitation cancelled page" in {
+      cancelInvitationStub(arn, invitationIdITSA, 204)
+      val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
+        .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Authorisation request cancelled",
+        "You have cancelled your authorisation request to report their income or expenses through software.",
+        "Joe Volcano will not be able to respond to this request.", "Made a mistake?")
+    }
+
+    "NotFound when yes is selected on confirm cancel page, but cancellation fails because invitation is not found" in {
+      cancelInvitationStub(arn, invitationIdITSA, 404)
+      val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
+        .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe NOT_FOUND
+    }
+
+    "Forbidden when yes is selected on confirm cancel page, but cancellation fails because inivtation status is invalid" in {
+      cancelInvitationStub(arn, invitationIdITSA, 403)
+      val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
+        .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe FORBIDDEN
+    }
+
+    "when no is selected on confirm cancel page, go back to track authorisations page" in {
+      val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "false")
+        .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track")
+    }
+
+    "when neither option is selected on confirm cancel page show an error" in {
+      val result = postConfirmCancel(authorisedAsValidAgent(request
+        .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "This field is required")
+    }
+
   }
 }

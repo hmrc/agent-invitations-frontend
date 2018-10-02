@@ -236,6 +236,16 @@ trait ACAStubs {
     )
   }
 
+  def cancelInvitationStub(arn: Arn, invitationId: InvitationId, status: Int): Unit = {
+    stubFor(
+      put(urlEqualTo(s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+  }
+
   def rejectInvitationStub(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit =
     rejectInvitationStub(clientId, invitationId, responseStatus = 204, serviceIdentifier)
 

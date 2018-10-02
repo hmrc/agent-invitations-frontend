@@ -141,6 +141,9 @@ class InvitationsConnector @Inject()(
       baseUrl,
       s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
+  private[connectors] def cancelInvitationUrl(arn: Arn, invitationId: InvitationId) =
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel")
+
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
     new URL(
       baseUrl,
@@ -164,6 +167,16 @@ class InvitationsConnector @Inject()(
     ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+    }
+
+  def cancelInvitation(arn: Arn, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedApi-Cancel-Invitation-PUT") {
+      http.PUT[String, HttpResponse](cancelInvitationUrl(arn, invitationId).toString, "").map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException   => Some(false)
+      case _: Upstream4xxResponse => None
     }
 
   def checkPostcodeForClient(nino: Nino, postcode: String)(
