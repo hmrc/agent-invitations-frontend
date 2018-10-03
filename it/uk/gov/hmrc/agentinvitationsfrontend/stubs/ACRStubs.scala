@@ -74,4 +74,21 @@ trait ACRStubs {
           aResponse()
             .withStatus(404)))
 
+  def givenCancelledAuthorisationItsa(arn: Arn, nino:Nino, status: Int) =
+    stubFor(
+      delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
+  def givenCancelledAuthorisationVat(arn: Arn, vrn:Vrn, status: Int) =
+    stubFor(
+      delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
 }

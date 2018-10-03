@@ -21,14 +21,10 @@ import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
-import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{DateTime, LocalDate}
 import play.api.Logger
-import play.api.libs.json.JsObject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -48,6 +44,12 @@ class RelationshipsConnector @Inject()(
 
   val getInactiveVatRelationshipUrl: URL =
     new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT")
+
+  def deleteRelationshipItsaUrl(arn: Arn, nino: Nino): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}")
+
+  def deleteRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
@@ -71,5 +73,29 @@ class RelationshipsConnector @Inject()(
             Logger(getClass).warn("No inactive relationships were found for VAT")
             Seq.empty
         }
+    }
+
+  def deleteRelationshipItsa(arn: Arn, nino: Nino)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedAPI-DELETE-ItsaRelationship-DELETE") {
+      http.DELETE(deleteRelationshipItsaUrl(arn, nino).toString).map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException => Some(false)
+      case _                    => None
+    }
+
+  def deleteRelationshipVat(arn: Arn, vrn: Vrn)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedAPI-DELETE-VatRelationship-DELETE") {
+      http.DELETE(deleteRelationshipVatUrl(arn, vrn).toString).map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException => {
+        Some(false)
+      }
+      case _ => {
+        None
+      }
     }
 }

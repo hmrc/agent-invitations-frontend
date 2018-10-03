@@ -325,4 +325,131 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
   }
+
+  "POST /confirm-cancel-authorisation" should {
+    val request = FakeRequest("POST", "/confirm-cancel-authorisation")
+    val postToConfirmCancelAuth = controller.submitToCancelAuthorisationConfirm
+
+    "return 303 redirect to confirm cancel authorisation page when form is correct" in {
+      val formData = controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, validNino.value, "Sylvia Plath"))
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track/cancel-authorisation")
+    }
+
+    "return 400 BadRequest when form data contains errors in service" in {
+      val formData = controller.cancelAuthorisationForm.fill(CancelAuthorisationForm("foo", validNino.value, "Sylvia Plath"))
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+
+    "return 400 BadRequest when form data contains errors in clientId" in {
+      val formData = controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, "foo", "Sylvia Plath"))
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 400
+    }
+  }
+
+  "GET /track/cancel-authorisation" should {
+    val request = FakeRequest("GET", "/track/cancel-authorisation")
+    val showConfirmCancelAuth = controller.showCancelAuthorisationConfirm
+
+    "render a confirm cancel authorisation page" in {
+      val result = showConfirmCancelAuth(authorisedAsValidAgent(request.withSession("service" -> serviceITSA), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this client's authorisation?",
+        "You will no longer be able to report their income or expenses through software.", "You will not be able to undo this action.",
+        "Yes", "No")
+    }
+  }
+
+  "POST /track/cancel-authorisation" should {
+    val request = FakeRequest("POST", "/track/cancel-authorisation")
+    val postConfirmCancelAuth = controller.submitCancelAuthorisationConfirm
+
+    "when yes is selected on confirm cancel authorisation page, cancel the authorisation and send to authorisation cancelled page for ITSA" in {
+      givenCancelledAuthorisationItsa(arn, validNino, 204)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Authorisation cancelled",
+        "What this means",
+        "You are no longer authorised by Joe Volcano to report their income or expenses through software.",
+        "Return to track your recent authorisation requests")
+    }
+
+    "when yes is selected on confirm cancel authorisation page, cancel the authorisation and send to authorisation cancelled page for IRV" in {
+      deleteRelationship(arn, "PERSONAL-INCOME-RECORD", validNino.value)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> servicePIR, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Authorisation cancelled",
+        "What this means",
+        "You are no longer authorised by Joe Volcano to view their PAYE income record.",
+        "Return to track your recent authorisation requests")
+    }
+
+    "when yes is selected on confirm cancel authorisation page, cancel the authorisation and send to authorisation cancelled page for VAT" in {
+      givenCancelledAuthorisationVat(arn, validVrn, 204)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> serviceVAT, "clientId" -> validVrn.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Authorisation cancelled",
+        "What this means",
+        "You are no longer authorised by Joe Volcano to report their VAT returns through software.",
+        "Return to track your recent authorisation requests")
+    }
+
+    "when yes is selected on confirm cancel authorisation page, but service is session is not supported throw error" in {
+      givenCancelledAuthorisationVat(arn, validVrn, 204)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> "foo", "clientId" -> validVrn.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+
+
+  "NotFound when yes is selected on confirm cancel authorisation page, but cancellation fails because relationship is not found" in {
+      givenCancelledAuthorisationItsa(arn, validNino, 404)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe NOT_FOUND
+    }
+
+    "Forbidden when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {
+      givenCancelledAuthorisationItsa(arn, validNino, 403)
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+        .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe FORBIDDEN
+    }
+
+    "when no is selected on confirm cancel authorisation page, go back to track authorisations page" in {
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "false")
+        .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track")
+    }
+
+    "when neither option is selected on confirm cancel page show an error" in {
+      val result = postConfirmCancelAuth(authorisedAsValidAgent(request
+        .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "This field is required")
+    }
+  }
 }
+
