@@ -54,14 +54,16 @@ class PirRelationshipConnector @Inject()(
         }
     }
 
-  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] =
+  def deleteRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       http
         .DELETE[HttpResponse](url.toString)
-        .map(_.status)
+        .map(_ => Some(true))
         .recover {
-          case _: Upstream5xxResponse => 500
+          case _: NotFoundException   => Some(false)
+          case _: Upstream5xxResponse => None
         }
     }
 

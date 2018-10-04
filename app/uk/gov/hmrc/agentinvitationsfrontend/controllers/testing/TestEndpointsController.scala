@@ -24,8 +24,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
@@ -68,8 +68,8 @@ class TestEndpointsController @Inject()(
             pirRelationshipConnector
               .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
               .map {
-                case OK => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-                case _  => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+                case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
+                case _          => Redirect(agentRoutes.AgentsInvitationController.notMatched())
               }
           }
         )
@@ -155,5 +155,14 @@ object TestEndpointsController {
         "clientName"   -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
+  }
+
+  val testCancelAuthorisationForm: Form[CancelAuthorisationForm] = {
+    Form(
+      mapping(
+        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientId"   -> normalizedText.verifying(validateClientId),
+        "clientName" -> text
+      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
 }

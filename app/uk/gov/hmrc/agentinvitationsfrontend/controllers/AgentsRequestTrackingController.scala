@@ -25,14 +25,17 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{confirm_cancel, recent_invitations, request_cancelled, resend_link}
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{authorisation_cancelled, confirm_cancel, confirm_cancel_authorisation, recent_invitations, request_cancelled, resend_link}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
@@ -40,6 +43,8 @@ import scala.concurrent.Future
 case class TrackResendForm(service: String, invitationId: String, expiryDate: String)
 
 case class CancelRequestForm(invitationId: String, service: String, clientName: String)
+
+case class CancelAuthorisationForm(service: String, clientId: String, clientName: String)
 
 @Singleton
 class AgentsRequestTrackingController @Inject()(
@@ -49,6 +54,8 @@ class AgentsRequestTrackingController @Inject()(
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsConnector: InvitationsConnector,
+  val relationshipsConnector: RelationshipsConnector,
+  val pirRelationshipConnector: PirRelationshipConnector,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
   @Named("agent-invitations-frontend.external-url") externalUrl: String)(
   implicit val externalUrls: ExternalUrls,
@@ -138,21 +145,75 @@ class AgentsRequestTrackingController @Inject()(
     }
   }
 
+  def submitToCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      cancelAuthorisationForm
+        .bindFromRequest()
+        .fold(
+          _ => {
+            Logger(getClass).error("Error in form when redirecting to resend-link page.")
+            Future successful BadRequest
+          },
+          data =>
+            Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm())
+              .addingToSession("service" -> data.service, "clientId" -> data.clientId, "clientName" -> data.clientName)
+        )
+    }
+  }
+
+  def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      val service = request.session.get("service").getOrElse("")
+      Future successful Ok(confirm_cancel_authorisation(confirmCancelAuthorisationForm, service))
+    }
+  }
+
+  def submitCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, _) =>
+      val clientId = request.session.get("clientId").getOrElse("")
+      val clientName = request.session.get("clientName").getOrElse("")
+      val service = request.session.get("service").getOrElse("")
+      confirmCancelAuthorisationForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Future successful Ok(confirm_cancel_authorisation(formWithErrors, service)),
+          data =>
+            if (data.value.getOrElse(true)) {
+              deleteRelationshipForService(service, arn, clientId).map {
+                case Some(true)  => Ok(authorisation_cancelled(service, clientId, clientName))
+                case Some(false) => NotFound
+                case None        => Forbidden
+              }
+            } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
+        )
+    }
+  }
+
+  def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
+    service match {
+      case "HMRC-MTD-IT"            => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
+      case "PERSONAL-INCOME-RECORD" => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
+      case "HMRC-MTD-VAT"           => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
+      case _                        => throw new Error("Service not supported")
+    }
+
   val trackInformationForm: Form[TrackResendForm] = {
     Form(
       mapping(
-        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "expiryDate"   -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "invitationId" -> text
+          .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
+        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
 
   val cancelRequestForm: Form[CancelRequestForm] = {
     Form(
       mapping(
-        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientName"   -> text
+        "invitationId" -> text
+          .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
+        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
   }
@@ -164,5 +225,20 @@ class AgentsRequestTrackingController @Inject()(
       "confirmCancel" -> optional(boolean)
         .verifying(cancelChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
   )
+
+  val confirmCancelAuthorisationForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping(
+      "confirmCancelAuthorisation" -> optional(boolean)
+        .verifying(cancelChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
+  )
+
+  val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
+    Form(
+      mapping(
+        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientId"   -> normalizedText.verifying(validateClientId),
+        "clientName" -> text
+      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
+  }
 
 }

@@ -824,7 +824,7 @@ object AgentsInvitationController {
   private val vrnRegex = "[0-9]{9}"
   private val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
 
-  private val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
+  private[controllers] val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     fieldValue match {
       case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
         if (Vrn.isValid(clientId)) Valid

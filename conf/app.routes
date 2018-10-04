@@ -26,6 +26,9 @@ POST        /resend-link                                                     @uk
 POST        /confirm-cancel                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToConfirmCancel
 GET         /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.getConfirmCancel
 POST        /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitConfirmCancel
+POST        /confirm-cancel-authorisation                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm
+GET         /track/cancel-authorisation                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showCancelAuthorisationConfirm
+POST        /track/cancel-authorisation                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitCancelAuthorisationConfirm
 
 # Client Endpoints
 GET         /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
