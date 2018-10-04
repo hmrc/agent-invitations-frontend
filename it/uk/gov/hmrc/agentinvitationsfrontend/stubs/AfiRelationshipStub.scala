@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
+import java.time.LocalDateTime
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
@@ -77,18 +79,18 @@ trait AfiRelationshipStub {
 
   def givenInactiveRelationshipsIrv(arn: Arn) =
     stubFor(
-      get(urlEqualTo(s"/agent-fi-relationships/relationships/inactive"))
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
         .willReturn(aResponse()
           .withStatus(200)
           .withBody(
             s"""
                |[{
                |   "arn":"${arn.value}",
-               |   "endDate":"2015-09-21",
+               |   "endDate":"2015-09-21T15:21:51.040",
                |   "clientId":"AB123456A"
                |},
                |{  "arn":"${arn.value}",
-               |   "endDate":"2018-09-24",
+               |   "endDate":"2018-09-24T15:21:51.040",
                |   "clientId":"GZ753451B"
                |}]""".stripMargin
           )
@@ -96,7 +98,7 @@ trait AfiRelationshipStub {
 
   def givenInactiveRelationshipsIrvNotFound =
     stubFor(
-      get(urlEqualTo(s"/agent-fi-relationships/relationships/inactive"))
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
         .willReturn(aResponse()
           .withStatus(404)
     ))

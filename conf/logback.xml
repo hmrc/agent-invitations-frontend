@@ -69,7 +69,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="ERROR">
+    <root level="WARN">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>

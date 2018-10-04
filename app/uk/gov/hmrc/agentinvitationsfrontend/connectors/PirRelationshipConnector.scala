@@ -68,7 +68,7 @@ class PirRelationshipConnector @Inject()(
     }
 
   val getInactiveIrvRelationshipUrl: URL =
-    new URL(baseUrl, "/agent-fi-relationships/relationships/inactive")
+    new URL(baseUrl, "/agent-fi-relationship/relationships/inactive")
 
   def getInactiveIrvRelationships(implicit hc: HeaderCarrier): Future[Seq[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-InactiveIrvRelationships-GET") {
