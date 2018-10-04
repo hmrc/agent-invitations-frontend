@@ -24,6 +24,7 @@
 @(invitationId: InvitationId, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @startPage = @{s"${routes.ClientsInvitationController.start(invitationId)}"}
+@date = @{ "16 June 2018" }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"decide-later.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("decide-later.header"), serviceMessageKey))) {
 
@@ -31,9 +32,18 @@
 
     <h1 class="heading-xlarge">@Messages("decide-later.header")</h1>
 
+
+    <h2 class="heading-medium">@Messages("decide-later.header2")</h2>
+
+    <div class="panel panel-border-wide">
+        <p>@Messages("decide-later.panel", date)</p>
+    </div>
+
     <p>@Messages(s"decide-later.$serviceMessageKey.p1")</p>
 
     <h2 class="heading-medium margin-top-30">@Messages("decide-later.subheader1")</h2>
 
     <p>@Html(Messages("decide-later.p2", startPage))</p>
+
+    <a href="https://www.gov.uk/">@Messages("decide-later.explore-govuk")</a>
  }

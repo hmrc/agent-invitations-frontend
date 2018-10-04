@@ -85,7 +85,9 @@
 
     <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
 
-    @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId)) {
+    @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId),
+        'class -> "margin-top-30"
+    ) {
 
         @inputRadioGroup(
             confirmTermsForm("confirmTerms"),

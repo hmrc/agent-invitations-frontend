@@ -26,7 +26,10 @@
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("invitation-declined.header"), serviceMessageKey))) {
 
-  <h1 class="heading-xlarge">@Messages("invitation-declined.header")</h1>
+
+      <div class="transaction-banner--complete">
+          <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>
+      </div>
 
     @form(routes.ClientsInvitationController.submitStart(invitationId)) {
 
