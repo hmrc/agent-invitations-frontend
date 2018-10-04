@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
+import java.time.LocalDateTime
+
 import org.joda.time.LocalDate
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -65,7 +67,10 @@ object IrvTrackRelationship {
 
   implicit val reads: Reads[IrvTrackRelationship] =
     ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "endDate").readNullable[LocalDate] and
+      (JsPath \ "endDate").readNullable[LocalDateTime].map(date => javaDateTimeToJodaDate(date.get)) and
       (JsPath \ "clientId").read[String])(IrvTrackRelationship.apply _)
+
+  def javaDateTimeToJodaDate(javaTime: LocalDateTime): Option[LocalDate] =
+    Some(LocalDate.parse(javaTime.toLocalDate.toString))
 
 }
