@@ -14,16 +14,17 @@ trait AuthStubs {
     authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
   def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) =
-    authenticatedClient(request, Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
+    authenticatedClient(request, "Individual", Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
 
   def authorisedAsValidClientAFI[A](request: FakeRequest[A], clientId: String) =
-    authenticatedClient(request, Enrolment("HMRC-NI", "NINO", clientId))
+    authenticatedClient(request, "Individual", Enrolment("HMRC-NI", "NINO", clientId))
 
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
-    authenticatedClient(request, Enrolment("HMRC-MTD-VAT", "VRN", clientId))
+    authenticatedClient(request, "Organisation",  Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
   def authenticatedClient[A](
     request: FakeRequest[A],
+    affinityGroup: String,
     enrolment: Enrolment,
     confidenceLevel: String = "200"): FakeRequest[A] = {
     givenAuthorisedFor(
@@ -31,19 +32,20 @@ trait AuthStubs {
          |{
          |  "authorise": [
          |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
-         |    { "authProviders": ["GovernmentGateway"] },
-         |    {"confidenceLevel":$confidenceLevel}
+         |    { "authProviders": ["GovernmentGateway"] }
          |    ],
          |  "retrieve":["authorisedEnrolments"]
          |}
            """.stripMargin,
       s"""
          |{
+         |  "affinityGroup":"$affinityGroup",
          |  "authorisedEnrolments": [
          |    { "key":"${enrolment.serviceName}", "identifiers": [
          |      {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
          |    ]}
-         |]}
+         |  ],
+         |  "confidenceLevel":$confidenceLevel}
           """.stripMargin
     )
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")

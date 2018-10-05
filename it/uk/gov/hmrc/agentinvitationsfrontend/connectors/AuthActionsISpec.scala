@@ -100,11 +100,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"MTDITID", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 200
+           |}""".stripMargin
       )
 
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
@@ -116,11 +119,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"NINO", "value": "fooNINO" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 200
+           |}""".stripMargin
       )
 
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
@@ -132,11 +138,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Agent",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 50
+           |}""".stripMargin
       )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
@@ -147,11 +156,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Agent",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-AS-AGENT", "identifiers": [
            |    { "key":"AgentReferenceNumber", "value": "fooArn" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 50
+           |}""".stripMargin
       )
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
@@ -162,11 +174,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-IT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 200
+           |}""".stripMargin
       )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
@@ -177,11 +192,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Individual",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-NI", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 200
+           |}""".stripMargin
       )
       val result = TestController.withAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
@@ -199,11 +217,14 @@ class AuthActionsISpec extends BaseISpec {
       givenAuthorisedFor(
         "{}",
         s"""{
+           |"affinityGroup": "Organisation",
            |"authorisedEnrolments": [
            |  { "key":"HMRC-MTD-VAT", "identifiers": [
            |    { "key":"BAR", "value": "fooMtdItId" }
            |  ]}
-           |]}""".stripMargin
+           |],
+           |"confidenceLevel": 50
+           |}""".stripMargin
       )
       val result = TestController.withAuthorisedAsClient("HMRC-MTD-VAT", "VRN")
       status(result) shouldBe 303

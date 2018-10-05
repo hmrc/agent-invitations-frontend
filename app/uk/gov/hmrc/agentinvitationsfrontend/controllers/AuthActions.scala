@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import play.api.Logger
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -23,8 +24,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
+import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -87,6 +88,17 @@ trait AuthActions extends AuthorisedFunctions {
         body(id)
       }
 
+  private val authLoginCredentials
+    : Retrieval[Option[AffinityGroup] ~ Enrolments ~ ConfidenceLevel] = affinityGroup and authorisedEnrolments and confidenceLevel
+
+  private val affinityAndEnrolments = affinityGroup and allEnrolments
+
+  private def extractEnrolmentsValue(enrolments: Enrolments, serviceName: String, identifierKey: String) =
+    for {
+      enrolment  <- enrolments.getEnrolment(serviceName)
+      identifier <- enrolment.getIdentifier(identifierKey)
+    } yield identifier.value
+
   protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(
     body: Option[String] => Future[Result])(
     implicit request: Request[A],
@@ -95,13 +107,19 @@ trait AuthActions extends AuthorisedFunctions {
     authorised(
       Enrolment(serviceName)
         and AuthProviders(GovernmentGateway)
-        and ConfidenceLevel.L200
-    ).retrieve(authorisedEnrolments) { enrolments =>
-      val id = for {
-        enrolment  <- enrolments.getEnrolment(serviceName)
-        identifier <- enrolment.getIdentifier(identifierKey)
-      } yield identifier.value
-
-      body(id)
+    ).retrieve(authLoginCredentials) {
+      case affinity ~ enrols ~ confidence =>
+        val id = extractEnrolmentsValue(enrols, serviceName, identifierKey)
+        (affinity, confidence) match {
+          case (Some(AffinityGroup.Organisation), _)                  => body(id)
+          case (Some(AffinityGroup.Individual), ConfidenceLevel.L200) => body(id)
+          case (Some(AffinityGroup.Agent), _)                         => body(None)
+          case _ =>
+            Future failed (throw InsufficientConfidenceLevel(
+              s"Client Logged in did not have sufficient confidence level for $serviceName"))
+        }
+      case _ =>
+        Logger(getClass).warn("Invalid Login")
+        body(None)
     }
 }

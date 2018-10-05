@@ -177,7 +177,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -187,7 +187,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -298,7 +298,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -308,7 +308,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -368,7 +368,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -378,7 +378,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -417,7 +417,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -427,7 +427,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -527,7 +527,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -537,7 +537,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -620,7 +620,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -630,7 +630,7 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
