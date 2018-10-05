@@ -178,7 +178,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -188,7 +188,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -307,7 +307,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -317,7 +317,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -377,7 +377,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -387,7 +387,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -426,7 +426,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmDecline(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -529,7 +529,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -539,7 +539,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmDecline(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -621,7 +621,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
