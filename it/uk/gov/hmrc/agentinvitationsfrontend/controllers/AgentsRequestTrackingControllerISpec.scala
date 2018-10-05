@@ -418,21 +418,26 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
 
-
-  "NotFound when yes is selected on confirm cancel authorisation page, but cancellation fails because relationship is not found" in {
+    "go to problem page when yes is selected on confirm cancel authorisation page, but cancellation fails because relationship is not found" in {
       givenCancelledAuthorisationItsa(arn, validNino, 404)
       val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
         .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
 
-      status(result) shouldBe NOT_FOUND
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Sorry, there is a problem with the service",
+        "The authorisation was not cancelled. Please try again.",
+        "Try again")
     }
 
-    "Forbidden when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {
+    "go to problem page when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {
       givenCancelledAuthorisationItsa(arn, validNino, 403)
       val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
         .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
 
-      status(result) shouldBe FORBIDDEN
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Sorry, there is a problem with the service",
+        "The authorisation was not cancelled. Please try again.",
+        "Try again")
     }
 
     "when no is selected on confirm cancel authorisation page, go back to track authorisations page" in {

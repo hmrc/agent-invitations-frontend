@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{authorisation_cancelled, confirm_cancel, confirm_cancel_authorisation, recent_invitations, request_cancelled, resend_link}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{authorisation_cancelled, cancel_authorisation_problem, confirm_cancel, confirm_cancel_authorisation, recent_invitations, request_cancelled, resend_link}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
@@ -180,9 +180,8 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, arn, clientId).map {
-                case Some(true)  => Ok(authorisation_cancelled(service, clientId, clientName))
-                case Some(false) => NotFound
-                case None        => Forbidden
+                case Some(true) => Ok(authorisation_cancelled(service, clientId, clientName))
+                case _          => Ok(cancel_authorisation_problem())
               }
             } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         )
