@@ -35,14 +35,15 @@
         @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("confirmDecline"))
     }
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
+
 
     @form(routes.ClientsInvitationController.submitConfirmDecline(invitationId)){
 
         @inputRadioGroup(
             confirmDeclineForm("confirmDecline"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
-            '_legend -> Messages(s"confirm-decline.$serviceMessageKey.sub-header", agencyName),
+            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("confirm-decline.heading")  + """</h1><p>""" + Messages(s"confirm-decline.$serviceMessageKey.sub-header", agencyName) + """</p>"""),
+            '_legendClass -> "form-label",
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmDecline'""")
         )

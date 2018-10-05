@@ -47,17 +47,20 @@
          '_fieldsetAttributes -> Html("""id='confirmAuthorisation'""")
      )
 
-     <details id="authorisationChoiceHelper" role="group">
-         <summary id="authorisationChoiceSummary" role="button" aria-controls="details-content-0" aria-expanded="false">
-             <span id="authorisationChoiceAlt" class="summary">
-             @Messages("landing-page.alternative")
-             </span>
-         </summary>
-         <div class="panel panel-border-narrow" id="details-content-0" aria-hidden="true">
-             <p id="selectServiceSuggestion">@Messages("landing-page.alt-suggestion")</p>
-             <p id="selectServiceGuidance">@Html(Messages(s"landing-page.$serviceMessageKey.guidance"))</p>
-         </div>
-     </details>
+
+    <div class="form-group">
+        <details id="authorisationChoiceHelper">
+            <summary id="authorisationChoiceSummary">
+                <span id="authorisationChoiceAlt" class="summary">
+                @Messages("landing-page.alternative")
+                </span>
+            </summary>
+            <div class="panel panel-border-narrow">
+                <p id="selectServiceSuggestion">@Messages("landing-page.alt-suggestion")</p>
+                <p id="selectServiceGuidance">@Html(Messages(s"landing-page.$serviceMessageKey.guidance"))</p>
+            </div>
+        </details>
+    </div>
 
      <div class="form-group">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
