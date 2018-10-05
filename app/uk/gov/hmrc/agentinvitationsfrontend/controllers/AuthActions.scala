@@ -91,8 +91,6 @@ trait AuthActions extends AuthorisedFunctions {
   private val authLoginCredentials
     : Retrieval[Option[AffinityGroup] ~ Enrolments ~ ConfidenceLevel] = affinityGroup and authorisedEnrolments and confidenceLevel
 
-  private val affinityAndEnrolments = affinityGroup and allEnrolments
-
   private def extractEnrolmentsValue(enrolments: Enrolments, serviceName: String, identifierKey: String) =
     for {
       enrolment  <- enrolments.getEnrolment(serviceName)
