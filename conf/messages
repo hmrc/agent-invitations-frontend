@@ -212,8 +212,6 @@ decide-later.afi.p1=If you do not accept this request, your tax agent cannot vie
 decide-later.vat.p1=If you do not accept this request, your tax agent cannot report your VAT returns through software.
 decide-later.subheader1=Made a mistake?
 decide-later.p2=If you meant to accept this request, you can <a href="{0}">go back to the request</a>.
-decide-later.header2=If you want to decide later
-decide-later.panel=You need to accept this request by {0}.
 decide-later.explore-govuk=Explore GOV.UK
 
 #Invitation Expired
