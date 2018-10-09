@@ -110,11 +110,11 @@ known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
 not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
-not-enrolled.itsa.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.itsa.description=You cannot ask for authorisation from this client until they have signed up.
 not-enrolled.itsa.button=Back to your account
 
 not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
-not-enrolled.vat.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.vat.description=You cannot ask for authorisation from this client until they have signed up.
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
