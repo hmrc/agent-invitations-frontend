@@ -63,7 +63,7 @@
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-40">
+    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
         <div>
             <dt class="cya-question">
                 @{currentInvitationInput.clientIdentifierType match {
@@ -115,7 +115,10 @@
         <a href="@routes.AgentsInvitationController.knownFact()" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
     }else{
 
-            @form(routes.AgentsInvitationController.submitDetails()) {
+            @form(
+            routes.AgentsInvitationController.submitDetails(),
+            'class -> "margin-top-30"
+            ) {
 
                 @inputRadioGroup(
                     confirmForm("checkDetails"),
@@ -131,4 +134,3 @@
 
 
 }
-
