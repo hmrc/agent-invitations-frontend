@@ -7,7 +7,7 @@ This is a frontend microservice for Agent Client Authorisation.
 
 Invitations service currently provides these functions:
  - Agent can create an invitation to represent a client for specific tax regime
- - Client can accept or decline agent's invitation
+ - Client can accept or decline an agent's invitation
 
 Currently this service supports ITSA, PIR and VAT invitations.
 
