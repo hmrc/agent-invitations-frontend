@@ -101,7 +101,7 @@ class AgentsRequestTrackingController @Inject()(
             Future successful BadRequest
           },
           data =>
-            Future successful Redirect(routes.AgentsRequestTrackingController.getConfirmCancel()).addingToSession(
+            Future successful Redirect(routes.AgentsRequestTrackingController.showConfirmCancel()).addingToSession(
               "invitationId" -> data.invitationId,
               "service"      -> data.service,
               "clientName"   -> data.clientName)
@@ -109,7 +109,7 @@ class AgentsRequestTrackingController @Inject()(
     }
   }
 
-  def getConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
+  def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
       val service = Services.determineServiceMessageKey(invitationId)
@@ -121,7 +121,6 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { (arn, _) =>
       val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
       val service = Services.determineServiceMessageKey(invitationId)
-      val clientName = request.session.get("clientName").getOrElse("")
       confirmCancelForm
         .bindFromRequest()
         .fold(
@@ -133,7 +132,7 @@ class AgentsRequestTrackingController @Inject()(
               invitationsConnector
                 .cancelInvitation(arn, invitationId)
                 .map {
-                  case Some(true)  => Ok(request_cancelled(invitationId, service, clientName))
+                  case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
                   case Some(false) => NotFound
                   case _           => Forbidden
                 }
@@ -142,6 +141,15 @@ class AgentsRequestTrackingController @Inject()(
             }
           }
         )
+    }
+  }
+
+  def showRequestCancelled: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
+      val service = Services.determineServiceMessageKey(invitationId)
+      val clientName = request.session.get("clientName").getOrElse("")
+      Future successful Ok(request_cancelled(invitationId, service, clientName))
     }
   }
 
@@ -171,7 +179,6 @@ class AgentsRequestTrackingController @Inject()(
   def submitCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       val clientId = request.session.get("clientId").getOrElse("")
-      val clientName = request.session.get("clientName").getOrElse("")
       val service = request.session.get("service").getOrElse("")
       confirmCancelAuthorisationForm
         .bindFromRequest()
@@ -180,11 +187,22 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, arn, clientId).map {
-                case Some(true) => Ok(authorisation_cancelled(service, clientId, clientName))
-                case _          => Ok(cancel_authorisation_problem())
+                case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
+                case Some(false) => NotFound
+                case _           => Ok(cancel_authorisation_problem())
               }
             } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         )
+    }
+  }
+
+  def showAuthorisationCancelled: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, _) =>
+      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
+      val service = Services.determineServiceMessageKey(invitationId)
+      val clientName = request.session.get("clientName").getOrElse("")
+      val clientId = request.session.get("clientId").getOrElse("")
+      Future successful Ok(authorisation_cancelled(service, clientId, clientName))
     }
   }
 

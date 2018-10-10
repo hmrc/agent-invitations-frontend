@@ -24,7 +24,7 @@
 @legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 
  <div class="transaction-banner--complete">
   <h1 class="transaction-banner__heading">@Messages("request-cancelled.header")</h1>

@@ -298,6 +298,11 @@ class ClientsInvitationController @Inject()(
     Ok(invitation_expired(serviceMessageKey))
   }
 
+  val requestCancelled: Action[AnyContent] = ActionWithMdc { implicit request =>
+    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    Ok(request_cancelled(serviceMessageKey))
+  }
+
   private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(
     implicit hc: HeaderCarrier): Future[Int] =
     service match {
@@ -322,6 +327,9 @@ class ClientsInvitationController @Inject()(
       f(invitation)
     case invitation if invitation.status.contains("Expired") =>
       Future successful Redirect(routes.ClientsInvitationController.invitationExpired())
+        .addingToSession("clientService" -> serviceMessageKey)
+    case invitation if invitation.status.contains("Cancelled") =>
+      Future successful Redirect(routes.ClientsInvitationController.requestCancelled())
         .addingToSession("clientService" -> serviceMessageKey)
     case _ =>
       Future successful Redirect(routes.ClientsInvitationController.invitationAlreadyResponded())

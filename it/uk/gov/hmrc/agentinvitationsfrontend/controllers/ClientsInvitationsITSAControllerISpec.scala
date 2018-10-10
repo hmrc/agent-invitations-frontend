@@ -163,6 +163,17 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec with TestDataCommo
       redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.invitationExpired().url)
     }
 
+    "show the request-cancelled page when the invitation has already been cancelled" in {
+      getCancelledInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      givenGetAgencyNameStub(arn)
+      val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
+      val resultITSA = getConfirmTermsITSA(reqITSA)
+
+      status(resultITSA) shouldBe SEE_OTHER
+
+      redirectLocation(resultITSA) shouldBe Some(routes.ClientsInvitationController.requestCancelled().url)
+    }
+
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenAgencyNameNotFoundStub(arn)

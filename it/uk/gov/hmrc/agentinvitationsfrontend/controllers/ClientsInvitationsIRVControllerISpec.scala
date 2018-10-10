@@ -164,6 +164,17 @@ class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
       redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.invitationExpired().url)
     }
 
+    "show the request-cancelled page when the invitation has already been cancelled" in {
+      getCancelledInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR)
+      givenGetAgencyNameStub(arn)
+      val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
+      val resultAFI = getConfirmTermsAFI(reqAFI)
+
+      status(resultAFI) shouldBe SEE_OTHER
+
+      redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.requestCancelled().url)
+    }
+
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       givenAgencyNameNotFoundStub(arn)

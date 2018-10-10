@@ -130,6 +130,11 @@ not-matched.afi.header=There is a problem
 not-matched.afi.description = We could not find any records that match the details you entered.
 not-matched.afi.button = Try again
 
+#Request cancelled
+client-request-cancelled.header=The tax agent has cancelled this authorisation request
+client-request-cancelled.p=Ask the tax agent to send another request if you still want to authorise them.
+client-request-cancelled.button=Finish and sign out
+
 # Client Pages
 # Landing Page
 landing-page.itsa.header=Do you want to authorise your tax agent to report your income and expenses through software?
@@ -361,9 +366,9 @@ confirm-authorisation-cancelled.radio.no=No
 #Authorisation cancelled page
 authorisation-cancelled.header=Authorisation cancelled
 authorisation-cancelled.subheader=What this means
-authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to report their income or expenses through software.
-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
-authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to report their VAT returns through software.
+authorisation-cancelled.p1.itsa=You are no longer authorised by {0} to report their income or expenses through software.
+authorisation-cancelled.p1.afi=You are no longer authorised by {0} to view their PAYE income record.
+authorisation-cancelled.p1.vat=You are no longer authorised by {0} to report their VAT returns through software.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page
