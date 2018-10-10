@@ -109,6 +109,38 @@ trait ACAStubs {
                          |  }
                          |}""".stripMargin)))
 
+  def getCancelledInvitationStub(
+                                arn: Arn,
+                                clientId: String,
+                                invitationId: InvitationId,
+                                service: String,
+                                serviceIdentifier: String): Unit =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "arn" : "${arn.value}",
+                         |  "service" : "$service",
+                         |  "clientId" : "$clientId",
+                         |  "clientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "suppliedClientId" : "$clientId",
+                         |  "suppliedClientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "status" : "Cancelled",
+                         |  "created" : "2017-7-31T23:22:50.971Z",
+                         |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                         |  "expiryDate" : "2017-12-18",
+                         |  "invitationId": "$invitationId",
+                         |  "_links": {
+                         |    	"self" : {
+                         |			  "href" : "/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
+                         |		  }
+                         |  }
+                         |}""".stripMargin)))
+
   def getAlreadyAcceptedInvitationStub(
     arn: Arn,
     clientId: String,

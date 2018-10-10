@@ -24,11 +24,13 @@ GET         /agents/not-matched                                               @u
 GET         /track                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
 POST        /resend-link                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToResendLink
 POST        /confirm-cancel                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToConfirmCancel
-GET         /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.getConfirmCancel
+GET         /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showConfirmCancel
 POST        /track/confirm-cancel                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitConfirmCancel
+GET         /track/request-cancelled                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showRequestCancelled
 POST        /confirm-cancel-authorisation                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm
 GET         /track/cancel-authorisation                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showCancelAuthorisationConfirm
 POST        /track/cancel-authorisation                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitCancelAuthorisationConfirm
+GET         /track/cancelled                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showAuthorisationCancelled
 
 # Client Endpoints
 GET         /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
@@ -48,5 +50,6 @@ GET         /incorrect/                                                       @u
 GET         /not-found/                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
 GET         /already-responded/                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
 GET         /expired/                                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
+GET         /request-cancelled/                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.requestCancelled
 
 GET         /assets/*file                                                     controllers.Assets.at(path="/public", file)

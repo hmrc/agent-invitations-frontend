@@ -165,6 +165,17 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
       redirectLocation(resultVAT) shouldBe Some(routes.ClientsInvitationController.invitationExpired().url)
     }
 
+    "show the request-cancelled page when the invitation has already been cancelled" in {
+      getCancelledInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
+      givenGetAgencyNameStub(arn)
+      val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
+      val resultVAT = getConfirmTermsVAT(reqVAT)
+
+      status(resultVAT) shouldBe SEE_OTHER
+
+      redirectLocation(resultVAT) shouldBe Some(routes.ClientsInvitationController.requestCancelled().url)
+    }
+
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenAgencyNameNotFoundStub(arn)
