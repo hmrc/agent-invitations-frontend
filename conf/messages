@@ -110,11 +110,11 @@ known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
 not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
-not-enrolled.itsa.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.itsa.description=You cannot ask for authorisation from this client until they have signed up.
 not-enrolled.itsa.button=Back to your account
 
 not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
-not-enrolled.vat.description=You cannot ask for authorisation to represent them until they have signed up.
+not-enrolled.vat.description=You cannot ask for authorisation from this client until they have signed up.
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
@@ -239,8 +239,8 @@ client-complete.button.mta=Manage your tax agents
 client-problem.header=Your authorisation request is no longer valid
 
 # Not Signed Up
+not-signed-up.header=There is a problem
 not-signed-up.description=You have not signed up to report your income and expenses through software.
-
 not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
 
 #Not Authorised
@@ -251,13 +251,16 @@ not-authorised-vat.title=You''re not able to use this service
 not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to report your VAT returns through software.
 
 # Incorrect Invitation
-incorrect-invitation.description=The invitation you have accepted might be meant for someone else. Contact the tax agent who sent you the invitation.
+incorrect-invitation.header=There is a problem
+incorrect-invitation.description=The request you accepted might be meant for someone else. Contact the tax agent who sent you the request.
 
 # Not Found Invitation
-not-found-invitation.description=Ask the tax agent to send another request if you still want to authorise them.
+not-found-invitation.header=There is a problem
+not-found-invitation.description=The request you have accepted does not match our records. Contact the tax agent who sent you the request.
 
 # Invitation Already Responded
-invitation-already-responded.description=Someone has already responded to this invitation. If you think this is wrong, contact the tax agent who sent you the invitation.
+invitation-already-responded.header=There is a problem
+invitation-already-responded.description=Someone has already responsed to this request. If you think this is wrong, contact the tax agent who sent you the request.
 
 # General Messages
 # Error messages for digital services

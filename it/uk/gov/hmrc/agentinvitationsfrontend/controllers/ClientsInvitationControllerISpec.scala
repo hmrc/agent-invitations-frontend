@@ -68,7 +68,7 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("client-problem.header"),
+          htmlEscapedMessage("not-signed-up.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
@@ -104,7 +104,7 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("client-problem.header"),
+          htmlEscapedMessage("incorrect-invitation.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-invitation.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
@@ -125,7 +125,7 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("client-problem.header"),
+          htmlEscapedMessage("not-found-invitation.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
@@ -146,7 +146,7 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("client-problem.header"),
+          htmlEscapedMessage("invitation-already-responded.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")

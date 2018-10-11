@@ -651,7 +651,7 @@ class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("client-problem.header"),
+          htmlEscapedMessage("not-found-invitation.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up-vat.description"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
