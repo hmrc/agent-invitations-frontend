@@ -71,6 +71,7 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
           htmlEscapedMessage("not-signed-up.header"),
           htmlEscapedMessage("title.suffix.client")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-signed-up.p2"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
@@ -127,7 +128,9 @@ class ClientsInvitationControllerISpec extends TestDataCommonSupport {
           "generic.title",
           htmlEscapedMessage("not-found-invitation.header"),
           htmlEscapedMessage("title.suffix.client")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
