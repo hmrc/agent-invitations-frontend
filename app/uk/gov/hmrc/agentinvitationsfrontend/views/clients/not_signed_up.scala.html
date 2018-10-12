@@ -25,5 +25,9 @@
   <h1 class="heading-xlarge">@Messages("not-signed-up.header")</h1>
 
     <p>@message</p>
+    
+    <p>@Messages("not-signed-up.p2")</p>
+
+    <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("finish.button")</a>
 
 }

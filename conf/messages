@@ -65,6 +65,7 @@ select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noo
 
 continue.button=Continue
 button.back=Back
+finish.button=Finish and sign out
 
 error.confirm-client.required=Select yes if this is the client you want authorisation from
 
@@ -242,6 +243,7 @@ client-problem.header=Your authorisation request is no longer valid
 not-signed-up.header=There is a problem
 not-signed-up.description=You have not signed up to report your income and expenses through software.
 not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
+not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
 #Not Authorised
 not-authorised.header=Sorry, you haven''t been authorised to proceed.
@@ -256,7 +258,9 @@ incorrect-invitation.description=The request you accepted might be meant for som
 
 # Not Found Invitation
 not-found-invitation.header=There is a problem
-not-found-invitation.description=The request you have accepted does not match our records. Contact the tax agent who sent you the request.
+not-found-invitation.description.1=If you typed the web address, check it is correct.
+not-found-invitation.description.2=If you pasted the web address, check you copied the entire address
+not-found-invitation.description.3=If the web address is correct, contact the tax agent who sent you the request if you still want to authorise them.
 
 # Invitation Already Responded
 invitation-already-responded.header=There is a problem
@@ -378,4 +382,3 @@ authorisation-cancelled.track.button=Return to track your recent authorisation r
 cancel-auth-problem.header=Sorry, there is a problem with the service
 cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 cancel-auth-problem.button=Try again
-
