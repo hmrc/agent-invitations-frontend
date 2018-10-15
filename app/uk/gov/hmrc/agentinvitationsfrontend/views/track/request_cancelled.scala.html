@@ -32,11 +32,16 @@
 
  <p>@Messages(s"request-cancelled.p1.$service")</p>
 
-    <p class="panel panel-border-wide">@Messages("request-cancelled.panel", clientName)</p>
+    <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
+        <p>@Messages("request-cancelled.panel", clientName)</p>
+    </div>
 
-    <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button">@Messages(s"request-cancelled.track.button")</a>
+    <div class="margin-bottom-30">
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button">@Messages(s"request-cancelled.track.button")</a>
+    </div>
 
     <h2 class="heading-small">@Messages("request-cancelled.subheader")</h2>
+
     <p>@Html(Messages("request-cancelled.p2", routes.AgentsInvitationController.selectService()))</p>
 
 
