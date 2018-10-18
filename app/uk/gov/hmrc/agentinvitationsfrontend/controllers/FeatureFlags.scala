@@ -27,7 +27,8 @@ case class FeatureFlags @Inject()(
   @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean = true,
   @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean = true,
   @Named("features.enable-fast-track") enableFastTrack: Boolean = true,
-  @Named("features.enable-track-requests") enableTrackRequests: Boolean = true)
+  @Named("features.enable-track-requests") enableTrackRequests: Boolean = true,
+  @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false)
 
 object FeatureFlags {
   def apply(): FeatureFlags = new FeatureFlags()

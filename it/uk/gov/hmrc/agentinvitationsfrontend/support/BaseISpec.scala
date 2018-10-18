@@ -66,6 +66,7 @@ abstract class BaseISpec
         "features.show-kfc-mtd-vat"                                           -> true,
         "features.enable-fast-track"                                          -> true,
         "features.enable-track-requests"                                      -> true,
+        "features.enable-track-cancel-auth-action"                                   -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )

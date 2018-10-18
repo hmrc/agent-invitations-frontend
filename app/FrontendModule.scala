@@ -93,6 +93,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-kfc-mtd-vat")
     bindBooleanProperty("features.enable-fast-track")
     bindBooleanProperty("features.enable-track-requests")
+    bindBooleanProperty("features.enable-track-cancel-auth-action")
   }
 
   private def bindBaseUrl(serviceName: String) =

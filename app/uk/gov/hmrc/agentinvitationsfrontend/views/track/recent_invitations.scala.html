@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
+@(invitationsAndRelationships: Seq[TrackInformationSorted], trackRequestsShowLastDays: Int, cancelAuthActionFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
@@ -66,7 +66,7 @@
                         <td class="action">
                             @{invitationOrRelationship.effectiveStatus match {
                                 case "Pending" => pending_form(invitationOrRelationship)
-                                case "Accepted" => cancel_authorisation_form(invitationOrRelationship)
+                                case "Accepted" => if(cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship)}
                                 case _ => new_request_form(invitationOrRelationship)
                                 }}
                         </td>

@@ -71,7 +71,12 @@ class AgentsRequestTrackingController @Inject()(
                                           arn,
                                           isWhitelisted,
                                           trackRequestsShowLastDays)
-        } yield Ok(recent_invitations(invitationsAndRelationships, trackRequestsShowLastDays))
+        } yield
+          Ok(
+            recent_invitations(
+              invitationsAndRelationships,
+              trackRequestsShowLastDays,
+              featureFlags.enableTrackCancelAuth))
       }
     } else {
       Logger(getClass).warn("Feature flag to enable track page is off")
