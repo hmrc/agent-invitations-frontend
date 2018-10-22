@@ -45,7 +45,7 @@
 
     } else {
       @if(trackRequests) {
-        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button") @Messages(s"invitation-sent.new-window")</a>
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a>
         <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
         <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
       } else {
