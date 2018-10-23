@@ -5,6 +5,14 @@ title.suffix.client=Manage your tax agents
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
+
+# Client Type
+client-type.header=What type of client do you need authorisation from?
+client-type.p1=If you need authorisation to deal with both your client''s business and personal tax affairs, you need to ask for these separately.
+client-type.personal=An individual or sole trader
+client-type.business=A company or partnership
+error.client-type.required=Select the type of client you need authorisation from
+
 # Identify Client
 identify-client.header=Enter your client''s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
@@ -55,7 +63,7 @@ enter-irv-date-of-birth.invalid-format=Enter a valid date
 select-service.header=What do you want the client to authorise you to do?
 error.service.required=You must select a service
 select-service.personal-income-viewer=View their PAYE income record
-select-service.itsa=Report their income or expenses through software
+select-service.itsa=Report their income and expenses through software
 select-service.vat=Report their VAT returns through software
 
 ## Helper Text
@@ -84,7 +92,7 @@ invitation-sent.startNewAuthRequest=Start new authorisation request
 
 #Check Details
 check-details.heading=Check your client''s details before you continue
-check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to report a client''s income or expenses through software
+check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to report a client''s income and expenses through software
 check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client''s PAYE income record
 check-details.p.HMRC-MTD-VAT=You are about to set up a request for authorisation to report a client''s VAT returns through software
 check-details.table.heading=Client''s details
@@ -316,7 +324,7 @@ recent-invitations.table-row-header.clientName=Client''s details
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
 recent-invitations.table-row-header.actions=Actions
-recent-invitations.invitation.service.HMRC-MTD-IT=Report their income or expenses through software
+recent-invitations.invitation.service.HMRC-MTD-IT=Report their income and expenses through software
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
 recent-invitations.invitation.service.HMRC-MTD-VAT=Report their VAT returns through software
 recent-invitations.invitation.identifier.nino=National Insurance number:
@@ -344,7 +352,7 @@ resend-link.returnToAsa=Return to your agent services account
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?
-confirm-cancel.subheader.itsa=If you cancel this request, you will not be able to report their income or expenses through software.
+confirm-cancel.subheader.itsa=If you cancel this request, you will not be able to report their income and expenses through software.
 confirm-cancel.subheader.afi=If you cancel this request, you will not be able to view their PAYE income record.
 confirm-cancel.subheader.vat=If you cancel this request, you will not be able to report their VAT returns through software.
 confirm-cancel.radio.yes=Yes
@@ -353,7 +361,7 @@ error.confirmCancel.invalid=This field is required
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.itsa=You have cancelled your authorisation request to report their income or expenses through software.
+request-cancelled.p1.itsa=You have cancelled your authorisation request to report their income and expenses through software.
 request-cancelled.p1.afi=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.vat=You have cancelled your authorisation request to report their VAT returns through software.
 request-cancelled.panel={0} will not be able to respond to this request.
@@ -363,7 +371,7 @@ request-cancelled.p2=If you want your client to authorise you, you will need to 
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=Are you sure you want to cancel this client''s authorisation?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to report their income or expenses through software.
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to report their income and expenses through software.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to report their VAT returns through software.
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
@@ -373,7 +381,7 @@ confirm-authorisation-cancelled.radio.no=No
 #Authorisation cancelled page
 authorisation-cancelled.header=Authorisation cancelled
 authorisation-cancelled.subheader=What this means
-authorisation-cancelled.p1.itsa=You are no longer authorised by {0} to report their income or expenses through software.
+authorisation-cancelled.p1.itsa=You are no longer authorised by {0} to report their income and expenses through software.
 authorisation-cancelled.p1.afi=You are no longer authorised by {0} to view their PAYE income record.
 authorisation-cancelled.p1.vat=You are no longer authorised by {0} to report their VAT returns through software.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests

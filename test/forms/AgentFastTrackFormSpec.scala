@@ -32,6 +32,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return no error message" when {
         "provided correct ITSA Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -43,6 +44,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct IRV Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -54,6 +56,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct VAT Data" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -65,6 +68,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided no known fact for ITSA" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -76,6 +80,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided incorrect VRN" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747695",
@@ -88,6 +93,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided no known fact for IRV" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -100,6 +106,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided no known fact for VAT" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -111,6 +118,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided nonsense known fact for ITSA" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -122,6 +130,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided nonsense known fact for IRV" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -133,6 +142,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided nonsense known fact for VAT" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -146,6 +156,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return error message" when {
         "provided incorrect NINO" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "ZZ123456A",
@@ -158,6 +169,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided incorrect VRN" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747695",
@@ -170,6 +182,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided incorrect clientIdentifierType" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "invalid type",
             "clientIdentifier"     -> "WM123456C",
@@ -181,6 +194,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided no clientIdentifier" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "",
@@ -193,6 +207,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided mixed data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "101747696",
@@ -210,6 +225,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return no error message" when {
         "provided correct ITSA Data without postcode" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -221,6 +237,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct IRV Data without Date of birth" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -232,6 +249,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct VAT Data without Vat Registation Date" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -251,6 +269,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return no error message" when {
         "provided correct ITSA Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -262,6 +281,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct IRV Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -273,6 +293,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct VAT Data" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "WM123456C",
@@ -286,6 +307,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return error messages" when {
         "there is an unsupported service" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> "foo",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -297,6 +319,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "there is an unsupported client identifier" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "foo",
             "clientIdentifier"     -> "WM123456C",
@@ -308,6 +331,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "clientId is invalid" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "foo",
@@ -326,6 +350,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return no error message" when {
         "provided correct ITSA Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -337,6 +362,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct IRV Data" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -350,6 +376,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
 
         "provided correct VAT Data" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -365,6 +392,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
       "return error message" when {
         "provided empty known fact for ITSA" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -375,6 +403,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided invalid characters in known fact for ITSA" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -385,6 +414,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided invalid format in known fact for ITSA" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCMTDIT,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -395,6 +425,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided empty known fact for IRV" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -407,6 +438,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided invalid known fact for IRV" in {
           val data = Json.obj(
+            "clientType"           -> "personal",
             "service"              -> HMRCPIR,
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "WM123456C",
@@ -423,6 +455,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided empty known fact for VAT" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",
@@ -435,6 +468,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
         }
         "provided invalid known fact for VAT" in {
           val data = Json.obj(
+            "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> "101747696",

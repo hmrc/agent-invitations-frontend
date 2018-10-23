@@ -25,7 +25,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -74,7 +74,6 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  private val arn = Arn("TARN0000001")
   private val timeout = 2.seconds
 
   "GET /agents/select-service" should {
@@ -139,7 +138,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val request =
           FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
         val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode("PERSONAL-INCOME-RECORD", None, None))
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -152,7 +151,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         testFastTrackCache.save(CurrentInvitationInput())
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode("PERSONAL-INCOME-RECORD", None, None))
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal,"PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -163,7 +162,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode("HMRC-MTD-IT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -175,7 +174,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode("HMRC-MTD-VAT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

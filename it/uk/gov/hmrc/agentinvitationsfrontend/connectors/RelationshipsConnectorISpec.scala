@@ -12,7 +12,6 @@ class RelationshipsConnectorISpec extends BaseISpec with ACRStubs {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val connector = app.injector.instanceOf[RelationshipsConnector]
-  val arn = Arn("TARN0000001")
 
   "GetInactiveItsaRelationships" should {
     "return a sequence of inactive ITSA relationships" in {

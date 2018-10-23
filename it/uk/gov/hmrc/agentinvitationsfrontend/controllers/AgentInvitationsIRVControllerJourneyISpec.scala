@@ -13,7 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationControll
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehaviours with TestDataCommonSupport {
+class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -24,8 +24,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     val submitService = controller.submitService()
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
-      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(servicePIR, None, None))
+      testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -42,7 +42,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for IRV service" in {
-      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
+      testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -80,9 +80,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
-        testFastTrackCache.save(CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
+            "clientType" -> personal,
             "service" -> servicePIR,
             "clientIdentifier" -> validNino.value,
             "knownFact.year" -> "1980",
@@ -158,7 +159,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(servicePIR, "ni", validNino.value, None)
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None)
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
@@ -196,7 +197,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     val notMatched = controller.notMatched()
 
     "return 403 for authorised Agent who enter nino for IRV but no record found" in {
-      val invitation = CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth))
+      val invitation = CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth))
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))

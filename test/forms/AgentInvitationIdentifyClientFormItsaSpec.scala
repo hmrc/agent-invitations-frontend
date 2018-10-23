@@ -32,7 +32,11 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val featureFlags = FeatureFlags()
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "knownFact" -> "W12 7TQ")
+      val validData = Json.obj(
+        "clientType"       -> "personal",
+        "clientIdentifier" -> "WM123456C",
+        "service"          -> "HMRC-MTD-IT",
+        "knownFact"        -> "W12 7TQ")
 
       "return no error message" when {
         "NINO and postcode are valid" in {
@@ -61,7 +65,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputNinoAndPostcode("HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
+            UserInputNinoAndPostcode("personal", "HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
           )
           unboundForm("knownFact") shouldBe "AA1 1AA"
           unboundForm("clientIdentifier") shouldBe "AE123456C"
@@ -99,7 +103,11 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val featureFlags = FeatureFlags().copy(showKfcMtdIt = false)
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "service" -> "HMRC-MTD-IT", "knownFact" -> "W12 7TQ")
+      val validData = Json.obj(
+        "clientType"       -> "personal",
+        "clientIdentifier" -> "WM123456C",
+        "service"          -> "HMRC-MTD-IT",
+        "knownFact"        -> "W12 7TQ")
 
       "return no error message" when {
         "NINO and postcode are valid" in {

@@ -20,34 +20,16 @@ import org.joda.time.{DateTimeZone, LocalDate}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import org.jsoup.Jsoup
 
-class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours with CitizenDetailsStub {
+class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
-
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  private val validNino = Nino("AB123456A")
-  private val validNinoSpace = Nino("AB 12 34 56 A")
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-  val validPostcode = "DH14EJ"
-  val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
-
-  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "VRN"
-  val validVrn = Vrn("101747696")
-  val invalidVrn = Vrn("101747692")
-  val validRegistrationDate = "2007-07-07"
-  val validVrn9755 = Vrn("101747641")
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -109,7 +91,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val parseHtml = Jsoup.parse(contentAsString(result))
       println(parseHtml)
       parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income or expenses through software")
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income and expenses through software")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("GDT")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("Report their VAT returns through software")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("resendRequest")
@@ -271,7 +253,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to report their income or expenses through software.",
+        "If you cancel this request, you will not be able to report their income and expenses through software.",
       "Yes", "No")
     }
 
@@ -334,7 +316,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Authorisation request cancelled",
-        "You have cancelled your authorisation request to report their income or expenses through software.",
+        "You have cancelled your authorisation request to report their income and expenses through software.",
         "Joe Volcano will not be able to respond to this request.",
         "Made a mistake?")
     }
@@ -376,7 +358,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this client's authorisation?",
-        "You will no longer be able to report their income or expenses through software.", "You will not be able to undo this action.",
+        "You will no longer be able to report their income and expenses through software.", "You will not be able to undo this action.",
         "Yes", "No")
     }
   }
@@ -469,7 +451,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Authorisation cancelled",
-        "What this means", "You are no longer authorised by Buttercup Powerpuff to report their income or expenses through software.",
+        "What this means", "You are no longer authorised by Buttercup Powerpuff to report their income and expenses through software.",
         "Return to track your recent authorisation requests")
     }
 

@@ -14,7 +14,7 @@ import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with TestDataCommonSupport {
+class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -71,10 +71,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     val request = FakeRequest("GET", "/agents/identify-client")
 
     "not show a postcode entry field if service is ITSA" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
+      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA))
 
       val form =
-        controller.agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+        controller.agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -90,9 +90,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     }
 
     "not show a vat registration date entry field if service is VAT" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
+      testFastTrackCache.save(CurrentInvitationInput(business, serviceVAT))
 
-      val form = controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(serviceVAT, None, None))
+      val form = controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -108,9 +108,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     }
 
     "not show a date of birth entry field if service is IRV" in {
-      testFastTrackCache.save(CurrentInvitationInput(servicePIR))
+      testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR))
 
-      val form = controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(servicePIR, None, None))
+      val form = controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -133,11 +133,11 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for ITSA" in {
       givenTradingName(validNino, "64 Bit")
       val formData =
-        CurrentInvitationInput(serviceITSA, "", "", None, fromManual)
+        CurrentInvitationInput(personal, serviceITSA, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
-          UserInputNinoAndPostcode(serviceITSA, Some(validNino.nino), None))
+          UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
       createInvitationStub(
         arn,
         validNino.value,
@@ -160,11 +160,11 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
-        CurrentInvitationInput(servicePIR, "", "", None, fromManual)
+        CurrentInvitationInput(personal, servicePIR, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
-          UserInputNinoAndDob(servicePIR, Some(validNino.nino), None))
+          UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
       createInvitationStub(
         arn,
         validNino.value,
@@ -186,11 +186,11 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 invitation-sent for VAT" in {
       givenClientDetails(validVrn)
       val formData =
-        CurrentInvitationInput(serviceVAT, "", "", None, fromManual)
+        CurrentInvitationInput(business, serviceVAT, "", "", None, fromManual)
       testFastTrackCache.save(formData)
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
-          UserInputVrnAndRegDate(serviceVAT, Some(validVrn.value), None))
+          UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
       createInvitationStub(
         arn,
         validVrn.value,
@@ -218,7 +218,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
     "return 303 check-details when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
       val formData =
-        CurrentInvitationInput(serviceITSA, "ni", validNino.value, None, fromFastTrack)
+        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
@@ -240,7 +240,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
-        CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       createInvitationStub(
         arn,
@@ -261,7 +261,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
       val formData =
-        CurrentInvitationInput(servicePIR, "ni", validNino.value, None, fromFastTrack)
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       createInvitationStub(
@@ -289,18 +289,18 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "display the check details page without known fact when KFC flag is off for ITSA" in {
       val formData =
-        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, validNinoSpace.value)
     }
 
     "display the check details page without known fact when KFC flag is off for IRV" in {
       val formData =
-        CurrentInvitationInput(servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -311,7 +311,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
       val formData =
-        CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -320,26 +320,4 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec with Test
       checkHtmlResultWithBodyText(result, validVrn.value)
     }
   }
-
-  def verifyAgentClientInvitationSubmittedEvent(
-    arn: String,
-    clientId: String,
-    clientIdType: String,
-    result: String,
-    service: String): Unit =
-    verifyAuditRequestSent(
-      1,
-      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
-      detail = Map(
-        "factCheck"            -> result,
-        "agentReferenceNumber" -> arn,
-        "clientIdType"         -> clientIdType,
-        "clientId"             -> clientId,
-        "service"              -> service
-      ),
-      tags = Map(
-        "transactionName" -> "Agent client service authorisation request created"
-      )
-    )
-
 }

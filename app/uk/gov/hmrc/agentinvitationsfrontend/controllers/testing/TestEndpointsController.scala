@@ -127,14 +127,21 @@ object TestEndpointsController {
   val testAgentFastTrackForm: Form[CurrentInvitationInput] = {
     Form(
       mapping(
+        "clientType"           -> text,
         "service"              -> text,
         "clientIdentifierType" -> text,
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
-      )({ (service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(service, clientIdType, clientId, knownFact)
+      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+        CurrentInvitationInput(clientType, service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
-        Some((fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
+        Some(
+          (
+            fastTrack.clientType,
+            fastTrack.service,
+            fastTrack.clientIdentifierType,
+            fastTrack.clientIdentifier,
+            fastTrack.knownFact))
       }))
   }
 
