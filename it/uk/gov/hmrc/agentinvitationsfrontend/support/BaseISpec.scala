@@ -12,8 +12,11 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
@@ -22,7 +25,7 @@ import scala.concurrent.Future
 
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
-    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs {
+    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -148,4 +151,63 @@ abstract class BaseISpec
       URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
+
+  def verifyAgentInvitationResponseEvent(
+                                          invitationId: InvitationId,
+                                          arn: String,
+                                          clientResponse: String,
+                                          clientIdType: String,
+                                          clientId: String,
+                                          service: String,
+                                          agencyName: String): Unit =
+    verifyAuditRequestSent(
+      1,
+      AgentClientInvitationResponse,
+      detail = Map(
+        "invitationId"         -> invitationId.value,
+        "agentReferenceNumber" -> arn,
+        "agencyName"           -> agencyName,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "service"              -> service,
+        "clientResponse"       -> clientResponse
+      ),
+      tags = Map(
+        "transactionName" -> "agent-client-invitation-response",
+        "path"            -> "/"
+      )
+    )
+
+  def checkHasClientSignOutUrl(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+  }
+
+  def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]) = {
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    val continueUrl = URLEncoder.encode(clientFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
+    checkHtmlResultWithBodyText(result, continueUrl)
+  }
+
+  def verifyAgentClientInvitationSubmittedEvent(
+                                                 arn: String,
+                                                 clientId: String,
+                                                 clientIdType: String,
+                                                 result: String,
+                                                 service: String): Unit =
+    verifyAuditRequestSent(
+      1,
+      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
+      detail = Map(
+        "factCheck"            -> result,
+        "agentReferenceNumber" -> arn,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "service"              -> service
+      ),
+      tags = Map(
+        "transactionName" -> "Agent client service authorisation request created"
+      )
+    )
 }

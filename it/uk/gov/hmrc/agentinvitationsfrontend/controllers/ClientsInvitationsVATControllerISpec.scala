@@ -26,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSu
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.auth.core.AuthorisationException
 
-class ClientsInvitationsVATControllerISpec extends TestDataCommonSupport {
+class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
 

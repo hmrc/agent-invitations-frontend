@@ -46,11 +46,13 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
     "featureFlags are on" when {
 
       val validData: Map[String, String] = Map(
+        "clientType"       -> "someClientType",
         "clientIdentifier" -> "WM123456C",
         "service"          -> "someService",
         "knownFact.year"   -> "2000",
         "knownFact.month"  -> "1",
-        "knownFact.day"    -> "1")
+        "knownFact.day"    -> "1"
+      )
 
       val featureFlags = FeatureFlags()
       val agentInvitationIdentifyClientForm = agentInvitationIdentifyClientFormIrv(featureFlags)
@@ -74,7 +76,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
         "return no errors when unbinding the form" in {
           val unboundForm =
             agentInvitationIdentifyClientForm.mapping.unbind(
-              UserInputNinoAndDob("PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
+              UserInputNinoAndDob("individual", "PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
           unboundForm("clientIdentifier") shouldBe "AE123456C"
         }
       }
@@ -95,11 +97,13 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
         "return an error message for invalid characters" in {
           val invalidDate: Map[String, String] = Map(
+            "clientType"       -> "individual",
             "clientIdentifier" -> "WM123456C",
             "service"          -> "PERSONAL-INCOME-RECORD",
             "knownFact.year"   -> "abdc",
             "knownFact.month"  -> "ef",
-            "knownFact.day"    -> "gh")
+            "knownFact.day"    -> "gh"
+          )
           val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
           ninoForm.errors shouldBe Seq(yearFormatFormError, monthFormatFormError, dayFormatFormError)
           ninoForm.errors.length shouldBe 3
@@ -107,11 +111,13 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
         "return an error message for no date" in {
           val invalidDate: Map[String, String] = Map(
+            "clientType"       -> "individual",
             "clientIdentifier" -> "WM123456C",
             "service"          -> "PERSONAL-INCOME-RECORD",
             "knownFact.year"   -> "",
             "knownFact.month"  -> "",
-            "knownFact.day"    -> "")
+            "knownFact.day"    -> ""
+          )
           val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
           ninoForm.errors shouldBe Seq(dateRequiredFormError)
           ninoForm.errors.length shouldBe 1
@@ -119,6 +125,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
         "return an error message for empty form" in {
           val invalidData: Map[String, String] = Map(
+            "clientType"       -> "",
             "clientIdentifier" -> "",
             "service"          -> "PERSONAL-INCOME-RECORD",
             "knownFact.year"   -> "",

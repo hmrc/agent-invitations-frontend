@@ -13,7 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationControll
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehaviours with TestDataCommonSupport {
+class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -25,8 +25,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val submitService = controller.submitService()
 
     "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceVAT, None, None))
+      testFastTrackCache.save(CurrentInvitationInput(organisation, serviceVAT))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -43,7 +43,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for VAT service" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
+      testFastTrackCache.save(CurrentInvitationInput(organisation, serviceVAT))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -86,12 +86,14 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
         testFastTrackCache.save(
           CurrentInvitationInput(
+            organisation,
             "HMRC-MTD-VAT",
             "vrn",
             validVrn.value,
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
+          "clientType" -> organisation,
           "service" -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
           "knownFact.year" -> "2007",
@@ -194,7 +196,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(serviceVAT, "ni", validVrn.value, Some(validRegistrationDate))
+        CurrentInvitationInput(organisation, serviceVAT, "ni", validVrn.value, Some(validRegistrationDate))
       testFastTrackCache.save(invitation)
       testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
@@ -232,7 +234,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val notMatched = controller.notMatched()
 
     "return 403 for authorised Agent who submitted not matching known facts for VAT" in {
-      val invitation = CurrentInvitationInput(serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+      val invitation = CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
       testFastTrackCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
@@ -258,9 +260,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceVAT))
+      testFastTrackCache.save(CurrentInvitationInput(organisation, serviceVAT))
       val vrnForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(serviceVAT, None, None))
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(organisation, serviceVAT, None, None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 

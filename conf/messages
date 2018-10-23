@@ -5,6 +5,14 @@ title.suffix.client=Manage your tax agents
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
+
+# Client Type
+client-type.header=What type of client do you need authorisation from?
+client-type.p1=If you need authorisation to deal with both your client's business and personal tax affairs, you need to ask for these separately.
+client-type.individual=An individual or sole trader
+client-type.organisation=A company or partnership
+error.client-type.required=Select the type of client you need authorisation from
+
 # Identify Client
 identify-client.header=Enter your client''s details
 identify-client.itsa.p1=This will help us match their details against information we hold.

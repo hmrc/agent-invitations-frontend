@@ -12,7 +12,6 @@ class PirRelationshipsConnectorISpec extends BaseISpec with ACRStubs {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val connector = app.injector.instanceOf[PirRelationshipConnector]
-  val arn = Arn("TARN0000001")
 
   "GetInactiveIrvRelationships" should {
     "return a sequence of inactive IRV relationships" in {

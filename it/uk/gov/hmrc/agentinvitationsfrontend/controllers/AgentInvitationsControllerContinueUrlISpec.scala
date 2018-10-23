@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -16,23 +16,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  private val validNino = Nino("AB123456A")
-  private val validNinoSpace = Nino("AB 12 34 56 A")
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-  val validPostcode = "DH14EJ"
-  val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
-
-  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "VRN"
-  val validVrn97 = Vrn("101747696")
-  val invalidVrn = Vrn("101747692")
-  val validRegDateForVrn97 = Some("2007-07-07")
-  val validVrn9755 = Vrn("101747641")
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 

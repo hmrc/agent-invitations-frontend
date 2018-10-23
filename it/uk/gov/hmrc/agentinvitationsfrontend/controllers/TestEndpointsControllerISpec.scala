@@ -9,7 +9,6 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 class TestEndpointsControllerISpec extends BaseISpec {
 
   lazy val controller: TestEndpointsController = app.injector.instanceOf[TestEndpointsController]
-  val arn = Arn("TARN0000001")
   val clientId = "AA123456A"
   val afiService = "PERSONAL-INCOME-RECORD"
   val relationshipForm = Seq(

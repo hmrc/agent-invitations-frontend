@@ -22,10 +22,10 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
-import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 
-class ClientsInvitationControllerISpec extends TestDataCommonSupport {
+class ClientsInvitationControllerISpec extends BaseISpec {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
 

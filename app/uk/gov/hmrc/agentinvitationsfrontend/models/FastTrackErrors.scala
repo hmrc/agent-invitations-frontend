@@ -20,25 +20,30 @@ import play.api.libs.json.{JsPath, Json, OFormat, Reads}
 import play.api.libs.functional.syntax._
 
 case class FastTrackErrors(
+  clientType: Option[String],
   service: Option[String],
   clientIdentifier: Option[String],
   clientIdentifierType: Option[String],
   globalFormError: Option[String]) {
 
   def formErrorsMessages: String =
-    Seq(service, clientIdentifier, clientIdentifierType, globalFormError).flatten.filter(_.nonEmpty).mkString(s" ")
+    Seq(clientType, service, clientIdentifier, clientIdentifierType, globalFormError).flatten
+      .filter(_.nonEmpty)
+      .mkString(s" ")
 
 }
 
 object FastTrackErrors {
 
   implicit val reads: Reads[FastTrackErrors] = {
-    ((JsPath \ "service").readNullable[Seq[String]] and
+    ((JsPath \ "clientType").readNullable[Seq[String]] and
+      (JsPath \ "service").readNullable[Seq[String]] and
       (JsPath \ "clientIdentifier").readNullable[Seq[String]] and
       (JsPath \ "clientIdentifierType").readNullable[Seq[String]] and
       (JsPath \ "").readNullable[Seq[String]])(
-      (serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts, globalFormErrorOpts) =>
+      (clientTypeOpts, serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts, globalFormErrorOpts) =>
         FastTrackErrors.apply(
+          clientTypeOpts.getOrElse(Seq.empty).headOption,
           serviceOpts.getOrElse(Seq.empty).headOption,
           clientIdentifierOpts.getOrElse(Seq.empty).headOption,
           clientIdentifierTypeOpts.getOrElse(Seq.empty).headOption,

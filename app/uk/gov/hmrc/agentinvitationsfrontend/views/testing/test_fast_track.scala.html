@@ -39,6 +39,11 @@
     <fieldset class="form-field-group">
       <div class="form-group">
         @input(
+          fastTrackForm("clientType"),
+          '_label -> "Enter Client Type",
+          '_inputClass -> "input--medium input--cleared")
+
+        @input(
           fastTrackForm("service"),
           '_label -> "Enter Service",
           '_inputClass -> "input--medium input--cleared"
@@ -60,6 +65,10 @@
           '_label -> "Enter Known Fact",
           '_inputClass -> "input--medium input--cleared"
         )
+
+          @Html("""<p>""" + "Client Types: individual / organisation" + """</p>""")
+
+          @Html("""<p>""" + "Client Id Types: ni / vrn" + """</p>""")
 
           @Html("""<p>""" + "Example Postcode: DH14EJ" + """</p>""" + """<p>""" + "Example Date: 2007-07-07" + """</p>""")
       </div>

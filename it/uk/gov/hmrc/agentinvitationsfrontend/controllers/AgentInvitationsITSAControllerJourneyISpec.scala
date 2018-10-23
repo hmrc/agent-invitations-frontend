@@ -10,7 +10,7 @@ import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBehaviours with TestDataCommonSupport {
+class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
@@ -21,8 +21,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val submitService = controller.submitService()
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+      testFastTrackCache.save(CurrentInvitationInput(individual, serviceITSA))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(individual, serviceITSA, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -39,7 +39,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for ITSA service" in {
-      testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
+      testFastTrackCache.save(CurrentInvitationInput(individual, serviceITSA))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -85,8 +85,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
-          CurrentInvitationInput("HMRC-MTD-IT", "", validNino.value, Some(validPostcode)))
+          CurrentInvitationInput(individual, "HMRC-MTD-IT", "", validNino.value, Some(validPostcode)))
         val requestWithForm = request.withFormUrlEncodedBody(
+          "clientType" -> "individual",
           "service" -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
           "knownFact" -> validPostcode)
@@ -178,7 +179,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
       "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
         val invitation =
-          CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
+          CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
         testFastTrackCache.save(invitation)
         testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
 
@@ -217,7 +218,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
       "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
         val invitation =
-          CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
+          CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
         testFastTrackCache.save(invitation)
 
         val result = notMatched(authorisedAsValidAgent(request, arn.value))
@@ -243,9 +244,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       val featureFlags = FeatureFlags()
 
       "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client" in {
-        testFastTrackCache.save(CurrentInvitationInput(serviceITSA))
+        testFastTrackCache.save(CurrentInvitationInput(individual, serviceITSA))
         val ninoForm =
-          agentInvitationIdentifyClientFormItsa(featureFlags).fill(UserInputNinoAndPostcode(serviceITSA, None, None))
+          agentInvitationIdentifyClientFormItsa(featureFlags).fill(UserInputNinoAndPostcode(individual, serviceITSA, None, None))
         val result =
           notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 

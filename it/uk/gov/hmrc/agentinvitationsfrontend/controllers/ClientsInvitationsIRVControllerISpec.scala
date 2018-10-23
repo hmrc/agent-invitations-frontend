@@ -22,10 +22,10 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
-import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.auth.core.AuthorisationException
 
-class ClientsInvitationsIRVControllerISpec extends TestDataCommonSupport {
+class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
   lazy val controller: ClientsInvitationController = app.injector.instanceOf[ClientsInvitationController]
 

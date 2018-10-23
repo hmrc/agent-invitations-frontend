@@ -12,9 +12,7 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
 
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[AgentServicesAccountConnector]
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  private val validNino = Nino("AB123456A")
+
 
 
 

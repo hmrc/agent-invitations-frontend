@@ -26,7 +26,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,23 +39,6 @@ import scala.concurrent.duration._
 class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  val arn = Arn("TARN0000001")
-  val mtdItId = MtdItId("ABCDEF123456789")
-  private val validNino = Nino("AB123456A")
-  private val validNinoSpace = Nino("AB 12 34 56 A")
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-  val validPostcode = "DH14EJ"
-  val invitationIdITSA = InvitationId("ABERULMHCKKW3")
-  val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")
-
-  val invitationIdVAT = InvitationId("CZTW1KY6RTAAT")
-  val serviceVAT = "HMRC-MTD-VAT"
-  val identifierVAT = "VRN"
-  val validVrn = Vrn("101747696")
-  val invalidVrn = Vrn("101747692")
-  val validRegistrationDate = "2007-07-07"
-  val validVrn9755 = Vrn("101747641")
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -64,8 +47,58 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       val result = controller.agentsRoot(FakeRequest())
       status(result) shouldBe 303
       val timeout = 2.seconds
-      redirectLocation(result)(timeout).get should include("/agents/select-service")
+      redirectLocation(result)(timeout).get shouldBe routes.AgentsInvitationController.selectClientType().url
     }
+  }
+
+  "GET /agents/client-type" should {
+    val request = FakeRequest("GET", "/agents/client-type")
+    val selectClientType = controller.selectClientType()
+
+    "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
+      val invitation =
+        CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
+      testFastTrackCache.save(invitation)
+      val result = selectClientType(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("client-type.header"),
+          htmlEscapedMessage("title.suffix.agents")),
+        htmlEscapedMessage("client-type.header"),
+        htmlEscapedMessage("client-type.p1")
+      )
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+    }
+
+    behave like anAuthorisedAgentEndpoint(request, selectClientType)
+  }
+
+  "POST /agents/client-type" should {
+    val request = FakeRequest("POST", "/agents/client-type")
+    val submitClientType = controller.submitClientType()
+
+    "return 200 for authorised Agent with no selected service and show error on the page" in {
+      val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> ""), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("client-type.header"),
+          htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-type.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.client-type.required"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
+    behave like anAuthorisedAgentEndpoint(request, submitClientType)
   }
 
   "GET /agents/select-service" should {
@@ -74,7 +107,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val invitation =
-        CurrentInvitationInput(serviceITSA, "ni", validNino.value, Some("AB101AB"))
+        CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
       testFastTrackCache.save(invitation)
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -92,7 +125,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
     }
 
     behave like anAuthorisedAgentEndpoint(request, selectService)
@@ -133,7 +165,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
-      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_SERVICE"))
+      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_CLIENT_TYPE", "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
@@ -174,9 +206,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
-      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED"))
+      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_CLIENT_TYPE", "UNSUPPORTED_SERVICE"))
       val unsupportedForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("UNSUPPORTED", None, None))
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("","UNSUPPORTED", None, None))
 
       intercept[Exception] {
         await(
@@ -207,25 +239,4 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
-
-  def verifyAgentClientInvitationSubmittedEvent(
-    arn: String,
-    clientId: String,
-    clientIdType: String,
-    result: String,
-    service: String): Unit =
-    verifyAuditRequestSent(
-      1,
-      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
-      detail = Map(
-        "factCheck"            -> result,
-        "agentReferenceNumber" -> arn,
-        "clientIdType"         -> clientIdType,
-        "clientId"             -> clientId,
-        "service"              -> service
-      ),
-      tags = Map(
-        "transactionName" -> "Agent client service authorisation request created"
-      )
-    )
 }

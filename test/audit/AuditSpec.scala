@@ -50,7 +50,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
 
       val arn: Arn = Arn("HX2345")
       val agentInvitaitonUserInput: UserInputNinoAndPostcode =
-        UserInputNinoAndPostcode("serviceName", Some("WM123456C"), Some("AA1 1AA"))
+        UserInputNinoAndPostcode("individual", "serviceName", Some("WM123456C"), Some("AA1 1AA"))
       val invitationId: String = "1"
       val result: String = "Success"
 
