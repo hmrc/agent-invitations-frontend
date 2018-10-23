@@ -28,18 +28,18 @@ class AgentClientTypeFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val serviceVAT = "HMRC-MTD-VAT"
-  val individual = "individual"
-  val organisation = "organisation"
+  val personal = "personal"
+  val business = "business"
 
   "ClientType Form" should {
     "return no error message for valid clientType Individual" in {
-      val data = Json.obj("clientType" -> "individual", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
+      val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
       val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType Organisation" in {
-      val data = Json.obj("clientType" -> "individual", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
+      val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
       val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true
     }
@@ -54,18 +54,18 @@ class AgentClientTypeFormSpec extends UnitSpec {
     "return no errors when unbinding the form" in {
       val unboundFormITSA =
         agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(individual, serviceITSA, Some("AE123456C"), None))
-      unboundFormITSA("clientType") shouldBe "individual"
+          UserInputNinoAndPostcode(personal, serviceITSA, Some("AE123456C"), None))
+      unboundFormITSA("clientType") shouldBe "personal"
 
       val unboundFormAFI =
         agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(individual, servicePIR, Some("AE123456C"), None))
-      unboundFormAFI("clientType") shouldBe "individual"
+          UserInputNinoAndPostcode(personal, servicePIR, Some("AE123456C"), None))
+      unboundFormAFI("clientType") shouldBe "personal"
 
       val unboundFormVAT =
         agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(organisation, serviceVAT, Some("101747696"), None))
-      unboundFormVAT("clientType") shouldBe "organisation"
+          UserInputNinoAndPostcode(business, serviceVAT, Some("101747696"), None))
+      unboundFormVAT("clientType") shouldBe "business"
     }
   }
 }

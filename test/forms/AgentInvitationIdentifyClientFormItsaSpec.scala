@@ -33,7 +33,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
       val validData = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> "HMRC-MTD-IT",
         "knownFact"        -> "W12 7TQ")
@@ -65,7 +65,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputNinoAndPostcode("individual", "HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
+            UserInputNinoAndPostcode("personal", "HMRC-MTD-IT", Some("AE123456C"), Some("AA1 1AA"))
           )
           unboundForm("knownFact") shouldBe "AA1 1AA"
           unboundForm("clientIdentifier") shouldBe "AE123456C"
@@ -104,7 +104,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
       val validData = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> "HMRC-MTD-IT",
         "knownFact"        -> "W12 7TQ")

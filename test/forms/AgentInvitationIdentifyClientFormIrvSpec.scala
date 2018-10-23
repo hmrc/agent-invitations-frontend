@@ -76,7 +76,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
         "return no errors when unbinding the form" in {
           val unboundForm =
             agentInvitationIdentifyClientForm.mapping.unbind(
-              UserInputNinoAndDob("individual", "PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
+              UserInputNinoAndDob("personal", "PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
           unboundForm("clientIdentifier") shouldBe "AE123456C"
         }
       }
@@ -97,7 +97,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
         "return an error message for invalid characters" in {
           val invalidDate: Map[String, String] = Map(
-            "clientType"       -> "individual",
+            "clientType"       -> "personal",
             "clientIdentifier" -> "WM123456C",
             "service"          -> "PERSONAL-INCOME-RECORD",
             "knownFact.year"   -> "abdc",
@@ -111,7 +111,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
         "return an error message for no date" in {
           val invalidDate: Map[String, String] = Map(
-            "clientType"       -> "individual",
+            "clientType"       -> "personal",
             "clientIdentifier" -> "WM123456C",
             "service"          -> "PERSONAL-INCOME-RECORD",
             "knownFact.year"   -> "",

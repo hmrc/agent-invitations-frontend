@@ -33,7 +33,7 @@ class FastTrackVatISpec extends BaseISpec {
         identifierVAT)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, serviceVAT, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -49,7 +49,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid VAT information and selected VAT, redirect to invitation-sent" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(organisation, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+        CurrentInvitationInput(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       createInvitationStub(
         arn,
         validVrn.value,
@@ -60,7 +60,7 @@ class FastTrackVatISpec extends BaseISpec {
         identifierVAT)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, serviceVAT, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -80,7 +80,7 @@ class FastTrackVatISpec extends BaseISpec {
     "return 303 check-details if service calling fast-track is correct for VAT" in {
       val formData =
         CurrentInvitationInput(
-          organisation,
+          business,
           serviceVAT,
           "vrn",
           validVrn.value,
@@ -97,7 +97,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
 
       val result = fastTrack(
@@ -111,7 +111,7 @@ class FastTrackVatISpec extends BaseISpec {
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
       val formData =
         CurrentInvitationInput(
-          organisation,
+          business,
           serviceVAT,
           "vrn",
           validVrn.value,
@@ -128,7 +128,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
-      val formData = CurrentInvitationInput(organisation, serviceVAT, "", "INVALID_VRN", None, fromFastTrack)
+      val formData = CurrentInvitationInput(business, serviceVAT, "", "INVALID_VRN", None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -140,7 +140,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT does not contain vrn" in {
-      val formData = CurrentInvitationInput(organisation, serviceVAT).copy(fromFastTrack = fromFastTrack)
+      val formData = CurrentInvitationInput(business, serviceVAT).copy(fromFastTrack = fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -153,7 +153,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for VAT" in {
       val formData =
-        CurrentInvitationInput(organisation, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -183,7 +183,7 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
     "display the check details page when known fact is required and provided for VAT" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -196,7 +196,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "display alternate check details page when known fact is required and not provided for VAT" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -224,7 +224,7 @@ class FastTrackVatISpec extends BaseISpec {
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
 
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(Some(validRegistrationDate).get), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(Some(validRegistrationDate).get), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
@@ -244,7 +244,7 @@ class FastTrackVatISpec extends BaseISpec {
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
 
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
@@ -253,7 +253,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 not-matched if vrn and vat-reg-date does not match for VAT" in {
       val invitation =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
 
       testFastTrackCache.save(invitation)
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 403)
@@ -270,7 +270,7 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 not-enrolled if Agent attempted to invite a client for VAT" in {
       val invitation =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
 
       testFastTrackCache.save(invitation)
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 404)
@@ -291,7 +291,7 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
     "display the known fact page when known fact is required and provided for VAT" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
@@ -315,11 +315,11 @@ class FastTrackVatISpec extends BaseISpec {
       checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
 
       val requestWithForm = request.withFormUrlEncodedBody(
-        "clientType" -> organisation,"service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
+        "clientType" -> business,"service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn",
         "clientIdentifier" -> validVrn.value,
         "knownFact.year" -> "2007", "knownFact.month" -> "07", "knownFact.day" -> "07")
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
@@ -342,7 +342,7 @@ class FastTrackVatISpec extends BaseISpec {
         "clientIdentifier" -> validNino.value,
         "knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
       val formData =
-        CurrentInvitationInput(organisation, servicePIR, "ni", validNino.value, None, fromFastTrack)
+        CurrentInvitationInput(business, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200

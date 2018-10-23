@@ -69,8 +69,8 @@ class AgentsInvitationController @Inject()(
   private val mtdItId = if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("select-service.itsa")) else Seq.empty
   private val vat = if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT   -> Messages("select-service.vat")) else Seq.empty
 
-  private val personal = Seq("individual"   -> Messages("client-type.individual"))
-  private val business = Seq("organisation" -> Messages("client-type.organisation"))
+  private val personal = Seq("personal" -> Messages("client-type.personal"))
+  private val business = Seq("business" -> Messages("client-type.business"))
   private val clientTypes = personal ++ business
 
   private def enabledServices(isWhitelisted: Boolean): Seq[(String, String)] =
@@ -1002,7 +1002,7 @@ object AgentsInvitationController {
 
   object ClientForMtdItWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[String] = arg match {
-      case (UserInputNinoAndPostcode(`individual`, HMRCMTDIT, Some(clientIdentifier), _), featureFlags)
+      case (UserInputNinoAndPostcode(`personal`, HMRCMTDIT, Some(clientIdentifier), _), featureFlags)
           if featureFlags.showKfcMtdIt =>
         Some(clientIdentifier)
       case _ => None
@@ -1011,7 +1011,7 @@ object AgentsInvitationController {
 
   object ClientForPirWithFlagOn {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[Unit] = arg match {
-      case (UserInputNinoAndPostcode(`individual`, HMRCPIR, Some(_), _), featureFlags)
+      case (UserInputNinoAndPostcode(`personal`, HMRCPIR, Some(_), _), featureFlags)
           if featureFlags.showKfcPersonalIncome =>
         Some(())
       case _ => None
@@ -1020,7 +1020,7 @@ object AgentsInvitationController {
 
   object ClientWithItsaOrPirFlagOff {
     def unapply(arg: (UserInputNinoAndPostcode, FeatureFlags)): Option[Unit] = arg match {
-      case (UserInputNinoAndPostcode(_, _, Some(_), _), featureFlags)
+      case (UserInputNinoAndPostcode(`personal`, _, Some(_), _), featureFlags)
           if !featureFlags.showKfcMtdIt || !featureFlags.showKfcPersonalIncome =>
         Some(())
       case _ => None
@@ -1029,7 +1029,7 @@ object AgentsInvitationController {
 
   object ClientForVatWithFlagOn {
     def unapply(arg: (UserInputVrnAndRegDate, FeatureFlags)): Option[String] = arg match {
-      case (UserInputVrnAndRegDate(`organisation`, HMRCMTDVAT, Some(clientIdentifier), _), featureFlags)
+      case (UserInputVrnAndRegDate(`business`, HMRCMTDVAT, Some(clientIdentifier), _), featureFlags)
           if featureFlags.showKfcMtdVat =>
         Some(clientIdentifier)
       case _ => None
@@ -1038,7 +1038,7 @@ object AgentsInvitationController {
 
   object ClientWithVatFlagOff {
     def unapply(arg: (UserInputVrnAndRegDate, FeatureFlags)): Option[Unit] = arg match {
-      case (UserInputVrnAndRegDate(`organisation`, _, Some(_), _), featureFlags) if !featureFlags.showKfcMtdVat =>
+      case (UserInputVrnAndRegDate(`business`, _, Some(_), _), featureFlags) if !featureFlags.showKfcMtdVat =>
         Some(())
       case _ => None
     }
@@ -1047,7 +1047,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputItsaReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackItsaInvitation] =
       arg match {
-        case CurrentInvitationInput(`individual`, HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
+        case CurrentInvitationInput(`personal`, HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcMtdIt || postcodeOpt.exists(
               _.matches(postcodeRegex))) =>
           Some(
@@ -1061,7 +1061,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputPirReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
       arg match {
-        case CurrentInvitationInput(`individual`, HMRCPIR, "ni", clientIdentifier, dobOpt, _)
+        case CurrentInvitationInput(`personal`, HMRCPIR, "ni", clientIdentifier, dobOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcPersonalIncome || dobOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
@@ -1075,7 +1075,7 @@ object AgentsInvitationController {
   object CurrentInvitationInputVatReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
       arg match {
-        case CurrentInvitationInput(`organisation`, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
+        case CurrentInvitationInput(`business`, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
             if Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
@@ -1108,15 +1108,15 @@ object AgentsInvitationController {
   object CurrentInvitationInputNeedsKnownFact {
     def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
       currentInvitationInput match {
-        case CurrentInvitationInput(`organisation`, HMRCMTDVAT, _, _, Some(vatRegDate), _)
+        case CurrentInvitationInput(`business`, HMRCMTDVAT, _, _, Some(vatRegDate), _)
             if !DateFieldHelper.validateDate(vatRegDate) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(`individual`, HMRCMTDIT, _, _, Some(postcode), _)
+        case CurrentInvitationInput(`personal`, HMRCMTDIT, _, _, Some(postcode), _)
             if !postcode.matches(postcodeRegex) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(`individual`, HMRCPIR, _, _, Some(dob), _) if !DateFieldHelper.validateDate(dob) =>
+        case CurrentInvitationInput(`personal`, HMRCPIR, _, _, Some(dob), _) if !DateFieldHelper.validateDate(dob) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
         case CurrentInvitationInput(clientType, service, _, _, None, _)

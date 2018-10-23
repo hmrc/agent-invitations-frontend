@@ -138,7 +138,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val request =
           FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
         val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(individual, "PERSONAL-INCOME-RECORD", None, None))
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -151,7 +151,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         testFastTrackCache.save(CurrentInvitationInput())
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(individual,"PERSONAL-INCOME-RECORD", None, None))
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal,"PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -162,7 +162,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(individual, "HMRC-MTD-IT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -174,7 +174,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, "HMRC-MTD-VAT", None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

@@ -49,9 +49,9 @@ object Services {
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
   val supportedTypes = List("ni", "vrn")
 
-  val individual = "individual"
-  val organisation = "organisation"
-  val supportedClientTypes = List(individual, organisation)
+  val personal = "personal"
+  val business = "business"
+  val supportedClientTypes = List(personal, business)
 
   def determineService(invitationId: InvitationId): Service =
     invitationId.value.head match {

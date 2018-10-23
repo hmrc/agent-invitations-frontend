@@ -31,8 +31,8 @@ trait TestDataCommonSupport {
   val dateOfBirth = "1980-07-07"
   val validVrn9755 = Vrn("101747641")
 
-  val individual = "individual"
-  val organisation = "organisation"
+  val personal = "personal"
+  val business = "business"
 
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false

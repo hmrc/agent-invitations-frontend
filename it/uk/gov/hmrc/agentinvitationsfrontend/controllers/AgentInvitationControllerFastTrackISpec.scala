@@ -4,15 +4,13 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.play.binders.ContinueUrl
+
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -22,8 +20,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  //TODO - Along with the other tests, could be split up by service? Note: This test is based on fast-track scenarios
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
@@ -41,7 +37,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         servicePIR,
         "NI")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, serviceVAT, None, None))
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -71,7 +67,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 and redirect to error url with mixed form data" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceITSA, "vrn", validNino.value, None, fromFastTrack)
+        CurrentInvitationInput(business, serviceITSA, "vrn", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -124,7 +120,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "foo", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "foo", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
 
       an[IllegalArgumentException] shouldBe thrownBy {
@@ -138,7 +134,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "show error on the page when no radio button is selected" in {
       val formData =
-        CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 200
@@ -173,7 +169,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
       val formData =
-        CurrentInvitationInput(individual, servicePIR, "ni", validNino.value, None, fromFastTrack)
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303

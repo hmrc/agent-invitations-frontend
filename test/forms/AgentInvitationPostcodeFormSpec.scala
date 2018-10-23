@@ -32,8 +32,8 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
   val postcodeCharacterFormError: FormError = FormError("knownFact", List(postcodeCharactersMessage))
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
-  val individual = "individual"
-  val organisation = "organisation"
+  val personal = "personal"
+  val business = "business"
 
   "PostCodeForm with KFC flags on" should {
 
@@ -42,7 +42,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no error message for valid postcode" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "W12 7TQ")
@@ -52,7 +52,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no error message for valid postcode with spaces" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "  W12 7TQ  ")
@@ -62,7 +62,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no error message for valid lower case postcode" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "w12 7tq")
@@ -72,7 +72,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return an error message for invalid format postcode" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "W12")
@@ -83,7 +83,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return an error message for postcode with invalid characters" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "$%$%$%")
@@ -93,11 +93,8 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
     }
 
     "return an error message for form with empty postcode" in {
-      val data = Json.obj(
-        "clientType"       -> "individual",
-        "clientIdentifier" -> "WM123456C",
-        "service"          -> serviceITSA,
-        "knownFact"        -> "")
+      val data = Json
+        .obj("clientType" -> "personal", "clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "knownFact" -> "")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.contains(postcodeEmptyFormError) shouldBe true
       postcodeForm.errors.length shouldBe 1
@@ -105,7 +102,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no errors when unbinding the form" in {
       val unboundForm = agentInvitationPostCodeForm.mapping.unbind(
-        UserInputNinoAndPostcode(individual, serviceITSA, Some("AE123456C"), Some("AA1 1AA")))
+        UserInputNinoAndPostcode(personal, serviceITSA, Some("AE123456C"), Some("AA1 1AA")))
       unboundForm("knownFact") shouldBe "AA1 1AA"
     }
   }
@@ -116,7 +113,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no errors when postcode is valid" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "W12 7TQ")
@@ -126,7 +123,7 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
 
     "return no errors when postcode is invalid" in {
       val data = Json.obj(
-        "clientType"       -> "individual",
+        "clientType"       -> "personal",
         "clientIdentifier" -> "WM123456C",
         "service"          -> serviceITSA,
         "knownFact"        -> "INVALID")
@@ -135,11 +132,8 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
     }
 
     "return no errors when postcode is empty" in {
-      val data = Json.obj(
-        "clientType"       -> "individual",
-        "clientIdentifier" -> "WM123456C",
-        "service"          -> serviceITSA,
-        "knownFact"        -> "")
+      val data = Json
+        .obj("clientType" -> "personal", "clientIdentifier" -> "WM123456C", "service" -> serviceITSA, "knownFact" -> "")
       val postcodeForm = agentInvitationPostCodeForm.bind(data)
       postcodeForm.errors.isEmpty shouldBe true
     }

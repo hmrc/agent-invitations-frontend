@@ -34,15 +34,15 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
   private val validPostcode = "DH14EJ"
   val dateOfBirth = "1980-07-07"
   val validRegDateForVrn97 = "2007-07-07"
-  val individual = "individual"
-  val organisation = "organisation"
+  val personal = "personal"
+  val business = "business"
 
   "The FastTrackInvitationItsaComplete extractor" should {
     "return Some when show-kfc-mtd-it is on and" when {
       "the service is HMRC-MTD-IT and there is a valid Nino and Postcode" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdIt = true)
         val itsaInvitation =
-          CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, Some(validPostcode))
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some(validPostcode))
         val fti = CurrentInvitationInputItsaReady.unapply(itsaInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -55,7 +55,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-IT and there is a valid Nino and Postcode" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdIt = false)
         val itsaInvitation =
-          CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, Some(validPostcode))
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some(validPostcode))
         val fti = CurrentInvitationInputItsaReady.unapply(itsaInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -66,7 +66,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-IT and there is a valid Nino and invalid Postcode" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdIt = false)
         val itsaInvitation =
-          CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, Some("fooPostcode"))
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some("fooPostcode"))
         val fti = CurrentInvitationInputItsaReady.unapply(itsaInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -76,7 +76,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
 
       "the service is HMRC-MTD-IT and there is a valid Nino and empty Postcode" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdIt = false)
-        val itsaInvitation = CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, Some(""))
+        val itsaInvitation = CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some(""))
         val fti = CurrentInvitationInputItsaReady.unapply(itsaInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -86,7 +86,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
 
       "the service is HMRC-MTD-IT and there is a valid Nino and missing Postcode" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdIt = false)
-        val itsaInvitation = CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, None)
+        val itsaInvitation = CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, None)
         val fti = CurrentInvitationInputItsaReady.unapply(itsaInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-IT")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -148,7 +148,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
     "return Some and show-kfc-personal-income is on and" when {
       "the service is PERSONAL-INCOME-RECORD and there is a valid Nino" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags()
-        val irvInvitation = CurrentInvitationInput(individual, servicePIR, "ni", nino.value, Some(dateOfBirth))
+        val irvInvitation = CurrentInvitationInput(personal, servicePIR, "ni", nino.value, Some(dateOfBirth))
         val fti = CurrentInvitationInputPirReady.unapply(irvInvitation)
         fti.map(_.service) shouldBe Some("PERSONAL-INCOME-RECORD")
         fti.map(_.clientIdentifierType) shouldBe Some("ni")
@@ -197,7 +197,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-VAT and there is a valid Vrn and VatRegDate" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags()
         val vatInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some(validRegDateForVrn97))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some(validRegDateForVrn97))
         val fti = CurrentInvitationInputVatReady.unapply(vatInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
@@ -210,7 +210,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-VAT and there is a valid Vrn and VatRegDate" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdVat = true)
         val vatInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some(validRegDateForVrn97))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some(validRegDateForVrn97))
         val fti = CurrentInvitationInputVatReady.unapply(vatInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
@@ -221,7 +221,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-VAT and there is a valid Vrn and invalid VatRegDate" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdVat = false)
         val vatInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some("2018-13-1"))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some("2018-13-1"))
         val fti = CurrentInvitationInputVatReady.unapply(vatInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
@@ -231,7 +231,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
 
       "the service is HMRC-MTD-VAT and there is a valid Vrn and empty VatRegDate" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdVat = false)
-        val vatInvitation = CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some(""))
+        val vatInvitation = CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some(""))
         val fti = CurrentInvitationInputVatReady.unapply(vatInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
@@ -242,7 +242,7 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
       "the service is HMRC-MTD-VAT and there is a valid Vrn and missing VatRegDate" in {
         implicit val featureFlags: FeatureFlags = FeatureFlags(showKfcMtdVat = false)
         val vatInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some(validPostcode))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some(validPostcode))
         val fti = CurrentInvitationInputVatReady.unapply(vatInvitation)
         fti.map(_.service) shouldBe Some("HMRC-MTD-VAT")
         fti.map(_.clientIdentifierType) shouldBe Some("vrn")
@@ -372,35 +372,35 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
     "return Some" when {
       "the service is HMRC-MTD-IT but there is no knownfact: postcode" in {
         val invalidClientIdNinoBasedInvitation =
-          CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, None)
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, None)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdNinoBasedInvitation) shouldBe Some(
           invalidClientIdNinoBasedInvitation)
       }
 
       "the service is HMRC-MTD-IT but there is an invalid postcode" in {
         val invalidClientIdNinoBasedInvitation =
-          CurrentInvitationInput(individual, serviceITSA, "ni", nino.value, Some("Invalid_Postcode"))
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some("Invalid_Postcode"))
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdNinoBasedInvitation) shouldBe Some(
           invalidClientIdNinoBasedInvitation.copy(knownFact = None))
       }
 
       "the service is HMRC-MTD-VAT but there is no knownfact: vat-reg-date" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, None)
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, None)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe
           Some(invalidClientIdVatBasedInvitation)
       }
 
       "the service is PERSONAL-INCOME-RECORD but there is no knownfact: date-of-birth" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(individual, servicePIR, "ni", nino.value, None)
+          CurrentInvitationInput(personal, servicePIR, "ni", nino.value, None)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe
           Some(invalidClientIdVatBasedInvitation)
       }
 
       "the service is HMRC-MTD-VAT but there is an invalid vat-reg-date" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", vrn.value, Some("Invalid_Date"))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some("Invalid_Date"))
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe Some(
           invalidClientIdVatBasedInvitation.copy(knownFact = None))
       }

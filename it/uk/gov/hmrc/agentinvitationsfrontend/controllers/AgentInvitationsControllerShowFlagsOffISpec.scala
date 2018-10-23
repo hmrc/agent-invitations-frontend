@@ -69,7 +69,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some(validPostcode))
+          CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -79,7 +79,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentInvitationInput(individual, servicePIR, "ni", validNino.value, None)
+        val formData = CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None)
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -90,7 +90,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -105,7 +105,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       val submitService = controller.submitService()
 
       "creating an ITSA invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(individual, serviceITSA, None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
         val result =
           submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -113,7 +113,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       }
       "creating an IRV invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, servicePIR, None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, servicePIR, None, None))
         val result =
           submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -121,7 +121,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       }
       "creating an VAT invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(organisation, serviceVAT, None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
         val result =
           submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

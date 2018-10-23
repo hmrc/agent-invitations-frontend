@@ -69,7 +69,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some(validPostcode))
+          CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -79,7 +79,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentInvitationInput(individual, servicePIR, "ni", validNino.value, None)
+        val formData = CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None)
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -90,7 +90,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentInvitationInput(organisation, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)

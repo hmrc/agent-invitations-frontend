@@ -29,33 +29,33 @@ class AgentInvitationServiceFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val serviceVAT = "HMRC-MTD-VAT"
-  val individual = "individual"
-  val organisation = "organisation"
+  val personal = "personal"
+  val business = "business"
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
       val data =
-        Json.obj("clientType" -> "individual", "service" -> serviceITSA, "clientIdentifier" -> "", "knownFact" -> "")
+        Json.obj("clientType" -> "personal", "service" -> serviceITSA, "clientIdentifier" -> "", "knownFact" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid service PIR" in {
       val data =
-        Json.obj("clientType" -> "individual", "service" -> servicePIR, "clientIdentifier" -> "", "knownFact" -> "")
+        Json.obj("clientType" -> "personal", "service" -> servicePIR, "clientIdentifier" -> "", "knownFact" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid service VAT" in {
       val data =
-        Json.obj("clientType" -> "individual", "service" -> serviceVAT, "clientIdentifier" -> "", "knownFact" -> "")
+        Json.obj("clientType" -> "personal", "service" -> serviceVAT, "clientIdentifier" -> "", "knownFact" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for form with empty service" in {
-      val data = Json.obj("clientType" -> "individual", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
+      val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
       val serviceForm = agentInvitationServiceForm.bind(data)
       serviceForm.errors.contains(serviceEmptyFormError) shouldBe true
       serviceForm.errors.length shouldBe 1
@@ -64,17 +64,17 @@ class AgentInvitationServiceFormSpec extends UnitSpec {
     "return no errors when unbinding the form" in {
       val unboundFormITSA =
         agentInvitationServiceForm.mapping.unbind(
-          UserInputNinoAndPostcode(individual, serviceITSA, Some("AE123456C"), None))
+          UserInputNinoAndPostcode(personal, serviceITSA, Some("AE123456C"), None))
       unboundFormITSA("service") shouldBe serviceITSA
 
       val unboundFormAFI =
         agentInvitationServiceForm.mapping.unbind(
-          UserInputNinoAndPostcode(individual, servicePIR, Some("AE123456C"), None))
+          UserInputNinoAndPostcode(personal, servicePIR, Some("AE123456C"), None))
       unboundFormAFI("service") shouldBe servicePIR
 
       val unboundFormVAT =
         agentInvitationServiceForm.mapping.unbind(
-          UserInputNinoAndPostcode(organisation, serviceVAT, Some("101747696"), None))
+          UserInputNinoAndPostcode(business, serviceVAT, Some("101747696"), None))
       unboundFormVAT("service") shouldBe serviceVAT
     }
   }

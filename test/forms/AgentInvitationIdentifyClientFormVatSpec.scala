@@ -31,7 +31,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
       val validData: Map[String, String] = Map(
-        "clientType"       -> "organisation",
+        "clientType"       -> "business",
         "clientIdentifier" -> "101747696",
         "service"          -> "HMRC-MTD-VAT",
         "knownFact.year"   -> "2000",
@@ -56,7 +56,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputVrnAndRegDate("organisation", "HMRC-MTD-VAT", Some("101747696"), Some("2000-01-01"))
+            UserInputVrnAndRegDate("business", "HMRC-MTD-VAT", Some("101747696"), Some("2000-01-01"))
           )
           unboundForm("knownFact.year") shouldBe "2000"
           unboundForm("knownFact.month") shouldBe "1"
@@ -68,7 +68,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       "return an error message" when {
         "registrationDate is invalid" in {
           val dataWithInvalidRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -82,7 +82,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "registrationDate is partially empty" in {
           val dataWithEmptyRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -95,7 +95,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "registrationDate is empty" in {
           val dataWithEmptyRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "",
@@ -115,7 +115,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "registrationDate has invalid characters" in {
           val dataWithInvalidCharactersRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "abcd",
@@ -131,7 +131,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is invalid for regex" in {
           val dataWithInvalidVrn = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "12345",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -144,7 +144,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is invalid for checksum" in {
           val dataWithInvalidVrn = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747697",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -157,7 +157,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is empty" in {
           val dataWithEmptyVrn = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -174,7 +174,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       val agentInvitationIdentifyClientForm =
         AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
       val validData: Map[String, String] = Map(
-        "clientType"       -> "organisation",
+        "clientType"       -> "business",
         "clientIdentifier" -> "101747696",
         "service"          -> "HMRC-MTD-VAT",
         "knownFact.year"   -> "2000",
@@ -189,7 +189,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is valid but vat registration date is not" in {
           val dataWithInvalidRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -201,7 +201,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is valid and vat registration date is empty" in {
           val dataWithEmptyRegistrationDate = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "101747696",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "",
@@ -212,7 +212,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "VRN is valid and vat registration date is missing" in {
           val dataWithMissingRegistrationDate =
-            Map("clientType" -> "organisation", "clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
+            Map("clientType" -> "business", "clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
           agentInvitationIdentifyClientForm.bind(dataWithMissingRegistrationDate).errors.isEmpty shouldBe true
         }
       }
@@ -220,7 +220,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       "return an error message" when {
         "VRN is invalid" in {
           val dataWithInvalidVrn = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "12345",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",
@@ -232,7 +232,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
         }
         "VRN is empty" in {
           val dataWithEmptyVrn = Map(
-            "clientType"       -> "organisation",
+            "clientType"       -> "business",
             "clientIdentifier" -> "",
             "service"          -> "HMRC-MTD-VAT",
             "knownFact.year"   -> "2000",

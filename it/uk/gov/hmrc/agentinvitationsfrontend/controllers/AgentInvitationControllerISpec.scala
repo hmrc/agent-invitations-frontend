@@ -57,7 +57,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val invitation =
-        CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
+        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
       testFastTrackCache.save(invitation)
       val result = selectClientType(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -107,7 +107,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
       val invitation =
-        CurrentInvitationInput(individual, serviceITSA, "ni", validNino.value, Some("AB101AB"))
+        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
       testFastTrackCache.save(invitation)
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
