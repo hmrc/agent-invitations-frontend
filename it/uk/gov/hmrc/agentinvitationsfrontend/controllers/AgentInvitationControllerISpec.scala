@@ -68,7 +68,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           htmlEscapedMessage("client-type.header"),
           htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("client-type.header"),
-        htmlEscapedMessage("client-type.p1")
+        hasMessage("client-type.p1")
       )
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

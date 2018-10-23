@@ -91,7 +91,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val parseHtml = Jsoup.parse(contentAsString(result))
       println(parseHtml)
       parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income or expenses through software")
+      parseHtml.getElementsByAttributeValue("class", "row-0").toString should include("Report their income and expenses through software")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("GDT")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("Report their VAT returns through software")
       parseHtml.getElementsByAttributeValue("class", "row-3").toString should include("resendRequest")
@@ -253,7 +253,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to report their income or expenses through software.",
+        "If you cancel this request, you will not be able to report their income and expenses through software.",
       "Yes", "No")
     }
 
@@ -316,7 +316,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Authorisation request cancelled",
-        "You have cancelled your authorisation request to report their income or expenses through software.",
+        "You have cancelled your authorisation request to report their income and expenses through software.",
         "Joe Volcano will not be able to respond to this request.",
         "Made a mistake?")
     }
@@ -358,7 +358,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Are you sure you want to cancel this client's authorisation?",
-        "You will no longer be able to report their income or expenses through software.", "You will not be able to undo this action.",
+        "You will no longer be able to report their income and expenses through software.", "You will not be able to undo this action.",
         "Yes", "No")
     }
   }
@@ -451,7 +451,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Authorisation cancelled",
-        "What this means", "You are no longer authorised by Buttercup Powerpuff to report their income or expenses through software.",
+        "What this means", "You are no longer authorised by Buttercup Powerpuff to report their income and expenses through software.",
         "Return to track your recent authorisation requests")
     }
 

@@ -293,7 +293,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income or expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, validNinoSpace.value)
     }
