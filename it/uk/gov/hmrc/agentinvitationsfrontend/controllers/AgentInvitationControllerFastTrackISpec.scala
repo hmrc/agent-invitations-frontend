@@ -115,7 +115,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "Redirect to select service when there is None in the cache" in {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
     }
 
     "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
