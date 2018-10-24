@@ -43,6 +43,8 @@ object CurrentInvitationInput {
   val fromManual: Boolean = false
 
   def apply(): CurrentInvitationInput = CurrentInvitationInput("", "", "", "", None, fromManual)
+  def apply(clientType: String): CurrentInvitationInput =
+    CurrentInvitationInput(clientType, "", "", "", None, fromManual)
   def apply(clientType: String, service: String): CurrentInvitationInput =
     CurrentInvitationInput(clientType, service, "", "", None, fromManual)
 

@@ -76,6 +76,17 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   private val timeout = 2.seconds
 
+
+  "GET /agents/client-type" should {
+    "return 303 for an authorised Agent without OTAC token but with passcode" in {
+      val request = FakeRequest("GET", "/agents/client-type?p=foo123")
+      val result = controller.selectClientType(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
+      verifyNoAuthoriseAttempt()
+    }
+  }
+
   "GET /agents/select-service" should {
     "return 303 for an authorised Agent without OTAC token but with passcode" in {
       val request = FakeRequest("GET", "/agents/select-service?p=foo123")
@@ -86,6 +97,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 for an authorised whitelisted Agent with OTAC session key in select service page" in {
+      testFastTrackCache.save(CurrentInvitationInput(personal))
       val request =
         FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken, "someOtacToken123"))
       stubFor(
@@ -107,6 +119,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 and don't show the IRV option for an authorised non-whitelisted agent without passcode or OTAC session key in select service page" in {
+      testFastTrackCache.save(CurrentInvitationInput(personal))
       val request = FakeRequest("GET", "/agents/select-service")
       stubFor(
         get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
@@ -129,6 +142,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "POST to /select-service" when {
     "service is IRV" should {
       "redirect to /identify-client if user is whitelisted (has valid OTAC session key)" in {
+        testFastTrackCache.save(CurrentInvitationInput(personal))
         stubFor(
           get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
             .withHeader("Otac-Authorization", equalTo("someOtacToken123"))

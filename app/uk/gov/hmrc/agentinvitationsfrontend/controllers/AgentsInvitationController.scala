@@ -152,7 +152,11 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+      fastTrackCache.fetch().flatMap {
+        case Some(input) if input.clientType.nonEmpty =>
+          Future successful Ok(select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
+        case _ => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+      }
     }
   }
 
@@ -238,11 +242,9 @@ class AgentsInvitationController @Inject()(
                   fastTrackToIdentifyClientFormIrv(inviteDetails),
                   featureFlags.showKfcPersonalIncome,
                   inviteDetails.fromFastTrack))
-            case _ => Redirect(routes.AgentsInvitationController.selectService())
+            case _ => Redirect(routes.AgentsInvitationController.selectClientType())
           }
-        case Some(_) => throw new Exception("no content in cache")
-        case None =>
-          Redirect(routes.AgentsInvitationController.selectService())
+        case _ => Redirect(routes.AgentsInvitationController.selectClientType())
       }
     }
   }
@@ -256,7 +258,7 @@ class AgentsInvitationController @Inject()(
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case _          => Future successful Redirect(routes.AgentsInvitationController.selectService())
+            case _          => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
           }
         )
     }
@@ -272,7 +274,7 @@ class AgentsInvitationController @Inject()(
               currentInvitation,
               featureFlags,
               serviceToMessageKey(currentInvitation.service)))
-        case None => Redirect(routes.AgentsInvitationController.selectService())
+        case None => Redirect(routes.AgentsInvitationController.selectClientType())
       }
     }
   }

@@ -32,13 +32,13 @@ class AgentClientTypeFormSpec extends UnitSpec {
   val business = "business"
 
   "ClientType Form" should {
-    "return no error message for valid clientType Individual" in {
+    "return no error message for valid clientType Personal" in {
       val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
       val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true
     }
 
-    "return no error message for valid clientType Organisation" in {
+    "return no error message for valid clientType Business" in {
       val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
       val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true

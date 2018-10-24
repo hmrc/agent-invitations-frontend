@@ -158,25 +158,24 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
-    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+    "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectClientType().url)
     }
 
-    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
+    "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
       testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_CLIENT_TYPE", "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectClientType().url)
     }
 
     "throw exception when there is no content in the cache" in {
       testFastTrackCache.save(CurrentInvitationInput())
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
-      an[Exception] shouldBe thrownBy {
-        await(result)
-      }
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectClientType().url)
     }
   }
 
