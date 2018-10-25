@@ -27,7 +27,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testFastTrackCache.save(
-        CurrentInvitationInput("", "", "ni", validNino.value, None, fromFastTrack))
+        CurrentInvitationInput(None, "", "ni", validNino.value, None, fromFastTrack))
       createInvitationStub(
         arn,
         validNino.value,
@@ -54,7 +54,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val fastTrack = controller.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
-      val formData = CurrentInvitationInput("INVALID_CLIENT_TYPE", "INVALID_SERVICE").copy(fromFastTrack = fromFastTrack)
+      val formData = CurrentInvitationInput(personal, "INVALID_SERVICE").copy(fromFastTrack = fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -62,7 +62,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe
-        Some("http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_CLIENT_TYPE UNSUPPORTED_SERVICE UNSUPPORTED_CLIENT_ID_TYPE INVALID_CLIENT_ID_RECEIVED:NOTHING")
+        Some("http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE UNSUPPORTED_CLIENT_ID_TYPE INVALID_CLIENT_ID_RECEIVED:NOTHING")
     }
 
     "return 303 and redirect to error url with mixed form data" in {
@@ -85,7 +85,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe
-        Some("http://localhost:9996/tax-history/not-authorised?issue=This field is required This field is required This field is required This field is required")
+        Some("http://localhost:9996/tax-history/not-authorised?issue=This field is required This field is required This field is required")
     }
 
     "throw an exception for not providing an error url" in {

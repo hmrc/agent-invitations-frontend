@@ -23,24 +23,28 @@
 
 @(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("personal-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
+ @back_link(s"${routes.AgentsInvitationController.selectClientType()}")
  @if(agentInvitationsForm.hasErrors) {
-  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
+  @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("personal-select-service"))
  }
 
  @form(
   action = routes.AgentsInvitationController.submitService(),
   'class -> "form js-form") {
 
+<div class="form-group">
   @inputRadioGroup(
    agentInvitationsForm("service"),
    services,
-   '_label -> Messages("select-service.label"),
-   '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("select-service.header") + """</h1>"""),
+   '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("personal-select-service.header") + """</h1>""" +
+                    """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("personal-select-service.p1") + """</span></div>""" +
+                    """<span class="form-hint">""" + Messages("personal-select-service.hint") + """</span>"""),
    '_groupDivClass -> "form-group soft--ends",
    '_fieldsetAttributes -> Html("""id='service'""")
   )
+</div>
 
   <details id="selectServiceHelper">
    <summary id="selectServiceSummary">
@@ -54,7 +58,7 @@
    </div>
   </details>
 
-  <input type="hidden" name="clientType" id="clientType" value="@agentInvitationsForm("clientType").value">
+  <input type="hidden" name="clientType" id="clientType" value="personal">
   <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 

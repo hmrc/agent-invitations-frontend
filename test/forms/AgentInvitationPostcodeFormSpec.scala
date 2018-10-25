@@ -32,8 +32,8 @@ class AgentInvitationPostcodeFormSpec extends UnitSpec {
   val postcodeCharacterFormError: FormError = FormError("knownFact", List(postcodeCharactersMessage))
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
-  val personal = "personal"
-  val business = "business"
+  val personal = Some("personal")
+  val business = Some("business")
 
   "PostCodeForm with KFC flags on" should {
 

@@ -127,7 +127,7 @@ object TestEndpointsController {
   val testAgentFastTrackForm: Form[CurrentInvitationInput] = {
     Form(
       mapping(
-        "clientType"           -> text,
+        "clientType"           -> optional(text),
         "service"              -> text,
         "clientIdentifierType" -> text,
         "clientIdentifier"     -> normalizedText,

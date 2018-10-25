@@ -113,7 +113,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       }
       "creating an IRV invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, servicePIR, None, None))
+        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
         val result =
           submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

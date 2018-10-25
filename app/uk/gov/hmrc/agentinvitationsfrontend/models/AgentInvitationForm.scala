@@ -18,28 +18,28 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 trait AgentInvitationForm {
 
-  def clientType: String
+  def clientType: Option[String]
   def service: String
   def clientIdentifier: Option[String]
 
 }
 
 case class UserInputNinoAndPostcode(
-  clientType: String,
+  clientType: Option[String],
   service: String,
   clientIdentifier: Option[String],
   postcode: Option[String])
     extends AgentInvitationForm
 
 case class UserInputVrnAndRegDate(
-  clientType: String,
+  clientType: Option[String],
   service: String,
   clientIdentifier: Option[String],
   registrationDate: Option[String])
     extends AgentInvitationForm
 
 case class UserInputNinoAndDob(
-  clientType: String,
+  clientType: Option[String],
   service: String,
   clientIdentifier: Option[String],
   dob: Option[String])

@@ -29,8 +29,8 @@ class AgentInvitationServiceFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val serviceVAT = "HMRC-MTD-VAT"
-  val personal = "personal"
-  val business = "business"
+  val personal = Some("personal")
+  val business = Some("business")
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {

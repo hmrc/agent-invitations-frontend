@@ -50,8 +50,8 @@ class AgentInvitationKfcExtractorSpec extends UnitSpec {
   private val mtdItId = MtdItId("ABCDEF123456789")
   private val vrn = Vrn("101747696")
   private val nino = Nino("AB123456A")
-  val personal = "personal"
-  val business = "business"
+  val personal = Some("personal")
+  val business = Some("business")
 
   "The ClientForMtdItWithFlagOn extractor" should {
     "Return a client identifier for HMRC-MTD-IT service when details match and KFC feature flag is on" in {

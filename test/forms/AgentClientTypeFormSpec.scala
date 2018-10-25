@@ -28,8 +28,8 @@ class AgentClientTypeFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val serviceVAT = "HMRC-MTD-VAT"
-  val personal = "personal"
-  val business = "business"
+  val personal = Some("personal")
+  val business = Some("business")
 
   "ClientType Form" should {
     "return no error message for valid clientType Personal" in {

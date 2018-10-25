@@ -83,7 +83,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType" -> personal,
+            "clientType" -> "personal",
             "service" -> servicePIR,
             "clientIdentifier" -> validNino.value,
             "knownFact.year" -> "1980",
