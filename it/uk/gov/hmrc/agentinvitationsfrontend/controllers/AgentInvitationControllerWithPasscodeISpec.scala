@@ -111,10 +111,10 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("personal-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.personal-income-viewer"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }
 

@@ -134,7 +134,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitService()
 
-    "return 200 for authorised Agent with no selected service and show error on the page" in {
+    "return 200 for authorised Agent with no personal selected service and show error on the page" in {
       testFastTrackCache.save(CurrentInvitationInput(personal))
       val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> personal.get,"service" -> ""), arn.value))
 
@@ -146,6 +146,23 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           htmlEscapedMessage("personal-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
+    "return 200 for authorised Agent with no business selected service and show error on the page" in {
+      testFastTrackCache.save(CurrentInvitationInput(business))
+      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> business.get,"service" -> ""), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          hasMessage("business-select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, hasMessage("business-select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
