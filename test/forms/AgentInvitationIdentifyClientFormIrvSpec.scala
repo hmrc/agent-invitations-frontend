@@ -76,7 +76,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
         "return no errors when unbinding the form" in {
           val unboundForm =
             agentInvitationIdentifyClientForm.mapping.unbind(
-              UserInputNinoAndDob("personal", "PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
+              UserInputNinoAndDob(Some("personal"), "PERSONAL-INCOME-RECORD", Some("AE123456C"), Some("1980-01-01")))
           unboundForm("clientIdentifier") shouldBe "AE123456C"
         }
       }

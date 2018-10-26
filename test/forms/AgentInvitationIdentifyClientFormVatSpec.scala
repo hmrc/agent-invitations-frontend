@@ -56,7 +56,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
         "unbinding the form" in {
           val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(
-            UserInputVrnAndRegDate("business", "HMRC-MTD-VAT", Some("101747696"), Some("2000-01-01"))
+            UserInputVrnAndRegDate(Some("business"), "HMRC-MTD-VAT", Some("101747696"), Some("2000-01-01"))
           )
           unboundForm("knownFact.year") shouldBe "2000"
           unboundForm("knownFact.month") shouldBe "1"

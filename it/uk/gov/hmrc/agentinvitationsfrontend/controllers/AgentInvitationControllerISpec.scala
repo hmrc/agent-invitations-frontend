@@ -115,12 +115,12 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("personal-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("select-service.header"),
-        htmlEscapedMessage("select-service.itsa"),
-        htmlEscapedMessage("select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat")
+        htmlEscapedMessage("personal-select-service.header"),
+        htmlEscapedMessage("personal-select-service.itsa"),
+        htmlEscapedMessage("personal-select-service.personal-income-viewer"),
+        htmlEscapedMessage("personal-select-service.vat")
       )
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
@@ -134,17 +134,35 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitService()
 
-    "return 200 for authorised Agent with no selected service and show error on the page" in {
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("service" -> ""), arn.value))
+    "return 200 for authorised Agent with no personal selected service and show error on the page" in {
+      testFastTrackCache.save(CurrentInvitationInput(personal))
+      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> personal.get,"service" -> ""), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("personal-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+    }
+
+    "return 200 for authorised Agent with no business selected service and show error on the page" in {
+      testFastTrackCache.save(CurrentInvitationInput(business))
+      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> business.get,"service" -> ""), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          hasMessage("business-select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, hasMessage("business-select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -165,7 +183,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
-      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_CLIENT_TYPE", "UNSUPPORTED_SERVICE"))
+      testFastTrackCache.save(CurrentInvitationInput(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectClientType().url)
@@ -205,9 +223,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
-      testFastTrackCache.save(CurrentInvitationInput("UNSUPPORTED_CLIENT_TYPE", "UNSUPPORTED_SERVICE"))
+      testFastTrackCache.save(CurrentInvitationInput(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val unsupportedForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate("","UNSUPPORTED", None, None))
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(None,"UNSUPPORTED", None, None))
 
       intercept[Exception] {
         await(

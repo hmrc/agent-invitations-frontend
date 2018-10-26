@@ -93,7 +93,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType" -> business,
+          "clientType" -> "business",
           "service" -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
           "knownFact.year" -> "2007",
