@@ -8,16 +8,18 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.Result
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -69,7 +71,10 @@ abstract class BaseISpec
         "features.show-kfc-mtd-vat"                                           -> true,
         "features.enable-fast-track"                                          -> true,
         "features.enable-track-requests"                                      -> true,
-        "features.enable-track-cancel-auth-action"                                   -> true,
+        "features.enable-track-cancel-auth-action"                            -> true,
+        "features.redirect-to-confirm-personal-income"                        -> false,
+        "features.redirect-to-confirm-mtd-it"                                 -> true,
+        "features.redirect-to-confirm-mtd-vat"                                -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )

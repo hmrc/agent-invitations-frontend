@@ -148,7 +148,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "redirect to select-service if there is no invitation in the cache" in {
       val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
     }
   }
 
@@ -173,7 +173,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
     }
   }
 }

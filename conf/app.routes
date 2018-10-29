@@ -12,6 +12,8 @@ GET         /agents/select-service                              @uk.gov.hmrc.age
 POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitService
 GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.selectClientType
 POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitClientType
+GET         /agents/confirm-client                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showConfirmClient
+POST        /agents/confirm-client                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitConfirmClient
 POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrack
 GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.checkDetails
 POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDetails
