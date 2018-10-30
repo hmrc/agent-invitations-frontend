@@ -145,7 +145,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   "GET agents/more-details" should {
     val request = FakeRequest()
 
-    "redirect to select-service if there is no invitation in the cache" in {
+    "redirect to client-type if there is no invitation in the cache" in {
       val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
@@ -155,7 +155,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   "POST /agents/more-details" should {
     val request = FakeRequest("POST", "/agents/identify-client")
 
-    "redirect to select service when form data is invalid" in {
+    "redirect to client-type when form data is invalid" in {
       createInvitationStub(
         arn,
         validNino.value,

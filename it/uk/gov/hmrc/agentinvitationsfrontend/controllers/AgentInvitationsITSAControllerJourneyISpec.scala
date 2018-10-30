@@ -73,7 +73,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "service is HMRC-MTD-IT" should {
 
-      "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
+      "redirect to confirm-client when a valid NINO and postcode are submitted" in {
         createInvitationStub(
           arn,
           validNino.value,
@@ -318,7 +318,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
           val choice = agentConfirmClientForm.fill(Confirmation(true))
           val result =
             submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-          redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+          redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
           status(result) shouldBe 303
         }
 

@@ -72,7 +72,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "service is HMRC-MTD-VAT" should {
 
-      "redirect to /agents/invitation-sent when a valid VRN and registrationDate are submitted" in {
+      "redirect to confirm-client when a valid VRN and registrationDate are submitted" in {
         createInvitationStub(
           arn,
           validVrn.value,

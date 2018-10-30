@@ -161,7 +161,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
-    "return 303 invitation-sent for IRV" in {
+    "return 303 confirm-client for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
         CurrentInvitationInput(personal, servicePIR, "", "", None, fromManual)
