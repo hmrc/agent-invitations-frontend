@@ -2,11 +2,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate, UserInputNinoAndDob}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmClientForm, agentFastTrackForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -45,6 +46,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "features.show-kfc-personal-income"                                   -> false,
         "features.show-kfc-mtd-vat"                                           -> false,
         "features.enable-fast-track"                                          -> true,
+        "features.redirect-to-confirm-personal-income"                        -> true,
+        "features.redirect-to-confirm-mtd-it"                                 -> false,
+        "features.redirect-to-confirm-mtd-vat"                                -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )
@@ -154,10 +158,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
-    "return 303 invitation-sent for IRV" in {
+    "return 303 confirm-client for IRV" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
         CurrentInvitationInput(personal, servicePIR, "", "", None, fromManual)
@@ -180,7 +184,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showConfirmClient().url
     }
 
     "return 303 invitation-sent for VAT" in {
@@ -206,7 +210,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
   }
@@ -318,6 +322,91 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
+    }
+  }
+
+  "GET /confirm-client" should {
+    val request = FakeRequest("GET", "/agents/confirm-client")
+    val showConfirmClient = controller.showConfirmClient()
+
+    "return 200 and show client name for PERSONAL-INCOME-RECORD" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "64 Bit")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+    }
+
+    "return 200 and no client name was found for PERSONAL-INCOME-RECORD" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromManual))
+      givenCitizenDetailsReturns404For(validNino.value)
+      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+    }
+
+    behaveLikeMissingCacheScenarios(showConfirmClient, request)
+  }
+
+  "POST /confirm-client" should {
+    val request = FakeRequest("POST", "/agents/confirm-client")
+    val submitConfirmClient = controller.submitConfirmClient()
+
+    "redirect to invitation-sent and create invitation for PERSONAL-INCOME-RECORD" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      createInvitationStub(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+      val choice = agentConfirmClientForm.fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      status(result) shouldBe 303
+    }
+
+    "return 200 for not selecting an option for PERSONAL-INCOME-RECORD" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "64 Bit")
+      checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+    }
+
+    behaveLikeMissingCacheScenarios(submitConfirmClient, request)
+  }
+
+  def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
+    "return to identify-client no client identifier found in cache" in {
+      testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "", "", None, fromManual))
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
+    }
+
+    "return to client-type for no cache" in {
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
     }
   }
 }

@@ -94,6 +94,9 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.enable-fast-track")
     bindBooleanProperty("features.enable-track-requests")
     bindBooleanProperty("features.enable-track-cancel-auth-action")
+    bindBooleanProperty("features.redirect-to-confirm-personal-income")
+    bindBooleanProperty("features.redirect-to-confirm-mtd-it")
+    bindBooleanProperty("features.redirect-to-confirm-mtd-vat")
   }
 
   private def bindBaseUrl(serviceName: String) =

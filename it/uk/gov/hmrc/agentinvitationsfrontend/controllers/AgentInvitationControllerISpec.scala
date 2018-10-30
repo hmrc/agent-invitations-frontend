@@ -163,7 +163,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           hasMessage("business-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, hasMessage("business-select-service.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.business-service.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }

@@ -77,12 +77,17 @@ select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noo
 business-select-service.header=Do you want to report this client''s VAT returns through software?
 business-select-service.yes=Yes
 business-select-service.no=No
+error.business-service.required=Select yes if you want to report this client''s VAT returns through software
 
 continue.button=Continue
 button.back=Back
 finish.button=Finish and sign out
 
-error.confirm-client.required=Select yes if this is the client you want authorisation from
+# Confirm Client
+confirm-client.header=Is this the client you want authorisation from?
+confirm-client.yes=Yes - I want to ask this client for authorisation
+confirm-client.no=No - I need to start over again
+error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 # Invitation Sent
 invitation-sent-link.header=One more step

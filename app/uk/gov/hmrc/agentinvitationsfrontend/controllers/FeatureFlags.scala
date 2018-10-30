@@ -28,7 +28,10 @@ case class FeatureFlags @Inject()(
   @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean = true,
   @Named("features.enable-fast-track") enableFastTrack: Boolean = true,
   @Named("features.enable-track-requests") enableTrackRequests: Boolean = true,
-  @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false)
+  @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false,
+  @Named("features.redirect-to-confirm-personal-income") enableIrvToConfirm: Boolean = false,
+  @Named("features.redirect-to-confirm-mtd-it") enableMtdItToConfirm: Boolean = true,
+  @Named("features.redirect-to-confirm-mtd-vat") enableMtdVatToConfirm: Boolean = true)
 
 object FeatureFlags {
   def apply(): FeatureFlags = new FeatureFlags()

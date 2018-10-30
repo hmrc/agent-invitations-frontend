@@ -1,10 +1,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode, UserInputNinoAndDob}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentInvitationInput, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -72,7 +73,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "service is HMRC-MTD-IT" should {
 
-      "redirect to /agents/complete when a valid NINO and postcode are submitted" in {
+      "redirect to confirm-client when a valid NINO and postcode are submitted" in {
         createInvitationStub(
           arn,
           validNino.value,
@@ -85,7 +86,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
-          CurrentInvitationInput(personal, "HMRC-MTD-IT", "", validNino.value, Some(validPostcode)))
+          CurrentInvitationInput(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientType" -> "personal",
           "service" -> "HMRC-MTD-IT",
@@ -94,7 +95,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+        redirectLocation(result).get shouldBe routes.AgentsInvitationController.showConfirmClient().url
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
@@ -267,112 +268,88 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
 
-    //  "GET /confirm-client" should {
-    //    val request = FakeRequest("GET", "/agents/confirm-client")
-    //    val showConfirmClient = controller.showConfirmClient()
-    //
-    //    "return 200 and show client name" in {
-    //      testFastTrackCache.save(
-    //        CurrentInvitationInput(
-    //          Some(serviceITSA),
-    //          Some("ni"),
-    //          Some(validNino.value),
-    //          Some(validPostcode),
-    //          None,
-    //          fromFastTrack))
-    //      givenTradingName(validNino, "64 Bit")
-    //      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
-    //      status(result) shouldBe 200
-    //      checkHtmlResultWithBodyText(result, "64 Bit")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
-    //    }
-    //
-    //    "return 200 and no client name was found" in {
-    //      testFastTrackCache.save(
-    //        CurrentInvitationInput(
-    //          Some(serviceITSA),
-    //          Some("ni"),
-    //          Some(validNino.value),
-    //          Some(validPostcode),
-    //          None,
-    //          fromFastTrack))
-    //      givenTradingNameMissing(validNino)
-    //      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
-    //      status(result) shouldBe 200
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
-    //    }
-    //
-    //    behaveLikeMissingCacheScenarios(showConfirmClient, request)
-    //  }
-    //
-    //  "POST /confirm-client" should {
-    //    val request = FakeRequest("POST", "/agents/confirm-client")
-    //    val submitConfirmClient = controller.submitConfirmClient()
-    //
-    //    "redirect to invitation-sent" in {
-    //      testFastTrackCache.save(
-    //        CurrentInvitationInput(
-    //          Some(serviceITSA),
-    //          Some("ni"),
-    //          Some(validNino.value),
-    //          Some(validPostcode),
-    //          None,
-    //          fromFastTrack))
-    //      createInvitationStubWithKnownFacts(
-    //        arn,
-    //        mtdItId.value,
-    //        invitationIdITSA,
-    //        validNino.value,
-    //        serviceITSA,
-    //        "NI",
-    //        Some(validPostcode))
-    //      givenTradingName(validNino, "64 Bit")
-    //      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-    //      val choice = agentConfirmClientForm.fill(Confirmation(true))
-    //      val result =
-    //        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-    //      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-    //      status(result) shouldBe 303
-    //    }
-    //
-    //    "return 200 for not selecting an option" in {
-    //      testFastTrackCache.save(
-    //        CurrentInvitationInput(
-    //          Some(serviceITSA),
-    //          Some("ni"),
-    //          Some(validNino.value),
-    //          Some(validPostcode),
-    //          None,
-    //          fromFastTrack))
-    //      givenTradingName(validNino, "64 Bit")
-    //      val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
-    //      status(result) shouldBe 200
-    //      givenTradingName(validNino, "64 Bit")
-    //      checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
-    //      checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
-    //    }
-    //
-    //    behaveLikeMissingCacheScenarios(submitConfirmClient, request)
-    //  }
-    //
-    //  def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
-    //    "return to identify-client no client identifier found in cache" in {
-    //      testFastTrackCache.save(CurrentInvitationInput(Some(serviceITSA), None, None, None, None, fromFastTrack))
-    //      val result = action(authorisedAsValidAgent(request, arn.value))
-    //      status(result) shouldBe 303
-    //      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
-    //    }
-    //
-    //    "return to select-service for no cache" in {
-    //      val result = action(authorisedAsValidAgent(request, arn.value))
-    //      status(result) shouldBe 303
-    //      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
-    //    }
-    //  }
+      "GET /confirm-client" should {
+        val request = FakeRequest("GET", "/agents/confirm-client")
+        val showConfirmClient = controller.showConfirmClient()
+
+        "return 200 and show client name" in {
+          testFastTrackCache.save(
+            CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+          givenTradingName(validNino, "64 Bit")
+          val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
+          status(result) shouldBe 200
+          checkHtmlResultWithBodyText(result, "64 Bit")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+        }
+
+        "return 200 and no client name was found" in {
+          testFastTrackCache.save(
+            CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+          givenTradingNameMissing(validNino)
+          val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
+          status(result) shouldBe 200
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+        }
+
+        behaveLikeMissingCacheScenarios(showConfirmClient, request)
+      }
+
+      "POST /confirm-client" should {
+        val request = FakeRequest("POST", "/agents/confirm-client")
+        val submitConfirmClient = controller.submitConfirmClient()
+
+        "redirect to invitation-sent" in {
+          testFastTrackCache.save(
+            CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+          createInvitationStub(
+            arn,
+            mtdItId.value,
+            invitationIdITSA,
+            validNino.value,
+            "ni",
+            serviceITSA,
+            "NI")
+          givenTradingName(validNino, "64 Bit")
+          getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+          val choice = agentConfirmClientForm.fill(Confirmation(true))
+          val result =
+            submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+          redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+          status(result) shouldBe 303
+        }
+
+        "return 200 for not selecting an option" in {
+          testFastTrackCache.save(
+            CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+          givenTradingName(validNino, "64 Bit")
+          val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
+          status(result) shouldBe 200
+          givenTradingName(validNino, "64 Bit")
+          checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+        }
+
+        behaveLikeMissingCacheScenarios(submitConfirmClient, request)
+      }
+
+  def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
+    "return to identify-client no client identifier found in cache" in {
+      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA, "", "", None, fromManual))
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
+    }
+
+    "return to client-type for no cache" in {
+      val result = action(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+    }
+  }
 }
