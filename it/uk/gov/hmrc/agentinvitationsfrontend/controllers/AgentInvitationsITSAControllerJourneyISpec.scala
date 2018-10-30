@@ -272,13 +272,26 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         val request = FakeRequest("GET", "/agents/confirm-client")
         val showConfirmClient = controller.showConfirmClient()
 
-        "return 200 and show client name" in {
+        "return 200 and show client trading name" in {
           testFastTrackCache.save(
             CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
           givenTradingName(validNino, "64 Bit")
           val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
           status(result) shouldBe 200
           checkHtmlResultWithBodyText(result, "64 Bit")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
+          checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+        }
+
+        "return 200 and show client's name" in {
+          testFastTrackCache.save(
+            CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+          givenTradingNameMissing(validNino)
+          givenCitizenDetailsAreKnownFor(validNino.value, "Anne Marri", "Son Pear")
+          val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
+          status(result) shouldBe 200
+          checkHtmlResultWithBodyText(result, "Anne Marri Son Pear")
           checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
           checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
           checkHtmlResultWithBodyMsgs(result, "confirm-client.no")

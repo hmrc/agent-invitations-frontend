@@ -44,7 +44,12 @@ trait GetClientName {
     }
 
   def getItsaTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    agentServicesAccountConnector.getTradingName(nino)
+    agentServicesAccountConnector
+      .getTradingName(nino)
+      .flatMap {
+        case name if name.isDefined => Future successful name
+        case None                   => getCitizenName(nino)
+      }
 
   def getCitizenName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     getCitizenRecord(nino).map(_.name)

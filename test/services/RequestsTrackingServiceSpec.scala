@@ -113,7 +113,23 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         await(tested.getItsaTradingName(nino)) shouldBe Some("Aaa")
       }
 
-      "return none if trading name not available" in {
+      "return individual name if trading name not available" in {
+        when(
+          citizenDetailsConnector
+            .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+          .thenReturn(Future.successful(Citizen(Some("String"), Some("Pearson"), Some(nino.value))))
+        when(
+          agentServicesAccountConnector
+            .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+          .thenReturn(Future.successful(None))
+        await(tested.getItsaTradingName(nino)) shouldBe Some("String Pearson")
+      }
+
+      "return none trading name not available" in {
+        when(
+          citizenDetailsConnector
+            .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+          .thenReturn(Future.successful(Citizen(None, None, None)))
         when(
           agentServicesAccountConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
