@@ -25,7 +25,7 @@
 @back_link(s"${routes.AgentsInvitationController.showIdentifyClientForm()}")
 
 @if(choiceForm.hasErrors) {
-  errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
+  @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 }
 @form(
 action = routes.AgentsInvitationController.submitConfirmClient(),
