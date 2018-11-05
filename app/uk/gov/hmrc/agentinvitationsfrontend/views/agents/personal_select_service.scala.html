@@ -38,11 +38,12 @@
   @inputRadioGroup(
    agentInvitationsForm("service"),
    services,
-   '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("personal-select-service.header") + """</h1>""" +
+   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("personal-select-service.header") + """</h1>""" +
                     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("personal-select-service.p1") + """</span></div>""" +
                     """<span class="form-hint">""" + Messages("personal-select-service.hint") + """</span>"""),
    '_groupDivClass -> "form-group soft--ends",
-   '_fieldsetAttributes -> Html("""id='service'""")
+   '_fieldsetAttributes -> Html("""id='service'"""),
+   '_legendClass -> "margin-bottom-10"
   )
 </div>
 
@@ -62,7 +63,7 @@
   <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
   <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
-   <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+   <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
  }
 
 }

@@ -38,7 +38,7 @@ action = routes.AgentsInvitationController.submitService(),
     @inputRadioGroup(
     agentInvitationsForm("service"),
     Seq("HMRC-MTD-VAT"-> Messages("business-select-service.yes"), "NO_SERVICE"-> Messages("business-select-service.no")),
-    '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("business-select-service.header") + """</h1>"""),
+    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("business-select-service.header") + """</h1>"""),
     '_groupDivClass -> "form-group soft--ends",
     '_fieldsetAttributes -> Html("""id='choice'""")
     )
@@ -60,7 +60,7 @@ action = routes.AgentsInvitationController.submitService(),
 <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
 <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
-<button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+<button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
 }
 
 }
