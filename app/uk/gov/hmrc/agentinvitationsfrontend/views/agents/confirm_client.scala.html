@@ -34,7 +34,7 @@ action = routes.AgentsInvitationController.submitConfirmClient(),
 @inputRadioGroup(
 choiceForm("choice"),
 Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
-'_legend -> Html("""<h1 class="heading-xlarge">""" + Messages("confirm-client.header") +
+'_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("confirm-client.header") +
     s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span></div>"""),
 '_groupDivClass -> "form-group soft--ends",
 '_fieldsetAttributes -> Html("""id='choice'""")
