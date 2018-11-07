@@ -26,7 +26,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentInvitationInput, featureFlags: FeatureFlags, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
+@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentInvitationInput, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
@@ -35,14 +37,6 @@
     localDate.map(_.toString("dd MMMM yyyy", messages.lang.locale)).getOrElse(date)
 }
 
-@shouldShowKF = @{
-    currentInvitationInput.service match {
-        case "HMRC-MTD-IT" if featureFlags.showKfcMtdIt => true
-        case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
-        case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat => true
-        case _ => false
-    }
-}
 
 @postcodeSpace = @{
     if(currentInvitationInput.knownFact.get.replaceAll(" ", "").length == 6) 3
@@ -80,7 +74,7 @@
                 }
             </dd>
         </div>
-        @if(currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF) {
+        @if(pageConfig.showKnownFact) {
             <div>
                 <dt class="cya-question">
                 @{
@@ -106,18 +100,25 @@
         }
     </dl>
 
-    @if(shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty) {
+    @if(pageConfig.needClientType) {
 
-        <div class="margin-top-40 margin-bottom-40"><a href="@routes.AgentsInvitationController.submitIdentifyClient()">@Messages("check-details.change.link")</a></div>
+        <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
 
-        <a href="@routes.AgentsInvitationController.knownFact()" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
-    }else{
+        <a href="@pageConfig.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+    }else {
+        @if(pageConfig.needKnownFact) {
+            <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl">@Messages("check-details.change.link")</a></div>
+
+            <p>@Messages("check-details.change.p1")</p>
+
+            <a href="@pageConfig.knownFactUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+        } else {
 
             @form(
-            routes.AgentsInvitationController.submitDetails(),
-            'class -> "margin-top-30"
+                routes.AgentsInvitationController.submitDetails(),
+                'class -> "margin-top-30"
             ) {
 
                 @inputRadioGroup(
@@ -131,6 +132,7 @@
                 <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
             }
         }
+    }
 
 
 }

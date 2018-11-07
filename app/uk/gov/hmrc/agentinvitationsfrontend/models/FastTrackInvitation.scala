@@ -60,6 +60,7 @@ object CurrentInvitationInput {
 }
 
 trait FastTrackInvitation[T <: TaxIdentifier] {
+  def clientType: Option[String]
   def service: String
   def clientIdentifier: T
   def clientIdentifierType: String
@@ -68,18 +69,20 @@ trait FastTrackInvitation[T <: TaxIdentifier] {
 
 case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[Postcode])
     extends FastTrackInvitation[Nino] {
+  val clientType = Services.personal
   val service = Services.HMRCMTDIT
   val clientIdentifierType = "ni"
   val knownFact = postcode
 }
 
 case class FastTrackPirInvitation(clientIdentifier: Nino, dob: Option[DOB]) extends FastTrackInvitation[Nino] {
+  val clientType = Services.personal
   val service = Services.HMRCPIR
   val clientIdentifierType = "ni"
   val knownFact = dob
 }
 
-case class FastTrackVatInvitation(clientIdentifier: Vrn, vatRegDate: Option[VatRegDate])
+case class FastTrackVatInvitation(clientType: Option[String], clientIdentifier: Vrn, vatRegDate: Option[VatRegDate])
     extends FastTrackInvitation[Vrn] {
   val service = Services.HMRCMTDVAT
   val clientIdentifierType = "vrn"

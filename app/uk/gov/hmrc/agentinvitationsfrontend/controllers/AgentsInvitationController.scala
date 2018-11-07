@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -124,8 +125,13 @@ class AgentsInvitationController @Inject()(
 
   val selectClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndClear()
-      Future successful Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
+      fastTrackCache.fetch().map {
+        case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
+          Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
+        case None =>
+          fastTrackCache.fetchAndClear()
+          Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
+      }
     }
   }
 
@@ -329,7 +335,7 @@ class AgentsInvitationController @Inject()(
               checkDetailsForm,
               currentInvitation,
               featureFlags,
-              serviceToMessageKey(currentInvitation.service)))
+              serviceToMessageKey(currentInvitation.service), CheckDetailsPageConfig()))
         case None => Redirect(routes.AgentsInvitationController.selectClientType())
       }
     }
@@ -343,7 +349,7 @@ class AgentsInvitationController @Inject()(
         .fold(
           formWithErrors => {
             cachedCurrentInvitationInput.flatMap { cii =>
-              Future successful Ok(check_details(formWithErrors, cii, featureFlags, serviceToMessageKey(cii.service)))
+              Future successful Ok(check_details(formWithErrors, cii, featureFlags, serviceToMessageKey(cii.service), CheckDetailsPageConfig()))
             }
           },
           data => {
@@ -890,7 +896,6 @@ object AgentsInvitationController {
       Invalid(ValidationError(invalidError))
   }
 
-  //Todo Use later when becomes mandatory
   private val clientTypeChoice: Constraint[Option[String]] =
     radioChoice("error.client-type.required")
 
@@ -1243,11 +1248,12 @@ object AgentsInvitationController {
   object CurrentInvitationInputVatReady {
     def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
       arg match {
-        case CurrentInvitationInput(_, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
-            if Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt.exists(
-              DateFieldHelper.validateDate)) =>
+        case CurrentInvitationInput(clientType, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
+            if clientType.isDefined && Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt
+              .exists(DateFieldHelper.validateDate)) =>
           Some(
             FastTrackVatInvitation(
+              clientType,
               Vrn(clientIdentifier),
               if (featureFlags.showKfcMtdVat) vatRegDateOpt.map(VatRegDate) else None))
         case _ => None
