@@ -59,6 +59,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
           arn,
           invitationId,
           new FastTrackInvitation[Nino] {
+            val clientType: Option[String] = agentInvitaitonUserInput.clientType
             val service: String = agentInvitaitonUserInput.service
             val clientIdentifier: Nino = Nino("WM123456C")
             val clientIdentifierType: String = "ni"

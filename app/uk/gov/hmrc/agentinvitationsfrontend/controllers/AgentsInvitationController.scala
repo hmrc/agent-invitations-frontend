@@ -128,7 +128,7 @@ class AgentsInvitationController @Inject()(
       fastTrackCache.fetch().map {
         case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
           Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
-        case None =>
+        case _ =>
           fastTrackCache.fetchAndClear()
           Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
       }
@@ -335,7 +335,8 @@ class AgentsInvitationController @Inject()(
               checkDetailsForm,
               currentInvitation,
               featureFlags,
-              serviceToMessageKey(currentInvitation.service), CheckDetailsPageConfig()))
+              serviceToMessageKey(currentInvitation.service),
+              CheckDetailsPageConfig(currentInvitation, featureFlags)))
         case None => Redirect(routes.AgentsInvitationController.selectClientType())
       }
     }
@@ -349,7 +350,13 @@ class AgentsInvitationController @Inject()(
         .fold(
           formWithErrors => {
             cachedCurrentInvitationInput.flatMap { cii =>
-              Future successful Ok(check_details(formWithErrors, cii, featureFlags, serviceToMessageKey(cii.service), CheckDetailsPageConfig()))
+              Future successful Ok(
+                check_details(
+                  formWithErrors,
+                  cii,
+                  featureFlags,
+                  serviceToMessageKey(cii.service),
+                  CheckDetailsPageConfig(cii, featureFlags)))
             }
           },
           data => {
@@ -808,6 +815,9 @@ class AgentsInvitationController @Inject()(
       case CurrentInvitationInputPirReady(completePirInvitation) =>
         knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
 
+      case CurrentInvitationInputNeedsKnownFact(_) =>
+        Future successful Redirect(routes.AgentsInvitationController.knownFact())
+
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
           case service if isSupportedWhitelistedService(service, isWhitelisted) =>
@@ -815,12 +825,14 @@ class AgentsInvitationController @Inject()(
           case _ =>
             Future successful Redirect(routes.AgentsInvitationController.selectClientType())
         }
+
       case CurrentInvitationInputNeedService(invitationNeedService) =>
         if (invitationNeedService.clientType.nonEmpty) {
           Future successful Redirect(routes.AgentsInvitationController.selectService())
         } else {
           Future successful Redirect(routes.AgentsInvitationController.selectClientType())
         }
+
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")
         fastTrackCache
@@ -1282,17 +1294,19 @@ object AgentsInvitationController {
   object CurrentInvitationInputNeedsKnownFact {
     def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
       currentInvitationInput match {
-        case CurrentInvitationInput(_, HMRCMTDVAT, _, _, Some(vatRegDate), _)
-            if !DateFieldHelper.validateDate(vatRegDate) =>
+        case CurrentInvitationInput(clientType, HMRCMTDVAT, _, _, Some(vatRegDate), true)
+            if supportedClientTypes.contains(clientType) && !DateFieldHelper.validateDate(vatRegDate) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(_, HMRCMTDIT, _, _, Some(postcode), _) if !postcode.matches(postcodeRegex) =>
+        case CurrentInvitationInput(`personal`, HMRCMTDIT, _, _, Some(postcode), true)
+            if !postcode.matches(postcodeRegex) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(_, HMRCPIR, _, _, Some(dob), _) if !DateFieldHelper.validateDate(dob) =>
+        case CurrentInvitationInput(`personal`, HMRCPIR, _, _, Some(dob), true) if !DateFieldHelper.validateDate(dob) =>
           Some(currentInvitationInput.copy(knownFact = None))
 
-        case CurrentInvitationInput(_, service, _, _, None, _) if Services.supportedServices.contains(service) =>
+        case CurrentInvitationInput(clientType, service, _, _, None, true)
+            if supportedClientTypes.contains(clientType) && Services.supportedServices.contains(service) =>
           Some(currentInvitationInput)
 
         case _ => None
