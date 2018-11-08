@@ -127,6 +127,19 @@ class FastTrackITSAISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
     }
 
+    "return 303 check-details if service calling fast-track for does not contain client type" in {
+
+      val formData =
+        CurrentInvitationInput(None, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+      val fastTrackFormData = agentFastTrackForm.fill(formData)
+      val result = fastTrack(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+    }
+
     "return 303 and redirect to error url if service calling fast-track for ITSA contains invalid nino" in {
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "ni", "INVALID_NINO", None, fromFastTrack)
@@ -233,6 +246,21 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
+    }
+
+    "display check details page when client type is not provided for ITSA" in {
+      val formData =
+        CurrentInvitationInput(None, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
+      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
+      checkHtmlResultWithNotBodyText(result, "Change this information")
+      checkHtmlResultWithNotBodyText(result, "We need some more details")
     }
   }
 

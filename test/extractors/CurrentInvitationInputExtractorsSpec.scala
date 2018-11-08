@@ -372,35 +372,35 @@ class CurrentInvitationInputExtractorsSpec extends UnitSpec {
     "return Some" when {
       "the service is HMRC-MTD-IT but there is no knownfact: postcode" in {
         val invalidClientIdNinoBasedInvitation =
-          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, None)
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, None, true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdNinoBasedInvitation) shouldBe Some(
           invalidClientIdNinoBasedInvitation)
       }
 
       "the service is HMRC-MTD-IT but there is an invalid postcode" in {
         val invalidClientIdNinoBasedInvitation =
-          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some("Invalid_Postcode"))
+          CurrentInvitationInput(personal, serviceITSA, "ni", nino.value, Some("Invalid_Postcode"), true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdNinoBasedInvitation) shouldBe Some(
           invalidClientIdNinoBasedInvitation.copy(knownFact = None))
       }
 
       "the service is HMRC-MTD-VAT but there is no knownfact: vat-reg-date" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, None)
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, None, true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe
           Some(invalidClientIdVatBasedInvitation)
       }
 
       "the service is PERSONAL-INCOME-RECORD but there is no knownfact: date-of-birth" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(personal, servicePIR, "ni", nino.value, None)
+          CurrentInvitationInput(personal, servicePIR, "ni", nino.value, None, true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe
           Some(invalidClientIdVatBasedInvitation)
       }
 
       "the service is HMRC-MTD-VAT but there is an invalid vat-reg-date" in {
         val invalidClientIdVatBasedInvitation =
-          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some("Invalid_Date"))
+          CurrentInvitationInput(business, serviceVAT, "vrn", vrn.value, Some("Invalid_Date"), true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe Some(
           invalidClientIdVatBasedInvitation.copy(knownFact = None))
       }
