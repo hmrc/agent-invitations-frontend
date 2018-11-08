@@ -248,7 +248,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "We need some more details")
     }
 
-    "display alternate check details page when client type is required but not provided for ITSA" in {
+    "display check details page when client type is not provided for ITSA" in {
       val formData =
         CurrentInvitationInput(None, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
@@ -257,8 +257,10 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
-      checkHtmlResultWithBodyText(result, "Change this information")
-      checkHtmlResultWithBodyText(result, "We need some more details")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
+      checkHtmlResultWithNotBodyText(result, "Change this information")
+      checkHtmlResultWithNotBodyText(result, "We need some more details")
     }
   }
 

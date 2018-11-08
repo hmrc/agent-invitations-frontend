@@ -225,6 +225,21 @@ class FastTrackVatISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
     }
+
+    "display alternate check details page when client-type is required and not provided for VAT" in {
+      val formData =
+        CurrentInvitationInput(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
+      checkHtmlResultWithBodyText(result, validVrn.value)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration date"))
+      checkHtmlResultWithBodyText(result, "07 July 2007")
+      checkHtmlResultWithBodyText(result, "Change this information")
+      checkHtmlResultWithBodyText(result, "We need some more details")
+    }
   }
 
   "POST /agents/check-details" should {
@@ -288,6 +303,17 @@ class FastTrackVatISpec extends BaseISpec {
       val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
+    }
+
+    "redirect to more-details when known fact is not provided and YES is selected for VAT service" in {
+      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+
+      val formData =
+        CurrentInvitationInput(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
+      testFastTrackCache.save(formData)
+      val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.knownFact().url
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {

@@ -31,7 +31,9 @@ case class CheckDetailsPageConfig(currentInvitationInput: CurrentInvitationInput
     }
   }
 
-  val needClientType: Boolean = shouldShowKF && currentInvitationInput.clientType.getOrElse("").isEmpty
+  val needClientType: Boolean = shouldShowKF && currentInvitationInput.clientType
+    .getOrElse("")
+    .isEmpty && (currentInvitationInput.service == "HMRC-MTD-VAT")
 
   val needKnownFact: Boolean = shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty
 
