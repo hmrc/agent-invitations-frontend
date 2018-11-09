@@ -11,6 +11,26 @@ import uk.gov.hmrc.domain.Nino
 trait ACAStubs {
   me: WireMockSupport =>
 
+  def createMultiInvitationStub(arn: Arn, hash: String, clientType: String) =
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations/sent"))
+      .withRequestBody(equalToJson(
+        s"""
+           |{"arn": "${arn.value}",
+           |"agentName": "99 With Flake",
+           |"clientType": "$clientType",
+           |"invitationIds": [{"value":"ABBBBBBBBBBCA"}, {"value":"ABBBBBBBBBBCB"}, {"value":"ABBBBBBBBBBCC"}]}
+         """.stripMargin))
+      .willReturn(
+        aResponse()
+          .withStatus(201)
+          .withHeader("location", s"/invitations/$clientType/$hash/99-with-flake")))
+
+  def failedCreateMultiInvitation(arn: Arn): Unit =
+    stubFor(
+      post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations/sent"))
+        .willReturn(aResponse()
+          .withStatus(400)))
+
   def createInvitationStub(
     arn: Arn,
     clientId: String,

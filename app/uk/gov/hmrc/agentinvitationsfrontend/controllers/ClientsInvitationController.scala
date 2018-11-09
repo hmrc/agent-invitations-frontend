@@ -55,6 +55,10 @@ class ClientsInvitationController @Inject()(
 
   import ClientsInvitationController._
 
+  def warmUp(clientType: String, hash: String, agentName: String) = ActionWithMdc { implicit request =>
+    NotImplemented
+  }
+
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
       case IsServiceMessageKeyValid(messageKey) =>

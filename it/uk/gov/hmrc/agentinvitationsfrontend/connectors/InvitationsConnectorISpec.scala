@@ -4,9 +4,9 @@ import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,6 +17,30 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
   val connector = app.injector.instanceOf[InvitationsConnector]
 
   "Create Invitation" when {
+
+    "CreateMultiInvitation" should {
+
+      val multiInvitation = MultiAgentInvitation(arn,"99 With Flake",
+        "personal", Seq(InvitationId("ABBBBBBBBBBCA"), InvitationId("ABBBBBBBBBBCB"), InvitationId("ABBBBBBBBBBCC")))
+
+      "return multi-invitation link for valid data" in {
+
+        createMultiInvitationStub(arn, hash, personal.get)
+
+        val result = await(connector.createMultiInvitations(arn, multiInvitation))
+        result.isDefined shouldBe true
+        result.get should include(
+          s"invitations/${personal.get}/$hash/99-with-flake"
+        )
+      }
+
+      "return an error if unexpected response when creating multi-invitation link" in {
+        failedCreateMultiInvitation(arn)
+        intercept[BadRequestException] {
+          await(connector.createMultiInvitations(arn, multiInvitation))
+        }
+      }
+    }
 
     "service is for ITSA" should {
       val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")

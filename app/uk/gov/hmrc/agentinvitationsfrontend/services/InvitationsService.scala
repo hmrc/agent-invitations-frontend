@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -45,6 +45,15 @@ class InvitationsService @Inject()(
                        throw new Exception("Invitation location expected; but missing.")
                      })
     } yield invitation
+  }
+
+  def createMultiInvitation(arn: Arn, agentName: String, clientType: String, invitationIds: Seq[InvitationId])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[String] = {
+    val multiAgentInvitation = MultiAgentInvitation(arn, agentName, clientType, invitationIds)
+    invitationsConnector.createMultiInvitations(arn, multiAgentInvitation).map {
+      case Some(multiInv) => multiInv
+    }
   }
 
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(

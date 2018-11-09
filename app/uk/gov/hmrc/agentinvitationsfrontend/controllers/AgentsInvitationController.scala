@@ -563,11 +563,12 @@ class AgentsInvitationController @Inject()(
               | (invitation.service == HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
           auditService.sendAgentInvitationSubmitted(arn, id, fti, "Success")
         } else auditService.sendAgentInvitationSubmitted(arn, id, fti, "Not Required")
-        Redirect(routes.AgentsInvitationController.invitationSent())
-          .addingToSession(
-            "invitationId" -> id,
-            "deadline"     -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY"))
-          )
+//        Redirect(routes.AgentsInvitationController.invitationSent())
+//          .addingToSession(
+//            "invitationId" -> id,
+//            "deadline"     -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY"))
+//          )
+        invitation
       })
       .recoverWith {
         case e =>
@@ -576,25 +577,40 @@ class AgentsInvitationController @Inject()(
           Future.failed(e)
       }
 
+  private def createMultiInvitation(arn: Arn, service: String, clientIdType: String, taxIdentifier: TaxIdentifier)(
+    implicit request: Request[_]): Future[Result] =
+    for {
+      invitationId <- invitationsService.createInvitation(arn, service, clientIdType, taxIdentifier).map(_.invitationId)
+      agencyName <- invitationsService.getAgencyName(arn)
+      multiLink  <- invitationsService.createMultiInvitation(arn, agencyName, cii.clientType.getOrElse(""), Seq(invId))
+    } yield
+      Redirect(routes.AgentsInvitationController.invitationSent())
+        .addingToSession(
+          "invitationLink" -> multiLink,
+          "clientType" -> cii.clientType.getOrElse("")
+        )
+
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { (arn, _) =>
       Logger(getClass).info(
-        s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
-      (request.session.get("invitationId"), request.session.get("deadline")) match {
-        case (Some(id), Some(deadline)) =>
-          val invitationUrl: String =
-            s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
+        s"Session contains ${request.session.get("invitationId")}")
+      request.session.get("invitationLink") match {
+        case (Some(link)) =>
+          val invitationUrl: String = s"$externalUrl$link"
           for {
             _        <- fastTrackCache.save(CurrentInvitationInput())
             continue <- continueUrlStoreService.fetchContinueUrl
-          } yield
+          } yield {
+
+            val clientType = if(link.contains("personal")) "personal" else "business"
+
             Ok(
               invitation_sent(
                 invitationUrl,
-                deadline,
                 continue.isDefined,
                 featureFlags.enableTrackRequests,
-                determineServiceMessageKey(InvitationId(id))))
+                clientType))
+          }
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }
