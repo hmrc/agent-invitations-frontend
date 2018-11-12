@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 
-case class MultiAgentInvitation(arn: Arn, agentName: String, clientType: String, invitationIds: Seq[InvitationId])
+case class MultiAgentInvitation(clientType: String, invitationIds: Seq[InvitationId])
 
 object MultiAgentInvitation {
   implicit val format = Json.format[MultiAgentInvitation]

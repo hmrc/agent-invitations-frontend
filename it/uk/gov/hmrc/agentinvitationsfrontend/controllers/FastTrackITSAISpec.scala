@@ -32,6 +32,7 @@ class FastTrackITSAISpec extends BaseISpec {
         "ni",
         serviceITSA,
         "NI")
+      createMultiInvitationStub(arn, "AAAAAAAA", "personal", Seq(invitationIdITSA))
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
@@ -59,6 +60,7 @@ class FastTrackITSAISpec extends BaseISpec {
         "ni",
         serviceITSA,
         "NI")
+      createMultiInvitationStub(arn, "AAAAAAAA", "personal", Seq(invitationIdITSA))
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
@@ -275,6 +277,7 @@ class FastTrackITSAISpec extends BaseISpec {
         "ni",
         serviceITSA,
         "MTDITID")
+      createMultiInvitationStub(arn, "AAAAAAAA", "personal", Seq(invitationIdITSA))
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "MTDITID", "Pending")
 
@@ -375,6 +378,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to invitation sent when client details are valid and match for ITSA" in {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+      createMultiInvitationStub(arn, "AAAAAAAA", "personal", Seq(invitationIdITSA))
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
       val requestWithForm = request.withFormUrlEncodedBody(

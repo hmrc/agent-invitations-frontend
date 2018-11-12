@@ -186,7 +186,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
         val result = invitationSent(
           authorisedAsValidAgent(
-            request.withSession("invitationId" -> "ABERULMHCKKW3", "deadline" -> "27 December 2017"),
+            request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-client-name", "deadline" -> "27 December 2017"),
             arn.value))
         status(result) shouldBe 200
         checkHtmlResultWithBodyText(
@@ -204,7 +204,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
         checkHtmlResultWithBodyText(
           result,
-          htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
+          htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-client-name")}"))
         checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
         checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -328,6 +328,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
             "NI")
           givenTradingName(validNino, "64 Bit")
           getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+          createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdITSA))
           val choice = agentConfirmClientForm.fill(Confirmation(true))
           val result =
             submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))

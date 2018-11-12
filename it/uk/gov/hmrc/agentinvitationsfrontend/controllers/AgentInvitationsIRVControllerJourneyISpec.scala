@@ -77,6 +77,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
           "ni",
           servicePIR,
           "NI")
+        createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdPIR))
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
@@ -165,7 +166,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
       val result = invitationSent(
         authorisedAsValidAgent(
-          request.withSession("invitationId" -> s"${invitationIdPIR.value}", "deadline" -> "27 December 2017"),
+          request.withSession("invitationLink" -> s"/invitations/personal/ABCDEFGH/my-agency-name", "deadline" -> "27 December 2017"),
           arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -183,7 +184,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdPIR)}"))
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 

@@ -31,6 +31,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "BBBBBBBB", "personal", Seq(invitationIdPIR))
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
@@ -58,6 +59,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "BBBBBBBB", "personal", Seq(invitationIdPIR))
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
@@ -198,6 +200,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "BBBBBBBB", "personal", Seq(invitationIdPIR))
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
@@ -243,6 +246,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "BBBBBBBB", "personal", Seq(invitationIdPIR))
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
@@ -281,6 +285,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "BBBBBBBB", "personal", Seq(invitationIdPIR))
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 

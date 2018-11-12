@@ -74,13 +74,14 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
       val result = invitationSent(
         authorisedAsValidAgent(
-          request.withSession("invitationId" -> invitationIdITSA.value, "deadline" -> "27 December 2017"),
+          request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
+            "clientType" -> "personal"),
           arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdITSA)}"))
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
@@ -96,15 +97,15 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       val result = invitationSent(
         authorisedAsValidAgent(
           request.withSession(
-            "invitationId" -> invitationIdPIR.value,
-            "deadline"     -> "27 December 2017",
+            "invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
+            "clientType" -> "personal",
             "sessionId"    -> "session12345"),
           arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdPIR)}"))
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))

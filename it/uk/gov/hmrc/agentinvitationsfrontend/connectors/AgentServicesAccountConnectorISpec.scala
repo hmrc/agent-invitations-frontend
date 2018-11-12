@@ -16,9 +16,9 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
 
 
 
-  "getAgencyName" should {
-    "return agency name for a valid arn" in {
-      givenGetAgencyNameStub(arn)
+  "getAgencyNameClient" should {
+    "return agency name for a valid arn for a client" in {
+      givenGetAgencyNameClientStub(arn)
 
       val result = await(connector.getAgencyName(arn.value))
 
@@ -26,7 +26,7 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
     }
 
     "return AgencyNameNotFound exception for an invalid arn" in {
-      givenAgencyNameNotFoundStub(Arn("INVALID_ARN"))
+      givenAgencyNameNotFoundClientStub(Arn("INVALID_ARN"))
 
       intercept[AgencyNameNotFound] {
         await(connector.getAgencyName("INVALID_ARN"))

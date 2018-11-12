@@ -50,7 +50,7 @@ class InvitationsConnector @Inject()(
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
   private[connectors] def createMultiInvitationUrl(arn: Arn): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations/sent")
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations")
 
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(
@@ -80,7 +80,7 @@ class InvitationsConnector @Inject()(
       }
     }
 
-  def createMultiInvitations(arn: Arn, multiAgentInvitation: MultiAgentInvitation)(
+  def createMultiInvitationLink(arn: Arn, multiAgentInvitation: MultiAgentInvitation)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {

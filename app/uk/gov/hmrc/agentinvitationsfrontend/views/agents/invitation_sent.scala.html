@@ -21,7 +21,7 @@
 
 @(invitationUrl: String, hasContinueUrl: Boolean, trackRequests: Boolean, clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent-link.header"))), completedInviteGoSurvey = Some("InviteSent")) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
 
   <h1 class="heading-xlarge">@Messages("invitation-sent-link.header")</h1>

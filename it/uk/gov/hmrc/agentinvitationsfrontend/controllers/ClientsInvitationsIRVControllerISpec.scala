@@ -135,7 +135,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the confirm terms page for AFI" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val req = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
       val result = getConfirmTermsAFI(req)
 
@@ -155,7 +155,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the invitation expired page when invitation has expired" in {
       getExpiredInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName"   -> "My Agency"), nino)
       val resultAFI = getConfirmTermsAFI(reqAFI)
 
@@ -166,7 +166,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the request-cancelled page when the invitation has already been cancelled" in {
       getCancelledInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
       val resultAFI = getConfirmTermsAFI(reqAFI)
 
@@ -177,7 +177,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenAgencyNameNotFoundStub(arn)
+      givenAgencyNameNotFoundClientStub(arn)
 
       val result = getConfirmTermsAFI(authorisedAsValidClientAFI(FakeRequest(), nino))
 
@@ -212,7 +212,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
     "redirect to complete page when YES was selected" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       acceptInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest(), nino)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -228,7 +228,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when YES was selected" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       acceptInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest(), nino)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
@@ -240,7 +240,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "redirect to confirm-decline when NO was selected" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest(), nino)
         .withFormUrlEncodedBody("confirmTerms" -> "false")
@@ -254,7 +254,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
     "reshow the page when the radio buttons were not selected with an error message" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       acceptInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
         .withFormUrlEncodedBody("confirmTerms"                                  -> "")
@@ -274,7 +274,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
         .withSession("agencyName" -> "My Agency")
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       acceptInvitationNoPermissionStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val resultAFI = submitConfirmTermsAFI(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
@@ -287,7 +287,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
         .withSession("agencyName" -> "My Agency")
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       alreadyActionedAcceptInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val resultAFI = submitConfirmTermsAFI(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
@@ -328,7 +328,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenAgencyNameNotFoundStub(arn)
+      givenAgencyNameNotFoundClientStub(arn)
 
       val result = submitConfirmTermsAFI(authorisedAsValidClientAFI(FakeRequest(), nino))
 
@@ -343,7 +343,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the complete page for AFI" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Accepted")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val result =
         getCompletePageAFI(authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
@@ -403,7 +403,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the confirm invitation page for AFI" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, "NI", "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val result = getConfirmInvitationAFI(
         authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
 
@@ -489,7 +489,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "reshow the page when neither yes nor no choices were selected with an error message" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val resultAFI = submitConfirmInvitationAFI(
         authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
 
@@ -503,7 +503,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "redirect to declined page when YES was selected" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
         .withFormUrlEncodedBody("confirmDecline" -> "true")
@@ -515,7 +515,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "redirect to confirm terms when NO was selected" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
         .withFormUrlEncodedBody("confirmDecline" -> "false")
@@ -563,7 +563,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       rejectInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val result = getInvitationDeclinedAFI(
         authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
@@ -588,7 +588,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Declined")
       alreadyActionedRejectInvitationStub(nino, invitationIdPIR, identifierPIR)
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
 
       val resultAFI = getInvitationDeclinedAFI(
         authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
@@ -619,7 +619,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "return exception when agency name retrieval fails" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenAgencyNameNotFoundStub(arn)
+      givenAgencyNameNotFoundClientStub(arn)
 
       val resultAFI = getInvitationDeclinedAFI(
         authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino))
@@ -654,7 +654,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
     "show the decide later page with PIR content even when user is not authenticated" in {
       getInvitationStub(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
-      givenGetAgencyNameStub(arn)
+      givenGetAgencyNameClientStub(arn)
       val result = getDecideLaterPIR(FakeRequest())
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(

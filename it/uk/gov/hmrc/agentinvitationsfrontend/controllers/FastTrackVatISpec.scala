@@ -22,7 +22,7 @@ class FastTrackVatISpec extends BaseISpec {
     val submitClientType = controller.submitClientType()
     "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to invitation-sent" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+        CurrentInvitationInput(Some("business"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       createInvitationStub(
         arn,
         validVrn.value,
@@ -31,6 +31,7 @@ class FastTrackVatISpec extends BaseISpec {
         "vrn",
         serviceVAT,
         identifierVAT)
+      createMultiInvitationStub(arn, "BBBBBBBB", "business", Seq(invitationIdVAT))
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
@@ -58,6 +59,7 @@ class FastTrackVatISpec extends BaseISpec {
         "vrn",
         serviceVAT,
         identifierVAT)
+      createMultiInvitationStub(arn, "BBBBBBBB", "business", Seq(invitationIdVAT))
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
@@ -254,6 +256,7 @@ class FastTrackVatISpec extends BaseISpec {
         "vrn",
         serviceVAT,
         "VRN")
+      createMultiInvitationStub(arn, "BBBBBBBB", "business", Seq(invitationIdVAT))
       checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
 
@@ -396,6 +399,7 @@ class FastTrackVatISpec extends BaseISpec {
         "vrn",
         serviceVAT,
         identifierVAT)
+      createMultiInvitationStub(arn, "BBBBBBBB", "business", Seq(invitationIdVAT))
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
 

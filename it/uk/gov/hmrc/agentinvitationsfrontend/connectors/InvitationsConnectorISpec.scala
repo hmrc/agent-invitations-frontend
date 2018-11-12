@@ -20,14 +20,14 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
 
     "CreateMultiInvitation" should {
 
-      val multiInvitation = MultiAgentInvitation(arn,"99 With Flake",
-        "personal", Seq(InvitationId("ABBBBBBBBBBCA"), InvitationId("ABBBBBBBBBBCB"), InvitationId("ABBBBBBBBBBCC")))
+      val multiInvitation = MultiAgentInvitation(
+        "personal", Seq(InvitationId("ABBBBBBBBBBCA")))
 
       "return multi-invitation link for valid data" in {
 
-        createMultiInvitationStub(arn, hash, personal.get)
+        createMultiInvitationStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
 
-        val result = await(connector.createMultiInvitations(arn, multiInvitation))
+        val result = await(connector.createMultiInvitationLink(arn, multiInvitation))
         result.isDefined shouldBe true
         result.get should include(
           s"invitations/${personal.get}/$hash/99-with-flake"
@@ -37,7 +37,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
       "return an error if unexpected response when creating multi-invitation link" in {
         failedCreateMultiInvitation(arn)
         intercept[BadRequestException] {
-          await(connector.createMultiInvitations(arn, multiInvitation))
+          await(connector.createMultiInvitationLink(arn, multiInvitation))
         }
       }
     }
