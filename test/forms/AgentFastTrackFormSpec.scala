@@ -154,6 +154,20 @@ class AgentFastTrackFormSpec extends UnitSpec {
       }
 
       "return error message" when {
+
+        "provided incorrect clientType" in {
+          val data = Json.obj(
+            "clientType"           -> "foo",
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("clientType", List("UNSUPPORTED_CLIENT_TYPE")))
+        }
+
         "provided incorrect NINO" in {
           val data = Json.obj(
             "clientType"           -> "personal",
@@ -212,6 +226,32 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "101747696",
             "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("INVALID_SUBMISSION")))
+        }
+
+        "provided incorrect clientType for ITSA" in {
+          val data = Json.obj(
+            "clientType"           -> "business",
+            "service"              -> HMRCMTDIT,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "DH14EJ"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("", List("INVALID_SUBMISSION")))
+        }
+
+        "provided incorrect clientType for PIR" in {
+          val data = Json.obj(
+            "clientType"           -> "business",
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "2000-01-01"
           )
           val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
