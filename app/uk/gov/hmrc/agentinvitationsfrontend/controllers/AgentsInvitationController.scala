@@ -1096,10 +1096,13 @@ object AgentsInvitationController {
   private val validateFastTrackForm: Constraint[CurrentInvitationInput] =
     Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
       formData match {
-        case CurrentInvitationInput(clientType, HMRCMTDIT, "ni", clientId, _, _) if Nino.isValid(clientId)  => Valid
-        case CurrentInvitationInput(clientType, HMRCPIR, "ni", clientId, _, _) if Nino.isValid(clientId)    => Valid
-        case CurrentInvitationInput(clientType, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
-        case _                                                                                              => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case CurrentInvitationInput(Some("personal") | None, HMRCMTDIT, "ni", clientId, _, _)
+            if Nino.isValid(clientId) =>
+          Valid
+        case CurrentInvitationInput(Some("personal") | None, HMRCPIR, "ni", clientId, _, _) if Nino.isValid(clientId) =>
+          Valid
+        case CurrentInvitationInput(_, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
+        case _                                                                                     => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -1145,7 +1148,7 @@ object AgentsInvitationController {
   val agentFastTrackForm: Form[CurrentInvitationInput] =
     Form(
       mapping(
-        "clientType" -> optional(text),
+        "clientType" -> optional(text.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
         "service"    -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
@@ -1319,4 +1322,5 @@ object AgentsInvitationController {
         case _ => None
       }
   }
+
 }
