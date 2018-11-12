@@ -150,6 +150,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "ni",
         serviceITSA,
         "NI")
+      createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdITSA))
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -203,6 +204,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "vrn",
         serviceVAT,
         identifierVAT)
+      createMultiInvitationStub(arn, "ABCDEFGH", "business", Seq(invitationIdVAT))
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
       val result = submitIdentifyClient(
@@ -370,6 +372,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
+      createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdPIR))
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))

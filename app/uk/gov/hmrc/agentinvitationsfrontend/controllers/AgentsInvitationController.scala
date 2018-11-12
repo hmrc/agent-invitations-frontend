@@ -554,47 +554,46 @@ class AgentsInvitationController @Inject()(
 
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
-    invitationsService
-      .createInvitation(arn, fti.service, fti.clientIdentifierType, fti.clientIdentifier)
-      .map(invitation => {
-        val id = invitation.selfUrl.toString.split("/").toStream.last
-        if ((invitation.service == HMRCMTDIT && featureFlags.showKfcMtdIt)
-              | (invitation.service == HMRCPIR && featureFlags.showKfcPersonalIncome)
-              | (invitation.service == HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-          auditService.sendAgentInvitationSubmitted(arn, id, fti, "Success")
-        } else auditService.sendAgentInvitationSubmitted(arn, id, fti, "Not Required")
-        Redirect(routes.AgentsInvitationController.invitationSent())
-          .addingToSession(
-            "invitationId" -> id,
-            "deadline"     -> invitation.expiryDate.toString(DateTimeFormat.forPattern("d MMMM YYYY"))
-          )
-      })
-      .recoverWith {
-        case e =>
-          Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Option(e.getMessage))
-          Future.failed(e)
-      }
+    for {
+      invId <- invitationsService
+                .createInvitation(arn, fti.service, fti.clientIdentifierType, fti.clientIdentifier)
+                .map(invitation => {
+                  val id = invitation.selfUrl.toString.split("/").toStream.last
+                  if ((invitation.service == HMRCMTDIT && featureFlags.showKfcMtdIt)
+                        | (invitation.service == HMRCPIR && featureFlags.showKfcPersonalIncome)
+                        | (invitation.service == HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+                    auditService.sendAgentInvitationSubmitted(arn, id, fti, "Success")
+                  } else auditService.sendAgentInvitationSubmitted(arn, id, fti, "Not Required")
+                  InvitationId(id)
+                })
+                .recoverWith {
+                  case e =>
+                    Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+                    auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Option(e.getMessage))
+                    Future.failed(e)
+                }
+      multiLink <- invitationsService
+                    .createMultiInvitation(arn, fti.clientType.getOrElse(""), Seq(invId))
+    } yield
+      Redirect(routes.AgentsInvitationController.invitationSent())
+        .addingToSession(
+          "invitationLink" -> multiLink,
+          "clientType"     -> fti.clientType.getOrElse("")
+        )
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Logger(getClass).info(
-        s"Session contains ${request.session.get("invitationId")} ${request.session.get("deadline")}")
-      (request.session.get("invitationId"), request.session.get("deadline")) match {
-        case (Some(id), Some(deadline)) =>
-          val invitationUrl: String =
-            s"$externalUrl${routes.ClientsInvitationController.start(InvitationId(id)).path()}"
+    withAuthorisedAsAgent { (arn, _) =>
+      Logger(getClass).info(s"Session contains ${request.session.get("invitationId")}")
+      request.session.get("invitationLink") match {
+        case (Some(link)) =>
+          val invitationUrl: String = s"$externalUrl$link"
           for {
             _        <- fastTrackCache.save(CurrentInvitationInput())
             continue <- continueUrlStoreService.fetchContinueUrl
-          } yield
-            Ok(
-              invitation_sent(
-                invitationUrl,
-                deadline,
-                continue.isDefined,
-                featureFlags.enableTrackRequests,
-                determineServiceMessageKey(InvitationId(id))))
+          } yield {
+            val clientType = if (link.contains("personal")) "personal" else "business"
+            Ok(invitation_sent(invitationUrl, continue.isDefined, featureFlags.enableTrackRequests, clientType))
+          }
         case _ =>
           throw new RuntimeException("User attempted to browse to invitationSent")
       }
@@ -1285,8 +1284,6 @@ object AgentsInvitationController {
               Some(CurrentInvitationInput(clientType, HMRCPIR, "ni", "", None))
             case _ => None
           }
-        case CurrentInvitationInput(clientType, service, _, _, _, _) =>
-          Some(CurrentInvitationInput(clientType, service))
         case _ => None
       }
   }

@@ -202,7 +202,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       val result = invitationSent(
         authorisedAsValidAgent(
-          request.withSession("invitationId" -> s"${invitationIdVAT.value}", "deadline" -> "27 December 2017"),
+          request.withSession("invitationLink" -> s"/invitations/business/ABCDEFGH/my-agency-name", "clientType" -> "business"),
           arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -220,7 +220,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.start(invitationIdVAT)}"))
+        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("business", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -341,6 +341,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         "vrn",
         serviceVAT,
         identifierVAT)
+      createMultiInvitationStub(arn, "ABCDEFGH", "business", Seq(invitationIdVAT))
       givenClientDetails(validVrn)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))

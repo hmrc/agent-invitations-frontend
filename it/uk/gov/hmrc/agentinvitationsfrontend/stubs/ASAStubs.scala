@@ -9,7 +9,7 @@ import uk.gov.hmrc.domain.Nino
 trait ASAStubs {
   me: WireMockSupport =>
 
-  def givenGetAgencyNameStub(arn: Arn) =
+  def givenGetAgencyNameClientStub(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
         .willReturn(
@@ -20,9 +20,26 @@ trait ASAStubs {
                          |  "agencyName" : "My Agency"
                          |}""".stripMargin)))
 
-  def givenAgencyNameNotFoundStub(arn: Arn) =
+  def givenGetAgencyNameAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-name"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyName" : "My Agency"
+                         |}""".stripMargin)))
+
+  def givenAgencyNameNotFoundClientStub(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenAgencyNameNotFoundAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-name"))
         .willReturn(aResponse()
           .withStatus(404)))
 
