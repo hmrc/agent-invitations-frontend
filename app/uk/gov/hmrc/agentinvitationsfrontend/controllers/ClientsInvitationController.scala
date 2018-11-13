@@ -25,7 +25,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
@@ -45,6 +45,7 @@ case class ConfirmAuthForm(confirmAuthorisation: Option[String])
 @Singleton
 class ClientsInvitationController @Inject()(
   invitationsService: InvitationsService,
+  invitationsConnector: InvitationsConnector,
   auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
   val authConnector: AuthConnector,
@@ -55,8 +56,19 @@ class ClientsInvitationController @Inject()(
 
   import ClientsInvitationController._
 
-  def warmUp(clientType: String, hash: String, agentName: String) = ActionWithMdc { implicit request =>
-    NotImplemented
+  def warmUp(clientType: String, uid: String, normalisedAgentName: String) = ActionWithMdc.async { implicit request =>
+    for {
+      record <- invitationsConnector.getMultiInvitationRecord(uid)
+      result <- record match {
+                 case Some(r) if r.normalisedAgentName == normalisedAgentName => {
+                   invitationsService.getAgencyName(r.arn).map { name =>
+                     Ok(warm_up(name, clientType))
+                   }
+                 }
+                 case None => Future successful BadRequest
+               }
+
+    } yield result
   }
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>

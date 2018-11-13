@@ -26,7 +26,7 @@ import org.joda.time.{DateTime, LocalDate}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, MultiInvitationRecord, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
@@ -51,6 +51,9 @@ class InvitationsConnector @Inject()(
 
   private[connectors] def createMultiInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations")
+
+  private[connectors] def getMultiInvitationRecordUrl(uid: String): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/$uid/multi-invitation")
 
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(
@@ -87,6 +90,14 @@ class InvitationsConnector @Inject()(
       http.POST[MultiAgentInvitation, HttpResponse](createMultiInvitationUrl(arn).toString, multiAgentInvitation) map {
         r =>
           r.header("location")
+      }
+    }
+
+  def getMultiInvitationRecord(
+    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationRecord]] =
+    monitor("ConsumedAPI-Client-Get-MultiInvitationRecord-GET") {
+      http.GET[Option[MultiInvitationRecord]](getMultiInvitationRecordUrl(uid).toString).recover {
+        case _: NotFoundException => None
       }
     }
 

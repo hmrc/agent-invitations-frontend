@@ -175,6 +175,17 @@ landing-page.service.itsa.p1=You need to authorise your tax agent if you want th
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
 
+# Warm up
+warm-up.header=Appoint {0} to deal with HMRC for you
+warm-up.p1=Use this service to allow {0} to help you manage your tax affairs.
+warm-up.p2=We need your approval for each business tax service that {0} wants to deal with for you.
+warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
+warm-up.sub-header=Before you start
+warm-up.p3=Before you can give your permission, you will need to sign in so we can confirm who you are.
+warm-up.p4.business=You will need the Government Gateway login details you use to access your business tax affairs. You can create an account now if you do not have one.
+warm-up.p4.personal=You will need the Government Gateway login details you use to access your individual or sole trader tax affairs. You can create an account now if you do not have one.
+warm-up.link=I do not want to appoint {0}
+
 # Invitation Declined
 invitation-declined.header=You have declined this request
 invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.

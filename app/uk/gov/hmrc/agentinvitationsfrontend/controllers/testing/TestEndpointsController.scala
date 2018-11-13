@@ -35,6 +35,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class TestEndpointsController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
@@ -79,6 +80,9 @@ class TestEndpointsController @Inject()(
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       Future successful Ok(create_relationship(testRelationshipForm))
+    }.recover {
+      case NonFatal(e) =>
+        Ok(e.getMessage)
     }
   }
 
