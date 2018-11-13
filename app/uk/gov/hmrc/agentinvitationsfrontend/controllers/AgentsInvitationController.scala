@@ -944,6 +944,7 @@ object AgentsInvitationController {
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
   val trimmedUppercaseText: Mapping[String] = of[String].transform(_.trim.toUpperCase, identity)
+  val lowerCaseText: Mapping[String] = of[String].transform(_.trim.toLowerCase, identity)
 
   val clientTypeOnlyForm: Form[Option[String]] = Form(mapping("clientType" -> optional(text)
     .verifying("Unsupported Client Type", clientType => supportedClientTypes.contains(clientType)))(identity)(Some(_)))
@@ -1148,8 +1149,9 @@ object AgentsInvitationController {
   val agentFastTrackForm: Form[CurrentInvitationInput] =
     Form(
       mapping(
-        "clientType" -> optional(text.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
-        "service"    -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+        "clientType" -> optional(
+          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
