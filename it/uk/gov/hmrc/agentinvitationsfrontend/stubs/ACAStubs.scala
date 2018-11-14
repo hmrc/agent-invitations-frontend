@@ -11,8 +11,8 @@ import uk.gov.hmrc.domain.Nino
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def createMultiInvitationStub(arn: Arn, hash: String, clientType: String, invitationIds: Seq[InvitationId]) =
-    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations"))
+  def createMultiInvitationStub(arn: Arn, uid: String, clientType: String, invitationIds: Seq[InvitationId]) =
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/references/${encodePathSegment(arn.value)}"))
       .withRequestBody(equalToJson(
         s"""{
            |"clientType": "$clientType",
@@ -21,11 +21,33 @@ trait ACAStubs {
       .willReturn(
         aResponse()
           .withStatus(201)
-          .withHeader("location", s"/invitations/$clientType/$hash/99-with-flake")))
+          .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")))
+
+  def getMultiInvitationStub(
+                         arn: Arn,
+                         uid: String,
+                         clientType: String,
+                         invitationIds: Seq[InvitationId]): Unit =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/agencies/references/$uid"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |{
+                 |  "arn" : "${arn.value}",
+                 |  "uid" : "$uid",
+                 |  "clientType" : "$clientType",
+                 |  "createdDate" : "2017-10-31T23:22:50.971Z",
+                 |  "invitationIds": ${invitationIds.map(id => s"""{"value":"${id.value}"}""").mkString("[",",","]")},
+                 |  "normalisedAgentName":"99-with-flake"
+                 |}""".stripMargin)))
 
   def failedCreateMultiInvitation(arn: Arn): Unit =
     stubFor(
-      post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/multi-invitations"))
+      post(urlEqualTo(s"/agent-client-authorisation/agencies/references/${encodePathSegment(arn.value)}"))
         .willReturn(aResponse()
           .withStatus(400)))
 
