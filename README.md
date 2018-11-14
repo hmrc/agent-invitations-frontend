@@ -50,21 +50,34 @@ API to create a fast-track invitation.
 POST   /invitations/agents/fast-track
 ```
 
-The following are the supported services and relevant mandatory fields required to create a fast track invitation:
+The following are the supported services and relevant fields required to create a fast track invitation:
 
-|service|clientIdentifierType|clientIdentifier|knownFact|
-|--------|---------|-------|-------|
-|HMRC-MTD-IT|ni|Valid Nino|Valid Postcode|
-|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
-|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
+|clientType|service|clientIdentifierType|clientIdentifier|knownFact|
+|--------|--------|---------|-------|-------|
+|personal|HMRC-MTD-IT|ni|Valid Nino|Postcode|
+|personal|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
+|personal or business|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
 
-Note: If any information is missing / invalid / unsupported, you will be redirected to the appropriate page to fill in.
+Note: Client Type and Known Fact are optional. If either of those are missing you will be redirected to the appropriate page. However, if any other information is missing / invalid / unsupported, you will be given an error url.
 
 ### For Clients
 
-Start Page for Clients:
+Start Page for Clients (Old):
+
+Note: This entry point will not be used until TBC
+
 
     GET     /invitations/{invitationId}
+    
+    
+Start Page for Clients (New):
+
+Note: Replaces old entry point. Currently In-progress.
+
+```
+    GET     /invitations/{clientType}/{uid}/{agentName}
+
+```
 
 ### License 
 
