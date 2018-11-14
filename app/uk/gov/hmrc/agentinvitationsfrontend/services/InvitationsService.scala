@@ -51,7 +51,7 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[String] = {
     val multiAgentInvitation = MultiAgentInvitation(clientType, invitationIds)
-    invitationsConnector.createMultiInvitationLink(arn, multiAgentInvitation).map {
+    invitationsConnector.createAgentLink(arn, multiAgentInvitation).map {
       case Some(multiInv) => multiInv
       case None           => throw new Exception("Creating multi-invitation link failed")
     }

@@ -4,7 +4,7 @@ import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, MultiInvitationRecord, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.http._
@@ -18,7 +18,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
 
   "Create Invitation" when {
 
-    "CreateMultiInvitation" should {
+    "createAgentLink" should {
 
       val multiInvitation = MultiAgentInvitation(
         "personal", Seq(InvitationId("ABBBBBBBBBBCA")))
@@ -27,7 +27,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
 
         createMultiInvitationStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
 
-        val result = await(connector.createMultiInvitationLink(arn, multiInvitation))
+        val result = await(connector.createAgentLink(arn, multiInvitation))
         result.isDefined shouldBe true
         result.get should include(
           s"invitations/${personal.get}/$hash/99-with-flake"
@@ -37,8 +37,23 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
       "return an error if unexpected response when creating multi-invitation link" in {
         failedCreateMultiInvitation(arn)
         intercept[BadRequestException] {
-          await(connector.createMultiInvitationLink(arn, multiInvitation))
+          await(connector.createAgentLink(arn, multiInvitation))
         }
+      }
+    }
+
+    "getMultiInvitationRecord" should {
+
+      val multiInvitation = MultiAgentInvitation(
+        "personal", Seq(InvitationId("ABBBBBBBBBBCA")))
+
+      "return multi-invitation record for valid uid" in {
+
+        getMultiInvitationStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
+
+        val result = await(connector.getMultiInvitationRecord(hash))
+        result.isDefined shouldBe true
+        result.get shouldBe MultiInvitationRecord(hash, arn, Seq(InvitationId("ABBBBBBBBBBCA")), personal.get, "99-with-flake", DateTime.parse("2017-10-31T23:22:50.971Z"))
       }
     }
 

@@ -16,11 +16,30 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.Json
+import org.joda.time.DateTime
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+
+import scala.collection.Seq
 
 case class MultiAgentInvitation(clientType: String, invitationIds: Seq[InvitationId])
 
 object MultiAgentInvitation {
   implicit val format = Json.format[MultiAgentInvitation]
+}
+
+case class MultiInvitationRecord(
+  uid: String,
+  arn: Arn,
+  invitationIds: Seq[InvitationId],
+  clientType: String,
+  normalisedAgentName: String,
+  createdDate: DateTime
+)
+
+object MultiInvitationRecord {
+
+  import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
+
+  implicit val formats: Format[MultiInvitationRecord] = Json.format[MultiInvitationRecord]
 }

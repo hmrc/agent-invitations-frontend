@@ -1,0 +1,48 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary}
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmAuthForm
+@import uk.gov.hmrc.play.views.html.helpers.inputRadioGroup
+@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@(agentName: String, clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+
+ <h1 class="heading-xlarge">@Messages("warm-up.header", agentName)</h1>
+
+    <p>@Messages("warm-up.p1", agentName)</p>
+    <p>@Messages(s"warm-up.p2.$clientType", agentName)</p>
+
+    <div class="panel panel-border-wide">@Messages("warm-up.inset", agentName)</div>
+
+    <h2>@Messages("warm-up.sub-header")</h2>
+
+    <p>@Messages("warm-up.p3")</p>
+
+    <p>@Messages(s"warm-up.p4.$clientType")</p>
+
+    <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+
+    <div class="margin-top-30"><a href="#">@Messages("warm-up.link", agentName)</a></div>
+
+}

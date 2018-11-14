@@ -151,6 +151,30 @@ class AgentFastTrackFormSpec extends UnitSpec {
           val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
+
+        "provided client type PERSONAL for IRV" in {
+          val data = Json.obj(
+            "clientType"           -> "PERSONAL",
+            "service"              -> HMRCPIR,
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "WM123456C",
+            "knownFact"            -> "foo"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
+
+        "provided client type BUSINESS for VAT" in {
+          val data = Json.obj(
+            "clientType"           -> "BUSINESS",
+            "service"              -> HMRCMTDVAT,
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> "101747696",
+            "knownFact"            -> "foo"
+          )
+          val fastTrackForm = agentFastTrackForm.bind(data)
+          fastTrackForm.errors.isEmpty shouldBe true
+        }
       }
 
       "return error message" when {
