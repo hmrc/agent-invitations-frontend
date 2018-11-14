@@ -56,7 +56,7 @@ class ClientsInvitationController @Inject()(
 
   import ClientsInvitationController._
 
-  def warmUp(clientType: String, uid: String, normalisedAgentName: String) = ActionWithMdc.async { implicit request =>
+  def warmUp(clientType: String, uid: String, normalisedAgentName: String) = Action.async { implicit request =>
     for {
       record <- invitationsConnector.getMultiInvitationRecord(uid)
       result <- record match {
