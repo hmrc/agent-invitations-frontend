@@ -11,13 +11,14 @@ import uk.gov.hmrc.domain.Nino
 trait ACAStubs {
   me: WireMockSupport =>
 
+//  private[connectors] def createAgentLinkUrl(arn: Arn, clientType: String): URL =
+//    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
+//
+//  private[connectors] def getMultiInvitationRecordUrl(uid: String): URL =
+//    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
+
   def createMultiInvitationStub(arn: Arn, uid: String, clientType: String, invitationIds: Seq[InvitationId]) =
-    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/references/${encodePathSegment(arn.value)}"))
-      .withRequestBody(equalToJson(
-        s"""{
-           |"clientType": "$clientType",
-           |"invitationIds": ${invitationIds.map(id => s"""{"value":"${id.value}"}""").mkString("[",",","]")}
-         }""".stripMargin))
+    stubFor(post(urlEqualTo(s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType"))
       .willReturn(
         aResponse()
           .withStatus(201)
