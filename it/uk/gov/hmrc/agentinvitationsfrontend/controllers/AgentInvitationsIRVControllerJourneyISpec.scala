@@ -69,27 +69,21 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
-        createInvitationStub(
-          arn,
-          validNino.value,
-          invitationIdPIR,
-          validNino.value,
-          "ni",
-          servicePIR,
-          "NI")
-        createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdPIR))
+        createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+        getAgentLinkStub(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
         testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType" -> "personal",
-            "service" -> servicePIR,
+            "clientType"       -> "personal",
+            "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year" -> "1980",
-            "knownFact.month" -> "07",
-            "knownFact.day" -> "07")
+            "knownFact.year"   -> "1980",
+            "knownFact.month"  -> "07",
+            "knownFact.day"    -> "07"
+          )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -116,11 +110,11 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an no date of birth is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> servicePIR,
+          "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
-          "knownFact.year" -> "",
-          "knownFact.month" -> "",
-          "knownFact.day" -> ""
+          "knownFact.year"   -> "",
+          "knownFact.month"  -> "",
+          "knownFact.day"    -> ""
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -131,11 +125,11 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an invalid date of birth is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> servicePIR,
+          "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
-          "knownFact.year" -> "9999",
-          "knownFact.month" -> "99",
-          "knownFact.day" -> "99"
+          "knownFact.year"   -> "9999",
+          "knownFact.month"  -> "99",
+          "knownFact.day"    -> "99"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -166,7 +160,9 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
       val result = invitationSent(
         authorisedAsValidAgent(
-          request.withSession("invitationLink" -> s"/invitations/personal/ABCDEFGH/my-agency-name", "deadline" -> "27 December 2017"),
+          request.withSession(
+            "invitationLink" -> s"/invitations/personal/ABCDEFGH/my-agency-name",
+            "deadline"       -> "27 December 2017"),
           arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -184,7 +180,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+        htmlEscapedMessage(
+          s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 

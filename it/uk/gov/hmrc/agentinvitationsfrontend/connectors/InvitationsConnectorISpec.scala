@@ -11,7 +11,7 @@ import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
+class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[InvitationsConnector]
@@ -20,14 +20,13 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
 
     "createAgentLink" should {
 
-      val multiInvitation = MultiAgentInvitation(
-        "personal", Seq(InvitationId("ABBBBBBBBBBCA")))
+      val multiInvitation = MultiAgentInvitation("personal", Seq(InvitationId("ABBBBBBBBBBCA")))
 
       "return multi-invitation link for valid data" in {
 
-        createMultiInvitationStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
+        getAgentLinkStub(arn, hash, personal.get)
 
-        val result = await(connector.createAgentLink(arn, multiInvitation))
+        val result = await(connector.createAgentLink(arn, "personal"))
         result.isDefined shouldBe true
         result.get should include(
           s"invitations/${personal.get}/$hash/99-with-flake"
@@ -35,39 +34,37 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
       }
 
       "return an error if unexpected response when creating multi-invitation link" in {
-        failedCreateMultiInvitation(arn)
-        intercept[BadRequestException] {
-          await(connector.createAgentLink(arn, multiInvitation))
+        failedGetAgentLinkStub(arn, personal.get)
+        intercept[NotFoundException] {
+          await(connector.createAgentLink(arn, "personal"))
         }
       }
     }
 
     "getMultiInvitationRecord" should {
 
-      val multiInvitation = MultiAgentInvitation(
-        "personal", Seq(InvitationId("ABBBBBBBBBBCA")))
+      val multiInvitation = MultiAgentInvitation("personal", Seq(InvitationId("ABBBBBBBBBBCA")))
 
       "return multi-invitation record for valid uid" in {
 
-        getMultiInvitationStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
+        getAgentReferenceRecordStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
 
         val result = await(connector.getMultiInvitationRecord(hash))
         result.isDefined shouldBe true
-        result.get shouldBe MultiInvitationRecord(hash, arn, Seq(InvitationId("ABBBBBBBBBBCA")), personal.get, "99-with-flake", DateTime.parse("2017-10-31T23:22:50.971Z"))
+        result.get shouldBe MultiInvitationRecord(
+          hash,
+          arn,
+          Seq(InvitationId("ABBBBBBBBBBCA")),
+          personal.get,
+          "99-with-flake",
+          DateTime.parse("2017-10-31T23:22:50.971Z"))
       }
     }
 
     "service is for ITSA" should {
       val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        createInvitationStub(
-          arn,
-          "AB123456B",
-          invitationIdITSA,
-          "AB123456B",
-          "ni",
-          serviceITSA,
-          identifierITSA)
+        createInvitationStub(arn, "AB123456B", invitationIdITSA, "AB123456B", "ni", serviceITSA, identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include(
@@ -85,14 +82,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
     "service is for PIR" should {
       val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
-        createInvitationStub(
-          arn,
-          "AB123456B",
-          invitationIdPIR,
-          "AB123456B",
-          "ni",
-          servicePIR,
-          identifierPIR)
+        createInvitationStub(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/B9SCS2T4NZBAX")
@@ -109,14 +99,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport{
     "service is for VAT" should {
       val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
-        createInvitationStub(
-          arn,
-          validVrn.value,
-          invitationIdVAT,
-          validVrn.value,
-          "vrn",
-          serviceVAT,
-          identifierVAT)
+        createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/VRN/101747696/invitations/received/CZTW1KY6RTAAT")

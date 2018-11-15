@@ -78,7 +78,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA))
 
       val form =
-        controller.agentInvitationIdentifyClientFormItsa.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
+        controller.agentInvitationIdentifyClientFormItsa.fill(
+          UserInputNinoAndPostcode(personal, serviceITSA, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -96,7 +97,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a vat registration date entry field if service is VAT" in {
       testFastTrackCache.save(CurrentInvitationInput(business, serviceVAT))
 
-      val form = controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
+      val form =
+        controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -114,7 +116,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a date of birth entry field if service is IRV" in {
       testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR))
 
-      val form = controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
+      val form =
+        controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
       val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -142,15 +145,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
-      createInvitationStub(
-        arn,
-        validNino.value,
-        invitationIdITSA,
-        validNino.value,
-        "ni",
-        serviceITSA,
-        "NI")
-      createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdITSA))
+      createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      getAgentLinkStub(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
@@ -170,14 +166,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
-      createInvitationStub(
-        arn,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        identifierPIR)
+      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val result = submitIdentifyClient(
@@ -196,15 +185,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
-      createInvitationStub(
-        arn,
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        identifierVAT)
-      createMultiInvitationStub(arn, "ABCDEFGH", "business", Seq(invitationIdVAT))
+      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      getAgentLinkStub(arn, "ABCDEFGH", "business")
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
       val result = submitIdentifyClient(
@@ -226,14 +208,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStub(
-        arn,
-        validNino.value,
-        invitationIdITSA,
-        validNino.value,
-        "ni",
-        serviceITSA,
-        "NI")
+      createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       val result = fastTrack(
@@ -248,14 +223,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStub(
-        arn,
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        identifierVAT)
+      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -270,14 +238,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      createInvitationStub(
-        arn,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        identifierPIR)
+      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -344,8 +305,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 200 and no client name was found for PERSONAL-INCOME-RECORD" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromManual))
+      testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromManual))
       givenCitizenDetailsReturns404For(validNino.value)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -364,15 +324,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "redirect to invitation-sent and create invitation for PERSONAL-INCOME-RECORD" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
-      createInvitationStub(
-        arn,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        "NI")
-      createMultiInvitationStub(arn, "ABCDEFGH", "personal", Seq(invitationIdPIR))
+      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      getAgentLinkStub(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))

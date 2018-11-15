@@ -19,7 +19,6 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
-
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitService()
@@ -73,14 +72,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "service is HMRC-MTD-VAT" should {
 
       "redirect to confirm-client when a valid VRN and registrationDate are submitted" in {
-        createInvitationStub(
-          arn,
-          validVrn.value,
-          invitationIdVAT,
-          validVrn.value,
-          "vrn",
-          serviceVAT,
-          identifierVAT)
+        createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
         getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
         checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
 
@@ -93,12 +85,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType" -> "business",
-          "service" -> "HMRC-MTD-VAT",
+          "clientType"       -> "business",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year" -> "2007",
-          "knownFact.month" -> "7",
-          "knownFact.day" -> "7"
+          "knownFact.year"   -> "2007",
+          "knownFact.month"  -> "7",
+          "knownFact.day"    -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -108,9 +100,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an empty VRN is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "",
-          "knownFact" -> validRegistrationDate)
+          "knownFact"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -120,9 +112,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an invalid VRN is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "invalid",
-          "knownFact" -> validRegistrationDate)
+          "knownFact"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -132,11 +124,11 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an empty registrationDate is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year" -> "2008",
-          "knownFact.month" -> "",
-          "knownFact.day" -> "12"
+          "knownFact.year"   -> "2008",
+          "knownFact.month"  -> "",
+          "knownFact.day"    -> "12"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -147,11 +139,11 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when an invalid registrationDate is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year" -> "2007",
-          "knownFact.month" -> "17",
-          "knownFact.day" -> "07"
+          "knownFact.year"   -> "2007",
+          "knownFact.month"  -> "17",
+          "knownFact.day"    -> "07"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -162,11 +154,11 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redisplay page with errors when invalid registrationDate fields are submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "HMRC-MTD-VAT",
+          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year" -> "INVALID",
-          "knownFact.month" -> "INVALID",
-          "knownFact.day" -> "INVALID"
+          "knownFact.year"   -> "INVALID",
+          "knownFact.month"  -> "INVALID",
+          "knownFact.day"    -> "INVALID"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -179,9 +171,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redirect to /agents/select-service if service is missing" in {
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service" -> "",
+          "service"          -> "",
           "clientIdentifier" -> validVrn.value,
-          "knownFact" -> validRegistrationDate)
+          "knownFact"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -202,7 +194,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
       val result = invitationSent(
         authorisedAsValidAgent(
-          request.withSession("invitationLink" -> s"/invitations/business/ABCDEFGH/my-agency-name", "clientType" -> "business"),
+          request.withSession(
+            "invitationLink" -> s"/invitations/business/ABCDEFGH/my-agency-name",
+            "clientType"     -> "business"),
           arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -220,7 +214,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("business", "ABCDEFGH", "my-agency-name")}"))
+        htmlEscapedMessage(
+          s"$wireMockBaseUrlAsString${routes.ClientsInvitationController.warmUp("business", "ABCDEFGH", "my-agency-name")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -262,7 +257,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
       testFastTrackCache.save(CurrentInvitationInput(business, serviceVAT))
       val vrnForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(
+          UserInputVrnAndRegDate(business, serviceVAT, None, None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
 
@@ -287,12 +283,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 and show client name" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(business,
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack))
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       givenClientDetails(validVrn)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -304,12 +295,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 and no client name was found" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(business,
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack))
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       givenClientDetailsNotFound(validVrn)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -327,21 +313,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "redirect to invitation-sent" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(business,
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack))
-      createInvitationStub(
-        arn,
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        identifierVAT)
-      createMultiInvitationStub(arn, "ABCDEFGH", "business", Seq(invitationIdVAT))
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      getAgentLinkStub(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val choice = agentConfirmClientForm.fill(Confirmation(true))
@@ -353,12 +327,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for not selecting an option" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(business,
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack))
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       givenClientDetails(validVrn)
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

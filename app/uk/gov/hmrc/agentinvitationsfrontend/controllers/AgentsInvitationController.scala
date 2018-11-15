@@ -574,7 +574,7 @@ class AgentsInvitationController @Inject()(
                     Future.failed(e)
                 }
       multiLink <- invitationsService
-                    .createMultiInvitation(arn, fti.clientType.getOrElse(""), Seq(invId))
+                    .createMultiInvitation(arn, fti.clientType.getOrElse(""))
     } yield
       Redirect(routes.AgentsInvitationController.invitationSent())
         .addingToSession(
@@ -833,7 +833,7 @@ class AgentsInvitationController @Inject()(
         Future successful Redirect(routes.AgentsInvitationController.selectClientType())
 
       case CurrentInvitationInputNeedService(_) =>
-          Future successful Redirect(routes.AgentsInvitationController.selectService())
+        Future successful Redirect(routes.AgentsInvitationController.selectService())
 
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")
@@ -1297,17 +1297,19 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputFromFastTrackNeedsClientType {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] = currentInvitationInput match {
-        case input:CurrentInvitationInput if input.fromFastTrack && input.clientType.isEmpty => Some (input)
-        case _ => None
+    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
+      currentInvitationInput match {
+        case input: CurrentInvitationInput if input.fromFastTrack && input.clientType.isEmpty => Some(input)
+        case _                                                                                => None
       }
   }
 
   object CurrentInvitationInputNeedsClientType {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] = currentInvitationInput match {
-      case input:CurrentInvitationInput if !input.fromFastTrack && input.clientType.isEmpty => Some (input)
-      case _ => None
-    }
+    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
+      currentInvitationInput match {
+        case input: CurrentInvitationInput if !input.fromFastTrack && input.clientType.isEmpty => Some(input)
+        case _                                                                                 => None
+      }
   }
 
   object CurrentInvitationInputNeedsKnownFact {

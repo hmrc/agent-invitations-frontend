@@ -50,7 +50,9 @@ class InvitationsConnector @Inject()(
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
   private[connectors] def createAgentLinkUrl(arn: Arn, clientType: String): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
 
   private[connectors] def getMultiInvitationRecordUrl(uid: String): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
