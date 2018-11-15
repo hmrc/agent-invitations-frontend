@@ -49,11 +49,13 @@ class InvitationsConnector @Inject()(
   private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
-  private[connectors] def createAgentLinkUrl(arn: Arn): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/${encodePathSegment(arn.value)}")
+  private[connectors] def createAgentLinkUrl(arn: Arn, clientType: String): URL =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
 
   private[connectors] def getMultiInvitationRecordUrl(uid: String): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/$uid")
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
 
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(
@@ -83,11 +85,11 @@ class InvitationsConnector @Inject()(
       }
     }
 
-  def createAgentLink(arn: Arn, multiAgentInvitation: MultiAgentInvitation)(
+  def createAgentLink(arn: Arn, clientType: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
-      http.POST[MultiAgentInvitation, HttpResponse](createAgentLinkUrl(arn).toString, multiAgentInvitation) map { r =>
+      http.POST[Boolean, HttpResponse](createAgentLinkUrl(arn, clientType).toString, false) map { r =>
         r.header("location")
       }
     }

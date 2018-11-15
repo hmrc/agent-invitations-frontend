@@ -47,15 +47,13 @@ class InvitationsService @Inject()(
     } yield invitation
   }
 
-  def createMultiInvitation(arn: Arn, clientType: String, invitationIds: Seq[InvitationId])(
+  def createMultiInvitation(arn: Arn, clientType: String)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[String] = {
-    val multiAgentInvitation = MultiAgentInvitation(clientType, invitationIds)
-    invitationsConnector.createAgentLink(arn, multiAgentInvitation).map {
+    ec: ExecutionContext): Future[String] =
+    invitationsConnector.createAgentLink(arn, clientType).map {
       case Some(multiInv) => multiInv
       case None           => throw new Exception("Creating multi-invitation link failed")
     }
-  }
 
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,

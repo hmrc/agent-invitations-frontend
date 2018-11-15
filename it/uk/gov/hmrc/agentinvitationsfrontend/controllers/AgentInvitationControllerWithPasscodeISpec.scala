@@ -76,7 +76,6 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   private val timeout = 2.seconds
 
-
   "GET /agents/client-type" should {
     "return 303 for an authorised Agent without OTAC token but with passcode" in {
       val request = FakeRequest("GET", "/agents/client-type?p=foo123")
@@ -165,7 +164,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         testFastTrackCache.save(CurrentInvitationInput())
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal,"PERSONAL-INCOME-RECORD", None, None))
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -176,6 +175,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
+        testFastTrackCache.save(CurrentInvitationInput(personal))
         val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -188,7 +188,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
+        testFastTrackCache.save(CurrentInvitationInput(business))
+        val serviceForm =
+          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
