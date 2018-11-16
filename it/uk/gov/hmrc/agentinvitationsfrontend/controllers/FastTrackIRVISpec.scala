@@ -136,28 +136,17 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testFastTrackCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
-      checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Date of birth"))
-      checkHtmlResultWithBodyText(result, "07 July 1980")
-    }
 
-    "display the check details page when client type is not provided for IRV" in {
-      val formData =
-        CurrentInvitationInput(None, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
-      testFastTrackCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Date of birth"))
       checkHtmlResultWithBodyText(result, "07 July 1980")
-      checkHtmlResultWithNotBodyText(result, "Change this information")
-      checkHtmlResultWithNotBodyText(result, "We need some more details")
+      checkHtmlResultWithBodyText(result, "Yes - I want to ask this client for authorisation")
+      checkHtmlResultWithBodyText(result, "No - I need to change them")
     }
 
     "display alternate check details page when known fact is required and not provided for IRV" in {
