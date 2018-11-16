@@ -28,18 +28,12 @@ object MultiAgentInvitation {
   implicit val format = Json.format[MultiAgentInvitation]
 }
 
-case class MultiInvitationRecord(
+case class AgentReferenceRecord(
   uid: String,
   arn: Arn,
-  invitationIds: Seq[InvitationId],
-  clientType: String,
-  normalisedAgentName: String,
-  createdDate: DateTime
+  normalisedAgentNames: Seq[String]
 )
 
-object MultiInvitationRecord {
-
-  import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
-
-  implicit val formats: Format[MultiInvitationRecord] = Json.format[MultiInvitationRecord]
+object AgentReferenceRecord {
+  implicit val formats: Format[AgentReferenceRecord] = Json.format[AgentReferenceRecord]
 }

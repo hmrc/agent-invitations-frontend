@@ -49,7 +49,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
         getAgentReferenceRecordStub(arn, hash, personal.get, Seq(InvitationId("ABBBBBBBBBBCA")))
 
-        val result = await(connector.getMultiInvitationRecord(hash))
+        val result = await(connector.getAgentReferenceRecord(hash))
         result.isDefined shouldBe true
         result.get shouldBe MultiInvitationRecord(
           hash,

@@ -58,9 +58,9 @@ class ClientsInvitationController @Inject()(
 
   def warmUp(clientType: String, uid: String, normalisedAgentName: String) = Action.async { implicit request =>
     for {
-      record <- invitationsConnector.getMultiInvitationRecord(uid)
+      record <- invitationsConnector.getAgentReferenceRecord(uid)
       result <- record match {
-                 case Some(r) if r.normalisedAgentName == normalisedAgentName => {
+                 case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) => {
                    invitationsService.getAgencyName(r.arn).map { name =>
                      Ok(warm_up(name, clientType))
                    }
