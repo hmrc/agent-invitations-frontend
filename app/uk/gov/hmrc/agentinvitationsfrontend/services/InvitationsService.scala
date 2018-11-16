@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
