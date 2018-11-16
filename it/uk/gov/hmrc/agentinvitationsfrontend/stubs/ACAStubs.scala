@@ -30,12 +30,7 @@ trait ACAStubs {
                          |{
                          |  "arn" : "${arn.value}",
                          |  "uid" : "$uid",
-                         |  "clientType" : "$clientType",
-                         |  "createdDate" : "2017-10-31T23:22:50.971Z",
-                         |  "invitationIds": ${invitationIds
-                           .map(id => s"""{"value":"${id.value}"}""")
-                           .mkString("[", ",", "]")},
-                         |  "normalisedAgentName":"99-with-flake"
+                         |  "normalisedAgentNames" : ["99-with-flake"]
                          |}""".stripMargin)))
 
   def failedGetAgentLinkStub(arn: Arn, clientType: String): Unit =

@@ -4,7 +4,7 @@ import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, MultiAgentInvitation, MultiInvitationRecord, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentReferenceRecord, MultiAgentInvitation, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.http._
@@ -51,13 +51,10 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
         val result = await(connector.getAgentReferenceRecord(hash))
         result.isDefined shouldBe true
-        result.get shouldBe MultiInvitationRecord(
+        result.get shouldBe AgentReferenceRecord(
           hash,
           arn,
-          Seq(InvitationId("ABBBBBBBBBBCA")),
-          personal.get,
-          "99-with-flake",
-          DateTime.parse("2017-10-31T23:22:50.971Z"))
+          Seq("99-with-flake"))
       }
     }
 
