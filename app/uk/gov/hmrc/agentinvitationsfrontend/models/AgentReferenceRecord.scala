@@ -16,17 +16,10 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.DateTime
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 import scala.collection.Seq
-
-case class MultiAgentInvitation(clientType: String, invitationIds: Seq[InvitationId])
-
-object MultiAgentInvitation {
-  implicit val format = Json.format[MultiAgentInvitation]
-}
 
 case class AgentReferenceRecord(
   uid: String,

@@ -4,7 +4,7 @@ import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentReferenceRecord, MultiAgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentReferenceRecord, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.http._
@@ -19,8 +19,6 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   "Create Invitation" when {
 
     "createAgentLink" should {
-
-      val multiInvitation = MultiAgentInvitation("personal", Seq(InvitationId("ABBBBBBBBBBCA")))
 
       "return multi-invitation link for valid data" in {
 
@@ -42,8 +40,6 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "getMultiInvitationRecord" should {
-
-      val multiInvitation = MultiAgentInvitation("personal", Seq(InvitationId("ABBBBBBBBBBCA")))
 
       "return multi-invitation record for valid uid" in {
 
