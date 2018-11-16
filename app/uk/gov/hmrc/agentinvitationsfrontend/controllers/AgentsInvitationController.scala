@@ -1160,7 +1160,7 @@ object AgentsInvitationController {
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(clientType, service, clientIdType, clientId, knownFact)
+        CurrentInvitationInput(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some(
           (
@@ -1170,6 +1170,13 @@ object AgentsInvitationController {
             fastTrack.clientIdentifier,
             fastTrack.knownFact))
       }).verifying(validateFastTrackForm))
+
+  def clientTypeFor(clientType: Option[String], service: String): Option[String] =
+    clientType.orElse(service match {
+      case "HMRC-MTD-IT"            => Some("personal")
+      case "PERSONAL-INCOME-RECORD" => Some("personal")
+      case _                        => None
+    })
 
   def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
     Form(

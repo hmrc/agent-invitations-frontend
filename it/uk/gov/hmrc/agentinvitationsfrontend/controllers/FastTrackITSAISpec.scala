@@ -236,8 +236,8 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
       checkHtmlResultWithBodyText(result, "DH1 4EJ")
-      checkHtmlResultWithNotBodyText(result, "Change this information")
-      checkHtmlResultWithNotBodyText(result, "We need some more details")
+      checkHtmlResultWithBodyText(result, "Change this information")
+      checkHtmlResultWithBodyText(result, "We need some more details")
     }
   }
 
