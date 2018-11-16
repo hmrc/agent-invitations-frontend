@@ -29,6 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SingleConfirmDeclinePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -155,7 +156,10 @@ class ClientsInvitationController @Inject()(
           withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
             invitation =>
               invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                Ok(confirm_decline(confirmDeclineForm, agencyName, invitationId, messageKey))
+                Ok(
+                  confirm_decline(
+                    confirmDeclineForm,
+                    SingleConfirmDeclinePageConfig(agencyName, invitationId, messageKey)))
               }
           })
         }
@@ -176,7 +180,10 @@ class ClientsInvitationController @Inject()(
                 .fold(
                   formWithErrors => {
                     invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                      Ok(confirm_decline(formWithErrors, agencyName, invitationId, messageKey))
+                      Ok(
+                        confirm_decline(
+                          formWithErrors,
+                          SingleConfirmDeclinePageConfig(agencyName, invitationId, messageKey)))
                     }
                   },
                   data => {
