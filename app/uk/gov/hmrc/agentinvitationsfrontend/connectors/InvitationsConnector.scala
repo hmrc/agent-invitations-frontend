@@ -24,6 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.libs.json.JsObject
+import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -233,6 +234,10 @@ class InvitationsConnector @Inject()(
       case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
       case _: NotFoundException                                      => None
     }
+
+  def getAllPendingInvitationIds(
+    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationId]] =
+    Future.failed(new NotImplementedException)
 
   object Reads {
 

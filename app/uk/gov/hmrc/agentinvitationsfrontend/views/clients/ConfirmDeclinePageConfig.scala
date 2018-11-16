@@ -25,6 +25,7 @@ sealed trait ConfirmDeclinePageConfig {
   def backUrl: Call
   def submitUrl: Call
   def serviceKeys: Seq[String]
+  def isSingle: Boolean
 }
 
 case class MultiConfirmDeclinePageConfig(
@@ -38,8 +39,9 @@ case class MultiConfirmDeclinePageConfig(
   override val backUrl: Call =
     routes.ClientsInvitationController.warmUp(clientType, agentReferenceRecord.uid, agencyName)
 
-  override val submitUrl: Call = ???
-  //// routes.ClientsInvitationController.submitMultiConfirmDecline(agentReferenceRecord.uid)
+  override val submitUrl: Call = routes.ClientsInvitationController.submitMultiConfirmDecline
+
+  override val isSingle: Boolean = false
 
 }
 
@@ -51,5 +53,7 @@ case class SingleConfirmDeclinePageConfig(agencyName: String, invitationId: Invi
   override val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
 
   override val submitUrl: Call = routes.ClientsInvitationController.submitConfirmDecline(invitationId)
+
+  override val isSingle: Boolean = true
 
 }

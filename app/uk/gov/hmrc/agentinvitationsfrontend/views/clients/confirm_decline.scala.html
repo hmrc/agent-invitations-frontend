@@ -29,9 +29,19 @@
 
 @requestPage = @{request.headers.get("Referer").getOrElse(s"${config.backUrl}")}
 
-@legend = {<h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
-            <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
-            }
+@legend = {
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
+    @if(config.isSingle){
+        <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
+    } else {
+        <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
+        <ul class="govuk-list govuk-list--bullet">
+       @for(key <- config.serviceKeys){
+           <li>@Messages(s"confirm-decline.$key.service-name")</li>
+       }
+        </ul>
+    }
+}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), config.serviceKeys.head))) {
 

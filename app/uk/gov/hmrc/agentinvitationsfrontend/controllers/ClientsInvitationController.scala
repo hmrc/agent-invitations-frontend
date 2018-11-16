@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SingleConfirmDeclinePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, SingleConfirmDeclinePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -169,6 +169,27 @@ class ClientsInvitationController @Inject()(
     }
   }
 
+  def getMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient {
+      for {
+        agentReferenceRecordOpt <- invitationsConnector.getAgentReferenceRecord(uid)
+        result <- agentReferenceRecordOpt match {
+                   case Some(agentReferenceRecord) =>
+                     for {
+                       invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
+                       serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
+                     } yield
+                       Ok(
+                         confirm_decline(
+                           confirmDeclineForm,
+                           MultiConfirmDeclinePageConfig(clientType, agentReferenceRecord, serviceKeys)))
+                   case None =>
+                     Future.failed(new Exception(s"Agent Reference Record not found for $uid"))
+                 }
+      } yield result
+    }
+  }
+
   def submitConfirmDecline(invitationId: InvitationId): Action[AnyContent] = Action.async { implicit request =>
     determineService(invitationId) match {
       case ValidService(_, enrolmentName, enrolmentIdentifier, apiIdentifier, messageKey) =>
@@ -201,6 +222,12 @@ class ClientsInvitationController @Inject()(
       case InvalidService =>
         Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
           .addingToSession("clientService" -> determineServiceMessageKey(invitationId))
+    }
+  }
+
+  val submitMultiConfirmDecline: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient {
+      Future.successful(Ok)
     }
   }
 
