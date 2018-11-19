@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{messageKeyForAfi, messageKeyForITSA, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, SingleConfirmDeclinePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, MultiInvitationDeclinedPageConfig, SingleConfirmDeclinePageConfig, SingleInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -136,7 +136,7 @@ class ClientsInvitationController @Inject()(
                         clientId,
                         serviceName,
                         agencyName)
-                      Ok(invitation_declined(agencyName, invitationId, messageKey))
+                      Ok(invitation_declined(SingleInvitationDeclinedPageConfig(agencyName, messageKey)))
                     }
                     case status => throw new Exception(s"Invitation rejection failed with status $status")
                   }
@@ -180,10 +180,14 @@ class ClientsInvitationController @Inject()(
                        agencyName    <- invitationsService.getAgencyName(agentReferenceRecord.arn)
                        serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
                      } yield
-                       Ok(
-                         confirm_decline(
-                           confirmDeclineForm,
-                           MultiConfirmDeclinePageConfig(agencyName, clientType, agentReferenceRecord, serviceKeys)))
+                       if (serviceKeys.nonEmpty)
+                         Ok(
+                           confirm_decline(
+                             confirmDeclineForm,
+                             MultiConfirmDeclinePageConfig(agencyName, clientType, uid, serviceKeys)))
+                       else
+                         Redirect(routes.ClientsInvitationController.notFoundInvitation())
+
                    case None =>
                      Future.failed(new Exception(s"Agent Reference Record not found for $uid"))
                  }
@@ -226,100 +230,93 @@ class ClientsInvitationController @Inject()(
     }
   }
 
+  private def getAgencyNameViaClient(uid: String)(implicit hc: HeaderCarrier): Future[String] =
+    for {
+      record <- invitationsConnector.getAgentReferenceRecord(uid)
+      name <- record match {
+               case Some(rec) => invitationsService.getAgencyName(rec.arn)
+               case None      => Future.failed(new Exception(s"Agent Reference Record not found for $uid"))
+             }
+    } yield name
+
+  private def rejectPendingInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(implicit hc: HeaderCarrier) =
+    for {
+      isPending <- invitationsService
+                    .getClientInvitation(clientId, invitationId, apiIdentifier)
+                    .map(inv => inv.status == "Pending")
+    } yield
+      if (isPending) {
+        apiIdentifier match {
+          case MTDITID =>
+            invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
+          case NI =>
+            invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+          case VRN =>
+            invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
+        }
+      }
+
+  private def getPageComponents(uid: String)(body: (Seq[InvitationId], String, Seq[String]) => Result)(implicit hc: HeaderCarrier) =
+    for {
+      invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
+      agencyName    <- getAgencyNameViaClient(uid)
+      serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
+    } yield body(invitationIds, agencyName, serviceKeys)
+
   def submitMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsAnyClient { identifiers =>
+        val reformatIdentifiers: Seq[(String, String)] = identifiers.map(id => (id._1, id._2.replaceAll(" ", "")))
         confirmDeclineForm
           .bindFromRequest()
           .fold(
             formWithErrors => {
-              //extract out?
-              for {
-                agentReferenceRecordOpt <- invitationsConnector.getAgentReferenceRecord(uid)
-                result <- agentReferenceRecordOpt match {
-                           case Some(agentReferenceRecord) =>
-                             for {
-                               invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
-                               agencyName    <- invitationsService.getAgencyName(agentReferenceRecord.arn)
-                               serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
-                             } yield
-                               Ok(
-                                 confirm_decline(
-                                   formWithErrors,
-                                   MultiConfirmDeclinePageConfig(
-                                     agencyName,
-                                     clientType,
-                                     agentReferenceRecord,
-                                     serviceKeys)))
-                           case None =>
-                             Future.failed(new Exception(s"Agent Reference Record not found for $uid"))
-                         }
-              } yield result
+
+              getPageComponents(uid) { (_, agencyName, serviceKeys) =>
+                Ok(
+                  confirm_decline(
+                    formWithErrors,
+                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, serviceKeys)))
+              }
             },
             data => {
               if (data.value.getOrElse(false)) {
-                for {
-                  invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
-                  _ <- Future.traverse(invitationIds) {
-                    case (invitationId) => determineService(invitationId) match {
-                      case ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, _) => {
-                        identifiers.map {
-                          case (HMRCMTDIT, clientId) if MtdItId.isValid(clientId) =>
-                            invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
-                          case _ => ???
-                        }
-                      }
-                      case ValidService(HMRCPIR, HMRCNI, NINO, NI, _) => {
-                        identifiers.map {
-                          case (HMRCNI, clientId) if Nino.isValid(clientId) =>
-                            invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+                getPageComponents(uid) {
+                  (invitationIds, agencyName, serviceKeys) =>
+                    Future.traverse(invitationIds) {
+                      invitationId =>
+                        determineService(invitationId) match {
+                          case ValidService(serviceName, _, _, _, _) if supportedServices.contains(serviceName) =>
+                            Future.traverse(reformatIdentifiers) {
+                              case identifier
+                                  if identifier._1 == MTDITID && MtdItId
+                                    .isValid(identifier._2) && serviceName == HMRCMTDIT =>
+                                rejectPendingInvitation(identifier._2, invitationId, MTDITID)
 
-                          case _ => ???
+                              case identifier
+                                  if identifier._1 == NINO && Nino.isValid(identifier._2) && serviceName == HMRCPIR =>
+                                rejectPendingInvitation(identifier._2, invitationId, NI)
+
+                              case identifier
+                                  if identifier._1 == VRN && Vrn
+                                    .isValid(identifier._2) && serviceName == HMRCMTDVAT =>
+                                rejectPendingInvitation(identifier._2, invitationId, VRN)
+
+                              case _ =>
+                                Future failed new Exception("Unable to reject invitations due to mixed data")
+                            }
+
+                          case InvalidService =>
+                            Future failed new Exception("Unable to reject invitations due to Unsupported Service")
+
                         }
-                      }
-                      case ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, _) => {
-                        identifiers.map {
-                          case (HMRCMTDVAT, clientId) if Vrn.isValid(clientId) =>
-                            invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
-                          case _ => ???
-                        }
-                      }
-                      case InvalidService => ???
 
                     }
-                    case _ => ??? //no pending invitations
-
-                  }
-//                  invitationId  <- invitationIds
-//                  _ <- determineService(invitationId) match {
-//                        case ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, _) => {
-//                          identifiers.map {
-//                            case (HMRCMTDIT, clientId) if MtdItId.isValid(clientId) =>
-//                              invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
-//                            case _ => ???
-//                          }
-//                        }
-//                        case ValidService(HMRCPIR, HMRCNI, NINO, NI, _) => {
-//                          identifiers.map {
-//                            case (HMRCNI, clientId) if Nino.isValid(clientId) =>
-//                              invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
-//
-//                            case _ => ???
-//                          }
-//                        }
-//                        case ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, _) => {
-//                          identifiers.map {
-//                            case (HMRCMTDVAT, clientId) if Vrn.isValid(clientId) =>
-//                              invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
-//                            case _ => ???
-//                          }
-//                        }
-//                        case InvalidService => ???
-//                      }
-                } yield Ok
-                //go to confirm decline and cancel all invitations
+                    Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, serviceKeys)))
+                }
               } else {
-                Future successful (NotImplemented)
+                //Confirm Terms Multi Page Not There Yet
+                Future.successful(NotImplemented)
               }
             }
           )

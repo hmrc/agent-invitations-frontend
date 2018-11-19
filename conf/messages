@@ -194,11 +194,12 @@ invitation-declined-afi.p1={0} will not be able to view your personal income rec
 invitation-declined-itsa.button=Continue to your tax account
 invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
-invitation-declined.p3=If you meant to accept this request, contact the tax agent who sent it.
+invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
 
 invitation-declined-vat.p1=	You have not authorised {0} to report your VAT returns through software.
 invitation-declined-vat.button=Continue to your tax account
 
+invitation-decline.sub-header=You have not given permission to {0} to:
 
 # Confirm Invitation
 confirm-decline.title=Confirm Invitation - {0} - GOV.UK
