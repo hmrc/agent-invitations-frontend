@@ -76,18 +76,26 @@ trait AuthActions extends AuthorisedFunctions {
 
     }
 
-  protected def withAuthorisedAsAnyClient[A](
-    body: => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+  protected def withAuthorisedAsAnyClient[A](body: Seq[(String, String)] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     authorised(
       AuthProviders(GovernmentGateway) and ConfidenceLevel.L200 and (AffinityGroup.Individual or AffinityGroup.Organisation)
-    ) {
+    ).retrieve(allEnrolments) { enrols =>
+        val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
+          (enrolment.identifiers.head.key, enrolment.identifiers.head.value)
+        }.toSeq
 
-      body
+        body(clientIdTypePlusIds)
 
-    }.recover {
-      case _: InsufficientConfidenceLevel =>
-        Redirect(routes.ClientsInvitationController.notFoundInvitation())
-    }
+      }
+      .recover {
+        case _: InsufficientEnrolments =>
+          Redirect(routes.ClientsInvitationController.notAuthorised())
+        case _: InsufficientConfidenceLevel =>
+          Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      }
 
   protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
     implicit request: Request[A],

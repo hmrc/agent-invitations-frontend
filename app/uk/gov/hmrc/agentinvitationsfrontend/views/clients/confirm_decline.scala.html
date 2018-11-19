@@ -35,7 +35,7 @@
         <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
     } else {
         <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
-        <ul class="govuk-list govuk-list--bullet">
+        <ul class="list list-bullet">
        @for(key <- config.serviceKeys){
            <li>@Messages(s"confirm-decline.$key.service-name")</li>
        }

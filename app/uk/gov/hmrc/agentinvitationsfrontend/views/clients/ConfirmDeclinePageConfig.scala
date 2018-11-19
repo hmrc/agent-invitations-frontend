@@ -29,17 +29,19 @@ sealed trait ConfirmDeclinePageConfig {
 }
 
 case class MultiConfirmDeclinePageConfig(
+  agencyName: String,
   clientType: String,
   agentReferenceRecord: AgentReferenceRecord,
   serviceKeys: Seq[String])
     extends ConfirmDeclinePageConfig {
 
-  override val agencyName: String = agentReferenceRecord.normalisedAgentNames.last
+  //override val agencyName: String = agentReferenceRecord.normalisedAgentNames.last
 
   override val backUrl: Call =
     routes.ClientsInvitationController.warmUp(clientType, agentReferenceRecord.uid, agencyName)
 
-  override val submitUrl: Call = routes.ClientsInvitationController.submitMultiConfirmDecline
+  override val submitUrl: Call =
+    routes.ClientsInvitationController.submitMultiConfirmDecline(clientType, agentReferenceRecord.uid)
 
   override val isSingle: Boolean = false
 

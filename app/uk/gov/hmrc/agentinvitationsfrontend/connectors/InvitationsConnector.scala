@@ -181,6 +181,9 @@ class InvitationsConnector @Inject()(
   private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode")
 
+  private[connectors] def getAllPendingInvitationIdsUrl(uid: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid?status=Pending")
+
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Int] =
@@ -237,7 +240,11 @@ class InvitationsConnector @Inject()(
 
   def getAllPendingInvitationIds(
     uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationId]] =
-    Future.failed(new NotImplementedException)
+    monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
+      val url = getAllPendingInvitationIdsUrl(uid)
+      http
+        .GET[Seq[InvitationId]](url.toString)
+    }
 
   object Reads {
 
