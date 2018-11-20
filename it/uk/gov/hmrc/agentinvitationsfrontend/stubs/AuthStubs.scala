@@ -3,6 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel}
 import uk.gov.hmrc.http.SessionKeys
 
 trait AuthStubs {
@@ -21,6 +22,100 @@ trait AuthStubs {
 
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation",  Enrolment("HMRC-MTD-VAT", "VRN", clientId))
+
+  def authorisedAsAnyClient[A](request: FakeRequest[A]): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+         |{
+         |"authorise": [ {
+         |  "authProviders": [ "GovernmentGateway" ]
+         |}, {
+         |  "confidenceLevel": 200
+         |}, {
+         |  "$or" : [ {
+         |      "affinityGroup" : "Individual"
+         |    }, {
+         |      "affinityGroup" : "Organisation"
+         |    } ]
+         |} ],
+         |  "retrieve": [ "allEnrolments" ]
+         |}
+       """.stripMargin,
+      s"""
+         |{
+         |  "allEnrolments":
+         |  [
+         |    {
+         |      "key": "HMRC-MTD-IT",
+         |      "identifiers": [
+         |         {"key":"MTDITID", "value": "ABCDEF123456789"}
+         |      ]
+         |     },
+         |     {
+         |      "key": "HMRC-NI",
+         |      "identifiers": [
+         |         {"key":"NINO", "value": "AB123456A"}
+         |      ]
+         |     },
+         |     {
+         |      "key": "HMRC-MTD-VAT",
+         |      "identifiers": [
+         |         {"key":"VRN", "value": "101747696"}
+         |      ]
+         |     }
+         |  ]
+         |}
+          """.stripMargin
+    )
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+  }
+
+  def authorisedAsAnyClientFalse[A](request: FakeRequest[A]): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+        |{
+        |"authorise": [ {
+        |  "authProviders": [ "GovernmentGateway" ]
+        |}, {
+        |  "confidenceLevel": 200
+        |}, {
+        |  "$or" : [ {
+        |      "affinityGroup" : "Individual"
+        |    }, {
+        |      "affinityGroup" : "Organisation"
+        |    } ]
+        |} ],
+        |  "retrieve": [ "allEnrolments" ]
+        |}
+      """.stripMargin,
+      s"""
+         |{
+         |  "allEnrolments":
+         |  [
+         |    {
+         |      "key": "HMRC-MTD-IT",
+         |      "identifiers": [
+         |         {"key":"VRN", "value": "101747696"}
+         |      ]
+         |     },
+         |     {
+         |      "key": "HMRC-NI",
+         |      "identifiers": [
+         |         {"key":"VRN", "value": "ABCDEF123456789"}
+         |      ]
+         |     },
+         |     {
+         |      "key": "HMRC-MTD-VAT",
+         |      "identifiers": [
+         |         {"key":"NINO", "value": "101747696"}
+         |      ]
+         |     }
+         |  ]
+         |}
+          """.stripMargin
+    )
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+  }
 
   def authenticatedClient[A](
     request: FakeRequest[A],

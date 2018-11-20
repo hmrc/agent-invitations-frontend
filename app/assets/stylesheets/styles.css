@@ -53,6 +53,10 @@
     text-align: left;
 }
 
+.text-link-small {
+    font-size: 0.85em
+}
+
 .form-field--error .form-date .form-field--error{
     border-left: none;
     padding: inherit;

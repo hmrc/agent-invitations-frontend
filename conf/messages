@@ -201,7 +201,7 @@ invitation-declined-vat.button=Continue to your tax account
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 
-# Confirm Invitation
+# Confirm Decline Invitation
 confirm-decline.title=Confirm Invitation - {0} - GOV.UK
 confirm-decline.heading=Are you sure you want to decline this request?
 confirm-decline.itsa.sub-header={0} will not be able to report your income and expenses through software.

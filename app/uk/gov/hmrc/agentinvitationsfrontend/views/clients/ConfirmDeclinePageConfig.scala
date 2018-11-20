@@ -34,10 +34,10 @@ case class MultiConfirmDeclinePageConfig(agencyName: String, clientType: String,
   //override val agencyName: String = agentReferenceRecord.normalisedAgentNames.last
 
   override val backUrl: Call =
-    routes.ClientsInvitationController.warmUp(clientType, uid, agencyName)
+    routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
 
   override val submitUrl: Call =
-    routes.ClientsInvitationController.submitMultiConfirmDecline(clientType, uid)
+    routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)
 
   override val isSingle: Boolean = false
 
