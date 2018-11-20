@@ -20,6 +20,13 @@ trait ASAStubs {
                          |  "agencyName" : "My Agency"
                          |}""".stripMargin)))
 
+  def givenGetAgencyNameNotFoundClientStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)))
+
   def givenGetAgencyNameAgentStub =
     stubFor(
       get(urlEqualTo(s"/agent-services-account/agent/agency-name"))

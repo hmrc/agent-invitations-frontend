@@ -34,6 +34,9 @@ trait TestDataCommonSupport {
   val personal = Some("personal")
   val business = Some("business")
 
+  val uid = "X4BZC17W"
+  val normalisedAgentName = "99-with-flake"
+
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false
   val invalidInvitationId = InvitationId("ZTSF4OW9CCRPT")

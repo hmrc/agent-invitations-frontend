@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -75,6 +76,27 @@ trait AuthActions extends AuthorisedFunctions {
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
 
     }
+
+  protected def withAuthorisedAsAnyClient[A](body: Seq[(String, String)] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(
+      AuthProviders(GovernmentGateway) and ConfidenceLevel.L200 and (AffinityGroup.Individual or AffinityGroup.Organisation)
+    ).retrieve(allEnrolments) { enrols =>
+        val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
+          (enrolment.identifiers.head.key, enrolment.identifiers.head.value)
+        }.toSeq
+
+        body(clientIdTypePlusIds)
+
+      }
+      .recover {
+        case _: InsufficientEnrolments =>
+          Redirect(routes.ClientsInvitationController.notAuthorised())
+        case _: InsufficientConfidenceLevel =>
+          Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      }
 
   protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
     implicit request: Request[A],

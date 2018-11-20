@@ -23,11 +23,27 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(confirmDeclineForm : Form[ConfirmForm], agencyName: String, invitationId: InvitationId, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 
-@requestPage = @{request.headers.get("Referer").getOrElse(s"${routes.ClientsInvitationController.start(invitationId)}")}
+@(confirmDeclineForm : Form[ConfirmForm], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), serviceMessageKey))) {
+@requestPage = @{request.headers.get("Referer").getOrElse(s"${config.backUrl}")}
+
+@legend = {
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
+    @if(config.isSingle){
+        <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
+    } else {
+        <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
+        <ul class="list list-bullet">
+       @for(key <- config.serviceKeys){
+           <li>@Messages(s"confirm-decline.$key.service-name")</li>
+       }
+        </ul>
+    }
+}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
 
     @back_link(requestPage)
 
@@ -35,14 +51,12 @@
         @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("confirmDecline"))
     }
 
-
-
-    @form(routes.ClientsInvitationController.submitConfirmDecline(invitationId)){
+    @form(config.submitUrl){
 
         @inputRadioGroup(
             confirmDeclineForm("confirmDecline"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("confirm-decline.heading")  + """</h1><p>""" + Messages(s"confirm-decline.$serviceMessageKey.sub-header", agencyName) + """</p>"""),
+            '_legend -> legend,
             '_legendClass -> "form-label",
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmDecline'""")

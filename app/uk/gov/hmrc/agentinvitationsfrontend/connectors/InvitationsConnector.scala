@@ -24,6 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.libs.json.JsObject
+import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -180,6 +181,9 @@ class InvitationsConnector @Inject()(
   private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode")
 
+  private[connectors] def getAllPendingInvitationIdsUrl(uid: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid?status=Pending")
+
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Int] =
@@ -232,6 +236,14 @@ class InvitationsConnector @Inject()(
     }.recover {
       case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
       case _: NotFoundException                                      => None
+    }
+
+  def getAllPendingInvitationIds(
+    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationId]] =
+    monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
+      val url = getAllPendingInvitationIdsUrl(uid)
+      http
+        .GET[Seq[InvitationId]](url.toString)
     }
 
   object Reads {

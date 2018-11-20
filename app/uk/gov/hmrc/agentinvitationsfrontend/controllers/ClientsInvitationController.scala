@@ -29,6 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleConfirmDeclinePageConfig, SingleInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -55,21 +56,6 @@ class ClientsInvitationController @Inject()(
     extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
-
-  def warmUp(clientType: String, uid: String, normalisedAgentName: String) = Action.async { implicit request =>
-    for {
-      record <- invitationsConnector.getAgentReferenceRecord(uid)
-      result <- record match {
-                 case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) => {
-                   invitationsService.getAgencyName(r.arn).map { name =>
-                     Ok(warm_up(name, clientType))
-                   }
-                 }
-                 case None => Future successful BadRequest
-               }
-
-    } yield result
-  }
 
   def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
     determineService(invitationId) match {
@@ -135,7 +121,7 @@ class ClientsInvitationController @Inject()(
                         clientId,
                         serviceName,
                         agencyName)
-                      Ok(invitation_declined(agencyName, invitationId, messageKey))
+                      Ok(invitation_declined(SingleInvitationDeclinedPageConfig(agencyName, messageKey)))
                     }
                     case status => throw new Exception(s"Invitation rejection failed with status $status")
                   }
@@ -155,7 +141,10 @@ class ClientsInvitationController @Inject()(
           withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
             invitation =>
               invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                Ok(confirm_decline(confirmDeclineForm, agencyName, invitationId, messageKey))
+                Ok(
+                  confirm_decline(
+                    confirmDeclineForm,
+                    SingleConfirmDeclinePageConfig(agencyName, invitationId, messageKey)))
               }
           })
         }
@@ -176,7 +165,10 @@ class ClientsInvitationController @Inject()(
                 .fold(
                   formWithErrors => {
                     invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                      Ok(confirm_decline(formWithErrors, agencyName, invitationId, messageKey))
+                      Ok(
+                        confirm_decline(
+                          formWithErrors,
+                          SingleConfirmDeclinePageConfig(agencyName, invitationId, messageKey)))
                     }
                   },
                   data => {
@@ -329,7 +321,7 @@ class ClientsInvitationController @Inject()(
     }
 
   private def rejectInvitation(service: String, invitationId: InvitationId, clientId: String)(
-    implicit hc: HeaderCarrier): Future[Int] =
+    implicit hc: HeaderCarrier) =
     service match {
       case HMRCMTDIT  => invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
       case HMRCPIR    => invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
