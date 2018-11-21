@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -71,7 +71,7 @@ class ClientsMultiInvitationController @Inject()(
         result <- agentReferenceRecordOpt match {
                    case Some(agentReferenceRecord) =>
                      for {
-                       invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
+                       invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, Pending)
                        agencyName    <- invitationsService.getAgencyName(agentReferenceRecord.arn)
                        serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
                      } yield
@@ -105,36 +105,87 @@ class ClientsMultiInvitationController @Inject()(
       isPending <- invitationsService
                     .getClientInvitation(clientId, invitationId, apiIdentifier)
                     .map(inv => inv.status == "Pending")
-    } yield
-      if (isPending) {
-        apiIdentifier match {
-          case MTDITID =>
-            invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
-          case NI =>
-            invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
-          case VRN =>
-            invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
-        }
-      }
+      _ <- if (isPending) {
+                 apiIdentifier match {
+                   case MTDITID =>
+                     invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
+                   case NI =>
+                     invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+                   case VRN =>
+                     invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
+                 }
+               } else Future successful (())
+    } yield ()
 
-  private def getPageComponents(uid: String)(body: (Seq[InvitationId], String, Seq[String]) => Result)(
-    implicit hc: HeaderCarrier) =
+  private def getPageComponents(uid: String, status: InvitationStatus)(
+    body: (Seq[InvitationId], String, Seq[String]) => Result)(implicit hc: HeaderCarrier) =
     for {
-      invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
+      invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, status)
       agencyName    <- getAgencyNameViaClient(uid)
       serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
     } yield body(invitationIds, agencyName, serviceKeys)
 
+  private def assignInvitations(
+    invitationIds: Seq[InvitationId],
+    identifiers: Seq[(String, String)]): Seq[ClientInfo] = {
+    def collate(
+      invitationIds: Seq[InvitationId],
+      identifiers: Seq[(String, String)],
+      clientInfoCollection: Seq[ClientInfo]): Seq[ClientInfo] =
+      invitationIds match {
+        case Nil => clientInfoCollection
+        case head :: remainingInvitationIds =>
+          determineService(head) match {
+            case ValidService(HMRCMTDIT, _, MTDITID, MTDITID, _) =>
+              identifiers.find(_._1 == MTDITID) match {
+                case None => collate(remainingInvitationIds, identifiers, clientInfoCollection)
+                case Some((identifier, clientId)) =>
+                  collate(
+                    remainingInvitationIds,
+                    identifiers,
+                    clientInfoCollection ++ Seq(ClientInfo(head, identifier, clientId, MTDITID)))
+              }
+            case ValidService(HMRCPIR, _, NINO, NI, _) =>
+              identifiers.find(_._1 == NINO) match {
+                case None => collate(remainingInvitationIds, identifiers, clientInfoCollection)
+                case Some((identifier, clientId)) =>
+                  collate(
+                    remainingInvitationIds,
+                    identifiers,
+                    clientInfoCollection ++ Seq(ClientInfo(head, identifier, clientId, NI)))
+              }
+            case ValidService(HMRCMTDVAT, _, VRN, VRN, _) =>
+              identifiers.find(_._1 == VRN) match {
+                case None => collate(remainingInvitationIds, identifiers, clientInfoCollection)
+                case Some((identifier, clientId)) =>
+                  collate(
+                    remainingInvitationIds,
+                    identifiers,
+                    clientInfoCollection ++ Seq(ClientInfo(head, identifier, clientId, VRN)))
+              }
+            case InvalidService => {
+              Logger(getClass).warn("Something has gone wrong here: Invalid Service")
+              collate(remainingInvitationIds, identifiers, clientInfoCollection)
+            }
+            case _ => {
+              Logger(getClass).warn("Something has gone wrong here: Did not meet anything")
+              collate(remainingInvitationIds, identifiers, clientInfoCollection)
+            }
+
+          }
+      }
+    collate(invitationIds, identifiers, Seq.empty)
+  }
+
   def submitMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAuthorisedAsAnyClient { identifiers =>
-        val reformatIdentifiers: Seq[(String, String)] = identifiers.map(id => (id._1, id._2.replaceAll(" ", "")))
         confirmDeclineForm
           .bindFromRequest()
           .fold(
             formWithErrors => {
 
-              getPageComponents(uid) { (_, agencyName, serviceKeys) =>
+              getPageComponents(uid, Pending) { (_, agencyName, serviceKeys) =>
                 Ok(
                   confirm_decline(
                     formWithErrors,
@@ -143,38 +194,13 @@ class ClientsMultiInvitationController @Inject()(
             },
             data => {
               if (data.value.getOrElse(false)) {
-                getPageComponents(uid) {
-                  (invitationIds, _, _) =>
-                    Future.traverse(invitationIds) {
-                      invitationId =>
-                        determineService(invitationId) match {
-                          case ValidService(serviceName, _, _, _, _) if supportedServices.contains(serviceName) =>
-                            Future.traverse(reformatIdentifiers) {
-                              case identifier
-                                  if identifier._1 == MTDITID && MtdItId
-                                    .isValid(identifier._2) && serviceName == HMRCMTDIT =>
-                                rejectPendingInvitation(identifier._2, invitationId, MTDITID)
+                getPageComponents(uid, Pending) { (invitationIds, _, _) =>
+                  Future.traverse(assignInvitations(invitationIds, identifiers)) {
+                    case ClientInfo(invitationId, _, clientId, apiIdentifier) =>
+                      rejectPendingInvitation(clientId, invitationId, apiIdentifier)
+                  }
+                  Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
 
-                              case identifier
-                                  if identifier._1 == NINO && Nino.isValid(identifier._2) && serviceName == HMRCPIR =>
-                                rejectPendingInvitation(identifier._2, invitationId, NI)
-
-                              case identifier
-                                  if identifier._1 == VRN && Vrn
-                                    .isValid(identifier._2) && serviceName == HMRCMTDVAT =>
-                                rejectPendingInvitation(identifier._2, invitationId, VRN)
-
-                              case _ =>
-                                Future failed new Exception("Unable to reject invitations due to mixed data")
-                            }
-
-                          case InvalidService =>
-                            Future failed new Exception("Unable to reject invitations due to Unsupported Service")
-
-                        }
-
-                    }
-                    Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
                 }
               } else {
                 //Confirm Terms Multi Page Not There Yet
@@ -188,7 +214,7 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { _ =>
       for {
-        invitationIds <- invitationsConnector.getAllPendingInvitationIds(uid)
+        invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, Rejected)
         agencyName    <- getAgencyNameViaClient(uid)
         serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
       } yield

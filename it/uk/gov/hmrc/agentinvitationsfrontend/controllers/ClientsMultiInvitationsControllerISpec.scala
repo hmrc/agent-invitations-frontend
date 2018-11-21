@@ -95,7 +95,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "show the confirm decline page for personal" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsStub(uid)
+      getAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmDecline("personal", uid)(FakeRequest())
@@ -111,7 +111,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "redirect to notFound if there are no invitationIds found" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsEmptyStub(uid)
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
 
@@ -124,7 +124,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an AgencyNameNotFound exception if agencyName is not found" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsEmptyStub(uid)
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
       givenGetAgencyNameNotFoundClientStub(arn)
 
       an[AgencyNameNotFound] shouldBe thrownBy {
@@ -135,7 +135,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an exception if the agency record is not found" in {
       authorisedAsAnyClient(FakeRequest())
       getNotFoundAgentReferenceRecordStub(uid)
-      getAllPendingInvitationIdsStub(uid)
+      getAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       an[Exception] shouldBe thrownBy {
@@ -150,7 +150,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "redirect to multi invitations declined if YES is selected and invitations are successfully declined" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsStub(uid)
+      getAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
       getInvitationStub(arn, "ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), "HMRC-MTD-IT", "MTDITID", "Pending")
       getInvitationStub(arn, "AB123456A", InvitationId("B9SCS2T4NZBAX"), "PERSONAL-INCOME-RECORD", "NI", "Pending")
@@ -172,7 +172,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "redisplay form with errors is no radio button is selected" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsStub(uid)
+      getAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(FakeRequest())
@@ -204,12 +204,12 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an exception if the service is not supported" in {}
   }
 
-  "GET /reject-tax-agent-invitation/declined/:uid (multi invitations declined)" should {
+  "GET /reject-tax-agent-invitation/declined/uid/:uid (multi invitations declined)" should {
 
     "show the multi invitations declined page for personal" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsStub(uid)
+      getAllInvitationIdsStubByStatus(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiInvitationsDeclined(uid)(FakeRequest())
@@ -225,7 +225,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "redirect to notFound if there are no invitationIds found" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsEmptyStub(uid)
+      getAllInvitationIdsEmptyByStatusStub(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiInvitationsDeclined(uid)(FakeRequest())
@@ -237,7 +237,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "Throw an AgencyNameNotFound exception if agencyName is not found" in {
       authorisedAsAnyClient(FakeRequest())
       getAgentReferenceRecordStub(arn, uid)
-      getAllPendingInvitationIdsEmptyStub(uid)
+      getAllInvitationIdsEmptyByStatusStub(uid, "Rejected")
       givenGetAgencyNameNotFoundClientStub(arn)
 
       an[AgencyNameNotFound] shouldBe thrownBy {

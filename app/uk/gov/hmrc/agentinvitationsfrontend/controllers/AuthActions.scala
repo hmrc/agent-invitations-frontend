@@ -85,7 +85,7 @@ trait AuthActions extends AuthorisedFunctions {
       AuthProviders(GovernmentGateway) and ConfidenceLevel.L200 and (AffinityGroup.Individual or AffinityGroup.Organisation)
     ).retrieve(allEnrolments) { enrols =>
         val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
-          (enrolment.identifiers.head.key, enrolment.identifiers.head.value)
+          (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
         }.toSeq
 
         body(clientIdTypePlusIds)
