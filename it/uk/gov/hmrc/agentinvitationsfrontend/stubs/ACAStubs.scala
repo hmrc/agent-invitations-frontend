@@ -41,9 +41,9 @@ trait ACAStubs {
           aResponse()
             .withStatus(404)))
 
-  def getAllPendingInvitationIdsStub(uid: String): Unit =
+  def getAllInvitationIdsStubByStatus(uid: String, status: String): Unit =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=Pending"))
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -75,9 +75,9 @@ trait ACAStubs {
         )
     )
 
-  def getAllPendingInvitationIdsEmptyStub(uid: String): Unit =
+  def getAllInvitationIdsEmptyByStatusStub(uid: String, status: String): Unit =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=Pending"))
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
         .willReturn(
           aResponse()
             .withStatus(200)
