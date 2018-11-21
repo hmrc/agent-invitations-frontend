@@ -220,19 +220,43 @@ confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
 confirm-terms.afi.title=Are you happy for this tax agent to view your income record? - {0} - GOV.UK
 confirm-terms.vat.title=Confirm that you understand - {0} - GOV.UK
 
-
+# Single auth
 confirm-terms.heading=We need your consent
 confirm-terms.p1=We need your consent to share your personal information with {0}
 confirm-terms.subheading1=What this means
 confirm-terms.subheading1.p1=By giving your consent, you agree that HMRC will share the following information with {0}:
 confirm-terms.subheading2=How to withdraw your consent
-confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage your tax agents (opens in a new window or tab)</a>.
+confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new window or tab)</a>.
 confirm-terms.subheading3=Our privacy policy
 confirm-terms.subheading3.p1=For details about how we store and process your personal information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
 confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent''s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 confirm-terms.radio1=Yes
 confirm-terms.radio2=No
+
+# Multi auth
+confirm-terms.multi.heading=We need your consent to share information
+confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
+
+confirm-terms-multi.itsa.heading=Report my income and expenses through software
+confirm-terms-multi.itsa.p1=I consent to HMRC sharing the following information with {0}, so this agent can report my income and expenses through software:
+confirm-terms-multi.itsa.list.item1=my income and expenses information
+confirm-terms-multi.itsa.list.item2=how my Income Tax estimates have been calculated
+
+confirm-terms-multi.expires.p2=You need to respond to this request before 16 November 2018, or else it will expire.
+
+confirm-terms-multi.pir.heading=View your PAYE income record
+confirm-terms-multi.pir.p1=I consent to HMRC sharing the following information with {0}, so this agent can view my income record:
+confirm-terms-multi.pir.list.item1=who I have worked for in the past
+confirm-terms-multi.pir.list.item2=my taxable benefits like medical insurance and company car
+confirm-terms-multi.pir.list.item3=my pensions
+confirm-terms-multi.pir.list.item4=my PAYE employment start and end dates
+
+confirm-terms-multi.vat.heading=Report my VAT returns through software
+confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can report my VAT returns through software:
+confirm-terms-multi.vat.list.item1=my VAT registration details, such as business name and contact details
+confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 15 months
+confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated
 
 confirm-terms.itsa.bullet1=your income and expenses information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate

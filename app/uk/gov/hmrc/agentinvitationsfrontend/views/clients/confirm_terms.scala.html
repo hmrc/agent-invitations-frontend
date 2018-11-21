@@ -22,27 +22,28 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Services
-@(confirmTermsForm: Form[ConfirmForm], agencyName: String, invitationId: InvitationId, serviceMessageKey:String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
+@(confirmTermsForm: Form[ConfirmForm], confirmTermsPageConfig: ConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.heading"), serviceMessageKey))) {
+    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.heading"), confirmTermsPageConfig.serviceKeys.headOption.getOrElse("")))) {
 
-    @back_link(s"${routes.ClientsInvitationController.start(invitationId)}")
+    @back_link(s"${confirmTermsPageConfig.backUrl}")
 
     @if(confirmTermsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
     }
 
-    <h1 class="heading-xlarge">@Messages("confirm-terms.heading", agencyName)</h1>
+    <h1 class="heading-xlarge">@Messages("confirm-terms.heading", confirmTermsPageConfig.agencyName)</h1>
 
-    <p>@Messages("confirm-terms.p1", agencyName)</p>
+    <p>@Messages("confirm-terms.p1", confirmTermsPageConfig.agencyName)</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("confirm-terms.subheading1")</h2>
 
-    <p>@Messages("confirm-terms.subheading1.p1", agencyName)</p>
+    <p>@Messages("confirm-terms.subheading1.p1", confirmTermsPageConfig.agencyName)</p>
 
-    @if(serviceMessageKey == Services.messageKeyForITSA) {
+    @if(confirmTermsPageConfig.serviceKeys.head == Services.messageKeyForITSA) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.itsa.bullet1")</li>
@@ -53,7 +54,7 @@
 
         <p>@Messages("confirm-terms.subheading1.p2")</p>
 
-    } @if(serviceMessageKey == Services.messageKeyForAfi) {
+    } @if(confirmTermsPageConfig.serviceKeys.head == Services.messageKeyForAfi) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.afi.bullet1")</li>
@@ -64,7 +65,7 @@
 
         <p>@Messages("confirm-terms.subheading1.p2")</p>
 
-    } @if(serviceMessageKey == Services.messageKeyForVAT) {
+    } @if(confirmTermsPageConfig.serviceKeys.head == Services.messageKeyForVAT) {
 
         <ul class="list list-bullet">
             <li>@Messages("confirm-terms.vat.bullet1")</li>
@@ -85,14 +86,14 @@
 
     <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
 
-    @form(routes.ClientsInvitationController.submitConfirmTerms(invitationId),
+    @form(confirmTermsPageConfig.submitUrl,
         'class -> "margin-top-30"
     ) {
 
         @inputRadioGroup(
             confirmTermsForm("confirmTerms"),
             Seq(("true", Messages("confirm-terms.radio1")), ("false", Messages("confirm-terms.radio2"))),
-            '_legend -> Messages(s"confirm-terms.subheading4", agencyName),
+            '_legend -> Messages(s"confirm-terms.subheading4", confirmTermsPageConfig.agencyName),
             '_legendClass -> "heading-medium",
             '_groupDivClass -> "form-group",
             '_fieldsetAttributes -> Html("""id='confirmTerms'""")

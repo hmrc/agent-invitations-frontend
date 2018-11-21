@@ -18,14 +18,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Logger}
+import play.api.data.Form
+import play.api.data.Forms._
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, MultiInvitationDeclinedPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, MultiInvitationCache, MultiInvitationsCacheInput}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, MultiConfirmTermsPageConfig, MultiInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -35,11 +37,14 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
+case class ConfirmTermsMultiForm(confirmTerms: Seq[Boolean])
+
 @Singleton
 class ClientsMultiInvitationController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   val messagesApi: play.api.i18n.MessagesApi,
+  multiInvitationCache: MultiInvitationCache,
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
@@ -47,6 +52,7 @@ class ClientsMultiInvitationController @Inject()(
     extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._
+  import ClientsMultiInvitationController._
 
   def warmUp(clientType: String, uid: String, normalisedAgentName: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -62,6 +68,39 @@ class ClientsMultiInvitationController @Inject()(
                  }
 
       } yield result
+  }
+
+  def getMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { _ =>
+      getPageComponents(uid, Pending) { (invitationIds, agencyName, serviceKeys) =>
+        multiInvitationCache.save(MultiInvitationsCacheInput(invitationIds, Seq.fill(invitationIds.length)(false)))
+
+        Ok(
+          confirm_terms_multi(
+            confirmTermsMultiForm,
+            MultiConfirmTermsPageConfig(agencyName, clientType, uid, serviceKeys)))
+      //At this point store sequence of invitations with a boolean for yes-i want to authorise or no (checkboxes) automatically set to NO
+      //Store: invitationId?, serviceKey, bool
+      }
+    }
+  }
+
+  def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { _ =>
+      confirmTermsMultiForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Future successful Redirect(routes.ClientsInvitationController.notAuthorised()),
+          data => {
+            multiInvitationCache
+              .updateIsSelected(data.confirmTerms)
+              .map(_ => {
+                println(s"WHIT WHOO OWL: ${data.confirmTerms}")
+                Redirect(routes.ClientsInvitationController.notFoundInvitation())
+              })
+          }
+        )
+    }
   }
 
   def getMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
@@ -106,15 +145,15 @@ class ClientsMultiInvitationController @Inject()(
                     .getClientInvitation(clientId, invitationId, apiIdentifier)
                     .map(inv => inv.status == "Pending")
       _ <- if (isPending) {
-                 apiIdentifier match {
-                   case MTDITID =>
-                     invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
-                   case NI =>
-                     invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
-                   case VRN =>
-                     invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
-                 }
-               } else Future successful (())
+            apiIdentifier match {
+              case MTDITID =>
+                invitationsService.rejectITSAInvitation(invitationId, MtdItId(clientId))
+              case NI =>
+                invitationsService.rejectAFIInvitation(invitationId, Nino(clientId))
+              case VRN =>
+                invitationsService.rejectVATInvitation(invitationId, Vrn(clientId))
+            }
+          } else Future successful (())
     } yield ()
 
   private def getPageComponents(uid: String, status: InvitationStatus)(
@@ -224,4 +263,33 @@ class ClientsMultiInvitationController @Inject()(
     }
   }
 
+}
+
+object ClientsMultiInvitationController {
+
+  val confirmTermsMultiForm: Form[ConfirmTermsMultiForm] =
+    Form[ConfirmTermsMultiForm](mapping("confirmTerms" -> seq(boolean))({ confirmTerms =>
+      ConfirmTermsMultiForm(confirmTerms)
+    })(termsForm => Some(termsForm.confirmTerms)))
+//  val agentFastTrackForm: Form[CurrentInvitationInput] =
+//    Form(
+//      mapping(
+//        "clientType" -> optional(
+//          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
+//        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+//        "clientIdentifierType" -> text
+//          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
+//        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+//        "knownFact"        -> optional(text)
+//      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+//        CurrentInvitationInput(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
+//      })({ fastTrack =>
+//        Some(
+//          (
+//            fastTrack.clientType,
+//            fastTrack.service,
+//            fastTrack.clientIdentifierType,
+//            fastTrack.clientIdentifier,
+//            fastTrack.knownFact))
+//      }).verifying(validateFastTrackForm))
 }

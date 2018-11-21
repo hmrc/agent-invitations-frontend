@@ -41,7 +41,7 @@
 
     <p>@Messages(s"warm-up.p4.$clientType")</p>
 
-    <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+    <a href="@routes.ClientsMultiInvitationController.getMultiConfirmTerms(clientType, uid)"><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
 
     <div class="margin-top-30 text-link-small"><a href="@routes.ClientsMultiInvitationController.getMultiConfirmDecline(clientType, uid)">@Messages("warm-up.link", agentName)</a></div>
 
