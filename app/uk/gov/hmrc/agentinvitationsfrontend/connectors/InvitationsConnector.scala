@@ -65,6 +65,11 @@ class InvitationsConnector @Inject()(
         .print(createdOnOrAfter)}"
     )
 
+  private[connectors] def getAgentInvitationUrl(arn: Arn, invitationId: InvitationId): URL =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent/${invitationId.value}")
+
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
     new URL(
       baseUrl,
@@ -107,6 +112,15 @@ class InvitationsConnector @Inject()(
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       http.GET[StoredInvitation](url.toString)
+    }
+
+  def getAgentInvitation(arn: Arn, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[StoredInvitation]] =
+    monitor(s"ConsumedAPI-Get-AgentInvitation-GET") {
+      http.GET[Option[StoredInvitation]](getAgentInvitationUrl(arn, invitationId).toString).recover {
+        case _: NotFoundException => None
+      }
     }
 
   def getAllInvitations(arn: Arn, createdOnOrAfter: LocalDate)(

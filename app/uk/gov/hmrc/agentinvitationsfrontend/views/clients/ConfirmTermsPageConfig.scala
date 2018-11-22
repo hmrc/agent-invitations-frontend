@@ -18,39 +18,27 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentReferenceRecord
+import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-sealed trait ConfirmTermsPageConfig {
-  def agencyName: String
-  def backUrl: Call
-  def submitUrl: Call
-  def serviceKeys: Seq[String]
-  def isSingle: Boolean
-}
+case class MultiConfirmTermsPageConfig(
+  agencyName: String,
+  clientType: String,
+  uid: String,
+  invitationIdWithServiceKeySeq: Seq[Consent]) {
 
-case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, uid: String, serviceKeys: Seq[String])
-    extends ConfirmTermsPageConfig {
-
-  override val backUrl: Call =
+  val backUrl: Call =
     routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
 
-  override val submitUrl: Call =
+  val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
-
-  override val isSingle: Boolean = false
 
 }
 
-case class SingleConfirmTermsPageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String)
-    extends ConfirmTermsPageConfig {
+case class SingleConfirmTermsPageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String) {
 
-  override def serviceKeys: Seq[String] = Seq(serviceKey)
+  val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
 
-  override val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
-
-  override val submitUrl: Call = routes.ClientsInvitationController.submitConfirmTerms(invitationId)
-
-  override val isSingle: Boolean = true
+  val submitUrl: Call = routes.ClientsInvitationController.submitConfirmTerms(invitationId)
 
 }
