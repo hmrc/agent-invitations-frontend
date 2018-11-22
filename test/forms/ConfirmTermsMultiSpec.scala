@@ -18,28 +18,33 @@ class ConfirmTermsMultiSpec extends UnitSpec{
 //  val business = Some("business")
 
   "ConfirmTermsMultiForm" should {
-//    "return no error message for valid clientType Personal" in {
-//      val data = Json.obj("confirmTerms" -> Seq(true, true))
-//      val clientTypeForm = confirmTermsMultiForm.bind(data)
-//      clientTypeForm.errors.isEmpty shouldBe true
-//    }
+    "return no error message for valid clientType Personal" in {
+      val data = Json.obj("invitationIds" -> Seq("ABERULMHCKKW3", "B9SCS2T4NZBAX"),"confirmTerms" -> Seq(true, true))
+      val clientTypeForm = confirmTermsMultiForm.bind(data)
+      clientTypeForm.errors.isEmpty shouldBe true
+    }
 
     "return no errors when unbinding the form" in {
       val unboundForm =
-        confirmTermsMultiForm.mapping.unbind(ConfirmTermsMultiForm(Seq(true, true)))
-      unboundForm("confirmTerms") shouldBe Seq(true, true)
+        confirmTermsMultiForm.mapping.unbind(ConfirmTermsMultiForm(Seq("ABERULMHCKKW3", "B9SCS2T4NZBAX"), Seq(true, true)))
+      unboundForm("invitationIds[0]") shouldBe "ABERULMHCKKW3"
+      unboundForm("invitationIds[1]") shouldBe "B9SCS2T4NZBAX"
+      unboundForm("confirmTerms[0]") shouldBe "true"
+      unboundForm("confirmTerms[1]") shouldBe "true"
 
-//      val unboundFormAFI =
-//        agentInvitationSelectClientTypeForm.mapping.unbind(
-//          UserInputNinoAndPostcode(personal, servicePIR, Some("AE123456C"), None))
-//      unboundFormAFI("clientType") shouldBe "personal"
-//
-//      val unboundFormVAT =
-//        agentInvitationSelectClientTypeForm.mapping.unbind(
-//          UserInputNinoAndPostcode(business, serviceVAT, Some("101747696"), None))
-//      unboundFormVAT("clientType") shouldBe "business"
-//    }
+      val unboundForm2 =
+        confirmTermsMultiForm.mapping.unbind(ConfirmTermsMultiForm(Seq("ABERULMHCKKW3", "B9SCS2T4NZBAX"), Seq(false, true)))
+      unboundForm("invitationIds[0]") shouldBe "ABERULMHCKKW3"
+      unboundForm("invitationIds[1]") shouldBe "B9SCS2T4NZBAX"
+      unboundForm2("confirmTerms[0]") shouldBe "false"
+      unboundForm2("confirmTerms[1]") shouldBe "true"
 
+      val unboundForm3 =
+        confirmTermsMultiForm.mapping.unbind(ConfirmTermsMultiForm(Seq("ABERULMHCKKW3", "B9SCS2T4NZBAX"), Seq(false, false)))
+      unboundForm("invitationIds[0]") shouldBe "ABERULMHCKKW3"
+      unboundForm("invitationIds[1]") shouldBe "B9SCS2T4NZBAX"
+      unboundForm3("confirmTerms[0]") shouldBe "false"
+      unboundForm3("confirmTerms[1]") shouldBe "false"
     }
   }
 

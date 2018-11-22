@@ -26,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, MultiInvitationCache, MultiInvitationsCacheInput}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, MultiInvitationCache, MultiInvitationsCacheInput, SelectedInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{MultiConfirmDeclinePageConfig, MultiConfirmTermsPageConfig, MultiInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
@@ -37,7 +37,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-case class ConfirmTermsMultiForm(confirmTerms: Seq[Boolean])
+case class ConfirmTermsMultiForm(invitationIds: Seq[String], confirmTerms: Seq[Boolean])
 
 @Singleton
 class ClientsMultiInvitationController @Inject()(
@@ -73,16 +73,33 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { _ =>
       getPageComponents(uid, Pending) { (invitationIds, agencyName, serviceKeys) =>
-        multiInvitationCache.save(MultiInvitationsCacheInput(invitationIds, Seq.fill(invitationIds.length)(false)))
+        multiInvitationCache.save(
+          MultiInvitationsCacheInput(
+            invitationIds
+              .zip(Seq.fill(invitationIds.length)(false))
+              .map(choices => SelectedInvitation(choices._1, choices._2))))
 
         Ok(
           confirm_terms_multi(
             confirmTermsMultiForm,
-            MultiConfirmTermsPageConfig(agencyName, clientType, uid, serviceKeys)))
+            MultiConfirmTermsPageConfig(agencyName, clientType, uid, serviceKeys.map(_._2))))
       //At this point store sequence of invitations with a boolean for yes-i want to authorise or no (checkboxes) automatically set to NO
       //Store: invitationId?, serviceKey, bool
+
+        //Note I think InvitationId could be paired with service keys and use it as hidden input???
       }
     }
+  }
+
+  def processChoices(givenInvitationIds: Seq[InvitationId], selectedInvitations: Seq[String], choices: Seq[Boolean]) = {
+    val selected =
+      selectedInvitations.zip(choices).map(selected => SelectedInvitation(InvitationId(selected._1), selected._2))
+    val givenNotSelected = givenInvitationIds
+      .filterNot { chosen =>
+        selectedInvitations.contains(chosen.value)
+      }
+      .map(notChosen => SelectedInvitation(notChosen, false))
+    givenNotSelected ++ selected
   }
 
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
@@ -92,12 +109,24 @@ class ClientsMultiInvitationController @Inject()(
         .fold(
           formWithErrors => Future successful Redirect(routes.ClientsInvitationController.notAuthorised()),
           data => {
-            multiInvitationCache
-              .updateIsSelected(data.confirmTerms)
-              .map(_ => {
-                println(s"WHIT WHOO OWL: ${data.confirmTerms}")
-                Redirect(routes.ClientsInvitationController.notFoundInvitation())
-              })
+
+            for {
+              invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, Pending)
+              _ <- {
+                val processedInvitations = processChoices(invitationIds, data.invitationIds, data.confirmTerms)
+                multiInvitationCache.save(MultiInvitationsCacheInput(processedInvitations))
+              }
+            } yield {
+              println(s"WHIT WHOO OWL: ${data.confirmTerms}")
+              Redirect(routes.ClientsInvitationController.notFoundInvitation())
+            }
+
+//            multiInvitationCache
+//              .updateIsSelected(data.invitationIds.zip(data.confirmTerms).map(choices => SelectedInvitation(InvitationId(choices._1), choices._2)))
+//              .map(_ => {
+//                println(s"WHIT WHOO OWL: ${data.confirmTerms}")
+//                Redirect(routes.ClientsInvitationController.notFoundInvitation())
+//              })
           }
         )
     }
@@ -157,11 +186,11 @@ class ClientsMultiInvitationController @Inject()(
     } yield ()
 
   private def getPageComponents(uid: String, status: InvitationStatus)(
-    body: (Seq[InvitationId], String, Seq[String]) => Result)(implicit hc: HeaderCarrier) =
+    body: (Seq[InvitationId], String, Seq[(String, String)]) => Result)(implicit hc: HeaderCarrier) =
     for {
       invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, status)
       agencyName    <- getAgencyNameViaClient(uid)
-      serviceKeys = invitationIds.map(id => Services.determineServiceMessageKey(id))
+      serviceKeys = invitationIds.map(id => (id.value, Services.determineServiceMessageKey(id)))
     } yield body(invitationIds, agencyName, serviceKeys)
 
   private def assignInvitations(
@@ -228,7 +257,7 @@ class ClientsMultiInvitationController @Inject()(
                 Ok(
                   confirm_decline(
                     formWithErrors,
-                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, serviceKeys)))
+                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, serviceKeys.map(_._2))))
               }
             },
             data => {
@@ -268,28 +297,7 @@ class ClientsMultiInvitationController @Inject()(
 object ClientsMultiInvitationController {
 
   val confirmTermsMultiForm: Form[ConfirmTermsMultiForm] =
-    Form[ConfirmTermsMultiForm](mapping("confirmTerms" -> seq(boolean))({ confirmTerms =>
-      ConfirmTermsMultiForm(confirmTerms)
-    })(termsForm => Some(termsForm.confirmTerms)))
-//  val agentFastTrackForm: Form[CurrentInvitationInput] =
-//    Form(
-//      mapping(
-//        "clientType" -> optional(
-//          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
-//        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
-//        "clientIdentifierType" -> text
-//          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
-//        "clientIdentifier" -> normalizedText.verifying(validateClientId),
-//        "knownFact"        -> optional(text)
-//      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-//        CurrentInvitationInput(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
-//      })({ fastTrack =>
-//        Some(
-//          (
-//            fastTrack.clientType,
-//            fastTrack.service,
-//            fastTrack.clientIdentifierType,
-//            fastTrack.clientIdentifier,
-//            fastTrack.knownFact))
-//      }).verifying(validateFastTrackForm))
+    Form[ConfirmTermsMultiForm](
+      mapping("invitationIds" -> seq(text), "confirmTerms" -> seq(boolean))((invitationIds, confirmTerms) =>
+        ConfirmTermsMultiForm(invitationIds, confirmTerms))(answer => Some(answer.invitationIds, answer.confirmTerms)))
 }

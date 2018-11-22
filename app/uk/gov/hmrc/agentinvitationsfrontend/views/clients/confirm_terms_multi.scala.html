@@ -61,7 +61,7 @@
 
 @suitableTerms(serviceKey: String) = @{serviceKey match {
     case "itsa" => itsaTerms
-    case "irv" => pirTerms
+    case "afi" => pirTerms
     case "vat" => vatTerms
 }}
 
@@ -90,9 +90,10 @@
 
                 <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
             </legend>
-                @for(serviceKey <- confirmTermsPageConfig.serviceKeys) {
-                  @singleCheckbox(confirmTermsForm(s"confirmTerms${0}"),
-                      '_label -> suitableTerms(serviceKey))
+                @for(serviceKey <- confirmTermsPageConfig.serviceKeys.zipWithIndex) {
+
+            @singleCheckbox(confirmTermsForm(s"confirmTerms[${serviceKey._2}]"),
+                      '_label -> suitableTerms(serviceKey._1))
                 }
         </fieldset>
 

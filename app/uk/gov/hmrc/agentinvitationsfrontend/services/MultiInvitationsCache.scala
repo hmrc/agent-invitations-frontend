@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -31,15 +31,19 @@ trait MultiInvitationsCache[T] {
 
   def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
-  def updateIsSelected(selecteds: Seq[Boolean])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
+  def updateIsSelected(
+    selectedInvitations: Seq[SelectedInvitation])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
 
   def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
 }
 
-case class MultiInvitationsCacheInput(
-  invitationId: Seq[InvitationId],
-  //messageKey: Option[String],
-  isSelected: Seq[Boolean])
+case class SelectedInvitation(invitationId: InvitationId, choice: Boolean)
+
+object SelectedInvitation {
+  implicit val format = Json.format[SelectedInvitation]
+}
+
+case class MultiInvitationsCacheInput(selectedInvitationIds: Seq[SelectedInvitation])
 
 object MultiInvitationsCacheInput {
   implicit val format = Json.format[MultiInvitationsCacheInput]
@@ -59,13 +63,14 @@ class MultiInvitationKeyStoreCache @Inject()(session: SessionCache) extends Mult
   def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationsCacheInput]] =
     for {
       entry <- session.fetchAndGetEntry[MultiInvitationsCacheInput](id)
-      _     <- session.cache(id, MultiInvitationsCacheInput(Seq.empty, Seq.empty))
+      _     <- session.cache(id, MultiInvitationsCacheInput(Seq.empty))
     } yield entry
 
-  def updateIsSelected(isSelecteds: Seq[Boolean])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def updateIsSelected(
+    selectedInvitations: Seq[SelectedInvitation])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     session
       .fetchAndGetEntry[MultiInvitationsCacheInput](id)
-      .map(entry => session.cache(id, MultiInvitationsCacheInput(entry.get.invitationId, isSelecteds)))
+      .map(entry => session.cache(id, MultiInvitationsCacheInput(entry.get.selectedInvitationIds)))
       .map(_ => ())
 
   def save(input: MultiInvitationsCacheInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
