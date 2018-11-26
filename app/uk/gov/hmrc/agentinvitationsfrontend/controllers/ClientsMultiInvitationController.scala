@@ -87,6 +87,37 @@ class ClientsMultiInvitationController @Inject()(
     }
   }
 
+  def getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAnyClient { _ =>
+        //withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
+        for {
+          cacheItemOpt <- multiInvitationCache.fetch()
+          result <- cacheItemOpt match {
+                     case None => targets.InvalidJourneyState
+                     case Some(cacheItem) => {
+                       val chosenConsent = cacheItem.consents.find(_.serviceKey == givenServiceKey).toSeq
+                       if (chosenConsent.nonEmpty) {
+                         Future successful Ok(
+                           confirm_terms_multi(
+                             confirmTermsMultiForm,
+                             MultiConfirmTermsPageConfig(
+                               cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                               clientType,
+                               uid,
+                               chosenConsent)))
+                       } else {
+                         targets.InvalidJourneyState
+                       }
+                     }
+
+                   }
+        } yield result
+
+        // }
+      }
+    }
+
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { _ =>
       confirmTermsMultiForm
@@ -113,14 +144,32 @@ class ClientsMultiInvitationController @Inject()(
             for {
               _ <- multiInvitationCache.updateWith(updateMultiInvitation(confirmedTerms))
             } yield {
-              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers())
+              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
             }
           }
         )
     }
   }
 
-  val showCheckAnswers: Action[AnyContent] = Action.async { implicit request =>
+  def submitMultiConfirmTermsIndividual(clientType: String, uid: String, serviceKey: String): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAnyClient { _ =>
+        confirmTermsMultiIndividualForm(serviceKey)
+          .bindFromRequest()
+          .fold(
+            errors => ???,
+            data => {
+              for {
+                _ <- multiInvitationCache.updateWith(updateMultiInvitationWithIndividual(data))
+              } yield {
+                Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
+              }
+            }
+          )
+      }
+    }
+
+  def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     for {
       cacheItemOpt <- multiInvitationCache.fetch()
       result <- cacheItemOpt match {
@@ -131,7 +180,11 @@ class ClientsMultiInvitationController @Inject()(
                        check_answers(
                          CheckAnswersPageConfig(
                            cacheItem.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
-                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name"))))))
+                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name"))),
+                         clientType,
+                         uid
+                       )
+                     ))
                }
     } yield result
   }
@@ -238,6 +291,12 @@ object ClientsMultiInvitationController {
         "confirmedTerms.vat"  -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
+  def confirmTermsMultiIndividualForm(serviceKey: String): Form[ConfirmedTermsIndividual] =
+    Form[ConfirmedTermsIndividual](
+      mapping(
+        s"confirmedTerms.$serviceKey" -> boolean
+      )(ConfirmedTermsIndividual.apply)(ConfirmedTermsIndividual.unapply))
+
   def updateMultiInvitation(confirmedTerms: ConfirmedTerms)(
     item: MultiInvitationsCacheItem): MultiInvitationsCacheItem = {
 
@@ -248,5 +307,17 @@ object ClientsMultiInvitationController {
     }
 
     item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
+  }
+
+  def updateMultiInvitationWithIndividual(confirmedTermsIndividual: ConfirmedTermsIndividual)(
+    item: MultiInvitationsCacheItem): MultiInvitationsCacheItem = {
+    val hasConsent: String => Boolean = {
+      case "itsa" => confirmedTermsIndividual.consent
+      case "afi"  => confirmedTermsIndividual.consent
+      case "vat"  => confirmedTermsIndividual.consent
+    }
+
+    item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
+
   }
 }

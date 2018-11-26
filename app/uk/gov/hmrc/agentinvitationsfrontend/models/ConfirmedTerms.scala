@@ -17,3 +17,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 case class ConfirmedTerms(itsaConsent: Boolean, afiConsent: Boolean, vatConsent: Boolean)
+
+case class ConfirmedTermsIndividual(consent: Boolean)

@@ -48,7 +48,9 @@ GET         /decide-later/:invitationId                                      @uk
 # Client Endpoints Multi auth
 GET         /accept-tax-agent-invitation/consent/:clientType/:uid                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmTerms(clientType: String, uid: String)
 POST        /accept-tax-agent-invitation/consent/:clientType/:uid                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType: String, uid: String)
-GET         /accept-tax-agent-invitation/check-answers                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showCheckAnswers
+GET         /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String)
+POST        /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String)
+GET         /accept-tax-agent-invitation/check-answers/:clientType/:uid          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showCheckAnswers(clientType: String, uid: String)
 GET         /accept-tax-agent-invitation/confirm-decline/:clientType/:uid        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmDecline(clientType: String, uid: String)
 POST        /accept-tax-agent-invitation/confirm-decline/:clientType/:uid        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType: String, uid: String)
 GET         /reject-tax-agent-invitation/declined/uid/:uid                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid: String)

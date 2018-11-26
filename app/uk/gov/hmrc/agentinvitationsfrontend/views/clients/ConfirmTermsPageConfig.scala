@@ -29,6 +29,9 @@ case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, u
   val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
 
+  def submitIndividualUrl(serviceKey: String): Call =
+    routes.ClientsMultiInvitationController.submitMultiConfirmTermsIndividual(clientType, uid, serviceKey)
+
   val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isBefore(c1.expiryDate)
 
   val serviceKeyAndExpiryDateSeq: Seq[Consent] = {

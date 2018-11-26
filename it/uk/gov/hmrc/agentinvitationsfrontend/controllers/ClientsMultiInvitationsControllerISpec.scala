@@ -144,7 +144,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers().url)
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
     }
 
   }
@@ -292,7 +292,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My agency Name"))))
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Check your answers before sending your response",
@@ -310,7 +310,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Bad Request Exception if there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -322,11 +322,27 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), None)))
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       an[Exception] shouldBe thrownBy {
         await(result)
       }
+    }
+  }
+
+  "GET /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey  (multi confirm terms individual)" should {
+
+    "show the multi confirm terms page for one service" in {
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,
+        "my income and expenses information"
+      )
+
     }
   }
 

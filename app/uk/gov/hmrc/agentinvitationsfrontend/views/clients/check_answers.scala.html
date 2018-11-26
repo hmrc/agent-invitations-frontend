@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
 
-@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(pageConfig: CheckAnswersPageConfig, clientType:String, uid: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
@@ -45,7 +45,7 @@
                     @Messages(s"check-answers.consent.${consent.consent}")
                 </dd>
               <dd class="app-check-your-answers__change">
-                  <a href="#">@Messages("check-answers.change-link")</a>
+                  <a href=@pageConfig.changeUrl(clientType, uid, consent.serviceKey)>@Messages("check-answers.change-link")</a>
               </dd>
             </div>
         }
