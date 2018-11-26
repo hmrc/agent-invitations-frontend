@@ -21,17 +21,19 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-case class MultiConfirmTermsPageConfig(
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  invitationIdWithServiceKeySeq: Seq[Consent]) {
+case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, uid: String, consentSeq: Seq[Consent]) {
 
   val backUrl: Call =
     routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
 
   val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
+
+  val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isBefore(c1.expiryDate)
+
+  val serviceKeyAndExpiryDateSeq: Seq[Consent] = {
+    consentSeq.sortWith(expiryDateDescending).map(consent => consent.serviceKey -> consent).toMap.values.toSeq
+  }
 
 }
 

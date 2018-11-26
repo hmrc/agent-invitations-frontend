@@ -17,11 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-case class Consent(invitationId: InvitationId, expiryDate: LocalDate, serviceKey: String, consent: Boolean)
+case class InvitationIdAndExpiryDate(invitationId: InvitationId, expiryDate: LocalDate)
 
-object Consent {
-  implicit val format = Json.format[Consent]
+object InvitationIdAndExpiryDate {
+  implicit val format: Format[InvitationIdAndExpiryDate] = Json.format[InvitationIdAndExpiryDate]
 }

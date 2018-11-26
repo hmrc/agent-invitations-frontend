@@ -50,9 +50,24 @@ trait ACAStubs {
             .withBody(
               s"""
                  |[
-                 |{"value": "AG1UGUKTPNJ7W"},
-                 |{"value": "B9SCS2T4NZBAX"},
-                 |{"value": "CZTW1KY6RTAAT"}
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "AG1UGUKTPNJ7W"
+                 |    },
+                 |    "expiryDate": "2018-11-01"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "B9SCS2T4NZBAX"
+                 |    },
+                 |     "expiryDate": "2018-03-05"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "CZTW1KY6RTAAT"
+                 |    },
+                 |    "expiryDate": "2018-12-25"
+                 |  }
                  |]
                  |""".stripMargin)
         )
@@ -67,9 +82,24 @@ trait ACAStubs {
             .withBody(
               s"""
                  |[
-                 |{"value": "EG1UGUKTPNJ7W"},
-                 |{"value": "F9SCS2T4NZBAX"},
-                 |{"value": "GZTW1KY6RTAAT"}
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "EG1UGUKTPNJ7W"
+                 |    },
+                 |    "expiryDate": "2018-11-01"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "F9SCS2T4NZBAX"
+                 |    },
+                 |     "expiryDate": "2018-03-05"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "GZTW1KY6RTAAT"
+                 |    },
+                 |    "expiryDate": "2018-12-25"
+                 |  }
                  |]
                  |""".stripMargin)
         )
@@ -128,11 +158,6 @@ trait ACAStubs {
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
         .willReturn(aResponse()
           .withStatus(400)))
-
-  def getInvitationAgentStub() =
-    stubFor(
-      get(urlEqualTo(s""))
-    )
 
   def getInvitationStub(
                          arn: Arn,

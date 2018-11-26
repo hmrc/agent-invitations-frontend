@@ -214,9 +214,15 @@ class ClientsMultiInvitationController @Inject()(
   private def withAgencyNameAndConsents(uid: String, status: InvitationStatus)(
     body: (String, Seq[Consent]) => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
     for {
-      invitationIds <- invitationsConnector.getAllClientInvitationIdsByStatus(uid, status)
-      agencyName    <- getAgencyName(uid)
-      consents = invitationIds.map(id => Consent(id, Services.determineServiceMessageKey(id), consent = false))
+      invitations <- invitationsConnector.getAllClientInvitationsInfoForAgentAndStatus(uid, status)
+      agencyName  <- getAgencyName(uid)
+      consents = invitations.map(
+        invitation =>
+          Consent(
+            invitation.invitationId,
+            invitation.expiryDate,
+            Services.determineServiceMessageKey(invitation.invitationId),
+            consent = false))
       result <- body(agencyName, consents)
     } yield result
 

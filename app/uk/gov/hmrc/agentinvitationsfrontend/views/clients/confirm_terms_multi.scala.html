@@ -14,19 +14,20 @@
  * limitations under the License.
  *@
 
+@import org.joda.time.LocalDate
 @import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup, singleCheckbox}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.Services
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
-
-
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox}
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: MultiConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@displayDate(date: LocalDate) = @{
+    if(date.getDayOfMonth < 10) date.toString("d MMMM yyyy", messages.lang.locale)
+    else date.toString("dd MMMM yyyy", messages.lang.locale)
+}
 
 @itsaTerms = {
 
@@ -35,7 +36,6 @@
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
 </ul>
-<p>@Messages("confirm-terms-multi.expires.p2")</p>
 }
 
 @pirTerms = {
@@ -46,7 +46,6 @@
         <li>@Messages("confirm-terms-multi.pir.list.item3")</li>
         <li>@Messages("confirm-terms-multi.pir.list.item4")</li>
     </ul>
-    <p>@Messages("confirm-terms-multi.expires.p2")</p>
 }
 
 @vatTerms = {
@@ -56,14 +55,16 @@
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item3")</li>
     </ul>
-    <p>@Messages("confirm-terms-multi.expires.p2")</p>
 }
 
-@suitableTerms(serviceKey: String) = @{serviceKey match {
-    case "itsa" => itsaTerms
-    case "afi" => pirTerms
-    case "vat" => vatTerms
-}}
+@suitableTerms(serviceKey: String, expiryDate: String) = {
+    @{serviceKey match {
+        case "itsa" => itsaTerms
+        case "afi" => pirTerms
+        case "vat" => vatTerms
+    }}
+    <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
+}
 
 
 
@@ -88,12 +89,12 @@
 
                 <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
             </legend>
-                @for(serviceKey <- pageConfig.invitationIdWithServiceKeySeq.map(_.serviceKey).distinct) {
+                @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
 
-                    <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.$serviceKey.heading")</h2>
+                    <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
-                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.$serviceKey"),
-                                  '_label -> suitableTerms(serviceKey),
+                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                                  '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
                                   '_groupDivClass -> "div-underline")
                 }
         </fieldset>

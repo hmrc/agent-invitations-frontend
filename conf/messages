@@ -243,7 +243,7 @@ confirm-terms-multi.itsa.p1=I consent to HMRC sharing the following information 
 confirm-terms-multi.itsa.list.item1=my income and expenses information
 confirm-terms-multi.itsa.list.item2=how my Income Tax estimates have been calculated
 
-confirm-terms-multi.expires.p2=You need to respond to this request before 16 November 2018, or else it will expire.
+confirm-terms-multi.expires.p2=You need to respond to this request before {0}, or else it will expire.
 
 confirm-terms-multi.afi.heading=View your PAYE income record
 confirm-terms-multi.pir.p1=I consent to HMRC sharing the following information with {0}, so this agent can view my income record:
