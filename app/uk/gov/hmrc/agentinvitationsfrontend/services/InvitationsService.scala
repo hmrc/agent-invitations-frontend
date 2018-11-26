@@ -19,10 +19,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Services, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -110,6 +110,20 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkCitizenRecord(nino, dob)
+
+  def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    for {
+      invitation <- invitationsConnector.getInvitation(invitationId)
+      result <- invitation match {
+                 case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
+                 case Some(i) =>
+                   Services.determineServiceMessageKey(invitationId) match {
+                     case "itsa" => invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)
+                     case "afi"  => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
+                     case "vat"  => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
+                   }
+               }
+    } yield result
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"

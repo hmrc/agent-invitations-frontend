@@ -1,0 +1,57 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
+
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
+
+@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
+    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
+
+    @back_link_referer(request)
+
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("check-answers.heading")</h1>
+
+    <h2 class="heading-medium margin-top-40">@Messages("check-answers.subheading")</h2>
+
+    <p>@Messages("check-answers.p1", pageConfig.agencyName)</p>
+
+    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
+        @for(consent <- pageConfig.consents) {
+            <div>
+                <dt class="cya-question">
+                    @Messages(s"check-answers.service.${consent.serviceKey}")
+                </dt>
+                <dd class="cya-answer" id="client-identifier">
+                    @Messages(s"check-answers.consent.${consent.consent}")
+                </dd>
+              <dd class="app-check-your-answers__change">
+                  <a href="#">@Messages("check-answers.change-link")</a>
+              </dd>
+            </div>
+        }
+    </dl>
+
+    <a href="#"><button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button></a>
+
+
+}

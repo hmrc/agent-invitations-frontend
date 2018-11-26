@@ -36,11 +36,7 @@ GET         /track/cancel-authorisation                                      @uk
 POST        /track/cancel-authorisation                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitCancelAuthorisationConfirm
 GET         /track/cancelled                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showAuthorisationCancelled
 
-# Client Endpoints
-GET         /accept-tax-agent-invitation/confirm-decline/:clientType/:uid          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmDecline(clientType: String, uid: String)
-POST        /accept-tax-agent-invitation/confirm-decline/:clientType/:uid               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType: String, uid: String)
-GET         /reject-tax-agent-invitation/declined/uid/:uid             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid: String)
-
+# Client Endpoints Single auth
 GET         /accept-tax-agent-invitation/confirm-decline/:invitationId       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmDecline(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 POST        /accept-tax-agent-invitation/confirm-decline/:invitationId       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitConfirmDecline(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 GET         /accept-tax-agent-invitation/consent/:invitationId               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getConfirmTerms(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
@@ -49,20 +45,28 @@ GET         /accept-tax-agent-invitation/accepted/:invitationId              @uk
 GET         /reject-tax-agent-invitation/declined/:invitationId              @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getInvitationDeclined(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 GET         /decide-later/:invitationId                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.getDecideLater(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
 
-# Error Client Endpoints
-GET         /not-signed-up/                                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
-GET         /not-authorised/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notAuthorised
-GET         /incorrect/                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.incorrectInvitation
-GET         /not-found/                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
-GET         /already-responded/                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
-GET         /expired/                                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
-GET         /request-cancelled/                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.requestCancelled
+# Client Endpoints Multi auth
+GET         /accept-tax-agent-invitation/consent/:clientType/:uid                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmTerms(clientType: String, uid: String)
+POST        /accept-tax-agent-invitation/consent/:clientType/:uid                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType: String, uid: String)
+GET         /accept-tax-agent-invitation/check-answers                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showCheckAnswers
+GET         /accept-tax-agent-invitation/confirm-decline/:clientType/:uid        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmDecline(clientType: String, uid: String)
+POST        /accept-tax-agent-invitation/confirm-decline/:clientType/:uid        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType: String, uid: String)
+GET         /reject-tax-agent-invitation/declined/uid/:uid                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid: String)
 
-GET         /assets/*file                                                     controllers.Assets.at(path="/public", file)
+# Error Client Endpoints
+GET         /not-signed-up/                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notSignedUp
+GET         /not-authorised/                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notAuthorised
+GET         /incorrect/                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.incorrectInvitation
+GET         /not-found/                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.notFoundInvitation
+GET         /already-responded/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationAlreadyResponded
+GET         /expired/                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
+GET         /request-cancelled/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.requestCancelled
+
+GET         /assets/*file                                                        controllers.Assets.at(path="/public", file)
 
 # New Client Journey
-GET         /:clientType/:uid/:agentName                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.warmUp(clientType: String, uid: String, agentName: String)
+GET         /:clientType/:uid/:agentName                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.warmUp(clientType: String, uid: String, agentName: String)
 
 # Old Landing Page
-GET         /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
-POST        /:invitationId                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+GET         /:invitationId                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.start(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)
+POST        /:invitationId                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.submitStart(invitationId: uk.gov.hmrc.agentmtdidentifiers.model.InvitationId)

@@ -1,0 +1,106 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import org.joda.time.LocalDate
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox}
+@(confirmTermsForm: Form[ConfirmedTerms], pageConfig: MultiConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@displayDate(date: LocalDate) = @{
+    if(date.getDayOfMonth < 10) date.toString("d MMMM yyyy", messages.lang.locale)
+    else date.toString("dd MMMM yyyy", messages.lang.locale)
+}
+
+@itsaTerms = {
+
+<span class="checkbox-heading">@Messages("confirm-terms-multi.itsa.p1")</span>
+<ul class="list list-bullet">
+    <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
+    <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
+</ul>
+}
+
+@pirTerms = {
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.pir.p1")</span>
+    <ul class="list list-bullet">
+        <li>@Messages("confirm-terms-multi.pir.list.item1")</li>
+        <li>@Messages("confirm-terms-multi.pir.list.item2")</li>
+        <li>@Messages("confirm-terms-multi.pir.list.item3")</li>
+        <li>@Messages("confirm-terms-multi.pir.list.item4")</li>
+    </ul>
+}
+
+@vatTerms = {
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.vat.p1")</span>
+    <ul class="list list-bullet">
+        <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item3")</li>
+    </ul>
+}
+
+@suitableTerms(serviceKey: String, expiryDate: String) = {
+    @{serviceKey match {
+        case "itsa" => itsaTerms
+        case "afi" => pirTerms
+        case "vat" => vatTerms
+    }}
+    <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
+}
+
+
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
+    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
+
+    @back_link(s"${pageConfig.backUrl}")
+
+    @if(confirmTermsForm.hasErrors) {
+        @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
+    }
+
+      @form(pageConfig.submitUrl
+      ) {
+        <fieldset>
+            <legend>
+                <h1 class="heading-xlarge">@Messages("confirm-terms.multi.heading")</h1>
+
+                <p>@Messages("confirm-terms.multi.p1", pageConfig.agencyName)</p>
+
+                <p>@Html(Messages("confirm-terms.subheading2.p1", externalUrls.agentClientManagementUrl))</p>
+
+                <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
+            </legend>
+                @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
+
+                    <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
+
+                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                                  '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                                  '_groupDivClass -> "div-underline")
+                }
+        </fieldset>
+
+          <div class="form-group">
+              <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+          </div>
+  }
+}

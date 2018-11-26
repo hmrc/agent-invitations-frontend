@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation._
@@ -28,7 +27,6 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{CurrentInvitationInputFromFastTrackNeedsClientType, CurrentInvitationInputNeedsClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
@@ -882,9 +880,9 @@ class AgentsInvitationController @Inject()(
 
 object AgentsInvitationController {
 
-  import ValidateHelper._
   import DateFieldHelper._
   import Services._
+  import ValidateHelper._
 
   private val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
 

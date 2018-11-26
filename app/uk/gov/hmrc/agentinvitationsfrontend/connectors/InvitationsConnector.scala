@@ -65,6 +65,9 @@ class InvitationsConnector @Inject()(
         .print(createdOnOrAfter)}"
     )
 
+  private[connectors] def getAgentInvitationUrl(invitationId: InvitationId): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/invitations/${invitationId.value}")
+
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
     new URL(
       baseUrl,
@@ -107,6 +110,14 @@ class InvitationsConnector @Inject()(
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       val url = invitationUrl(location)
       http.GET[StoredInvitation](url.toString)
+    }
+
+  def getInvitation(
+    invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StoredInvitation]] =
+    monitor(s"ConsumedAPI-Get-AgentInvitation-GET") {
+      http.GET[Option[StoredInvitation]](getAgentInvitationUrl(invitationId).toString).recover {
+        case _: NotFoundException => None
+      }
     }
 
   def getAllInvitations(arn: Arn, createdOnOrAfter: LocalDate)(
@@ -181,7 +192,7 @@ class InvitationsConnector @Inject()(
   private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode")
 
-  private[connectors] def getAllPendingInvitationIdsUrl(uid: String, status: InvitationStatus) =
+  private[connectors] def getAllClientInvitationsInfoForAgentAndStatusUrl(uid: String, status: InvitationStatus) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid?status=${status.value}")
 
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
@@ -238,13 +249,13 @@ class InvitationsConnector @Inject()(
       case _: NotFoundException                                      => None
     }
 
-  def getAllClientInvitationIdsByStatus(uid: String, status: InvitationStatus)(
+  def getAllClientInvitationsInfoForAgentAndStatus(uid: String, status: InvitationStatus)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[InvitationId]] =
+    ec: ExecutionContext): Future[Seq[InvitationIdAndExpiryDate]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
-      val url = getAllPendingInvitationIdsUrl(uid, status)
+      val url = getAllClientInvitationsInfoForAgentAndStatusUrl(uid, status)
       http
-        .GET[Seq[InvitationId]](url.toString)
+        .GET[Seq[InvitationIdAndExpiryDate]](url.toString)
     }
 
   object Reads {

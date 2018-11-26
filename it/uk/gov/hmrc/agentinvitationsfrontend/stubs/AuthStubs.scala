@@ -67,7 +67,7 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
   }
 
   def authorisedAsAnyClientFalse[A](request: FakeRequest[A]): FakeRequest[A] = {
@@ -114,7 +114,7 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
   }
 
   def authenticatedClient[A](

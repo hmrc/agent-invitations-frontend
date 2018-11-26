@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleConfirmDeclinePageConfig, SingleInvitationDeclinedPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleConfirmDeclinePageConfig, SingleConfirmTermsPageConfig, SingleInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -196,7 +196,7 @@ class ClientsInvitationController @Inject()(
           withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsPending(messageKey) {
             invitation =>
               invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                Ok(confirm_terms(confirmTermsForm, agencyName, invitationId, messageKey))
+                Ok(confirm_terms(confirmTermsForm, SingleConfirmTermsPageConfig(agencyName, invitationId, messageKey)))
               }
           })
         }
@@ -218,7 +218,10 @@ class ClientsInvitationController @Inject()(
                     .bindFromRequest()
                     .fold(
                       formWithErrors => {
-                        Future successful Ok(confirm_terms(formWithErrors, agencyName, invitationId, messageKey))
+                        Future successful Ok(
+                          confirm_terms(
+                            formWithErrors,
+                            SingleConfirmTermsPageConfig(agencyName, invitationId, messageKey)))
                       },
                       data => {
                         if (data.value.getOrElse(false)) {
