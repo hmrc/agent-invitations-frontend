@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConn
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Services, StoredInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -111,13 +111,11 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkCitizenRecord(nino, dob)
 
-  def rejectInvitation(arn: Arn, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Unit] =
+  def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     for {
-      invitation <- invitationsConnector.getAgentInvitation(arn, invitationId)
+      invitation <- invitationsConnector.getInvitation(invitationId)
       result <- invitation match {
-                 case None => Future.successful(())
+                 case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
                  case Some(i) =>
                    Services.determineServiceMessageKey(invitationId) match {
                      case "itsa" => invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)

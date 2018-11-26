@@ -40,6 +40,10 @@
     margin-bottom: 40px !important;
 }
 
+.margin-bottom-60 {
+    margin-bottom: 60px !important;
+}
+
 .normal-text {
     color: #0b0c0c !important;
 }
@@ -142,4 +146,20 @@ caption.caption-normal{
 }
 .form-field--error legend h1{
     margin-top: 0!important
+}
+
+.div-underline {
+    border-bottom: 1px solid #9a9a9a;
+}
+fieldset .div-underline:last-child{
+    border-bottom: none;
+}
+
+.checkbox-heading {
+    margin-top: -5px;
+    display: inline-block;
+}
+
+.app-check-your-answers__change {
+    text-align: right;
 }

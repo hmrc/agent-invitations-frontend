@@ -23,14 +23,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmedTerms
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
 
 
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: MultiConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @itsaTerms = {
-        <h2 class = "margin-top-0">@Messages("confirm-terms-multi.itsa.heading")</h2>
-<p>@Messages("confirm-terms-multi.itsa.p1")</p>
+
+<span class="checkbox-heading">@Messages("confirm-terms-multi.itsa.p1")</span>
 <ul class="list list-bullet">
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
@@ -39,8 +39,7 @@
 }
 
 @pirTerms = {
-    <h2 class = "margin-top-0">@Messages("confirm-terms-multi.pir.heading")</h2>
-    <p>@Messages("confirm-terms-multi.pir.p1")</p>
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.pir.p1")</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.pir.list.item1")</li>
         <li>@Messages("confirm-terms-multi.pir.list.item2")</li>
@@ -51,8 +50,7 @@
 }
 
 @vatTerms = {
-    <h2 class = "margin-top-0">@Messages("confirm-terms-multi.vat.heading")</h2>
-    <p>@Messages("confirm-terms-multi.vat.p1")</p>
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.vat.p1")</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
@@ -78,8 +76,6 @@
         @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
     }
 
-
-
       @form(pageConfig.submitUrl
       ) {
         <fieldset>
@@ -92,10 +88,13 @@
 
                 <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
             </legend>
-                @for(consent <- pageConfig.invitationIdWithServiceKeySeq) {
+                @for(serviceKey <- pageConfig.invitationIdWithServiceKeySeq.map(_.serviceKey).distinct) {
 
-                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                  '_label -> suitableTerms(consent.serviceKey))
+                    <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.$serviceKey.heading")</h2>
+
+                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.$serviceKey"),
+                                  '_label -> suitableTerms(serviceKey),
+                                  '_groupDivClass -> "div-underline")
                 }
         </fieldset>
 

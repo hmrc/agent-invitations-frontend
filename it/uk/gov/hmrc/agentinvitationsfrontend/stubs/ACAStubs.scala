@@ -20,7 +20,7 @@ trait ACAStubs {
             .withStatus(201)
             .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")))
 
-  def getAgentReferenceRecordStub(arn: Arn, uid: String): Unit =
+  def givenAgentReferenceRecordStub(arn: Arn, uid: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/agencies/references/uid/$uid"))
         .willReturn(
@@ -41,7 +41,7 @@ trait ACAStubs {
           aResponse()
             .withStatus(404)))
 
-  def getAllInvitationIdsStubByStatus(uid: String, status: String): Unit =
+  def givenAllInvitationIdsStubByStatus(uid: String, status: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
         .willReturn(
@@ -80,11 +80,8 @@ trait ACAStubs {
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
         .willReturn(
           aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[]
-                 |""".stripMargin)
+            .withStatus(404)
+
         )
     )
 
@@ -132,6 +129,11 @@ trait ACAStubs {
         .willReturn(aResponse()
           .withStatus(400)))
 
+  def getInvitationAgentStub() =
+    stubFor(
+      get(urlEqualTo(s""))
+    )
+
   def getInvitationStub(
                          arn: Arn,
                          clientId: String,
@@ -165,6 +167,37 @@ trait ACAStubs {
                  |		  }
                  |  }
                  |}""".stripMargin)))
+
+  def getInvitationByIdStub(invitationId: InvitationId, clientId: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |{
+                 |  "arn" : "TARN00001",
+                 |  "service" : "HMRC-MTD-IT",
+                 |  "clientId" : "$clientId",
+                 |  "clientIdType" : "mtditid",
+                 |  "suppliedClientId" : "$clientId",
+                 |  "suppliedClientIdType" : "mtditid",
+                 |  "status" : "Pending",
+                 |  "created" : "2017-10-31T23:22:50.971Z",
+                 |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                 |  "expiryDate" : "2017-12-18",
+                 |  "invitationId": "$invitationId",
+                 |  "_links": {
+                 |    	"self" : {
+                 |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/invitations/${invitationId.value}"
+                 |		  }
+                 |  }
+                 |}""".stripMargin
+
+            )
+        )
+    )
 
   def getExpiredInvitationStub(
                                 arn: Arn,
