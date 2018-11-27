@@ -180,6 +180,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
@@ -193,6 +194,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
@@ -206,6 +208,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
@@ -219,6 +222,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, "Individual or sole trader")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, "Change this information")
@@ -238,6 +242,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "DH1 4EJ")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
+      checkHtmlResultWithNotBodyText(result, "Individual or sole trader")
     }
   }
 

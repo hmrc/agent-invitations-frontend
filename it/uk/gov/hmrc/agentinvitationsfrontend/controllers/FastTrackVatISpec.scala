@@ -185,6 +185,7 @@ class FastTrackVatISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration date"))
@@ -198,6 +199,7 @@ class FastTrackVatISpec extends BaseISpec {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
       checkHtmlResultWithBodyText(result, "Change this information")
@@ -217,6 +219,7 @@ class FastTrackVatISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "07 July 2007")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
+      checkHtmlResultWithNotBodyText(result, "Company or partnership")
     }
   }
 

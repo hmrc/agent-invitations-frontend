@@ -62,6 +62,20 @@
 
     <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
         <div>
+            @if(currentInvitationInput.clientType.nonEmpty){
+            <dt class="cya-question">
+                @Messages("check-details.client-type")
+            </dt>
+            <dd class="cya-answer" id="client-type">
+                @{currentInvitationInput.clientType match {
+                    case Some("personal") => Messages("check-details.client-type.personal")
+                    case Some("business") => Messages("check-details.client-type.business")
+                    case _ => throw new IllegalArgumentException("client type not found")
+                }}
+            </dd>
+            }
+        </div>
+        <div>
             <dt class="cya-question">
                 @{currentInvitationInput.clientIdentifierType match {
                     case "ni" => Messages("check-details.nino")
