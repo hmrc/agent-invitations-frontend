@@ -69,7 +69,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAgentReferenceRecordStub(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.warmUp("personal", uid, normalisedAgentName)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.warmUp("personal", uid, normalisedAgentName)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe OK
       checkHasClientSignOutUrl(result)
     }
@@ -106,7 +106,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAgentReferenceRecordStub(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, "We need your consent to share information",
@@ -123,11 +123,32 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "redirect to notFound if no invitations are found" in {
       getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
 
-      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
 
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
     }
+
+
+    "redirect to wrong-account-type if signed-in as business for personal invitation" in {
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
+
+      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+    }
+
+    "redirect to wrong-account-type if signed-in as personal for business invitation" in {
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
+
+      val result = controller.getMultiConfirmTerms("business", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+    }
+
+
 
   }
 
@@ -141,7 +162,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
@@ -156,7 +177,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
           .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "itsa"))
 
       status(result) shouldBe 303
@@ -176,7 +197,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
           .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "afi"))
 
       status(result) shouldBe 303
@@ -196,7 +217,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
           .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
 
       status(result) shouldBe 303
@@ -216,7 +237,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, "Are you sure you want to decline this request?")
@@ -231,7 +252,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
@@ -243,7 +264,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenGetAgencyNameNotFoundClientStub(arn)
 
       an[AgencyNameNotFound] shouldBe thrownBy {
-        await(controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest())))
+        await(controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())))
       }
     }
 
@@ -253,7 +274,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenGetAgencyNameClientStub(arn)
 
       an[Exception] shouldBe thrownBy {
-        await(controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest())))
+        await(controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())))
       }
     }
 
@@ -274,7 +295,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(true)))
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
+      val result = controller.submitMultiConfirmDecline("personal", uid)(
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
@@ -285,7 +307,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(false)))
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
+      val result = controller.submitMultiConfirmDecline("personal", uid)(
+        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiConfirmTerms("personal", uid).url)
@@ -297,7 +320,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "This field is required")
@@ -327,7 +350,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Bad Request Exception if there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -352,7 +375,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My agency Name"))))
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Check your answers before sending your response",
@@ -370,7 +393,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Bad Request Exception if there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -382,7 +405,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), None)))
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[Exception] shouldBe thrownBy {
         await(result)
@@ -397,7 +420,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "We need your consent to share information",
         "Report my income and expenses through software",
@@ -414,7 +437,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+        authorisedAsAnyIndividualClient(FakeRequest()
         .withHeaders("Referer" -> s"someBaseUrl${routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url}")))
 
       status(result) shouldBe 200
@@ -433,7 +457,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
         "View your PAYE income record",
@@ -450,7 +474,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
         "Report my VAT returns through software",
@@ -464,7 +488,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "return Invalid Journey State when there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -475,7 +499,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -490,7 +514,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAllInvitationIdsStubByStatus(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
         "You have declined this request",
@@ -505,11 +529,30 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       getAllInvitationIdsEmptyByStatusStub(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
     }
+
+    "redirect to wrong-account-type if signed-in as business for personal invitation" in {
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
+
+      val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+    }
+
+    "redirect to wrong-account-type if signed-in as personal for business invitation" in {
+      getAllInvitationIdsEmptyByStatusStub(uid, "Pending")
+
+      val result = controller.getMultiConfirmDecline("business", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+    }
+
 
     "Throw an AgencyNameNotFound exception if agencyName is not found" in {
       givenAgentReferenceRecordStub(arn, uid)
@@ -517,7 +560,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenGetAgencyNameNotFoundClientStub(arn)
 
       an[AgencyNameNotFound] shouldBe thrownBy {
-        await(controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyClient(FakeRequest())))
+        await(controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest())))
       }
     }
   }

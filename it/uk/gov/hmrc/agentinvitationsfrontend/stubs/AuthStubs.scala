@@ -23,7 +23,7 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation",  Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyClient[A](request: FakeRequest[A]): FakeRequest[A] = {
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A]): FakeRequest[A] = {
     givenAuthorisedFor(
       """
          |{
@@ -43,6 +43,7 @@ trait AuthStubs {
        """.stripMargin,
       s"""
          |{
+         |  "affinityGroup":"Individual",
          |  "allEnrolments":
          |  [
          |    {
@@ -57,6 +58,42 @@ trait AuthStubs {
          |         {"key":"NINO", "value": "AB123456A"}
          |      ]
          |     },
+         |     {
+         |      "key": "HMRC-MTD-VAT",
+         |      "identifiers": [
+         |         {"key":"VRN", "value": "101747696"}
+         |      ]
+         |     }
+         |  ]
+         |}
+          """.stripMargin
+    )
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
+  }
+
+  def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A]): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+         |{
+         |"authorise": [ {
+         |  "authProviders": [ "GovernmentGateway" ]
+         |}, {
+         |  "confidenceLevel": 200
+         |}, {
+         |  "$or" : [ {
+         |      "affinityGroup" : "Individual"
+         |    }, {
+         |      "affinityGroup" : "Organisation"
+         |    } ]
+         |} ],
+         |  "retrieve": [ "allEnrolments" ]
+         |}
+       """.stripMargin,
+      s"""
+         |{
+         |  "affinityGroup":"Organisation",
+         |  "allEnrolments":
+         |  [
          |     {
          |      "key": "HMRC-MTD-VAT",
          |      "identifiers": [
@@ -90,6 +127,7 @@ trait AuthStubs {
       """.stripMargin,
       s"""
          |{
+         |  "affinityGroup":"Individual",
          |  "allEnrolments":
          |  [
          |    {
