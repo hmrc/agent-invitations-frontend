@@ -73,6 +73,38 @@ trait ACAStubs {
         )
     )
 
+  def givenAllInvitationIdsStubByStatusDuplicated(uid: String, status: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "AG1UGUKTPNJ7W"
+                 |    },
+                 |    "expiryDate": "9999-11-01"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "AG1UGUKTPNJ7Z"
+                 |    },
+                 |    "expiryDate": "9999-11-01"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "CZTW1KY6RTAAT"
+                 |    },
+                 |    "expiryDate": "9999-12-25"
+                 |  }
+                 |]
+                 |""".stripMargin)
+        )
+    )
+
   def givenAllInvitationIdsStubExpiredByStatus(uid: String, status: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))

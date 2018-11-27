@@ -172,7 +172,8 @@ class ClientsMultiInvitationController @Inject()(
             }
           )
       } else {
-        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+        Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+          .addingToSession("clientType" -> clientType)
       }
     }
   }
@@ -223,7 +224,7 @@ class ClientsMultiInvitationController @Inject()(
                 Ok(
                   confirm_decline(
                     confirmDeclineForm,
-                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey))))
+                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey).distinct)))
               }
           }.recoverWith {
             case _: NotFoundException => targets.NotFoundInvitation
@@ -271,7 +272,8 @@ class ClientsMultiInvitationController @Inject()(
                      }
           } yield result
         } else {
-          Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+          Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+            .addingToSession("clientType" -> clientType)
         }
       }
   }
@@ -284,8 +286,8 @@ class ClientsMultiInvitationController @Inject()(
           .map {
             case None => throw new BadRequestException("Invalid journey state.")
             case Some(cacheItem) => {
-              val cacheIds = cacheItem.consents.map(_.invitationId)
-              val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.invitationId)).map(_.serviceKey)
+              val cacheIds = cacheItem.consents.map(_.serviceKey)
+              val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.serviceKey)).map(_.serviceKey).distinct
               Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
             }
           }

@@ -545,6 +545,24 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         "report your VAT returns through software")
     }
 
+    "show the multi invitations declined page for multi ITSA Invitation" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("AG1UGUKTPNJ7Z"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatusDuplicated(uid, "Rejected")
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,
+        "You declined this request",
+        "You have not given permission to My Agency to:",
+        "report your income and expenses through software",
+        "report your VAT returns through software")
+    }
+
     "throw a Bad Request exception if there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
 
