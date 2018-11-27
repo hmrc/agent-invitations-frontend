@@ -37,7 +37,7 @@ class ExternalUrls @Inject()(
   @Named("privacy-policy.external-url") val privacypolicyUrl: String
 ) {
 
-  val companyAuthFrontendSignOutUrl = s"$companyAuthUrl/$companyAuthSignOutPath"
+  val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
 
   private def contactFrontendServiceId(isAgent: Boolean) =
     if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier

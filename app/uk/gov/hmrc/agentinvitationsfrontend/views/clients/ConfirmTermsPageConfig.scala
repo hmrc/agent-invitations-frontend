@@ -32,12 +32,17 @@ case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, u
   val checkAnswersUrl: String =
     routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid).url
 
-  val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isBefore(c1.expiryDate)
+  val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
 
   val serviceKeyAndExpiryDateSeq: Seq[Consent] = {
-    consentSeq.sortWith(expiryDateDescending).map(consent => consent.serviceKey -> consent).toMap.values.toSeq
+    consentSeq
+      .sortWith(expiryDateDescending)
+      .map(consent => consent.serviceKey -> consent)
+      .toMap
+      .values
+      .toSeq
+      .sortWith(expiryDateDescending)
   }
-
 }
 
 case class SingleConfirmTermsPageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String) {

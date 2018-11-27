@@ -172,7 +172,8 @@ class ClientsMultiInvitationController @Inject()(
             }
           )
       } else {
-        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+        Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+          .addingToSession("clientType" -> clientType)
       }
     }
   }
@@ -223,7 +224,7 @@ class ClientsMultiInvitationController @Inject()(
                 Ok(
                   confirm_decline(
                     confirmDeclineForm,
-                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey))))
+                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey).distinct)))
               }
           }.recoverWith {
             case _: NotFoundException => targets.NotFoundInvitation
@@ -271,7 +272,8 @@ class ClientsMultiInvitationController @Inject()(
                      }
           } yield result
         } else {
-          Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+          Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+            .addingToSession("clientType" -> clientType)
         }
       }
   }
@@ -279,8 +281,16 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
-        Future successful Ok(
-          invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, consents.map(_.serviceKey))))
+        multiInvitationCache
+          .fetch()
+          .map {
+            case None => throw new BadRequestException("Invalid journey state.")
+            case Some(cacheItem) => {
+              val cacheIds = cacheItem.consents.map(_.serviceKey)
+              val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.serviceKey)).map(_.serviceKey).distinct
+              Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
+            }
+          }
       }.recoverWith {
         case ex: NotFoundException => targets.NotFoundInvitation
       }

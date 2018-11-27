@@ -19,7 +19,8 @@ class ClientErrorControllerISpec extends BaseISpec {
         "You signed in with the wrong type of Government Gateway account.",
         "To use this service, you need to sign in with the Government Gateway account you use for your personal tax affairs.",
         "You can create an account if you do not have one.",
-        "Sign out and try again"
+        "Sign out and try again",
+        companyAuthUrl+companyAuthSignOutPath
       )
     }
 
@@ -32,7 +33,9 @@ class ClientErrorControllerISpec extends BaseISpec {
         "You signed in with the wrong type of Government Gateway account.",
         "To use this service, you need to sign in with the Government Gateway account you use for your business tax affairs.",
         "You can create an account if you do not have one.",
-        "Sign out and try again"
+        "Sign out and try again",
+        companyAuthUrl+companyAuthSignOutPath
+
       )
     }
 
