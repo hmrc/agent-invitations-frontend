@@ -188,7 +188,7 @@ warm-up.p4.personal=You will need the Government Gateway login details you use t
 warm-up.link=I do not want to appoint {0}
 
 # Invitation Declined
-invitation-declined.header=You have declined this request
+invitation-declined.header=You declined this request
 invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
 invitation-declined-itsa.button=Continue to your tax account
@@ -247,14 +247,14 @@ confirm-terms-multi.itsa.list.item2=how my Income Tax estimates have been calcul
 confirm-terms-multi.expires.p2=You need to respond to this request before {0}, or else it will expire.
 
 confirm-terms-multi.afi.heading=View your PAYE income record
-confirm-terms-multi.pir.p1=I consent to HMRC sharing the following information with {0}, so this agent can view my income record:
+confirm-terms-multi.pir.p1=I consent to HMRC sharing the following information with {0}, so this agent can view my PAYE income record:
 confirm-terms-multi.pir.list.item1=who I have worked for in the past
 confirm-terms-multi.pir.list.item2=my taxable benefits like medical insurance and company car
 confirm-terms-multi.pir.list.item3=my pensions
 confirm-terms-multi.pir.list.item4=my PAYE employment start and end dates
 
-confirm-terms-multi.vat.heading=Report my VAT returns through software
-confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can report my VAT returns through software:
+confirm-terms-multi.vat.heading=Report my VAT Returns through software
+confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can submit my VAT Returns through software:
 confirm-terms-multi.vat.list.item1=my VAT registration details, such as business name and contact details
 confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 15 months
 confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated

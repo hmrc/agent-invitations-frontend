@@ -43,15 +43,15 @@ class MultiConfirmTermsPageConfigSpec extends UnitSpec {
       val consents = Seq(consent1, consent4, consent2, consent5, consent3)
       val config = MultiConfirmTermsPageConfig("Impala Boolean Ltd", "personal", "12345678", consents)
 
-      config.serviceKeyAndExpiryDateSeq should contain.only(consent3, consent2, consent1)
+      config.serviceKeyAndExpiryDateSeq should contain.only(consent4, consent2, consent5)
 
-      config.expiryDateDescending(consent2, consent1) shouldBe false
-      config.expiryDateDescending(consent3, consent2) shouldBe false
-      config.expiryDateDescending(consent3, consent1) shouldBe false
+      config.expiryDateDescending(consent2, consent1) shouldBe true
+      config.expiryDateDescending(consent3, consent2) shouldBe true
+      config.expiryDateDescending(consent3, consent1) shouldBe true
 
-      config.expiryDateDescending(consent1, consent2) shouldBe true
-      config.expiryDateDescending(consent2, consent3) shouldBe true
-      config.expiryDateDescending(consent1, consent3) shouldBe true
+      config.expiryDateDescending(consent1, consent2) shouldBe false
+      config.expiryDateDescending(consent2, consent3) shouldBe false
+      config.expiryDateDescending(consent1, consent3) shouldBe false
     }
   }
 

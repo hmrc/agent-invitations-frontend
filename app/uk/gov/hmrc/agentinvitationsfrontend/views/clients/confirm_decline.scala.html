@@ -31,7 +31,7 @@
 
 @legend = {
     <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
-    @if(config.isSingle){
+    @if(config.isSingle || config.serviceKeys.length == 1){
         <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
     } else {
         <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>

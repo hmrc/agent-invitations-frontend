@@ -66,10 +66,14 @@
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
 }
 
+@isPending(expiryDate: LocalDate) = @{
+    if(expiryDate.isAfter(LocalDate.now()) || expiryDate == LocalDate.now()) true else false
+}
+
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
-    @back_link(s"${pageConfig.backUrl}")
+    @back_link_referer(request)
 
     @if(confirmTermsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
@@ -92,11 +96,14 @@
             </legend>
                 @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
 
-                    <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
+                    @if(isPending(consent.expiryDate)) {
+
+                        <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
                         @singleCheckbox(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                  '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
-                                  '_groupDivClass -> "div-underline")
+                            '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                            '_groupDivClass -> "div-underline")
+                    }
                 }
         </fieldset>
 

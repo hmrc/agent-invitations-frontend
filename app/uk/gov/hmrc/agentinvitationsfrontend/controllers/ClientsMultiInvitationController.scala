@@ -279,8 +279,16 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
-        Future successful Ok(
-          invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, consents.map(_.serviceKey))))
+        multiInvitationCache
+          .fetch()
+          .map {
+            case None => throw new BadRequestException("Invalid journey state.")
+            case Some(cacheItem) => {
+              val cacheIds = cacheItem.consents.map(_.invitationId)
+              val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.invitationId)).map(_.serviceKey)
+              Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
+            }
+          }
       }.recoverWith {
         case ex: NotFoundException => targets.NotFoundInvitation
       }

@@ -54,19 +54,51 @@ trait ACAStubs {
                  |    "invitationId": {
                  |      "value": "AG1UGUKTPNJ7W"
                  |    },
-                 |    "expiryDate": "2018-11-01"
+                 |    "expiryDate": "9999-11-01"
                  |  },
                  |  {
                  |    "invitationId": {
                  |      "value": "B9SCS2T4NZBAX"
                  |    },
-                 |     "expiryDate": "2018-03-05"
+                 |     "expiryDate": "9999-03-05"
                  |  },
                  |  {
                  |    "invitationId": {
                  |      "value": "CZTW1KY6RTAAT"
                  |    },
-                 |    "expiryDate": "2018-12-25"
+                 |    "expiryDate": "9999-12-25"
+                 |  }
+                 |]
+                 |""".stripMargin)
+        )
+    )
+
+  def givenAllInvitationIdsStubExpiredByStatus(uid: String, status: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "AG1UGUKTPNJ7W"
+                 |    },
+                 |    "expiryDate": "9999-11-01"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "B9SCS2T4NZBAX"
+                 |    },
+                 |     "expiryDate": "2000-03-05"
+                 |  },
+                 |  {
+                 |    "invitationId": {
+                 |      "value": "CZTW1KY6RTAAT"
+                 |    },
+                 |    "expiryDate": "2000-12-25"
                  |  }
                  |]
                  |""".stripMargin)
