@@ -87,8 +87,43 @@ class ClientsMultiInvitationController @Inject()(
     }
   }
 
+  def getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAnyClient { _ =>
+        for {
+          cacheItemOpt <- multiInvitationCache.fetch()
+          result <- cacheItemOpt match {
+                     case None => {
+                       targets.InvalidJourneyState
+                     }
+                     case Some(cacheItem) => {
+                       val chosenConsent = cacheItem.consents.find(_.serviceKey == givenServiceKey).toSeq
+                       if (chosenConsent.nonEmpty) {
+                         Future successful Ok(
+                           confirm_terms_multi(
+                             confirmTermsMultiForm,
+                             MultiConfirmTermsPageConfig(
+                               cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                               clientType,
+                               uid,
+                               chosenConsent))).addingToSession("whichConsent" -> givenServiceKey)
+                       } else {
+                         targets.InvalidJourneyState
+                       }
+                     }
+
+                   }
+        } yield result
+      }
+    }
+
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { _ =>
+      val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
+      val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
+      val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
+      val serviceKey = request.session.get("whichConsent").getOrElse("")
+      val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
       confirmTermsMultiForm
         .bindFromRequest()
         .fold(
@@ -110,17 +145,38 @@ class ClientsMultiInvitationController @Inject()(
                        }
             } yield result,
           confirmedTerms => {
+            val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
             for {
-              _ <- multiInvitationCache.updateWith(updateMultiInvitation(confirmedTerms))
+              _ <- multiInvitationCache.updateWith(updateMultiInvitation(updatedConfirmedTerms))
             } yield {
-              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers())
+              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
+                .addingToSession(
+                  "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
+                  "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
+                  "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
+                )
             }
           }
         )
     }
   }
 
-  val showCheckAnswers: Action[AnyContent] = Action.async { implicit request =>
+  def determineNewTerms(
+    individualServiceKey: String,
+    sessionConfirmTerms: ConfirmedTerms,
+    boundConfirmTerms: ConfirmedTerms): ConfirmedTerms =
+    individualServiceKey match {
+      case "itsa" =>
+        ConfirmedTerms(boundConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+      case "afi" =>
+        ConfirmedTerms(sessionConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+      case "vat" =>
+        ConfirmedTerms(sessionConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
+      case _ =>
+        ConfirmedTerms(boundConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
+    }
+
+  def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     for {
       cacheItemOpt <- multiInvitationCache.fetch()
       result <- cacheItemOpt match {
@@ -131,7 +187,11 @@ class ClientsMultiInvitationController @Inject()(
                        check_answers(
                          CheckAnswersPageConfig(
                            cacheItem.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
-                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name"))))))
+                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                           clientType,
+                           uid)
+                       )
+                     ))
                }
     } yield result
   }
@@ -249,4 +309,5 @@ object ClientsMultiInvitationController {
 
     item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
   }
+
 }

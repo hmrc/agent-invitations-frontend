@@ -45,7 +45,7 @@
                     @Messages(s"check-answers.consent.${consent.consent}")
                 </dd>
               <dd class="app-check-your-answers__change">
-                  <a href="#">@Messages("check-answers.change-link")</a>
+                  <a href=@pageConfig.changeUrl(consent.serviceKey)>@Messages("check-answers.change-link")</a>
               </dd>
             </div>
         }

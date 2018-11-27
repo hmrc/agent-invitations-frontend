@@ -31,7 +31,7 @@
 
 @itsaTerms = {
 
-<span class="checkbox-heading">@Messages("confirm-terms-multi.itsa.p1")</span>
+<span class="checkbox-heading">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</span>
 <ul class="list list-bullet">
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
@@ -39,7 +39,7 @@
 }
 
 @pirTerms = {
-    <span class="checkbox-heading">@Messages("confirm-terms-multi.pir.p1")</span>
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.pir.p1", pageConfig.agencyName)</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.pir.list.item1")</li>
         <li>@Messages("confirm-terms-multi.pir.list.item2")</li>
@@ -49,7 +49,7 @@
 }
 
 @vatTerms = {
-    <span class="checkbox-heading">@Messages("confirm-terms-multi.vat.p1")</span>
+    <span class="checkbox-heading">@Messages("confirm-terms-multi.vat.p1", pageConfig.agencyName)</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
@@ -66,8 +66,6 @@
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
 }
 
-
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
@@ -81,7 +79,10 @@
       ) {
         <fieldset>
             <legend>
-                <h1 class="heading-xlarge">@Messages("confirm-terms.multi.heading")</h1>
+                <h1 class="heading-xlarge margin-bottom-20">@{if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl)){
+                    Messages("confirm-terms.multi-individual.heading")
+                }else {
+                    Messages("confirm-terms.multi.heading")}}</h1>
 
                 <p>@Messages("confirm-terms.multi.p1", pageConfig.agencyName)</p>
 

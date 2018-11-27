@@ -144,7 +144,67 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers().url)
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+    }
+
+    "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for itsa" in {
+      await(testMultiInvitationsCache
+        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = false)), Some("My agency Name"))))
+
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "itsa"))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+
+      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = false)), Some("My agency Name")))
+    }
+
+    "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for afi" in {
+      await(testMultiInvitationsCache
+        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = false)), Some("My agency Name"))))
+
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "afi"))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+
+      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = false)), Some("My agency Name")))
+    }
+
+    "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for vat" in {
+      await(testMultiInvitationsCache
+        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = false)), Some("My agency Name"))))
+
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+        authorisedAsAnyClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+
+      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My agency Name")))
     }
 
   }
@@ -292,7 +352,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My agency Name"))))
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Check your answers before sending your response",
@@ -310,7 +370,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Bad Request Exception if there is nothing in the cache" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -322,9 +382,102 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), None)))
 
-      val result = controller.showCheckAnswers(authorisedAsAnyClient(FakeRequest()))
+      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyClient(FakeRequest()))
 
       an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+  }
+
+  "GET /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey  (multi confirm terms individual)" should {
+
+    "show the multi confirm terms page for only itsa service" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "We need your consent to share information",
+        "Report my income and expenses through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
+        "my income and expenses information"
+      )
+      checkHtmlResultWithNotBodyText(result,
+        "View your PAYE income record",
+        "Report my VAT returns through software")
+    }
+
+    "show the multi confirm terms page for only itsa service when coming from check answers" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()
+        .withHeaders("Referer" -> s"someBaseUrl${routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url}")))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Change your consent",
+        "Report my income and expenses through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
+        "my income and expenses information"
+      )
+      checkHtmlResultWithNotBodyText(result,
+        "View your PAYE income record",
+        "Report my VAT returns through software")
+    }
+
+    "show the multi confirm terms page for only irv service" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(authorisedAsAnyClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,
+        "View your PAYE income record",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can view my income record:",
+        "who I have worked for in the past"
+      )
+      checkHtmlResultWithNotBodyText(result,
+        "Report my income and expenses through software",
+        "Report my VAT returns through software")
+    }
+
+    "show the multi confirm terms page for only vat service" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"),expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(authorisedAsAnyClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,
+        "Report my VAT returns through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my VAT returns through software:",
+        "my VAT registration details, such as business name and contact details"
+      )
+      checkHtmlResultWithNotBodyText(result,
+        "View your PAYE income record",
+        "Report my income and expenses through software")
+    }
+
+    "return Invalid Journey State when there is nothing in the cache" in {
+      await(testMultiInvitationsCache.clear())
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+
+      an[BadRequestException] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "return Invalid Journey State if the chosen consent is empty" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("B9SCS2T4NZBAX"),expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"),expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyClient(FakeRequest()))
+
+      an[BadRequestException] shouldBe thrownBy {
         await(result)
       }
     }
@@ -368,5 +521,4 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       }
     }
   }
-
 }

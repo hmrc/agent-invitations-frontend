@@ -228,7 +228,7 @@ confirm-terms.subheading1.p1=By giving your consent, you agree that HMRC will sh
 confirm-terms.subheading2=How to withdraw your consent
 confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new window or tab)</a>.
 confirm-terms.subheading3=Our privacy policy
-confirm-terms.subheading3.p1=For details about how we store and process your personal information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
+confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
 confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent''s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 confirm-terms.radio1=Yes
@@ -236,6 +236,7 @@ confirm-terms.radio2=No
 
 # Multi auth
 confirm-terms.multi.heading=We need your consent to share information
+confirm-terms.multi-individual.heading=Change your consent
 confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
 
 confirm-terms-multi.itsa.heading=Report my income and expenses through software
