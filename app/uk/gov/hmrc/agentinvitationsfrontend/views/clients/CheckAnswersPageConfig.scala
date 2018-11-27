@@ -18,9 +18,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class CheckAnswersPageConfig(consents: Seq[Consent], agencyName: String) {
+case class CheckAnswersPageConfig(consents: Seq[Consent], agencyName: String, clientType: String, uid: String) {
 
-  def changeUrl(clientType: String, uid: String, serviceKey: String) =
+  def changeUrl(serviceKey: String) =
     routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
 
 }

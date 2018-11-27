@@ -187,9 +187,9 @@ class ClientsMultiInvitationController @Inject()(
                        check_answers(
                          CheckAnswersPageConfig(
                            cacheItem.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
-                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name"))),
-                         clientType,
-                         uid
+                           cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                           clientType,
+                           uid)
                        )
                      ))
                }
@@ -310,15 +310,4 @@ object ClientsMultiInvitationController {
     item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
   }
 
-  def updateMultiInvitationWithIndividual(confirmedTermsIndividual: ConfirmedTermsIndividual)(
-    item: MultiInvitationsCacheItem): MultiInvitationsCacheItem = {
-    val hasConsent: String => Boolean = {
-      case "itsa" => confirmedTermsIndividual.consent
-      case "afi"  => confirmedTermsIndividual.consent
-      case "vat"  => confirmedTermsIndividual.consent
-    }
-
-    item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
-
-  }
 }

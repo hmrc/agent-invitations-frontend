@@ -29,9 +29,6 @@ case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, u
   val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
 
-  val warmUpUrlPrefix: String =
-    s"/invitations/$clientType/$uid"
-
   val checkAnswersUrl: String =
     routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid).url
 
