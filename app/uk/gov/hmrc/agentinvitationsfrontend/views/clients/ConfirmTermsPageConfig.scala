@@ -29,8 +29,11 @@ case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, u
   val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
 
-  def submitIndividualUrl(serviceKey: String): Call =
-    routes.ClientsMultiInvitationController.submitMultiConfirmTermsIndividual(clientType, uid, serviceKey)
+  val warmUpUrlPrefix: String =
+    s"/invitations/$clientType/$uid"
+
+  val checkAnswersUrl: String =
+    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid).url
 
   val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isBefore(c1.expiryDate)
 

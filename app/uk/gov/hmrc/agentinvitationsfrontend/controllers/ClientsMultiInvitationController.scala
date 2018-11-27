@@ -90,11 +90,12 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAnyClient { _ =>
-        //withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
         for {
           cacheItemOpt <- multiInvitationCache.fetch()
           result <- cacheItemOpt match {
-                     case None => targets.InvalidJourneyState
+                     case None => {
+                       targets.InvalidJourneyState
+                     }
                      case Some(cacheItem) => {
                        val chosenConsent = cacheItem.consents.find(_.serviceKey == givenServiceKey).toSeq
                        if (chosenConsent.nonEmpty) {
@@ -105,7 +106,7 @@ class ClientsMultiInvitationController @Inject()(
                                cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
                                clientType,
                                uid,
-                               chosenConsent)))
+                               chosenConsent))).addingToSession("whichConsent" -> givenServiceKey)
                        } else {
                          targets.InvalidJourneyState
                        }
@@ -113,13 +114,16 @@ class ClientsMultiInvitationController @Inject()(
 
                    }
         } yield result
-
-        // }
       }
     }
 
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { _ =>
+      val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
+      val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
+      val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
+      val serviceKey = request.session.get("whichConsent").getOrElse("")
+      val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
       confirmTermsMultiForm
         .bindFromRequest()
         .fold(
@@ -141,32 +145,35 @@ class ClientsMultiInvitationController @Inject()(
                        }
             } yield result,
           confirmedTerms => {
+            val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
             for {
-              _ <- multiInvitationCache.updateWith(updateMultiInvitation(confirmedTerms))
+              _ <- multiInvitationCache.updateWith(updateMultiInvitation(updatedConfirmedTerms))
             } yield {
               Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
+                .addingToSession(
+                  "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
+                  "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
+                  "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
+                )
             }
           }
         )
     }
   }
 
-  def submitMultiConfirmTermsIndividual(clientType: String, uid: String, serviceKey: String): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAnyClient { _ =>
-        confirmTermsMultiIndividualForm(serviceKey)
-          .bindFromRequest()
-          .fold(
-            errors => ???,
-            data => {
-              for {
-                _ <- multiInvitationCache.updateWith(updateMultiInvitationWithIndividual(data))
-              } yield {
-                Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
-              }
-            }
-          )
-      }
+  def determineNewTerms(
+    individualServiceKey: String,
+    sessionConfirmTerms: ConfirmedTerms,
+    boundConfirmTerms: ConfirmedTerms): ConfirmedTerms =
+    individualServiceKey match {
+      case "itsa" =>
+        ConfirmedTerms(boundConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+      case "afi" =>
+        ConfirmedTerms(sessionConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+      case "vat" =>
+        ConfirmedTerms(sessionConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
+      case _ =>
+        ConfirmedTerms(boundConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
     }
 
   def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
@@ -290,12 +297,6 @@ object ClientsMultiInvitationController {
         "confirmedTerms.afi"  -> boolean,
         "confirmedTerms.vat"  -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
-
-  def confirmTermsMultiIndividualForm(serviceKey: String): Form[ConfirmedTermsIndividual] =
-    Form[ConfirmedTermsIndividual](
-      mapping(
-        s"confirmedTerms.$serviceKey" -> boolean
-      )(ConfirmedTermsIndividual.apply)(ConfirmedTermsIndividual.unapply))
 
   def updateMultiInvitation(confirmedTerms: ConfirmedTerms)(
     item: MultiInvitationsCacheItem): MultiInvitationsCacheItem = {
