@@ -54,6 +54,13 @@ class ClientsMultiInvitationController @Inject()(
     val InvalidJourneyState = Future.failed(new BadRequestException("Invalid journey state."))
   }
 
+  private def matchClientTypeToGroup(affinityGroup: String, clientType: String): Boolean =
+    (affinityGroup, clientType) match {
+      case ("Individual", "personal")   => true
+      case ("Organisation", "business") => true
+      case _                            => false
+    }
+
   def warmUp(clientType: String, uid: String, normalisedAgentName: String): Action[AnyContent] = Action.async {
     implicit request =>
       for {
@@ -71,25 +78,30 @@ class ClientsMultiInvitationController @Inject()(
   }
 
   def getMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { _ =>
-      withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
-        multiInvitationCache
-          .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
-          .map { _ =>
-            Ok(
-              confirm_terms_multi(
-                confirmTermsMultiForm,
-                MultiConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
-          }
-      }.recoverWith {
-        case _: NotFoundException => targets.NotFoundInvitation
+    withAuthorisedAsAnyClient { (affinity, _) =>
+      if (matchClientTypeToGroup(affinity, clientType)) {
+        withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
+          multiInvitationCache
+            .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
+            .map { _ =>
+              Ok(
+                confirm_terms_multi(
+                  confirmTermsMultiForm,
+                  MultiConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
+            }
+        }.recoverWith {
+          case _: NotFoundException => targets.NotFoundInvitation
+        }
+      } else {
+        Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+          .addingToSession("clientType" -> clientType)
       }
     }
   }
 
   def getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAnyClient { _ =>
+      withAuthorisedAsAnyClient { (_, _) =>
         for {
           cacheItemOpt <- multiInvitationCache.fetch()
           result <- cacheItemOpt match {
@@ -118,46 +130,50 @@ class ClientsMultiInvitationController @Inject()(
     }
 
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { _ =>
-      val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
-      val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
-      val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
-      val serviceKey = request.session.get("whichConsent").getOrElse("")
-      val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
-      confirmTermsMultiForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            for {
-              cacheItemOpt <- multiInvitationCache.fetch()
-              result <- cacheItemOpt match {
-                         case None => targets.InvalidJourneyState
-                         case Some(cacheItem) =>
-                           Future successful Ok(
-                             confirm_terms_multi(
-                               formWithErrors,
-                               MultiConfirmTermsPageConfig(
-                                 cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
-                                 clientType,
-                                 uid,
-                                 cacheItem.consents)
-                             ))
-                       }
-            } yield result,
-          confirmedTerms => {
-            val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
-            for {
-              _ <- multiInvitationCache.updateWith(updateMultiInvitation(updatedConfirmedTerms))
-            } yield {
-              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
-                .addingToSession(
-                  "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
-                  "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
-                  "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
-                )
+    withAuthorisedAsAnyClient { (affinity, _) =>
+      if (matchClientTypeToGroup(affinity, clientType)) {
+        val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
+        val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
+        val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
+        val serviceKey = request.session.get("whichConsent").getOrElse("")
+        val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
+        confirmTermsMultiForm
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
+              for {
+                cacheItemOpt <- multiInvitationCache.fetch()
+                result <- cacheItemOpt match {
+                           case None => targets.InvalidJourneyState
+                           case Some(cacheItem) =>
+                             Future successful Ok(
+                               confirm_terms_multi(
+                                 formWithErrors,
+                                 MultiConfirmTermsPageConfig(
+                                   cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                                   clientType,
+                                   uid,
+                                   cacheItem.consents)
+                               ))
+                         }
+              } yield result,
+            confirmedTerms => {
+              val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
+              for {
+                _ <- multiInvitationCache.updateWith(updateMultiInvitation(updatedConfirmedTerms))
+              } yield {
+                Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
+                  .addingToSession(
+                    "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
+                    "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
+                    "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
+                  )
+              }
             }
-          }
-        )
+          )
+      } else {
+        Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+      }
     }
   }
 
@@ -198,61 +214,70 @@ class ClientsMultiInvitationController @Inject()(
 
   def getMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAnyClient { _ =>
-        withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
-          multiInvitationCache
-            .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
-            .map { _ =>
-              Ok(
-                confirm_decline(
-                  confirmDeclineForm,
-                  MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey))))
-            }
-        }.recoverWith {
-          case _: NotFoundException => targets.NotFoundInvitation
+      withAuthorisedAsAnyClient { (affinity, _) =>
+        if (matchClientTypeToGroup(affinity, clientType)) {
+          withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
+            multiInvitationCache
+              .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
+              .map { _ =>
+                Ok(
+                  confirm_decline(
+                    confirmDeclineForm,
+                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey))))
+              }
+          }.recoverWith {
+            case _: NotFoundException => targets.NotFoundInvitation
+          }
+        } else {
+          Future successful Redirect(routes.ClientErrorController.incorrectClientType())
+            .addingToSession("clientType" -> clientType)
         }
       }
     }
 
   def submitMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async {
     implicit request =>
-      withAuthorisedAsAnyClient { _ =>
-        for {
-          cacheItemOpt <- multiInvitationCache.fetch()
-          result <- cacheItemOpt match {
-                     case None => targets.InvalidJourneyState
-                     case Some(cachedItem) =>
-                       confirmDeclineForm
-                         .bindFromRequest()
-                         .fold(
-                           formWithErrors =>
-                             Future successful Ok(confirm_decline(
-                               formWithErrors,
-                               MultiConfirmDeclinePageConfig(
-                                 cachedItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
-                                 clientType,
-                                 uid,
-                                 cachedItem.consents.map(_.serviceKey))
-                             )),
-                           confirmForm =>
-                             if (confirmForm.value.contains(true)) {
-                               for {
-                                 _ <- Future.sequence(cachedItem.consents.map(c =>
-                                       invitationsService.rejectInvitation(c.invitationId)))
-                               } yield
-                                 Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
-                             } else {
-                               Future.successful(Redirect(
-                                 routes.ClientsMultiInvitationController.getMultiConfirmTerms(clientType, uid)))
-                           }
-                         )
-                   }
-        } yield result
+      withAuthorisedAsAnyClient { (affinity, _) =>
+        if (matchClientTypeToGroup(affinity, clientType)) {
+          for {
+            cacheItemOpt <- multiInvitationCache.fetch()
+            result <- cacheItemOpt match {
+                       case None => targets.InvalidJourneyState
+                       case Some(cachedItem) =>
+                         confirmDeclineForm
+                           .bindFromRequest()
+                           .fold(
+                             formWithErrors =>
+                               Future successful Ok(confirm_decline(
+                                 formWithErrors,
+                                 MultiConfirmDeclinePageConfig(
+                                   cachedItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                                   clientType,
+                                   uid,
+                                   cachedItem.consents.map(_.serviceKey))
+                               )),
+                             confirmForm =>
+                               if (confirmForm.value.contains(true)) {
+                                 for {
+                                   _ <- Future.sequence(cachedItem.consents.map(c =>
+                                         invitationsService.rejectInvitation(c.invitationId)))
+                                 } yield
+                                   Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
+                               } else {
+                                 Future.successful(Redirect(
+                                   routes.ClientsMultiInvitationController.getMultiConfirmTerms(clientType, uid)))
+                             }
+                           )
+                     }
+          } yield result
+        } else {
+          Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+        }
       }
   }
 
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { _ =>
+    withAuthorisedAsAnyClient { (_, _) =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
         Future successful Ok(
           invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, consents.map(_.serviceKey))))

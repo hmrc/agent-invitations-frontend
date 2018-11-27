@@ -340,6 +340,14 @@ not-found-invitation.description.3=If the web address is correct, contact the ta
 invitation-already-responded.header=There is a problem
 invitation-already-responded.description=Someone has already responsed to this request. If you think this is wrong, contact the tax agent who sent you the request.
 
+# Wrong Client Type
+
+wrong-client-type.header=There is a problem
+wrong-client-type.p1=You signed in with the wrong type of Government Gateway account.
+wrong-client-type.p2=To use this service, you need to sign in with the Government Gateway account you use for your {0} tax affairs.
+wrong-client-type.p3=You can create an account if you do not have one.
+wrong-client-type.button=Sign out and try again
+
 # General Messages
 # Error messages for digital services
 global.error.400.title=Bad request - 400

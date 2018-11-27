@@ -77,19 +77,24 @@ trait AuthActions extends AuthorisedFunctions {
 
     }
 
-  protected def withAuthorisedAsAnyClient[A](body: Seq[(String, String)] => Future[Result])(
+  private def extractAffinityGroup(affinityGroup: AffinityGroup): String =
+    (affinityGroup.toJson \ "affinityGroup").as[String]
+
+  protected def withAuthorisedAsAnyClient[A](body: (String, Seq[(String, String)]) => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(
       AuthProviders(GovernmentGateway) and ConfidenceLevel.L200 and (AffinityGroup.Individual or AffinityGroup.Organisation)
-    ).retrieve(allEnrolments) { enrols =>
-        val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
-          (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
-        }.toSeq
+    ).retrieve(affinityGroup and allEnrolments) {
+        case Some(affinity) ~ enrols =>
+          val affinityG: String = extractAffinityGroup(affinity)
+          val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
+            (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
+          }.toSeq
 
-        body(clientIdTypePlusIds)
-
+          body(affinityG, clientIdTypePlusIds)
+        case _ => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
       }
       .recover {
         case _: InsufficientEnrolments =>
