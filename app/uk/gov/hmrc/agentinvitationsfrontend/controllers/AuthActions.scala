@@ -85,15 +85,18 @@ trait AuthActions extends AuthorisedFunctions {
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(
-      AuthProviders(GovernmentGateway) and ConfidenceLevel.L200 and (AffinityGroup.Individual or AffinityGroup.Organisation)
-    ).retrieve(affinityGroup and allEnrolments) {
-        case Some(affinity) ~ enrols =>
+      AuthProviders(GovernmentGateway) and (AffinityGroup.Individual or AffinityGroup.Organisation)
+    ).retrieve(affinityGroup and confidenceLevel and allEnrolments) {
+        case Some(affinity) ~ confidence ~ enrols =>
           val affinityG: String = extractAffinityGroup(affinity)
           val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
             (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
           }.toSeq
-
-          body(affinityG, clientIdTypePlusIds)
+          (affinity, confidence) match {
+            case (AffinityGroup.Individual, ConfidenceLevel.L200) => body(affinityG, clientIdTypePlusIds)
+            case (AffinityGroup.Organisation, _)                  => body(affinityG, clientIdTypePlusIds)
+            case _                                                => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+          }
         case _ => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
       }
       .recover {
