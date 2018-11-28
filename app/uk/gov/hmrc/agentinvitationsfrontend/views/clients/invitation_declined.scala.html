@@ -36,13 +36,18 @@
         <a class="button" href="@externalUrls.taxAccountRelativeUrl" id="continue" role="button">@Messages(s"invitation-declined-${config.serviceKeys.head}.button")</a>
 
     } else {
-        <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
-        <ul class="list list-bullet">
-        @for(key <- config.serviceKeys){
-            <li>@Messages(s"confirm-decline.$key.service-name")</li>
-        }
-        </ul>
+        @if(config.serviceKeys.length == 1) {
+            <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1")</p>
 
+        } else {
+            <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
+            <ul class="list list-bullet">
+            @for(key <- config.serviceKeys) {
+                <li>@Messages(s"confirm-decline.$key.service-name")</li>
+            }
+            </ul>
+
+        }
     }
 
         <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
