@@ -198,6 +198,9 @@ invitation-declined-itsa.button=Continue to your tax account
 invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
+invitation-declined.multi.itsa.p1=You have not given permission to {0} to report your income and expenses through software.
+invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
+invitation-declined.multi.vat.p1=You have not given permission to {0} to report your VAT returns through software.
 
 invitation-declined-vat.p1=	You have not authorised {0} to report your VAT returns through software.
 invitation-declined-vat.button=Continue to your tax account
@@ -256,7 +259,7 @@ confirm-terms-multi.pir.list.item2=my taxable benefits like medical insurance an
 confirm-terms-multi.pir.list.item3=my pensions
 confirm-terms-multi.pir.list.item4=my PAYE employment start and end dates
 
-confirm-terms-multi.vat.heading=Report my VAT Returns through software
+confirm-terms-multi.vat.heading=Submit my VAT Returns through software
 confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can submit my VAT Returns through software:
 confirm-terms-multi.vat.list.item1=my VAT registration details, such as business name and contact details
 confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 15 months
@@ -386,7 +389,7 @@ error.terminate.500.message=Your income record is still visible to tax agents. P
 
 #Common
 error.summary.heading=There is a problem
-error.confirmDecline.invalid=This field is required
+error.confirmDecline.invalid=Select yes if you want to decline this request
 error.confirmTerms.invalid=You must accept the terms to continue
 error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
 error.prefix=Error:

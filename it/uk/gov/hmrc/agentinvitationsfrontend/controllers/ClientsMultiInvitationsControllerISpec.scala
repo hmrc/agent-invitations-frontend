@@ -114,7 +114,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         "5 March 9999",
         "View your PAYE income record",
         "1 November 9999",
-        "Report my VAT Returns through software",
+        "Submit my VAT Returns through software",
         "25 December 9999")
 
     }
@@ -249,7 +249,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
 
   "GET /accept-tax-agent-invitation/confirm-decline/:clientType/:uid (multi confirm decline)" should {
-    "show the confirm decline page for personal" in {
+    "show the confirm decline page" in {
       givenAgentReferenceRecordStub(arn, uid)
       givenAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
@@ -340,7 +340,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "This field is required")
+      checkHtmlResultWithBodyText(result, "Select yes if you want to decline this request")
     }
 
     "redirect to multi invitations declined via failure cases" in {
@@ -446,7 +446,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(result,
         "View your PAYE income record",
-        "Report my VAT returns through software")
+        "Submit my VAT returns through software")
     }
 
     "show the multi confirm terms page for only itsa service when coming from check answers" in {
@@ -466,7 +466,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(result,
         "View your PAYE income record",
-        "Report my VAT returns through software")
+        "Submit my VAT returns through software")
     }
 
     "show the multi confirm terms page for only irv service" in {
@@ -483,7 +483,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(result,
         "Report my income and expenses through software",
-        "Report my VAT Returns through software")
+        "Submit my VAT Returns through software")
     }
 
     "show the multi confirm terms page for only vat service" in {
@@ -494,7 +494,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,
-        "Report my VAT Returns through software",
+        "Submit my VAT Returns through software",
         "I consent to HMRC sharing the following information with My Agency Name, so this agent can submit my VAT Returns through software:",
         "my VAT registration details, such as business name and contact details"
       )
