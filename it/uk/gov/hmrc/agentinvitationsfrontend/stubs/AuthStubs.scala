@@ -29,9 +29,8 @@ trait AuthStubs {
          |{
          |"authorise": [ {
          |  "authProviders": [ "GovernmentGateway" ]
-         |}, {
-         |  "confidenceLevel": 200
-         |}, {
+         |},
+         |{
          |  "$or" : [ {
          |      "affinityGroup" : "Individual"
          |    }, {
@@ -44,6 +43,7 @@ trait AuthStubs {
       s"""
          |{
          |  "affinityGroup":"Individual",
+         |  "confidenceLevel":200,
          |  "allEnrolments":
          |  [
          |    {
@@ -77,9 +77,8 @@ trait AuthStubs {
          |{
          |"authorise": [ {
          |  "authProviders": [ "GovernmentGateway" ]
-         |}, {
-         |  "confidenceLevel": 200
-         |}, {
+         |},
+         |{
          |  "$or" : [ {
          |      "affinityGroup" : "Individual"
          |    }, {
@@ -92,6 +91,7 @@ trait AuthStubs {
       s"""
          |{
          |  "affinityGroup":"Organisation",
+         |  "confidenceLevel":50,
          |  "allEnrolments":
          |  [
          |     {
@@ -113,9 +113,8 @@ trait AuthStubs {
         |{
         |"authorise": [ {
         |  "authProviders": [ "GovernmentGateway" ]
-        |}, {
-        |  "confidenceLevel": 200
-        |}, {
+        |},
+        |{
         |  "$or" : [ {
         |      "affinityGroup" : "Individual"
         |    }, {
@@ -128,6 +127,7 @@ trait AuthStubs {
       s"""
          |{
          |  "affinityGroup":"Individual",
+         |  "confidenceLevel": 200,
          |  "allEnrolments":
          |  [
          |    {
