@@ -37,7 +37,7 @@
 
     } else {
         @if(config.serviceKeys.length == 1) {
-            <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1")</p>
+            <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
 
         } else {
             <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
