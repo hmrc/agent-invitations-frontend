@@ -26,13 +26,16 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{CheckAnswersPageConfig, MultiConfirmDeclinePageConfig, MultiConfirmTermsPageConfig, MultiInvitationDeclinedPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent
 
 @Singleton
 class ClientsMultiInvitationController @Inject()(
@@ -213,34 +216,52 @@ class ClientsMultiInvitationController @Inject()(
     } yield result
   }
 
-  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier) =
     for {
       _ <- Future.traverse(consents) {
-        case Consent(invitationId, _, _, consent) =>
-        if (consent) {
-          invitationsService.acceptInvitation(invitationId)
-        } else {
-          invitationsService.rejectInvitation(invitationId)
-        }
-      }
+            case Consent(invitationId, _, _, consent) =>
+              if (consent) {
+                invitationsService.acceptInvitation(invitationId)
+              } else {
+                invitationsService.rejectInvitation(invitationId)
+              }
+          }
     } yield ()
-  }
 
   def submitAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
         cacheItemOpt <- multiInvitationCache.fetch()
         result <- cacheItemOpt match {
-          case None => targets.InvalidJourneyState
-          case Some(cacheItem) => processRelationships(cacheItem.consents).map(_ => NotImplemented)
-        }
+                   case None => targets.InvalidJourneyState
+                   case Some(cacheItem) =>
+                     processRelationships(cacheItem.consents).map(_ =>
+                       if (!cacheItem.consents.map(_.consent).contains(true)) {
+                         Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
+                       } else {
+                         Redirect(routes.ClientsMultiInvitationController.invitationAccepted(clientType, uid))
+                     })
+                 }
       } yield result
     }
   }
 
   def invitationAccepted(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
-      Future successful Ok()
+      for {
+        cacheItemOpt <- multiInvitationCache.fetch()
+        result <- cacheItemOpt match {
+                   case None => targets.InvalidJourneyState
+                   case Some(cacheItem) =>
+                     Future successful Ok(
+                       complete(MultiCompletePageConfig(
+                         cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                         clientType,
+                         uid,
+                         cacheItem.consents.map(consent => consent.serviceKey -> consent).toMap.values.toSeq
+                       )))
+                 }
+      } yield result
     }
   }
 

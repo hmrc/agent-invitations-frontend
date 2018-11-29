@@ -371,7 +371,6 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("client-complete.sub-header"),
-        htmlEscapedMessage("client-complete.whatHappensNext.p1"),
         htmlEscapedMessage("client-complete.whatHappensNext.l1"),
         htmlEscapedMessage("client-complete.whatHappensNext.l2"),
         htmlEscapedMessage("client-complete.button.mta"),

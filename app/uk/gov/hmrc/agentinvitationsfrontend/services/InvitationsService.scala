@@ -115,13 +115,14 @@ class InvitationsService @Inject()(
     for {
       invitation <- invitationsConnector.getInvitation(invitationId)
       result <- invitation match {
-        case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
-        case Some(i) => Services.determineServiceMessageKey(invitationId) match {
-          case "itsa" => invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
-          case "afi"  => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
-          case "vat"  => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
-        }
-      }
+                 case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
+                 case Some(i) =>
+                   Services.determineServiceMessageKey(invitationId) match {
+                     case "itsa" => invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
+                     case "afi"  => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
+                     case "vat"  => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
+                   }
+               }
     } yield result
 
   def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
