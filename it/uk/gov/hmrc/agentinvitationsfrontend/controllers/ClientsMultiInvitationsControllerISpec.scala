@@ -245,6 +245,26 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name")))
     }
 
+    "redirect to wrong-account-type page when submitting confirm terms" in {
+      await(testMultiInvitationsCache
+        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+        authorisedAsAnyOrganisationClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+
+      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
+    }
+
   }
 
 
@@ -341,6 +361,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to decline this request")
+    }
+
+    "redirect to wrong-account-type when submitting to decline invitations" in {
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
     }
 
     "redirect to multi invitations declined via failure cases" in {
