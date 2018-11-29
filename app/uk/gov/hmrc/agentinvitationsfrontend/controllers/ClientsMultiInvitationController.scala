@@ -32,7 +32,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClientsMultiInvitationController @Inject()(
@@ -211,6 +211,37 @@ class ClientsMultiInvitationController @Inject()(
                      ))
                }
     } yield result
+  }
+
+  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+    for {
+      _ <- Future.traverse(consents) {
+        case Consent(invitationId, _, _, consent) =>
+        if (consent) {
+          invitationsService.acceptInvitation(invitationId)
+        } else {
+          invitationsService.rejectInvitation(invitationId)
+        }
+      }
+    } yield ()
+  }
+
+  def submitAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { (_, _) =>
+      for {
+        cacheItemOpt <- multiInvitationCache.fetch()
+        result <- cacheItemOpt match {
+          case None => targets.InvalidJourneyState
+          case Some(cacheItem) => processRelationships(cacheItem.consents).map(_ => NotImplemented)
+        }
+      } yield result
+    }
+  }
+
+  def invitationAccepted(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { (_, _) =>
+      Future successful Ok()
+    }
   }
 
   def getMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] =
