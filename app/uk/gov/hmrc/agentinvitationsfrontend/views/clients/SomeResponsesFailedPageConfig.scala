@@ -14,19 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.views.clients
+import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 
-import org.joda.time.LocalDate
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-
-case class Consent(
-  invitationId: InvitationId,
-  expiryDate: LocalDate,
-  serviceKey: String,
-  consent: Boolean,
-  isSuccessful: Boolean = false)
-
-object Consent {
-  implicit val format = Json.format[Consent]
-}
+case class SomeResponsesFailedPageConfig(consents: Seq[Consent], agencyName: String)

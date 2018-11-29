@@ -24,6 +24,6 @@ case class CheckAnswersPageConfig(consents: Seq[Consent], agencyName: String, cl
     routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
 
   def submitUrl() =
-    routes.ClientsMultiInvitationController.submitAnswers(clientType, uid)
+    routes.ClientsMultiInvitationController.submitAnswers(uid)
 
 }

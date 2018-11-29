@@ -23,6 +23,7 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
+import play.api.Logger
 import play.api.libs.json.JsObject
 import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
@@ -132,16 +133,28 @@ class InvitationsConnector @Inject()(
 
   def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](acceptITSAInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
+      http
+        .PUT[Boolean, HttpResponse](acceptITSAInvitationUrl(mtdItId, invitationId).toString, false)
+        .map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Create ITSA Relationship Failed: ${e.getMessage}")
+        false
     }
 
   def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](rejectITSAInvitationUrl(mtdItId, invitationId).toString, false).map(_.status)
+      http
+        .PUT[Boolean, HttpResponse](rejectITSAInvitationUrl(mtdItId, invitationId).toString, false)
+        .map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Reject ITSA Invitation Failed: ${e.getMessage}")
+        false
     }
 
   private[connectors] def acceptAFIInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
@@ -156,16 +169,24 @@ class InvitationsConnector @Inject()(
 
   def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
+      http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Create IRV Relationship Failed: ${e.getMessage}")
+        false
     }
 
   def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status)
+      http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Reject IRV Invitation Failed: ${e.getMessage}")
+        false
     }
 
   private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
@@ -197,16 +218,24 @@ class InvitationsConnector @Inject()(
 
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+      http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Create VAT Relationship Failed: ${e.getMessage}")
+        false
     }
 
   def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status)
+      http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Reject VAT Invitation Failed: ${e.getMessage}")
+        false
     }
 
   def cancelInvitation(arn: Arn, invitationId: InvitationId)(

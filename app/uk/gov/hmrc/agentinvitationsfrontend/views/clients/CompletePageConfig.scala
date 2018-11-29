@@ -23,16 +23,11 @@ import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 sealed trait CompletePageConfig {
   def agencyName: String
-  def backUrl: Call
   def consents: Seq[Consent]
   def isSingle: Boolean
 }
 
-case class MultiCompletePageConfig(agencyName: String, clientType: String, uid: String, consents: Seq[Consent])
-    extends CompletePageConfig {
-
-  override val backUrl: Call =
-    routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
+case class MultiCompletePageConfig(agencyName: String, consents: Seq[Consent]) extends CompletePageConfig {
 
   override val isSingle: Boolean = false
 
@@ -42,8 +37,6 @@ case class SingleCompletePageConfig(agencyName: String, invitationId: Invitation
     extends CompletePageConfig {
 
   override def consents: Seq[Consent] = Seq(consent)
-
-  override val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
 
   override val isSingle: Boolean = true
 
