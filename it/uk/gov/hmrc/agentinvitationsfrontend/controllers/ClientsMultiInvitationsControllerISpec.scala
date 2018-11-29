@@ -695,8 +695,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 
+      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       an[BadRequestException] shouldBe thrownBy {
-        val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+        await(result)
       }
 
     }
@@ -738,8 +739,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       an[BadRequestException] shouldBe thrownBy {
-        val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+        await(result)
       }
     }
 
@@ -748,8 +750,10 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
 
-      an[AgencyNameNotFound] shouldBe thrownBy {
-        await(controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest())))
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
       }
     }
   }
