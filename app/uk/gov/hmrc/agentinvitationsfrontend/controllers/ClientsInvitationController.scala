@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleConfirmDeclinePageConfig, SingleConfirmTermsPageConfig, SingleInvitationDeclinedPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleCompletePageConfig, SingleConfirmDeclinePageConfig, SingleConfirmTermsPageConfig, SingleInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -260,7 +260,12 @@ class ClientsInvitationController @Inject()(
           withValidInvitation(clientId, invitationId, apiIdentifier, messageKey)(checkInvitationIsAccepted(messageKey) {
             invitation =>
               invitationsService.getAgencyName(invitation.arn).map { agencyName =>
-                Ok(complete(agencyName, messageKey))
+                Ok(
+                  complete(
+                    SingleCompletePageConfig(
+                      agencyName,
+                      invitationId,
+                      Consent(invitationId, invitation.expiryDate, messageKey, consent = true))))
               }
           })
         }

@@ -307,14 +307,24 @@ invitation-expired.description=This invitation is no longer available. Contact t
 # Complete
 client-complete.header=Your agent has been authorised
 client-complete.p.title=What this means
-client-complete.sub-header=What happens next
-client-complete.afi.p1={0} is now confirmed as your tax agent for viewing your income record.
-client-complete.itsa.p1={0} is now confirmed as your tax agent for reporting your income and expenses through software.
-client-complete.vat.p1={0} is now confirmed as your tax agent for reporting your VAT returns through software.
-client-complete.whatHappensNext.p1=Go to ''Manage your tax agents'' to:
-client-complete.whatHappensNext.l1=check which tax agents have permission to act on your behalf
-client-complete.whatHappensNext.l2=remove authorisations that you no longer need
+client-complete.sub-header=What you can do next
+client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
+client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for reporting your income and expenses through software.
+client-complete.vat.p1={0} is now confirmed as your authorised tax agent for reporting your VAT returns through software.
+client-complete.whatHappensNext.p1=Go to <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you</a> to:
+client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
+client-complete.whatHappensNext.l2=remove your consent if you want to do so
 client-complete.button.mta=Manage your tax agents
+client-complete.sign-out=Finish and sign out
+
+client-complete.multi.header=Approval complete
+client-complete.multi.header.p={0} can now deal with HMRC for you
+client-complete.multi.p1.head={0} is now confirmed as your authorised tax agent for:
+client-complete.multi.p1.itsa=reporting your income and expenses through software
+client-complete.multi.p1.afi=viewing your income record
+client-complete.multi.p1.vat=reporting your VAT returns through software
+client-complete.multi.mistake=Made a mistake?
+client-complete.multi.fail=You did not appoint {0} for {1} services. Contact the person who sent you the request if you declined it by mistake.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid

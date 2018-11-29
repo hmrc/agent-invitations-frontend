@@ -245,6 +245,26 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name")))
     }
 
+    "redirect to wrong-account-type page when submitting confirm terms" in {
+      await(testMultiInvitationsCache
+        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+        authorisedAsAnyOrganisationClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
+
+      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
+    }
+
   }
 
 
@@ -341,6 +361,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to decline this request")
+    }
+
+    "redirect to wrong-account-type when submitting to decline invitations" in {
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
     }
 
     "redirect to multi invitations declined via failure cases" in {
@@ -633,4 +664,129 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       }
     }
   }
+
+  "POST /accept-tax-agent-invitation/submit-answers/:clientType/:uid" should {
+    "redirect to accepted invitation page for accepting all invitations" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      getInvitationByIdStub(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
+      getInvitationByIdStub(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
+      getInvitationByIdStub(InvitationId("CZTW1KY6RTAAT"), "101747696")
+      acceptInvitationStub("ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), identifierITSA)
+      acceptInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
+      acceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
+
+      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted(personal.get, uid).url)
+    }
+
+    "redirect to accepted invitation page for accepting some invitations" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      getInvitationByIdStub(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
+      getInvitationByIdStub(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
+      getInvitationByIdStub(InvitationId("CZTW1KY6RTAAT"), "101747696")
+      acceptInvitationStub("ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), identifierITSA)
+      rejectInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
+      acceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
+
+      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted(personal.get, uid).url)
+    }
+
+    "redirect to declined invitation page for rejecting all invitations" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      getInvitationByIdStub(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
+      getInvitationByIdStub(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
+      getInvitationByIdStub(InvitationId("CZTW1KY6RTAAT"), "101747696")
+      rejectInvitationStub("ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), identifierITSA)
+      rejectInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
+      rejectInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
+
+      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
+    }
+
+    "throw an exception when the cache is empty" in {
+      await(testMultiInvitationsCache.clear())
+
+      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      an[BadRequestException] shouldBe thrownBy {
+        await(result)
+      }
+
+    }
+  }
+
+  "GET /accept-tax-agent-invitation/accepted/:clientType/:uid" should {
+    "show accepted invitation page when accepting all invitations" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Approval complete",
+        "My Agency Name can now deal with HMRC for you",
+        "reporting your income and expenses through software",
+        "viewing your income record",
+        "reporting your VAT returns through software")
+      checkHtmlResultWithNotBodyText(result, "Made a mistake?")
+    }
+
+    "show accepted invitation page when some invitations are accepted and some are rejected" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Approval complete",
+        "My Agency Name can now deal with HMRC for you",
+        "My Agency Name is now confirmed as your authorised tax agent for viewing your income record.",
+        "Made a mistake?",
+        "You did not appoint My Agency Name for 2 services. Contact the person who sent you the request if you declined it by mistake."
+      )
+      checkHtmlResultWithNotBodyText(result, "reporting your income and expenses through software",
+        "reporting your VAT returns through software")
+    }
+
+    "throw an exception when the cache is empty" in {
+      await(testMultiInvitationsCache.clear())
+
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      an[BadRequestException] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "thrown an AgencyNameNotFound exception when there is no agency name in the cache" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
+
+      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+  }
+
 }

@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
+@import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
@@ -36,22 +37,26 @@
     <p>@Messages("check-answers.p1", pageConfig.agencyName)</p>
 
     <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
-        @for(consent <- pageConfig.consents) {
-            <div>
-                <dt class="cya-question">
-                    @Messages(s"check-answers.service.${consent.serviceKey}")
-                </dt>
-                <dd class="cya-answer" id="client-identifier">
-                    @Messages(s"check-answers.consent.${consent.consent}")
-                </dd>
-              <dd class="app-check-your-answers__change">
-                  <a href=@pageConfig.changeUrl(consent.serviceKey)>@Messages("check-answers.change-link")</a>
-              </dd>
-            </div>
-        }
+    @for(consent <- pageConfig.consents) {
+        <div>
+            <dt class="cya-question">
+            @Messages(s"check-answers.service.${consent.serviceKey}")
+            </dt>
+            <dd class="cya-answer" id="client-identifier">
+            @Messages(s"check-answers.consent.${consent.consent}")
+            </dd>
+            <dd class="app-check-your-answers__change">
+                <a href=@pageConfig.changeUrl(consent.serviceKey)>@Messages("check-answers.change-link")</a>
+            </dd>
+        </div>
+    }
     </dl>
 
-    <a href="#"><button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button></a>
+    @form(Call("POST", pageConfig.submitUrl.url)){
 
+        <div class="form-group">
+            <button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button>
+        </div>
+    }
 
 }
