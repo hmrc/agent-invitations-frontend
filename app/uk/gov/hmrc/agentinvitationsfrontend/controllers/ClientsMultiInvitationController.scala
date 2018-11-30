@@ -221,9 +221,13 @@ class ClientsMultiInvitationController @Inject()(
       result <- Future.traverse(consents) {
                  case chosenConsent @ Consent(invitationId, _, _, consent, _) =>
                    if (consent) {
-                     invitationsService.acceptInvitation(invitationId).map(acceptSuccess => chosenConsent.copy(isSuccessful = acceptSuccess))
+                     invitationsService
+                       .acceptInvitation(invitationId)
+                       .map(acceptSuccess => chosenConsent.copy(isSuccessful = acceptSuccess))
                    } else {
-                     invitationsService.rejectInvitation(invitationId).map(rejectSuccess => chosenConsent.copy(isSuccessful = rejectSuccess))
+                     invitationsService
+                       .rejectInvitation(invitationId)
+                       .map(rejectSuccess => chosenConsent.copy(isSuccessful = rejectSuccess))
                    }
                }
     } yield result
