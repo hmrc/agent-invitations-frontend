@@ -123,6 +123,18 @@ confirm-details.radio1=Yes - I want to ask this client for authorisation
 confirm-details.radio2=No - I need to change them
 error.confirmDetails.invalid=Select yes if the details are correct
 
+#Review authorisations
+review-authorisations.heading=Review your authorisation requests
+review-authorisations.p=You have added {0}.
+review-authorisations.table.HMRC-MTD-IT=Report their income and expenses through software
+review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
+review-authorisations.table.HMRC-MTD-VAT=Report their VAT Returns through software
+review-authorisations.table.remove=Remove
+review-authorisations.subheader=Do you need to add another authorisation for this client?
+review-authorisations.radio.yes=Yes
+review-authorisations.radio.no=No
+
+
 #Known fact
 known-fact.HMRC-MTD-IT.heading=What is your client''s postcode?
 known-fact.PERSONAL-INCOME-RECORD.heading=What is your client''s date of birth?

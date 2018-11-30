@@ -361,7 +361,8 @@ class AgentsInvitationController @Inject()(
           },
           data => {
             if (data.value.getOrElse(false)) {
-              cachedCurrentInvitationInput.flatMap { cii => redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+              cachedCurrentInvitationInput.flatMap { cii =>
+                redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
               }
             } else
               Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
@@ -403,7 +404,17 @@ class AgentsInvitationController @Inject()(
                     formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
                     data =>
                       if (data.choice) {
-                        confirmAndRedirect(arn, invitationWithClientDetails, isWhitelisted)
+                        for {
+                          cacheItemOpt <- authorisationRequestCache.fetch()
+                          currentCache = cacheItemOpt match {
+                            case None            => Seq.empty
+                            case Some(cacheItem) => cacheItem
+                          }
+                          _ <- authorisationRequestCache.save(
+                                currentCache ++ Seq(AuthorisationRequest(clientName, service, arn, clientId)))
+                          result <- Future successful Redirect(
+                                     routes.AgentsInvitationController.showReviewAuthorisations())
+                        } yield result
                       } else {
                         for {
                           _            <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
@@ -432,11 +443,16 @@ class AgentsInvitationController @Inject()(
       for {
         cacheItemOpt <- authorisationRequestCache.fetch()
         result = cacheItemOpt match {
-          case None            => throw new Exception("blithering idiot")
-          case Some(cacheItem) => Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem)))
+          case None => throw new Exception("blithering idiot")
+          case Some(cacheItem) =>
+            Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem), agentConfirmClientForm))
         }
       } yield result
     }
+  }
+
+  def submitReviewAuthorisations = Action.async { implicit request =>
+    Future successful NotImplemented
   }
 
   private[controllers] def redirectOrShowConfirmClient(
@@ -991,7 +1007,8 @@ object AgentsInvitationController {
         )
       )({ (clientType, service, clientIdentifier, postcode) =>
         UserInputNinoAndPostcode(clientType, service, Some(clientIdentifier.trim.toUpperCase()), postcode)
-      })({ user => Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
       }))
 
   def agentInvitationIdentifyClientFormVat(featureFlags: FeatureFlags): Form[UserInputVrnAndRegDate] =
@@ -1003,7 +1020,8 @@ object AgentsInvitationController {
         "knownFact"        -> optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
       )({ (clientType, service, clientIdentifier, registrationDate) =>
         UserInputVrnAndRegDate(clientType, service, Some(clientIdentifier.trim.toUpperCase()), registrationDate)
-      })({ user => Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.registrationDate))
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.registrationDate))
       }))
 
   def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndDob] =
@@ -1019,7 +1037,8 @@ object AgentsInvitationController {
         )
       )({ (clientType, service, clientIdentifier, dob) =>
         UserInputNinoAndDob(clientType, service, Some(clientIdentifier.trim.toUpperCase()), dob)
-      })({ user => Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.dob))
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.dob))
       }))
 
   val agentInvitationSelectClientTypeForm: Form[UserInputNinoAndPostcode] = {
@@ -1029,8 +1048,10 @@ object AgentsInvitationController {
         "service"          -> text,
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
-      )({ (clientType, _, _, _) => UserInputNinoAndPostcode(clientType, "", None, None)
-      })({ user => Some((user.clientType, "", None, None))
+      )({ (clientType, _, _, _) =>
+        UserInputNinoAndPostcode(clientType, "", None, None)
+      })({ user =>
+        Some((user.clientType, "", None, None))
       })
     )
   }
@@ -1042,8 +1063,10 @@ object AgentsInvitationController {
         "service"          -> optional(text).verifying(servicePersonalChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
-      )({ (clientType, service, _, _) => UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
-      })({ user => Some((user.clientType, Some(user.service), None, None))
+      )({ (clientType, service, _, _) =>
+        UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
+      })({ user =>
+        Some((user.clientType, Some(user.service), None, None))
       }))
   }
 
@@ -1054,8 +1077,10 @@ object AgentsInvitationController {
         "service"          -> optional(text).verifying(serviceBusinessChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
-      )({ (clientType, service, _, _) => UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
-      })({ user => Some((user.clientType, Some(user.service), None, None))
+      )({ (clientType, service, _, _) =>
+        UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
+      })({ user =>
+        Some((user.clientType, Some(user.service), None, None))
       }))
   }
 
@@ -1085,7 +1110,8 @@ object AgentsInvitationController {
         )
       )({ (clientType, service, nino, postcode) =>
         UserInputNinoAndPostcode(clientType, service, Some(nino.trim.toUpperCase()), postcode)
-      })({ user => Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
       }))
 
   private val vrnRegex = "[0-9]{9}"

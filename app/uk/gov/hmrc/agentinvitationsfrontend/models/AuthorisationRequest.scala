@@ -20,8 +20,9 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 
-case class AuthorisationRequest(agentName: String, service: String, arn: Arn, clientId: String)
+case class AuthorisationRequest(clientName: String, service: String, arn: Arn, clientId: String)
 
 object AuthorisationRequest {
-  implicit val format = Json.format[AgentInvitation]
+  implicit val format = Json.format[AuthorisationRequest]
+
 }
