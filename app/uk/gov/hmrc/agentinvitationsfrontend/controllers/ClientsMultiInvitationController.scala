@@ -219,11 +219,11 @@ class ClientsMultiInvitationController @Inject()(
   private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier): Future[Seq[Consent]] =
     for {
       result <- Future.traverse(consents) {
-                 case guy @ Consent(invitationId, expiryDate, serviceKey, consent, isSuccessful) =>
+                 case chosenConsent @ Consent(invitationId, _, _, consent, _) =>
                    if (consent) {
-                     invitationsService.acceptInvitation(invitationId).map(b => guy.copy(isSuccessful = b))
+                     invitationsService.acceptInvitation(invitationId).map(acceptSuccess => chosenConsent.copy(isSuccessful = acceptSuccess))
                    } else {
-                     invitationsService.rejectInvitation(invitationId).map(b => guy.copy(isSuccessful = b))
+                     invitationsService.rejectInvitation(invitationId).map(rejectSuccess => chosenConsent.copy(isSuccessful = rejectSuccess))
                    }
                }
     } yield result
@@ -261,13 +261,14 @@ class ClientsMultiInvitationController @Inject()(
     withAuthorisedAsAnyClient { (_, _) =>
       multiInvitationCache.fetch().flatMap {
 
-        case Some(cacheItem) => if(cacheItem.consents.exists(_.isSuccessful == false) && cacheItem.consents.exists(_.isSuccessful == true)) {
-          Future successful Ok(
-            some_responses_failed(
-              SomeResponsesFailedPageConfig(
-                cacheItem.consents.filter(_.isSuccessful == false),
-                cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")))))
-        }else targets.InvalidJourneyState
+        case Some(cacheItem) =>
+          if (cacheItem.consents.exists(_.isSuccessful == false) && cacheItem.consents.exists(_.isSuccessful == true)) {
+            Future successful Ok(
+              some_responses_failed(
+                SomeResponsesFailedPageConfig(
+                  cacheItem.consents.filter(_.isSuccessful == false),
+                  cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")))))
+          } else targets.InvalidJourneyState
 
         case None => targets.InvalidJourneyState
       }
