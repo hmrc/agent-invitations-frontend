@@ -33,7 +33,6 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent
 
@@ -243,9 +242,8 @@ class ClientsMultiInvitationController @Inject()(
                        {
                          multiInvitationCache.save(cacheItem.copy(consents = updatedConsents)).map { _ =>
                            if (updatedConsents.forall(_.isSuccessful == false)) {
-                             //go to everything fails page
-                             NotImplemented
-                           } else if (updatedConsents.map(_.isSuccessful).contains(false)) {
+                             Redirect(routes.ClientsMultiInvitationController.showAllResponsesFailed())
+                           } else if (!updatedConsents.forall(_.isSuccessful == true)) {
                              Redirect(routes.ClientsMultiInvitationController.showSomeResponsesFailed())
                            } else if (updatedConsents.forall(_.isSuccessful == true) && updatedConsents.exists(
                                         _.consent == true)) {
@@ -258,6 +256,12 @@ class ClientsMultiInvitationController @Inject()(
                      }
                  }
       } yield result
+    }
+  }
+
+  val showAllResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { (_, _) =>
+      Future successful Ok(all_responses_failed())
     }
   }
 

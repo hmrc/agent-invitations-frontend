@@ -377,6 +377,10 @@ some-responses-failed.try-again=Please try again in 24 hours.
 some-responses-failed.what-next=What you can do next
 some-responses-failed.advice=You can view which services you appointed {0} to deal with.
 
+#All responses failed
+all-responses-failed.header=Sorry, there is a problem with the service
+all-responses-failed.p=We could not save your responses. Please try again in 24 hours.
+
 
 # General Messages
 # Error messages for digital services

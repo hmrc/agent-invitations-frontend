@@ -66,6 +66,7 @@ GET         /already-responded/                                                 
 GET         /expired/                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.invitationExpired
 GET         /request-cancelled/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.requestCancelled
 GET         /some-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showSomeResponsesFailed
+GET         /all-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showAllResponsesFailed
 
 GET         /assets/*file                                                        controllers.Assets.at(path="/public", file)
 
