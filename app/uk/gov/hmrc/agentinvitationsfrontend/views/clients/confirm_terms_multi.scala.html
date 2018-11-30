@@ -21,7 +21,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, singleCheckbox}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.custom_check_box
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: MultiConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @displayDate(date: LocalDate) = @{
@@ -100,11 +101,20 @@
 
                         <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
-                        @singleCheckbox(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                            '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
-                            '_groupDivClass -> "div-underline")
+                      @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent == true) {
+                          @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                              '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                              '_groupDivClass -> "div-underline",
+                              '_value -> "true")
+                      }else {
+                          @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                              '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                              '_groupDivClass -> "div-underline")
+                      }
+
                     }
                 }
+
         </fieldset>
 
           <div class="form-group">
