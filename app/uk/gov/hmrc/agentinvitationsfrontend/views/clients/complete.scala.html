@@ -56,7 +56,11 @@
 
     @if(config.consents.count(_.consent == false) > 0) {
         <h3>@Messages("client-complete.multi.mistake")</h3>
-        <p>@Messages("client-complete.multi.fail", config.agencyName, config.consents.count(_.consent == false))</p>
+        <p>@Messages("client-complete.multi.fail", config.agencyName, if(config.consents.count(_.consent == false) == 1){
+            s"${config.consents.count(_.consent == false)} service"
+        }else {
+            s"${config.consents.count(_.consent == false)} services"
+        })</p>
     }
 
     <a class="text-link-small" href=@externalUrls.signOutUrl(false, None)>@Messages("client-complete.sign-out")</a>

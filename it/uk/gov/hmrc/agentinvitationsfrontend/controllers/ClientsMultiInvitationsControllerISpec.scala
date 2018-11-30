@@ -805,6 +805,23 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         "reporting your VAT returns through software")
     }
 
+    "show different content for made a mistake if only one service is declined" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, isSuccessful = true)), Some("My Agency Name"))))
+
+      val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Approval complete",
+        "My Agency Name can now deal with HMRC for you",
+        "My Agency Name is now confirmed as your authorised tax agent for viewing your income record.",
+        "Made a mistake?",
+        "You did not appoint My Agency Name for 1 service. Contact the person who sent you the request if you declined it by mistake."
+      )
+      checkHtmlResultWithNotBodyText(result, "reporting your income and expenses through software",
+        "reporting your VAT returns through software")
+    }
+
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 

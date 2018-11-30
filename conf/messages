@@ -204,6 +204,9 @@ invitation-declined.multi.vat.p1=You have not given permission to {0} to report 
 
 invitation-declined-vat.p1=	You have not authorised {0} to report your VAT returns through software.
 invitation-declined-vat.button=Continue to your tax account
+invitation-declined.sign-out.button=Finish and sign out
+
+
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 
@@ -324,7 +327,7 @@ client-complete.multi.p1.itsa=reporting your income and expenses through softwar
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=reporting your VAT returns through software
 client-complete.multi.mistake=Made a mistake?
-client-complete.multi.fail=You did not appoint {0} for {1} services. Contact the person who sent you the request if you declined it by mistake.
+client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid
