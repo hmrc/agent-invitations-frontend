@@ -257,6 +257,10 @@ class ClientsMultiInvitationController @Inject()(
     }
   }
 
+  def showAllResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
+    Future successful(Ok)
+  }
+
   def showSomeResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       multiInvitationCache.fetch().flatMap {

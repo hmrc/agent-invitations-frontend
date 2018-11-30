@@ -808,7 +808,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
   }
 
-  "GET /some-responses-failed some responses failed" should {
+  "GET /some-responses-failed (some responses failed)" should {
     "show the some responses failed page when some responses have failed" in {
       await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
@@ -859,6 +859,26 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         await(result)
       }
     }
+  }
+
+  "GET /all-responses-failed (all responses failed)" should {
+    "show the all responses failed page when all responses have failed" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+
+      val result = controller.showAllResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Sorry, there is a problem with the service",
+        "We could not save your responses. Please try again in 24 hours.")
+    }
+
+    "throw a bad request exception when there are only successful invitations being passed through" in {
+
+    }
+
+    "throw a bad request exception when there is "
   }
 
 }
