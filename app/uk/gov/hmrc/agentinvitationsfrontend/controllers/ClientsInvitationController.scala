@@ -112,7 +112,7 @@ class ClientsInvitationController @Inject()(
               invitationsService.getAgencyName(invitation.arn).flatMap {
                 agencyName =>
                   rejectInvitation(serviceName, invitationId, clientId).map {
-                    case NO_CONTENT => {
+                    case true => {
                       auditService.sendAgentInvitationResponse(
                         invitationId.value,
                         invitation.arn,
@@ -226,7 +226,7 @@ class ClientsInvitationController @Inject()(
                       data => {
                         if (data.value.getOrElse(false)) {
                           acceptInvitation(serviceName, invitationId, clientId).map {
-                            case NO_CONTENT =>
+                            case true =>
                               auditService.sendAgentInvitationResponse(
                                 invitationId.value,
                                 invitation.arn,
@@ -236,7 +236,7 @@ class ClientsInvitationController @Inject()(
                                 serviceName,
                                 agencyName)
                               Redirect(routes.ClientsInvitationController.getCompletePage(invitationId))
-                            case status => throw new Exception(s"Invitation acceptance failed with status $status")
+                            case _ => throw new Exception(s"Invitation acceptance failed")
                           }
                         } else {
                           Future successful Redirect(routes.ClientsInvitationController.getConfirmDecline(invitationId))
@@ -265,7 +265,7 @@ class ClientsInvitationController @Inject()(
                     SingleCompletePageConfig(
                       agencyName,
                       invitationId,
-                      Consent(invitationId, invitation.expiryDate, messageKey, consent = true))))
+                      Consent(invitationId, invitation.expiryDate, messageKey, consent = true, false))))
               }
           })
         }
@@ -320,7 +320,7 @@ class ClientsInvitationController @Inject()(
   }
 
   private def acceptInvitation(service: String, invitationId: InvitationId, clientId: String)(
-    implicit hc: HeaderCarrier): Future[Int] =
+    implicit hc: HeaderCarrier): Future[Boolean] =
     service match {
       case HMRCMTDIT  => invitationsService.acceptITSAInvitation(invitationId, MtdItId(clientId))
       case HMRCPIR    => invitationsService.acceptAFIInvitation(invitationId, Nino(clientId))

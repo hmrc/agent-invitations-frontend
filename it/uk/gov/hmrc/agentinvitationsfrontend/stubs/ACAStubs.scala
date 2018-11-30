@@ -428,6 +428,26 @@ trait ACAStubs {
         .withStatus(responseStatus)))
   }
 
+  def alreadyActionedGetInvitationStub(
+                                           clientId: String,
+                                           invitationId: InvitationId,
+                                           serviceIdentifier: String): Unit = {
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(403)
+            .withBody(
+              s"""
+                 |{
+                 |   "code":"INVALID_INVITATION_STATUS",
+                 |   "message":"The invitation cannot be transitioned to Rejected because its current status is Rejected. Only Pending invitations may be transitioned to Rejected."
+                 |}
+           """.stripMargin
+            )))
+  }
+
   def alreadyActionedAcceptInvitationStub(
                                            clientId: String,
                                            invitationId: InvitationId,
@@ -449,6 +469,26 @@ trait ACAStubs {
            """.stripMargin
             )))
   }
+
+  def getInvitationNoPermissionStub(
+                                        clientId: String,
+                                        invitationId: InvitationId,
+                                        serviceIdentifier: String): Unit = {
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/${invitationId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(403)
+            .withBody(
+              s"""
+                 |{
+                 |   "code":"NO_PERMISSION_ON_CLIENT",
+                 |   "message":"The logged in client is not permitted to access invitations for the specified client."
+                 |}
+           """.stripMargin
+            )))
+                                        }
 
   def acceptInvitationNoPermissionStub(
                                         clientId: String,

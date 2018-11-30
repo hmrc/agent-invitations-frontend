@@ -254,26 +254,24 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   "Accept invitation" should {
 
     "service is for ITSA" should {
-      "return status 204 if invitation was accepted" in {
+      "return true if invitation was accepted" in {
         acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe 204
+        result shouldBe true
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
-      "return an error if invitation is already actioned" in {
+      "return false if invitation is already actioned" in {
         alreadyActionedAcceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-        intercept[Upstream4xxResponse] {
-          await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        }
+        val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
+        result shouldBe false
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation not found" in {
         notFoundAcceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-        intercept[NotFoundException] {
-          await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        }
+        val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
+        result shouldBe false
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
     }
@@ -282,23 +280,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       "return status 204 if PIR invitation was accepted" in {
         acceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
-        result shouldBe 204
+        result shouldBe true
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation is already actioned" in {
         alreadyActionedAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
-        intercept[Upstream4xxResponse] {
-          await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
-        }
+        val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
+        result shouldBe false
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation not found" in {
         notFoundAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
-        intercept[NotFoundException] {
-          await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
-        }
+        val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
+        result shouldBe false
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
     }
@@ -307,23 +303,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       "return status 204 if VAT invitation was accepted" in {
         acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe 204
+        result shouldBe true
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
         alreadyActionedAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
-        intercept[Upstream4xxResponse] {
-          await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        }
+        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
+        result shouldBe false
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
         notFoundAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
-        intercept[NotFoundException] {
-          await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        }
+        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
+        result shouldBe false
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
     }
@@ -335,23 +329,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       "return status 204 if invitation was rejected" in {
         rejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe 204
+        result shouldBe true
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation is already actioned" in {
         alreadyActionedRejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-        intercept[Upstream4xxResponse] {
-          await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        }
+        val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
+        result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation not found" in {
         notFoundRejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-        intercept[NotFoundException] {
-          await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        }
+        val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
+        result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
     }
@@ -360,23 +352,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       "return status 204 if PIR invitation was rejected" in {
         rejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
-        result shouldBe 204
+        result shouldBe true
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation is already actioned" in {
         alreadyActionedRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
-        intercept[Upstream4xxResponse] {
-          await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
-        }
+        val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
+        result shouldBe false
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation not found" in {
         notFoundRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
-        intercept[NotFoundException] {
-          await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
-        }
+        val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
+        result shouldBe false
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
     }
@@ -385,23 +375,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       "return status 204 if VAT invitation was rejected" in {
         rejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe 204
+        result shouldBe true
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
         alreadyActionedRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
-        intercept[Upstream4xxResponse] {
-          await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        }
+        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
+        result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
         notFoundRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
-        intercept[NotFoundException] {
-          await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        }
+        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
+        result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
     }

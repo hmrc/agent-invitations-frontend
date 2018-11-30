@@ -57,32 +57,32 @@ class InvitationsService @Inject()(
 
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.acceptITSAInvitation(mtdItId, invitationId)
 
   def rejectITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.rejectITSAInvitation(mtdItId, invitationId)
 
   def acceptAFIInvitation(invitationId: InvitationId, nino: Nino)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.acceptAFIInvitation(nino, invitationId)
 
   def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.rejectAFIInvitation(nino, invitationId)
 
   def acceptVATInvitation(invitationId: InvitationId, vrn: Vrn)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.acceptVATInvitation(vrn, invitationId)
 
   def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+    ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.rejectVATInvitation(vrn, invitationId)
 
   def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(
@@ -111,32 +111,36 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkCitizenRecord(nino, dob)
 
-  def acceptInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def acceptInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
       invitation <- invitationsConnector.getInvitation(invitationId)
-      result <- invitation match {
-                 case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
-                 case Some(i) =>
-                   Services.determineServiceMessageKey(invitationId) match {
-                     case "itsa" => invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
-                     case "afi"  => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
-                     case "vat"  => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
-                   }
-               }
+      result: Boolean <- invitation match {
+                          case None =>
+                            Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
+                          case Some(i) =>
+                            Services.determineServiceMessageKey(invitationId) match {
+                              case "itsa" =>
+                                invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
+                              case "afi" => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
+                              case "vat" => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
+                            }
+                        }
     } yield result
 
-  def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
       invitation <- invitationsConnector.getInvitation(invitationId)
-      result <- invitation match {
-                 case None => Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
-                 case Some(i) =>
-                   Services.determineServiceMessageKey(invitationId) match {
-                     case "itsa" => invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)
-                     case "afi"  => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
-                     case "vat"  => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
-                   }
-               }
+      result: Boolean <- invitation match {
+                          case None =>
+                            Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
+                          case Some(i) =>
+                            Services.determineServiceMessageKey(invitationId) match {
+                              case "itsa" =>
+                                invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)
+                              case "afi" => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
+                              case "vat" => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
+                            }
+                        }
     } yield result
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =

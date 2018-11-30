@@ -364,6 +364,20 @@ wrong-client-type.p2=To use this service, you need to sign in with the Governmen
 wrong-client-type.p3=You can create an account if you do not have one.
 wrong-client-type.button=Sign out and try again
 
+#Some Responses Failed
+some-responses-failed.header=Sorry, some of your responses could not be saved
+some-responses-failed.p1=We could not save your response for the following services:
+some-responses-failed.li.itsa=Report your income and expenses through software
+some-responses-failed.li.afi=View your PAYE income record
+some-responses-failed.li.vat=Report your VAT Returns through software
+some-responses-failed.itsa=We could not save your response for reporting your income and expenses through software.
+some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
+some-responses-failed.vat=We could not save your response for reporting your VAT Returns through software
+some-responses-failed.try-again=Please try again in 24 hours.
+some-responses-failed.what-next=What you can do next
+some-responses-failed.advice=You can view which services you appointed {0} to deal with.
+
+
 # General Messages
 # Error messages for digital services
 global.error.400.title=Bad request - 400

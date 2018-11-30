@@ -216,37 +216,66 @@ class ClientsMultiInvitationController @Inject()(
     } yield result
   }
 
-  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier) =
+  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier): Future[Seq[Consent]] =
     for {
-      _ <- Future.traverse(consents) {
-            case Consent(invitationId, _, _, consent) =>
-              if (consent) {
-                invitationsService.acceptInvitation(invitationId)
-              } else {
-                invitationsService.rejectInvitation(invitationId)
-              }
-          }
-    } yield ()
+      result <- Future.traverse(consents) {
+                 case chosenConsent @ Consent(invitationId, _, _, consent, _) =>
+                   if (consent) {
+                     invitationsService.acceptInvitation(invitationId).map(acceptSuccess => chosenConsent.copy(isSuccessful = acceptSuccess))
+                   } else {
+                     invitationsService.rejectInvitation(invitationId).map(rejectSuccess => chosenConsent.copy(isSuccessful = rejectSuccess))
+                   }
+               }
+    } yield result
 
-  def submitAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+  def submitAnswers(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
         cacheItemOpt <- multiInvitationCache.fetch()
         result <- cacheItemOpt match {
                    case None => targets.InvalidJourneyState
                    case Some(cacheItem) =>
-                     processRelationships(cacheItem.consents).map(_ =>
-                       if (!cacheItem.consents.map(_.consent).contains(true)) {
-                         Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
-                       } else {
-                         Redirect(routes.ClientsMultiInvitationController.invitationAccepted(clientType, uid))
-                     })
+                     processRelationships(cacheItem.consents).flatMap { updatedConsents =>
+                       {
+                         multiInvitationCache.save(cacheItem.copy(consents = updatedConsents)).map { _ =>
+                           if (updatedConsents.forall(_.isSuccessful == false)) {
+                             //go to everything fails page
+                             NotImplemented
+                           } else if (updatedConsents.map(_.isSuccessful).contains(false)) {
+                             Redirect(routes.ClientsMultiInvitationController.showSomeResponsesFailed())
+                           } else if (updatedConsents.forall(_.isSuccessful == true) && updatedConsents.exists(
+                                        _.consent == true)) {
+                             Redirect(routes.ClientsMultiInvitationController.invitationAccepted())
+                           } else {
+                             Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
+                           }
+                         }
+                       }
+                     }
                  }
       } yield result
     }
   }
 
-  def invitationAccepted(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
+  def showSomeResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { (_, _) =>
+      multiInvitationCache.fetch().flatMap {
+
+        case Some(cacheItem) =>
+          if (cacheItem.consents.exists(_.isSuccessful == false) && cacheItem.consents.exists(_.isSuccessful == true)) {
+            Future successful Ok(
+              some_responses_failed(
+                SomeResponsesFailedPageConfig(
+                  cacheItem.consents.filter(_.isSuccessful == false),
+                  cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")))))
+          } else targets.InvalidJourneyState
+
+        case None => targets.InvalidJourneyState
+      }
+    }
+  }
+
+  val invitationAccepted: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
         cacheItemOpt <- multiInvitationCache.fetch()
@@ -256,9 +285,12 @@ class ClientsMultiInvitationController @Inject()(
                      Future successful Ok(
                        complete(MultiCompletePageConfig(
                          cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
-                         clientType,
-                         uid,
-                         cacheItem.consents.map(consent => consent.serviceKey -> consent).toMap.values.toSeq
+                         cacheItem.consents
+                           .filter(_.isSuccessful == true)
+                           .map(consent => consent.serviceKey -> consent)
+                           .toMap
+                           .values
+                           .toSeq
                        )))
                  }
       } yield result

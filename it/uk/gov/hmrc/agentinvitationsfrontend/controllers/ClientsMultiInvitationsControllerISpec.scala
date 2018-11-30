@@ -680,9 +680,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       acceptInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
       acceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
 
-      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted(personal.get, uid).url)
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted.url)
     }
 
     "redirect to accepted invitation page for accepting some invitations" in {
@@ -699,9 +699,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       rejectInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
       acceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
 
-      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted(personal.get, uid).url)
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.invitationAccepted.url)
     }
 
     "redirect to declined invitation page for rejecting all invitations" in {
@@ -718,15 +718,34 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       rejectInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
       rejectInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
 
-      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
+    }
+
+    "redirect to showSomeResponsesFailed when some of acceptance has failed" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      getInvitationByIdStub(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
+      getInvitationByIdStub(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
+      getInvitationByIdStub(InvitationId("CZTW1KY6RTAAT"), "101747696")
+      notFoundAcceptInvitationStub("ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), identifierITSA)
+      acceptInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
+      notFoundAcceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
+
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showSomeResponsesFailed().url)
     }
 
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.submitAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       an[BadRequestException] shouldBe thrownBy {
         await(result)
       }
@@ -736,11 +755,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/accepted/:clientType/:uid" should {
     "show accepted invitation page when accepting all invitations" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, isSuccessful = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, isSuccessful = true)), Some("My Agency Name"))))
 
-      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Approval complete",
         "My Agency Name can now deal with HMRC for you",
@@ -751,11 +770,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show accepted invitation page when some invitations are accepted and some are rejected" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, isSuccessful = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, isSuccessful = true)), Some("My Agency Name"))))
 
-      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Approval complete",
         "My Agency Name can now deal with HMRC for you",
@@ -770,7 +789,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 
-      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       an[BadRequestException] shouldBe thrownBy {
         await(result)
       }
@@ -781,7 +800,60 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
 
-      val result = controller.invitationAccepted(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+  }
+
+  "GET /some-responses-failed some responses failed" should {
+    "show the some responses failed page when some responses have failed" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+
+      val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Sorry, some of your responses could not be saved",
+        "We could not save your response for the following services:",
+      "Report your income and expenses through software",
+        "Report your VAT Returns through software",
+        "You can view which services you appointed My Agency Name to deal with.")
+    }
+
+    "throw a bad request exception if there are only successful invitations being passed through" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, isSuccessful = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, isSuccessful = true)), Some("My Agency Name"))))
+
+      val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      an[BadRequestException] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "throw a bad request exception if there are only unsuccessful invitations being passed through" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+
+      val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
+
+      an[BadRequestException] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "throw an exception when there is no agency name in the cache" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, isSuccessful = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
+
+      val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[Exception] shouldBe thrownBy {
         await(result)
