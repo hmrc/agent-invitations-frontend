@@ -742,6 +742,25 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showSomeResponsesFailed().url)
     }
 
+    "redirect to allResponsesFailed when all of the acceptance has failed" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+
+      givenAgentReferenceRecordStub(arn, uid)
+      givenAllInvitationIdsStubByStatus(uid, "Pending")
+      getInvitationByIdStub(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
+      getInvitationByIdStub(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
+      getInvitationByIdStub(InvitationId("CZTW1KY6RTAAT"), "101747696")
+      notFoundAcceptInvitationStub("ABCDEF123456789", InvitationId("AG1UGUKTPNJ7W"), identifierITSA)
+      notFoundAcceptInvitationStub("AB123456A", InvitationId("B9SCS2T4NZBAX"), identifierPIR)
+      notFoundAcceptInvitationStub("101747696", InvitationId("CZTW1KY6RTAAT"), identifierVAT)
+
+      val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showAllResponsesFailed().url)
+    }
+
     "throw an exception when the cache is empty" in {
       await(testMultiInvitationsCache.clear())
 
@@ -873,12 +892,6 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "Sorry, there is a problem with the service",
         "We could not save your responses. Please try again in 24 hours.")
     }
-
-    "throw a bad request exception when there are only successful invitations being passed through" in {
-
-    }
-
-    "throw a bad request exception when there is "
   }
 
 }
