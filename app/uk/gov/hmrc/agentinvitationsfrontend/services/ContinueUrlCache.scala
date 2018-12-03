@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
+import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ContinueUrlJsonFormat._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,23 +25,36 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[ContinueUrlKeyStoreCache])
+trait ContinueUrlCache extends Cache[ContinueUrl] {
+
+  def fetchErrorUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]]
+
+  def cacheErrorUrl(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
+
+  def cacheAndFetchErrorUrl(
+    url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]]
+
+  def remove()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
+
+}
+
 @Singleton
-class ContinueUrlStoreService @Inject()(continueUrlCache: SessionCache) {
+class ContinueUrlKeyStoreCache @Inject()(session: SessionCache) extends ContinueUrlCache {
 
-  def fetchContinueUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
-    continueUrlCache.fetchAndGetEntry[ContinueUrl]("continueUrl")
+  val id = "continueUrl"
 
-  def cacheContinueUrl(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    continueUrlCache.cache("continueUrl", url).map(_ => ())
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+    session.fetchAndGetEntry[ContinueUrl](id)
 
   def remove()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    continueUrlCache.remove().map(_ => ())
+    session.remove().map(_ => ())
 
   def fetchErrorUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
-    continueUrlCache.fetchAndGetEntry[ContinueUrl]("errorUrl")
+    session.fetchAndGetEntry[ContinueUrl]("errorUrl")
 
   def cacheErrorUrl(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    continueUrlCache.cache("errorUrl", url).map(_ => ())
+    session.cache("errorUrl", url).map(_ => ())
 
   def cacheAndFetchErrorUrl(
     url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
@@ -49,10 +63,13 @@ class ContinueUrlStoreService @Inject()(continueUrlCache: SessionCache) {
       url <- fetchErrorUrl
     } yield url
 
-  def fetchAndClearUrl(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[ContinueUrl]] =
     for {
       url <- fetchErrorUrl
       _   <- remove()
     } yield url
+
+  def save(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    session.cache(id, url).map(_ => ())
 
 }

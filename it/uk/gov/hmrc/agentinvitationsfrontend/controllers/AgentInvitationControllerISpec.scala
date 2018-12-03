@@ -72,7 +72,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       )
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch) shouldBe None
     }
 
     behave like anAuthorisedAgentEndpoint(request, selectClientType)

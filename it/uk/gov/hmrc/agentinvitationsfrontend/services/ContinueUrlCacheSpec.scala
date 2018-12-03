@@ -7,7 +7,7 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ContinueUrlStoreServiceSpec extends BaseISpec {
+class ContinueUrlCacheSpec extends BaseISpec {
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("sessionId123456")))
 
@@ -15,18 +15,18 @@ class ContinueUrlStoreServiceSpec extends BaseISpec {
 
   "ContinueUrlStoreService" should {
     "store continue url" in {
-      await(continueUrlKeyStoreCache.cacheContinueUrl(url))
-      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe Some(url)
+      await(continueUrlKeyStoreCache.save(url))
+      await(continueUrlKeyStoreCache.fetch) shouldBe Some(url)
     }
 
     "return nothing if there is no continue url" in {
-      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
+      await(continueUrlKeyStoreCache.fetch) shouldBe None
     }
 
     "return nothing when ContinueUrl is removed" in {
-      await(continueUrlKeyStoreCache.cacheContinueUrl(url))
+      await(continueUrlKeyStoreCache.save(url))
       await(continueUrlKeyStoreCache.remove())
-      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
+      await(continueUrlKeyStoreCache.fetch) shouldBe None
     }
   }
 }

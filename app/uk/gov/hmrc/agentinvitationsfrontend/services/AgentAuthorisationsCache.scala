@@ -24,27 +24,18 @@ import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AgentAuthorisationsCache[T] {
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
-
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
-
-  def save(agentAuthorisationInput: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
-
-}
-
-@ImplementedBy(classOf[AgentAuthoristionsKeyStoreCache])
-trait AuthorisationRequestCache extends AgentAuthorisationsCache[AuthorisationRequest]
+@ImplementedBy(classOf[AgentAuthorisationsKeyStoreCache])
+trait AuthorisationRequestCache extends Cache[AuthorisationRequest]
 
 @Singleton
-class AgentAuthoristionsKeyStoreCache @Inject()(session: SessionCache) extends AuthorisationRequestCache {
+class AgentAuthorisationsKeyStoreCache @Inject()(session: SessionCache) extends AuthorisationRequestCache {
 
   val id = "agent-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
     session.fetchAndGetEntry[AuthorisationRequest](id)
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
     for {
       entry <- session.fetchAndGetEntry[AuthorisationRequest](id)
       _     <- session.cache(id, entry)

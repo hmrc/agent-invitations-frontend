@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -54,7 +54,7 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
     }
   }
 

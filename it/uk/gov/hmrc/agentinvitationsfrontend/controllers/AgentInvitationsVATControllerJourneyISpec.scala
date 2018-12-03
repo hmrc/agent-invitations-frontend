@@ -3,13 +3,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.redirectLocation
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentInvitationInput, UserInputNinoAndPostcode, UserInputVrnAndRegDate}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import play.api.test.Helpers.{redirectLocation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -190,7 +189,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       val invitation =
         CurrentInvitationInput(business, serviceVAT, "ni", validVrn.value, Some(validRegistrationDate))
       testFastTrackCache.save(invitation)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
+      testFastTrackCache.currentSession.item.get shouldBe invitation
 
       val result = invitationSent(
         authorisedAsValidAgent(
@@ -220,7 +219,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch).get shouldBe CurrentInvitationInput()
     }
   }
 
@@ -245,7 +244,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe invitation
+      await(testFastTrackCache.fetch).get shouldBe invitation
     }
   }
 
@@ -273,7 +272,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch) shouldBe None
     }
   }
 
@@ -311,9 +310,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val request = FakeRequest("POST", "/agents/confirm-client")
     val submitConfirmClient = controller.submitConfirmClient()
 
-    "redirect to invitation-sent" in {
+    "redirect to review-authorisations" in {
       testFastTrackCache.save(
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+      testAgentAuthorisationsCache.save(AuthorisationRequest(business.get, Seq.empty))
       createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
       getAgentLinkStub(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
@@ -321,7 +321,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations/agents/review-authorisations")
       status(result) shouldBe 303
     }
 

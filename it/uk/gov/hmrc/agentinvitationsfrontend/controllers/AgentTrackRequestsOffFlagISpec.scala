@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -51,7 +51,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
     }
   }
 
@@ -71,7 +71,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     val invitationSent = controller.invitationSent()
     "return 200 with the only option to continue where user left off" in {
       val continueUrl = ContinueUrl("/someITSA/Url")
-      continueUrlKeyStoreCache.cacheContinueUrl(continueUrl)
+      continueUrlKeyStoreCache.save(continueUrl)
       val result = invitationSent(
         authorisedAsValidAgent(
           request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
@@ -90,7 +90,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(continueUrlKeyStoreCache.fetchContinueUrl).get shouldBe continueUrl
+      await(continueUrlKeyStoreCache.fetch).get shouldBe continueUrl
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitaiton" in {
@@ -112,7 +112,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       verifyAuthoriseAttempt()
-      await(continueUrlKeyStoreCache.fetchContinueUrl) shouldBe None
+      await(continueUrlKeyStoreCache.fetch) shouldBe None
     }
 
   }

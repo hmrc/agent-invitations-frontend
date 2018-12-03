@@ -200,7 +200,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
@@ -220,7 +220,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
@@ -240,7 +240,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name")))
     }
@@ -260,7 +260,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
 
-      await(testMultiInvitationsCache.fetch()) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
@@ -353,6 +353,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redisplay form with errors if no radio button is selected" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
       givenAgentReferenceRecordStub(arn, uid)
       givenAllInvitationIdsStubByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
@@ -375,6 +376,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to multi invitations declined via failure cases" in {
+      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+
       givenAgentReferenceRecordStub(arn, uid)
       getAllPendingInvitationIdsFalseStub(uid)
       givenGetAgencyNameClientStub(arn)
@@ -396,7 +399,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a Bad Request Exception if there is nothing in the cache" in {
-      await(testMultiInvitationsCache.clear())
+
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 

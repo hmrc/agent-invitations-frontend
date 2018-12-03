@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentAuthorisationsKeyStoreCache, AuthorisationRequestCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.logging.SessionId
@@ -64,11 +64,14 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testFastTrackCache.clear()
+    testAgentAuthorisationsCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
+    override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
+      bind(classOf[AuthorisationRequestCache]).toInstance(testAgentAuthorisationsCache)
+    }
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))

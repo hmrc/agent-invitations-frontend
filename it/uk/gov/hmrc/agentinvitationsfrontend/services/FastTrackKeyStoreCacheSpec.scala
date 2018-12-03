@@ -21,13 +21,13 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
   "FastTrackKeyStoreCache" should {
     "store and fetch saved fast-track invitation from keystore" in {
       await(testFastTrackCache.save(currentInvitationInput))
-      val result = await(testFastTrackCache.fetch())
+      val result = await(testFastTrackCache.fetch)
 
       result shouldBe Some(currentInvitationInput)
     }
 
     "return nothing if no fast-track invitation was stored in keystore" in {
-      val result = await(testFastTrackCache.fetch())
+      val result = await(testFastTrackCache.fetch)
       result shouldBe None
     }
   }

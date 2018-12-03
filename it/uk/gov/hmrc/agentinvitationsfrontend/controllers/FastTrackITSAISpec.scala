@@ -283,7 +283,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
+      testFastTrackCache.currentSession.item.get shouldBe formData
       givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val form = agentFastTrackForm.fill(formData)
@@ -296,14 +296,14 @@ class FastTrackITSAISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
-      await(testFastTrackCache.fetch()).get shouldBe formData
+      await(testFastTrackCache.fetch).get shouldBe formData
     }
 
     "return 303 not-enrolled if Agent attempts to invite client who does not have an ITSA enrolment" in {
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testFastTrackCache.save(formData)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
+      testFastTrackCache.currentSession.item.get shouldBe formData
       givenNotEnrolledClientITSA(validNino, validPostcode)
 
       val form = agentFastTrackForm.fill(formData)
@@ -316,7 +316,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)
-      await(testFastTrackCache.fetch()).get shouldBe formData
+      await(testFastTrackCache.fetch).get shouldBe formData
     }
   }
 

@@ -175,7 +175,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       val invitation =
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
       testFastTrackCache.save(invitation)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
+      testFastTrackCache.currentSession.item.get shouldBe invitation
 
       val result = invitationSent(
         authorisedAsValidAgent(
@@ -205,7 +205,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch).get shouldBe CurrentInvitationInput()
+    }
+  }
+
+  "GET /agents/review-authorisations" should {
+    "show the review authorisations page" in {
+      val result = controller.showReviewAuthorisations
     }
   }
 
@@ -231,7 +237,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe invitation
+      await(testFastTrackCache.fetch).get shouldBe invitation
     }
   }
 
@@ -259,7 +265,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch) shouldBe None
 
     }
   }
@@ -321,7 +327,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
       status(result) shouldBe 303
     }
 

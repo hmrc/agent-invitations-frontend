@@ -8,7 +8,7 @@ import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -63,7 +63,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
     }
   }
 
@@ -137,7 +137,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-client")
     val submitIdentifyClient = controller.submitIdentifyClient()
 
-    "return 303 invitation-sent for ITSA" in {
+    "return 303 review-authorisation for ITSA" in {
       givenTradingName(validNino, "64 Bit")
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "", "", None, fromManual)
@@ -155,7 +155,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
     }
 
     "return 303 confirm-client for IRV" in {
@@ -177,7 +177,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showConfirmClient().url
     }
 
-    "return 303 invitation-sent for VAT" in {
+    "return 303 review-authorisation for VAT" in {
       givenClientDetails(validVrn)
       val formData =
         CurrentInvitationInput(business, serviceVAT, "", "", None, fromManual)
@@ -194,7 +194,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
     }
 
   }
@@ -321,7 +321,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/confirm-client")
     val submitConfirmClient = controller.submitConfirmClient()
 
-    "redirect to invitation-sent and create invitation for PERSONAL-INCOME-RECORD" in {
+    "redirect to review-authorisation and create invitation for PERSONAL-INCOME-RECORD" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
       createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
@@ -331,7 +331,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
       status(result) shouldBe 303
     }
 

@@ -40,6 +40,10 @@
     }
     </p>
 
+  @if(config.namesTheSames){
+      <p>@Messages("review-authorisations.names-the-sames")</p>
+  }
+
     <dl class="govuk-check-your-answers cya-questions-long">
     @for(authRequest <- config.authorisationRequests.clientDetails) {
         <div>

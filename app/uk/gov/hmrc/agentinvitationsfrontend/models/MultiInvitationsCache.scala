@@ -39,10 +39,10 @@ class MultiInvitationsKeyStoreCache @Inject()(session: SessionCache) extends Mul
 
   val id = "multi-invitation-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationsCacheItem]] =
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationsCacheItem]] =
     session.fetchAndGetEntry[MultiInvitationsCacheItem](id)
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationsCacheItem]] =
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MultiInvitationsCacheItem]] =
     for {
       entry <- session.fetchAndGetEntry[MultiInvitationsCacheItem](id)
       _     <- session.cache(id, MultiInvitationsCacheItem(Seq.empty, None))
