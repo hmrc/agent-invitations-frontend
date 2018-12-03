@@ -165,21 +165,14 @@ class AgentsInvitationController @Inject()(
         fastTrackItem       <- fastTrackCache.fetch()
       } yield {
         (fastTrackItem, authorisationBasket) match {
-          case (Some(fastTrackInput), Some(authorisationInput)) if fastTrackInput.clientType.nonEmpty =>
-            fastTrackInput.clientType match {
-              case `personal` =>
+          case (Some(fastTrackInput), authorisationInput) if fastTrackInput.clientType.nonEmpty =>
+            (fastTrackInput.clientType, authorisationInput) match {
+              case (`personal`, None) =>
+                Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), false))
+              case (_, Some(authorisation)) if authorisation.clientType.contains(personal.get) =>
                 val basketFlag = authorisationBasket.isDefined
                 Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), basketFlag))
-              case `business` =>
-                Ok(business_select_service(agentInvitationServiceForm))
-              case _ => Redirect(routes.AgentsInvitationController.selectClientType())
-            }
-          case (Some(fastTrackInput), Some(authorisationInput)) if authorisationInput.clientType.nonEmpty =>
-            authorisationInput.clientType match {
-              case "personal" =>
-                val basketFlag = authorisationBasket.isDefined
-                Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), basketFlag))
-              case "business" =>
+              case (`business`, _) =>
                 Ok(business_select_service(agentInvitationServiceForm))
               case _ => Redirect(routes.AgentsInvitationController.selectClientType())
             }
