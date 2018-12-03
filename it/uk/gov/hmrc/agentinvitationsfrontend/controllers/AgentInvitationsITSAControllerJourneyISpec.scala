@@ -318,7 +318,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       givenTradingName(validNino, "64 Bit")
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       getAgentLinkStub(arn, "ABCDEFGH", "personal")
-      val choice = agentConfirmClientForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url

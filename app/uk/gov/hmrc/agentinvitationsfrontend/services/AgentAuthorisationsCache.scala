@@ -34,25 +34,24 @@ trait AgentAuthorisationsCache[T] {
 }
 
 @ImplementedBy(classOf[AgentAuthoristionsKeyStoreCache])
-trait AuthorisationRequestCache extends AgentAuthorisationsCache[Seq[AuthorisationRequest]]
+trait AuthorisationRequestCache extends AgentAuthorisationsCache[AuthorisationRequest]
 
 @Singleton
 class AgentAuthoristionsKeyStoreCache @Inject()(session: SessionCache) extends AuthorisationRequestCache {
 
   val id = "agent-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[AuthorisationRequest]]] =
-    session.fetchAndGetEntry[Seq[AuthorisationRequest]](id)
+  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
+    session.fetchAndGetEntry[AuthorisationRequest](id)
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[AuthorisationRequest]]] =
+  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
     for {
-      entry <- session.fetchAndGetEntry[Seq[AuthorisationRequest]](id)
-      _     <- session.cache(id, Seq[AuthorisationRequest]())
+      entry <- session.fetchAndGetEntry[AuthorisationRequest](id)
+      _     <- session.cache(id, entry)
     } yield entry
 
-  def save(agentAuthorisationInput: Seq[AuthorisationRequest])(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Unit] =
+  def save(
+    agentAuthorisationInput: AuthorisationRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     session.cache(id, agentAuthorisationInput).map(_ => ())
 
 }

@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import play.api.libs.json.{Json, OFormat}
 
-case class AuthorisationRequest(clientName: String, service: String, arn: Arn, clientId: String)
+case class ClientDetail(clientName: String, service: String, clientId: String)
+
+object ClientDetail {
+  implicit val format: OFormat[ClientDetail] = Json.format[ClientDetail]
+
+}
+
+case class AuthorisationRequest(clientType: String, clientDetails: Seq[ClientDetail])
 
 object AuthorisationRequest {
-  implicit val format = Json.format[AuthorisationRequest]
-
+  implicit val format: OFormat[AuthorisationRequest] = Json.format[AuthorisationRequest]
 }

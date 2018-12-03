@@ -33,22 +33,20 @@
     <h1 class ="heading-xlarge">@Messages("review-authorisations.heading")</h1>
 
     <p>
-    @if(config.authorisationRequests.length == 1) {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.length} authorisation request")
+    @if(config.authorisationRequests.clientDetails.length == 1) {
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.length} authorisation request")
     } else {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.length} authorisation requests")
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.length} authorisation requests")
     }
     </p>
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
-    @for(authRequest <- config.authorisationRequests) {
+    <dl class="govuk-check-your-answers cya-questions-long">
+    @for(authRequest <- config.authorisationRequests.clientDetails) {
         <div>
-            <dt class="cya-question">
-              <!-- client name -->
+            <dt class="width-20">
             @authRequest.clientName
             </dt>
-            <dd class="cya-answer" id="client-identifier">
-              <!-- service -->
+            <dd class="cya-answer" id="client-service">
             @Messages(s"review-authorisations.table.${authRequest.service}")
             </dd>
             <dd class="app-check-your-answers__change">
@@ -61,9 +59,9 @@
     @form(config.submitUrl){
 
         @inputRadioGroup(
-            reviewAuthorisationsForm("reviewAuthorisations"),
+            reviewAuthorisationsForm("choice"),
             Seq(("true", Messages("review-authorisations.radio.yes")),("false",Messages("review-authorisations.radio.no"))),
-            '_legend -> Messages("review-authorisations.subheader"),
+            '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),
             '_legendClass -> "form-label",
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmDecline'""")

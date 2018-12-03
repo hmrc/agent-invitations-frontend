@@ -318,7 +318,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       getAgentLinkStub(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      val choice = agentConfirmClientForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")

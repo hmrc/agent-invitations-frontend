@@ -18,7 +18,7 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationConfirmClientFormSpec extends UnitSpec {
@@ -29,19 +29,19 @@ class AgentInvitationConfirmClientFormSpec extends UnitSpec {
   "NinoForm" should {
     "return no error message for selecting Yes" in {
       val data = Json.obj("choice" -> "true")
-      val ninoForm = agentConfirmClientForm.bind(data)
+      val ninoForm = agentConfirmationForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for selecting No" in {
       val data = Json.obj("choice" -> "false")
-      val ninoForm = agentConfirmClientForm.bind(data)
+      val ninoForm = agentConfirmationForm.bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for not selecting an option" in {
       val data = Json.obj("choice" -> "")
-      val ninoForm = agentConfirmClientForm.bind(data)
+      val ninoForm = agentConfirmationForm.bind(data)
       ninoForm.errors.contains(confirmEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }

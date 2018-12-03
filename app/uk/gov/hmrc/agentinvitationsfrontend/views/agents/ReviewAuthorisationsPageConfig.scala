@@ -19,6 +19,7 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class ReviewAuthorisationsPageConfig(authorisationRequests: Seq[AuthorisationRequest]) {
+case class ReviewAuthorisationsPageConfig(authorisationRequests: AuthorisationRequest) {
+
   val submitUrl: Call = routes.AgentsInvitationController.submitReviewAuthorisations()
 }

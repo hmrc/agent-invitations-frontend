@@ -160,16 +160,31 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      fastTrackCache.fetch().flatMap {
-        case Some(input) if input.clientType.nonEmpty =>
-          input.clientType match {
-            case `personal` =>
-              Future successful Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted)))
-            case `business` =>
-              Future successful Ok(business_select_service(agentInvitationServiceForm))
-            case _ => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
-          }
-        case _ => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+      for {
+        authorisationBasket <- authorisationRequestCache.fetch()
+        fastTrackItem       <- fastTrackCache.fetch()
+      } yield {
+        (fastTrackItem, authorisationBasket) match {
+          case (Some(fastTrackInput), Some(authorisationInput)) if fastTrackInput.clientType.nonEmpty =>
+            fastTrackInput.clientType match {
+              case `personal` =>
+                val basketFlag = authorisationBasket.isDefined
+                Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), basketFlag))
+              case `business` =>
+                Ok(business_select_service(agentInvitationServiceForm))
+              case _ => Redirect(routes.AgentsInvitationController.selectClientType())
+            }
+          case (Some(fastTrackInput), Some(authorisationInput)) if authorisationInput.clientType.nonEmpty =>
+            authorisationInput.clientType match {
+              case "personal" =>
+                val basketFlag = authorisationBasket.isDefined
+                Ok(personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), basketFlag))
+              case "business" =>
+                Ok(business_select_service(agentInvitationServiceForm))
+              case _ => Redirect(routes.AgentsInvitationController.selectClientType())
+            }
+          case _ => Redirect(routes.AgentsInvitationController.selectClientType())
+        }
       }
     }
   }
@@ -182,7 +197,9 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(personal_select_service(formWithErrors, allowedServices))
+          for {
+            authorisationBasket <- authorisationRequestCache.fetch()
+          } yield Ok(personal_select_service(formWithErrors, allowedServices, authorisationBasket.isDefined))
         },
         userInput => {
           val updateAggregate = fastTrackCache
@@ -378,7 +395,7 @@ class AgentsInvitationController @Inject()(
           (data.clientIdentifier, data.service) match {
             case (clientId, service) if clientId.nonEmpty =>
               invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Future successful Ok(confirm_client(name.getOrElse(""), agentConfirmClientForm))
+                Future successful Ok(confirm_client(name.getOrElse(""), agentConfirmationForm))
               }
             case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
           }
@@ -388,7 +405,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { (arn, _) =>
       fastTrackCache.fetch().flatMap {
         case Some(invitationWithClientDetails) =>
           (
@@ -398,7 +415,7 @@ class AgentsInvitationController @Inject()(
             case (clientType, clientId, service) if clientId.nonEmpty =>
               invitationsService.getClientNameByService(clientId, service).flatMap { name =>
                 val clientName = name.getOrElse("")
-                agentConfirmClientForm
+                agentConfirmationForm
                   .bindFromRequest()
                   .fold(
                     formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
@@ -407,24 +424,18 @@ class AgentsInvitationController @Inject()(
                         for {
                           cacheItemOpt <- authorisationRequestCache.fetch()
                           currentCache = cacheItemOpt match {
-                            case None            => Seq.empty
+                            case None            => AuthorisationRequest("", Seq.empty)
                             case Some(cacheItem) => cacheItem
                           }
-                          _ <- authorisationRequestCache.save(
-                                currentCache ++ Seq(AuthorisationRequest(clientName, service, arn, clientId)))
+                          _ <- authorisationRequestCache.save(AuthorisationRequest(
+                                currentCache.clientType,
+                                currentCache.clientDetails ++ Seq(ClientDetail(clientName, service, clientId))))
                           result <- Future successful Redirect(
                                      routes.AgentsInvitationController.showReviewAuthorisations())
                         } yield result
                       } else {
                         for {
-                          _            <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
-                          cacheItemOpt <- authorisationRequestCache.fetch()
-                          currentCache = cacheItemOpt match {
-                            case None            => Seq.empty
-                            case Some(cacheItem) => cacheItem
-                          }
-                          _ <- authorisationRequestCache.save(
-                                currentCache ++ Seq(AuthorisationRequest(clientName, service, arn, clientId)))
+                          _ <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
                           result <- Future successful Redirect(
                                      routes.AgentsInvitationController.showIdentifyClientForm())
                         } yield result
@@ -445,14 +456,30 @@ class AgentsInvitationController @Inject()(
         result = cacheItemOpt match {
           case None => throw new Exception("blithering idiot")
           case Some(cacheItem) =>
-            Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem), agentConfirmClientForm))
+            Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem), agentConfirmationForm))
         }
       } yield result
     }
   }
 
   def submitReviewAuthorisations = Action.async { implicit request =>
-    Future successful NotImplemented
+    authorisationRequestCache.fetch().map {
+      case Some(cachItem) =>
+        agentConfirmationForm
+          .bindFromRequest()
+          .fold(
+            formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(cachItem), formWithErrors)),
+            input => {
+              if (input.choice) {
+                fastTrackCache.save(CurrentInvitationInput())
+                Redirect(routes.AgentsInvitationController.selectService())
+              } else {
+                NotImplemented
+              }
+            }
+          )
+      case None => NotImplemented
+    }
   }
 
   private[controllers] def redirectOrShowConfirmClient(
@@ -467,7 +494,31 @@ class AgentsInvitationController @Inject()(
           Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
         case HMRCPIR if featureFlags.enableIrvToConfirm =>
           Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
-        case _ => body
+        case _ => {
+          if (currentInvitationInput.fromFastTrack) body
+          else {
+            for {
+              clientName <- invitationsService.getClientNameByService(
+                             currentInvitationInput.clientIdentifier,
+                             currentInvitationInput.service)
+              cacheItemOpt <- authorisationRequestCache.fetch()
+              currentCache = cacheItemOpt match {
+                case None            => AuthorisationRequest("", Seq.empty)
+                case Some(cacheItem) => cacheItem
+              }
+              _ <- authorisationRequestCache.save(
+                    AuthorisationRequest(
+                      currentInvitationInput.clientType.getOrElse(""),
+                      currentCache.clientDetails ++ Seq(
+                        ClientDetail(
+                          clientName.getOrElse(""),
+                          currentInvitationInput.service,
+                          currentInvitationInput.clientIdentifier))
+                    ))
+              result <- Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+            } yield result
+          }
+        }
       }
     }
 
@@ -1084,7 +1135,7 @@ object AgentsInvitationController {
       }))
   }
 
-  val agentConfirmClientForm: Form[Confirmation] = {
+  val agentConfirmationForm: Form[Confirmation] = {
     Form(
       mapping(
         "choice" -> optional(normalizedText)

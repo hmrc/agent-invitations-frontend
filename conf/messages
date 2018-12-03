@@ -72,6 +72,7 @@ personal-select-service.vat=Report their VAT returns through software
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
+select-service.review-auth-link=Return to authorisation requests
 
 # Business Select Service
 business-select-service.header=Do you want to report this client''s VAT returns through software?

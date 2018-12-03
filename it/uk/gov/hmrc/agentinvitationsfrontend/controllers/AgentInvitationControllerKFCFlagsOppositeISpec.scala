@@ -6,7 +6,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmClientForm, agentFastTrackForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
@@ -328,7 +328,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       getAgentLinkStub(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val choice = agentConfirmClientForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm.fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
