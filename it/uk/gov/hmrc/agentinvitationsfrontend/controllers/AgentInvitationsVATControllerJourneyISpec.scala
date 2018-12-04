@@ -310,18 +310,33 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val request = FakeRequest("POST", "/agents/confirm-client")
     val submitConfirmClient = controller.submitConfirmClient()
 
-    "redirect to review-authorisations" in {
+    "redirect to review-authorisations if client type is personal" in {
       testFastTrackCache.save(
-        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
-      testAgentAuthorisationsCache.save(AuthorisationRequest(business.get, Seq.empty))
+        CurrentInvitationInput(personal, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+      testAgentAuthorisationsCache.save(AuthorisationRequest(personal.get, Set.empty))
       createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
       getAgentLinkStub(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
       getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      val choice = agentConfirmationForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-      redirectLocation(result) shouldBe Some("/invitations/agents/review-authorisations")
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+      status(result) shouldBe 303
+    }
+
+    "redirect to invitation-sent if client type is business" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
+      testAgentAuthorisationsCache.save(AuthorisationRequest(business.get, Set.empty))
+      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      getAgentLinkStub(arn, "ABCDEFGH", "business")
+      givenClientDetails(validVrn)
+      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
       status(result) shouldBe 303
     }
 

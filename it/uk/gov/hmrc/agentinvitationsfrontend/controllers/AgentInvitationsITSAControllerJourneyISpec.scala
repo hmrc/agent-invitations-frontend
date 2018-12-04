@@ -317,14 +317,14 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val request = FakeRequest("POST", "/agents/confirm-client")
     val submitConfirmClient = controller.submitConfirmClient()
 
-    "redirect to invitation-sent" in {
+    "redirect to show-review-authorisations" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       createInvitationStub(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
       getAgentLinkStub(arn, "ABCDEFGH", "personal")
-      val choice = agentConfirmationForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url

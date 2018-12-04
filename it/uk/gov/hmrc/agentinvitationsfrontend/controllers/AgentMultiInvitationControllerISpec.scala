@@ -36,7 +36,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/select-service")
 
     "show the select personal service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Seq(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
+      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Set(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
@@ -45,7 +45,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the select business service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("business", Seq(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
+      testAgentAuthorisationsCache.save(AuthorisationRequest("business", Set(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
@@ -53,7 +53,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the select service page if there is an unsupported client type in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("foo", Seq(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
+      testAgentAuthorisationsCache.save(AuthorisationRequest("foo", Set(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectClientType().url)
@@ -65,7 +65,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/review-authorisation")
 
     "show the review authorisations page if there is a single item in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Seq(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
+      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Set(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Review your authorisation requests",
@@ -78,7 +78,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
     "show the review authorisations page if there are multiple items in the authorisationRequest cache" in {
       testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
-        Seq(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
+        Set(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
           ClientDetail("Gareth Gates Jr", servicePIR, validNino.value),
           ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value))))
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
@@ -105,7 +105,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("POST", "/agents/review-authorisation")
     "Redirect to select service if YES is selected on the review-authorisations page" in {
       testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
-        Seq(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
+        Set(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
           ClientDetail("Gareth Gates Jr", servicePIR, validNino.value),
           ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value))))
 
@@ -116,7 +116,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
     "Rediplay the page with errors if no option is chosen" in {
       testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
-        Seq(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
+        Set(ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value),
           ClientDetail("Gareth Gates Jr", servicePIR, validNino.value),
           ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value))))
 

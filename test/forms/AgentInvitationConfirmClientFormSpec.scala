@@ -29,19 +29,19 @@ class AgentInvitationConfirmClientFormSpec extends UnitSpec {
   "NinoForm" should {
     "return no error message for selecting Yes" in {
       val data = Json.obj("choice" -> "true")
-      val ninoForm = agentConfirmationForm.bind(data)
+      val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for selecting No" in {
       val data = Json.obj("choice" -> "false")
-      val ninoForm = agentConfirmationForm.bind(data)
+      val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for not selecting an option" in {
       val data = Json.obj("choice" -> "")
-      val ninoForm = agentConfirmationForm.bind(data)
+      val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.contains(confirmEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1
     }

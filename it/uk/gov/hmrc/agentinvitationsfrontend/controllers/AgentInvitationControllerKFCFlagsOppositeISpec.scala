@@ -177,7 +177,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showConfirmClient().url
     }
 
-    "return 303 review-authorisation for VAT" in {
+    "return 303 invitation-sent for VAT" in {
       givenClientDetails(validVrn)
       val formData =
         CurrentInvitationInput(business, serviceVAT, "", "", None, fromManual)
@@ -194,7 +194,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
     }
 
   }
@@ -328,7 +328,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       getAgentLinkStub(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
-      val choice = agentConfirmationForm.fill(Confirmation(true))
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url

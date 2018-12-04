@@ -21,9 +21,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 case class ReviewAuthorisationsPageConfig(authorisationRequests: AuthorisationRequest) {
 
-  val numberOfItems: Int = authorisationRequests.clientDetails.length
+  val numberOfItems: Int = authorisationRequests.clientDetails.size
 
-  val namesTheSames: Boolean = authorisationRequests.clientDetails.map(_.clientName).distinct.length != 1
+  val clientNamesAreDifferent
+    : Boolean = authorisationRequests.clientDetails.toSeq.map(_.clientName).distinct.length != 1
 
   val submitUrl: Call = routes.AgentsInvitationController.submitReviewAuthorisations()
 }

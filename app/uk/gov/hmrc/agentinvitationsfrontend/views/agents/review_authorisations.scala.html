@@ -33,15 +33,15 @@
     <h1 class ="heading-xlarge">@Messages("review-authorisations.heading")</h1>
 
     <p>
-    @if(config.authorisationRequests.clientDetails.length == 1) {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.length} authorisation request")
+    @if(config.authorisationRequests.clientDetails.size == 1) {
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.size} authorisation request")
     } else {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.length} authorisation requests")
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.size} authorisation requests")
     }
     </p>
 
-  @if(config.namesTheSames){
-      <p>@Messages("review-authorisations.names-the-sames")</p>
+  @if(config.clientNamesAreDifferent){
+      <p>@Messages("review-authorisations.different-names")</p>
   }
 
     <dl class="govuk-check-your-answers cya-questions-long">

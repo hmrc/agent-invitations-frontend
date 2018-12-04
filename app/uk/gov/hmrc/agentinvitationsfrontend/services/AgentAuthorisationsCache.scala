@@ -38,7 +38,7 @@ class AgentAuthorisationsKeyStoreCache @Inject()(session: SessionCache) extends 
   def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
     for {
       entry <- session.fetchAndGetEntry[AuthorisationRequest](id)
-      _     <- session.cache(id, entry)
+      _     <- session.cache(id, AuthorisationRequest("", Set.empty))
     } yield entry
 
   def save(

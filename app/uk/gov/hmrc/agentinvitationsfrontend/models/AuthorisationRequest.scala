@@ -25,7 +25,7 @@ object ClientDetail {
 
 }
 
-case class AuthorisationRequest(clientType: String, clientDetails: Seq[ClientDetail])
+case class AuthorisationRequest(clientType: String, clientDetails: Set[ClientDetail])
 
 object AuthorisationRequest {
   implicit val format: OFormat[AuthorisationRequest] = Json.format[AuthorisationRequest]
