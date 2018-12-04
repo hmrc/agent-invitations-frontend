@@ -69,7 +69,7 @@ class ContinueUrlKeyStoreCache @Inject()(session: SessionCache) extends Continue
       _   <- remove()
     } yield url
 
-  def save(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    session.cache(id, url).map(_ => ())
+  def save(url: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ContinueUrl] =
+    session.cache(id, url).map(_ => url)
 
 }

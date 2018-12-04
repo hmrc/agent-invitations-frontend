@@ -32,5 +32,5 @@ trait Cache[T] {
       _ <- save(modifiedEntry)
     } yield modifiedEntry
 
-  def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
+  def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T]
 }

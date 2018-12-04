@@ -42,6 +42,8 @@ class FastTrackKeyStoreCache @Inject()(session: SessionCache) extends FastTrackC
       _     <- session.cache(id, CurrentInvitationInput())
     } yield entry
 
-  def save(invitation: CurrentInvitationInput)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    session.cache(id, invitation).map(_ => ())
+  def save(invitation: CurrentInvitationInput)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[CurrentInvitationInput] =
+    session.cache(id, invitation).map(_ => invitation)
 }

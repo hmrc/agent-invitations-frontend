@@ -215,18 +215,18 @@ class ClientsMultiInvitationController @Inject()(
     } yield result
   }
 
-  private def processRelationships(consents: Seq[Consent])(implicit hc: HeaderCarrier): Future[Seq[Consent]] =
+  private def processConsents(consents: Seq[Consent])(implicit hc: HeaderCarrier): Future[Seq[Consent]] =
     for {
       result <- Future.traverse(consents) {
                  case chosenConsent @ Consent(invitationId, _, _, consent, _) =>
                    if (consent) {
                      invitationsService
                        .acceptInvitation(invitationId)
-                       .map(acceptSuccess => chosenConsent.copy(isSuccessful = acceptSuccess))
+                       .map(acceptSuccess => chosenConsent.copy(processed = acceptSuccess))
                    } else {
                      invitationsService
                        .rejectInvitation(invitationId)
-                       .map(rejectSuccess => chosenConsent.copy(isSuccessful = rejectSuccess))
+                       .map(_ => chosenConsent.copy(processed = true))
                    }
                }
     } yield result
@@ -238,15 +238,17 @@ class ClientsMultiInvitationController @Inject()(
         result <- cacheItemOpt match {
                    case None => targets.InvalidJourneyState
                    case Some(cacheItem) =>
-                     processRelationships(cacheItem.consents).flatMap { updatedConsents =>
+                     processConsents(cacheItem.consents).flatMap { updatedConsents =>
                        {
-                         multiInvitationCache.save(cacheItem.copy(consents = updatedConsents)).map { _ =>
-                           if (updatedConsents.forall(_.isSuccessful == false)) {
+                         multiInvitationCache.save(cacheItem.copy(consents = updatedConsents)).map { modifiedCache =>
+
+                         if(modifiedCache.allDeclinedProcessed) {
+                           Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
+                         }else if (modifiedCache.allAcceptanceFailed) {
                              Redirect(routes.ClientsMultiInvitationController.showAllResponsesFailed())
-                           } else if (!updatedConsents.forall(_.isSuccessful == true)) {
+                           } else if (modifiedCache.someAcceptanceFailed) {
                              Redirect(routes.ClientsMultiInvitationController.showSomeResponsesFailed())
-                           } else if (updatedConsents.forall(_.isSuccessful == true) && updatedConsents.exists(
-                                        _.consent == true)) {
+                           } else if (modifiedCache.allProcessed) {
                              Redirect(routes.ClientsMultiInvitationController.invitationAccepted())
                            } else {
                              Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
@@ -270,11 +272,11 @@ class ClientsMultiInvitationController @Inject()(
       multiInvitationCache.fetch.flatMap {
 
         case Some(cacheItem) =>
-          if (cacheItem.consents.exists(_.isSuccessful == false) && cacheItem.consents.exists(_.isSuccessful == true)) {
+          if (cacheItem.consents.exists(_.processed == false) && cacheItem.consents.exists(_.processed == true)) {
             Future successful Ok(
               some_responses_failed(
                 SomeResponsesFailedPageConfig(
-                  cacheItem.consents.filter(_.isSuccessful == false),
+                  cacheItem.consents.filter(_.processed == false),
                   cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")))))
           } else targets.InvalidJourneyState
 
@@ -294,7 +296,7 @@ class ClientsMultiInvitationController @Inject()(
                        complete(MultiCompletePageConfig(
                          cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
                          cacheItem.consents
-                           .filter(_.isSuccessful == true)
+                           .filter(_.processed == true)
                            .map(consent => consent.serviceKey -> consent)
                            .toMap
                            .values
