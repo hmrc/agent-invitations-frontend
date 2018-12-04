@@ -137,6 +137,15 @@ review-authorisations.radio.no=No
 review-authorisations.different-names=The client''s name may be recorded differently in each service.
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
 
+#Delete
+delete.heading=Are you sure you want to remove your authorisation request for {0}?
+delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to report their income and expenses through software.
+delete.subheading.PERSONAL-INCOME-RECORD=You will not send them an authorisation request to view their PAYE income record.
+delete.subheading.HMRC-MTD-VAT=You will not send them an authorisation request to report their VAT Returns through software.
+delete.radio-yes=Yes
+delete.radio-no=No
+error.delete.radio=Select yes if you want to remove the authorisation request for this client
+
 #Known fact
 known-fact.HMRC-MTD-IT.heading=What is your client''s postcode?
 known-fact.PERSONAL-INCOME-RECORD.heading=What is your client''s date of birth?

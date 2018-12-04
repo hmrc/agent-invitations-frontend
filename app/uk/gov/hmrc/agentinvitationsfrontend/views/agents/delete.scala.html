@@ -1,0 +1,52 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, inputRadioGroup, errorSummary}
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
+
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@legend = {
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("delete.heading", config.clientDetail.clientName)</h1>
+    <span class="form-hint margin-bottom-10">@Messages(s"delete.subheading.${config.clientDetail.service}")</span>
+}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"delete.heading", "Your client"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
+
+
+    @form(config.submitUrl) {
+
+        @inputRadioGroup(
+            deleteForm("accepted"),
+            Seq(("true", Messages("delete.radio-yes")), ("false", Messages("delete.radio-no"))),
+            '_groupClass -> "inline",
+            '_legend -> legend,
+            '_legendClass -> "form-label",
+            '_groupDivClass -> "form-group soft--ends",
+            '_fieldsetAttributes -> Html("""id='confirmDecline'""")
+        )
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+        </div>
+    }
+
+}

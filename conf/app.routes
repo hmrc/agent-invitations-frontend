@@ -20,7 +20,9 @@ POST        /agents/check-details                               @uk.gov.hmrc.age
 GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.knownFact
 POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitKnownFact
 POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitReviewAuthorisations
-GET        /agents/review-authorisations                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showReviewAuthorisations
+GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showReviewAuthorisations
+GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showDelete(itemId: String)
+POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDelete(itemId: String)
 
 
 # Error Agent Endpoints

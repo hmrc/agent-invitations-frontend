@@ -45,16 +45,16 @@
   }
 
     <dl class="govuk-check-your-answers cya-questions-long">
-    @for(authRequest <- config.authorisationRequests.clientDetails) {
+    @for(clientDetail <- config.authorisationRequests.clientDetails) {
         <div>
             <dt class="width-20">
-            @authRequest.clientName
+            @clientDetail.clientName
             </dt>
             <dd class="cya-answer" id="client-service">
-            @Messages(s"review-authorisations.table.${authRequest.service}")
+            @Messages(s"review-authorisations.table.${clientDetail.service}")
             </dd>
             <dd class="app-check-your-answers__change">
-                <a href="#">@Messages("review-authorisations.table.remove")</a>
+                <a href="@routes.AgentsInvitationController.showDelete(clientDetail.itemId)">@Messages("review-authorisations.table.remove")</a>
             </dd>
         </div>
     }
@@ -63,7 +63,7 @@
     @form(config.submitUrl){
 
         @inputRadioGroup(
-            reviewAuthorisationsForm("choice"),
+            reviewAuthorisationsForm("accepted"),
             Seq(("true", Messages("review-authorisations.radio.yes")),("false",Messages("review-authorisations.radio.no"))),
             '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),
             '_legendClass -> "form-label",
