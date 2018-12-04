@@ -24,23 +24,23 @@ import uk.gov.hmrc.play.test.UnitSpec
 class AgentInvitationConfirmClientFormSpec extends UnitSpec {
 
   val confirmEmptyMessage: String = "error.confirm-client.required"
-  val confirmEmptyFormError: FormError = FormError("choice", List(confirmEmptyMessage))
+  val confirmEmptyFormError: FormError = FormError("accepted", List(confirmEmptyMessage))
 
   "NinoForm" should {
     "return no error message for selecting Yes" in {
-      val data = Json.obj("choice" -> "true")
+      val data = Json.obj("accepted" -> "true")
       val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for selecting No" in {
-      val data = Json.obj("choice" -> "false")
+      val data = Json.obj("accepted" -> "false")
       val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for not selecting an option" in {
-      val data = Json.obj("choice" -> "")
+      val data = Json.obj("accepted" -> "")
       val ninoForm = agentConfirmationForm(confirmEmptyMessage).bind(data)
       ninoForm.errors.contains(confirmEmptyFormError) shouldBe true
       ninoForm.errors.length shouldBe 1

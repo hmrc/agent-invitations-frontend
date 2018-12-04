@@ -109,7 +109,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
           ClientDetail("Gareth Gates Jr", servicePIR, validNino.value),
           ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value))))
 
-      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("choice" -> "true"))
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
@@ -123,6 +123,63 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to add another authorisation for this client")
+    }
+  }
+
+  "GET /agents/delete" should {
+    val request = FakeRequest("GET", "/agents/delete")
+    "show the delete page for an authenticated agent" in {
+      val clientDetail1 = ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value)
+      testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
+        Set(clientDetail1,
+          ClientDetail("Gareth Gates Jr", servicePIR, validNino.value),
+          ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value))))
+
+      val result = controller.showDelete(clientDetail1.itemId)(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, s"Are you sure you want to remove your authorisation request for ${clientDetail1.clientName}?",
+        s"You will not send them an authorisation request to report their income and expenses through software")
+    }
+  }
+
+  "POST /agents/delete" should {
+    val request = FakeRequest("POST", "/agents/delete")
+    "Redirect to review-authorisations page with selected invitation removed from cache when YES is selected" in {
+      val clientDetail1 = ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value)
+      val clientDetail2 = ClientDetail("Gareth Gates Jr", servicePIR, validNino.value)
+      val clientDetail3 = ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value)
+      testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
+        Set(clientDetail1,
+          clientDetail2,
+          clientDetail3)))
+
+      val result = controller.submitDelete(clientDetail1.itemId)(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true"))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+
+      await(testAgentAuthorisationsCache.fetch) shouldBe Some(AuthorisationRequest("personal",
+        Set(clientDetail2,
+          clientDetail3)))
+    }
+
+    "Redirect to review-authorisations page with selected invitation not removed from cache when NO is selected" in {
+      val clientDetail1 = ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value)
+      val clientDetail2 = ClientDetail("Gareth Gates Jr", servicePIR, validNino.value)
+      val clientDetail3 = ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value)
+      testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
+        Set(clientDetail1,
+          clientDetail2,
+          clientDetail3)))
+
+      val result = controller.submitDelete(clientDetail1.itemId)(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+
+      await(testAgentAuthorisationsCache.fetch) shouldBe Some(AuthorisationRequest("personal",
+        Set(clientDetail1,
+          clientDetail2,
+          clientDetail3)))
+
     }
   }
 

@@ -5,11 +5,10 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, FastTrackCache}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AuthorisationRequestCache, ContinueUrlCache, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -20,7 +19,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port"                                     -> wireMockPort,
+        "microservice.services.auth.port"                                -> wireMockPort,
         "microservice.services.agent-client-authorisation.port"               -> wireMockPort,
         "microservice.services.agent-services-account.port"                   -> wireMockPort,
         "microservice.services.company-auth.login-url"                        -> wireMockHost,
@@ -58,12 +57,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     super.beforeEach()
     testFastTrackCache.clear()
     continueUrlKeyStoreCache.clear()
+    testAgentAuthorisationsCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
       bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[AuthorisationRequestCache]).toInstance(testAgentAuthorisationsCache)
     }
   }
 

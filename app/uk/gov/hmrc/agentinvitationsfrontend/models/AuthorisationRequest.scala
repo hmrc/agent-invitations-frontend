@@ -18,9 +18,21 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ClientDetail(clientName: String, service: String, clientId: String)
+import scala.util.Random
+
+case class ClientDetail(
+  clientName: String,
+  service: String,
+  clientId: String,
+  itemId: String = ClientDetail.randomItemId)
 
 object ClientDetail {
+
+  val characterSet = "ABCDEFGHJKLMNOPRSTUWXYZ123456789"
+
+  private def randomChar = characterSet(Random.nextInt(characterSet.length)).toString
+  private def randomItemId = randomChar + randomChar + randomChar
+
   implicit val format: OFormat[ClientDetail] = Json.format[ClientDetail]
 
 }

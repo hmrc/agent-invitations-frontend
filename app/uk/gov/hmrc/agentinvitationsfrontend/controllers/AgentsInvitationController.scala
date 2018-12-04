@@ -30,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, ReviewAuthorisationsPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -490,6 +490,46 @@ class AgentsInvitationController @Inject()(
             }
           )
       case None => NotImplemented
+    }
+  }
+
+  def showDelete(itemId: String) = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      authorisationRequestCache.fetch.map {
+        case Some(cacheItem) =>
+          val deleteItem =
+            cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+          Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
+        case None => NotImplemented
+      }
+    }
+  }
+
+  def submitDelete(itemId: String) = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      agentConfirmationForm("error.delete.radio")
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
+            authorisationRequestCache.fetch.map {
+              case Some(cacheItem) =>
+                val deleteItem =
+                  cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+                Ok(delete(DeletePageConfig(deleteItem), formWithErrors))
+              case None => Redirect(routes.AgentsInvitationController.selectClientType())
+            }
+          },
+          input =>
+            if (input.choice) {
+              authorisationRequestCache
+                .updateWith(item => item.copy(clientDetails = item.clientDetails.filterNot(_.itemId == itemId)))
+                .map { _ =>
+                  Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+                }
+            } else {
+              Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+          }
+        )
     }
   }
 
@@ -1154,7 +1194,7 @@ object AgentsInvitationController {
   def agentConfirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
       mapping(
-        "choice" -> optional(normalizedText)
+        "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
