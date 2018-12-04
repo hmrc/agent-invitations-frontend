@@ -25,26 +25,18 @@ import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait InvitationsCache[T] {
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
-
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
-
-  def save(currentInvitationInput: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit]
-}
-
 @ImplementedBy(classOf[FastTrackKeyStoreCache])
-trait FastTrackCache extends InvitationsCache[CurrentInvitationInput]
+trait FastTrackCache extends Cache[CurrentInvitationInput]
 
 @Singleton
 class FastTrackKeyStoreCache @Inject()(session: SessionCache) extends FastTrackCache {
 
   val id = "fast-track-aggregate-input"
 
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
     session.fetchAndGetEntry[CurrentInvitationInput](id)
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
     for {
       entry <- session.fetchAndGetEntry[CurrentInvitationInput](id)
       _     <- session.cache(id, CurrentInvitationInput())

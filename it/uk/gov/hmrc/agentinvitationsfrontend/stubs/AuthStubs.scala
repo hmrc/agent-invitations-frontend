@@ -204,7 +204,7 @@ trait AuthStubs {
          |]}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "Session12345")
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit =

@@ -203,7 +203,7 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testFastTrackCache.save(formData)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe formData
+      testFastTrackCache.currentSession.item.get shouldBe formData
       givenCitizenDetailsReturns404For(validNino.value)
       createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       getAgentLinkStub(arn, "BBBBBBBB", "personal")
@@ -219,7 +219,7 @@ class FastTrackIRVISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
 
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe formData
+      await(testFastTrackCache.fetch).get shouldBe formData
     }
   }
 

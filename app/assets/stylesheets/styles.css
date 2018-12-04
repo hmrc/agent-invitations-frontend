@@ -44,6 +44,11 @@
     margin-bottom: 60px !important;
 }
 
+.width-20 {
+    width: 20% !important;
+    font-weight: bold !important;
+}
+
 .normal-text {
     color: #0b0c0c !important;
 }

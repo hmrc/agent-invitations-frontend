@@ -18,7 +18,7 @@ trait ACAStubs {
         .willReturn(
           aResponse()
             .withStatus(201)
-            .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")))
+            .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake").withHeader("sessionId", "Session12345")))
 
   def givenAgentReferenceRecordStub(arn: Arn, uid: String): Unit =
     stubFor(

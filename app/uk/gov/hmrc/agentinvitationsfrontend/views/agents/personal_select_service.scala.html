@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("personal-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -65,5 +65,9 @@
 
    <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
  }
+
+  @if(basketFlag) {
+    <p><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
+  }
 
 }

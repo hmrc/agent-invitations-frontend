@@ -68,7 +68,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "service is PERSONAL-INCOME-RECORD" should {
 
-      "redirect to /agents/invitation-sent when a valid NINO is submitted" in {
+      "redirect to review-authorisation when a valid NINO is submitted" in {
         createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
         getAgentLinkStub(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
@@ -87,7 +87,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
@@ -156,7 +156,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       val invitation =
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None)
       testFastTrackCache.save(invitation)
-      testFastTrackCache.currentSession.currentInvitationInput.get shouldBe invitation
+      testFastTrackCache.currentSession.item.get shouldBe invitation
 
       val result = invitationSent(
         authorisedAsValidAgent(
@@ -186,7 +186,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe CurrentInvitationInput()
+      await(testFastTrackCache.fetch).get shouldBe CurrentInvitationInput()
     }
   }
 
@@ -211,7 +211,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch()).get shouldBe invitation
+      await(testFastTrackCache.fetch).get shouldBe invitation
     }
 
     behave like anAuthorisedAgentEndpoint(request, notMatched)

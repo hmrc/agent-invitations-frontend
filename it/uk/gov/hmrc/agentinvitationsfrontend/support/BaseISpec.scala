@@ -15,7 +15,7 @@ import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.MultiInvitationsCache
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AuthorisationRequestCache, ContinueUrlCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -84,6 +84,8 @@ abstract class BaseISpec
 
   protected lazy val testFastTrackCache = new TestFastTrackCache
 
+  protected lazy val testAgentAuthorisationsCache = new TestAgentAuthorisationsCache
+
   protected lazy val testMultiInvitationsCache = new TestMultiInvitationsCache
 
   protected lazy val continueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
@@ -118,13 +120,16 @@ abstract class BaseISpec
     super.beforeEach()
     testFastTrackCache.clear()
     continueUrlKeyStoreCache.clear()
+    testAgentAuthorisationsCache.clear()
+    testMultiInvitationsCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
       bind(classOf[MultiInvitationsCache]).toInstance(testMultiInvitationsCache)
+      bind(classOf[AuthorisationRequestCache]).toInstance(testAgentAuthorisationsCache)
     }
   }
 

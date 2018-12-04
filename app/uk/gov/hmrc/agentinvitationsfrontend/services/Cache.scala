@@ -21,13 +21,13 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Cache[T] {
-  def fetch()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
-  def fetchAndClear()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
   def updateWith(f: T => T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] =
     for {
-      entry <- fetch()
+      entry <- fetch
       modifiedEntry = f(entry.get)
       _ <- save(modifiedEntry)
     } yield modifiedEntry

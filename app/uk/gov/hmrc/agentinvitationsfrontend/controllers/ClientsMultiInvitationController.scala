@@ -105,7 +105,7 @@ class ClientsMultiInvitationController @Inject()(
     Action.async { implicit request =>
       withAuthorisedAsAnyClient { (_, _) =>
         for {
-          cacheItemOpt <- multiInvitationCache.fetch()
+          cacheItemOpt <- multiInvitationCache.fetch
           result <- cacheItemOpt match {
                      case None => {
                        targets.InvalidJourneyState
@@ -144,7 +144,7 @@ class ClientsMultiInvitationController @Inject()(
           .fold(
             formWithErrors =>
               for {
-                cacheItemOpt <- multiInvitationCache.fetch()
+                cacheItemOpt <- multiInvitationCache.fetch
                 result <- cacheItemOpt match {
                            case None => targets.InvalidJourneyState
                            case Some(cacheItem) =>
@@ -197,7 +197,7 @@ class ClientsMultiInvitationController @Inject()(
 
   def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     for {
-      cacheItemOpt <- multiInvitationCache.fetch()
+      cacheItemOpt <- multiInvitationCache.fetch
       result <- cacheItemOpt match {
                  case None => targets.InvalidJourneyState
                  case Some(cacheItem) =>
@@ -234,7 +234,7 @@ class ClientsMultiInvitationController @Inject()(
   def submitAnswers(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
-        cacheItemOpt <- multiInvitationCache.fetch()
+        cacheItemOpt <- multiInvitationCache.fetch
         result <- cacheItemOpt match {
                    case None => targets.InvalidJourneyState
                    case Some(cacheItem) =>
@@ -267,7 +267,7 @@ class ClientsMultiInvitationController @Inject()(
 
   def showSomeResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
-      multiInvitationCache.fetch().flatMap {
+      multiInvitationCache.fetch.flatMap {
 
         case Some(cacheItem) =>
           if (cacheItem.consents.exists(_.isSuccessful == false) && cacheItem.consents.exists(_.isSuccessful == true)) {
@@ -286,7 +286,7 @@ class ClientsMultiInvitationController @Inject()(
   val invitationAccepted: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
-        cacheItemOpt <- multiInvitationCache.fetch()
+        cacheItemOpt <- multiInvitationCache.fetch
         result <- cacheItemOpt match {
                    case None => targets.InvalidJourneyState
                    case Some(cacheItem) =>
@@ -333,7 +333,7 @@ class ClientsMultiInvitationController @Inject()(
       withAuthorisedAsAnyClient { (affinity, _) =>
         if (matchClientTypeToGroup(affinity, clientType)) {
           for {
-            cacheItemOpt <- multiInvitationCache.fetch()
+            cacheItemOpt <- multiInvitationCache.fetch
             result <- cacheItemOpt match {
                        case None => targets.InvalidJourneyState
                        case Some(cachedItem) =>
@@ -373,8 +373,7 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
-        multiInvitationCache
-          .fetch()
+        multiInvitationCache.fetch
           .map {
             case None => throw new BadRequestException("Invalid journey state.")
             case Some(cacheItem) => {

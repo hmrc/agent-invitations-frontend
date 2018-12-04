@@ -1,0 +1,79 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, inputRadioGroup, errorSummary}
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ReviewAuthorisationsPageConfig
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("review-authorisations.heading"), ""))) {
+
+    <h1 class ="heading-xlarge">@Messages("review-authorisations.heading")</h1>
+
+    <p>
+    @if(config.authorisationRequests.clientDetails.size == 1) {
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.size} authorisation request")
+    } else {
+        @Messages("review-authorisations.p", s"${config.authorisationRequests.clientDetails.size} authorisation requests")
+    }
+    </p>
+
+  @if(config.clientNamesAreDifferent){
+      <p>@Messages("review-authorisations.different-names")</p>
+  }
+
+    <dl class="govuk-check-your-answers cya-questions-long">
+    @for(authRequest <- config.authorisationRequests.clientDetails) {
+        <div>
+            <dt class="width-20">
+            @authRequest.clientName
+            </dt>
+            <dd class="cya-answer" id="client-service">
+            @Messages(s"review-authorisations.table.${authRequest.service}")
+            </dd>
+            <dd class="app-check-your-answers__change">
+                <a href="#">@Messages("review-authorisations.table.remove")</a>
+            </dd>
+        </div>
+    }
+    </dl>
+
+    @form(config.submitUrl){
+
+        @inputRadioGroup(
+            reviewAuthorisationsForm("choice"),
+            Seq(("true", Messages("review-authorisations.radio.yes")),("false",Messages("review-authorisations.radio.no"))),
+            '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),
+            '_legendClass -> "form-label",
+            '_groupDivClass -> "form-group soft--ends",
+            '_fieldsetAttributes -> Html("""id='confirmDecline'""")
+        )
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+        </div>
+    }
+
+}

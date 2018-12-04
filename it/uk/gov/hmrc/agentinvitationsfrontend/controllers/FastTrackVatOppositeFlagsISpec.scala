@@ -7,7 +7,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlStoreService, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, FastTrackCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -65,7 +65,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlStoreService]).toInstance(continueUrlKeyStoreCache)
+      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
     }
   }
 

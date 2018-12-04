@@ -19,6 +19,9 @@ GET         /agents/check-details                               @uk.gov.hmrc.age
 POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDetails
 GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.knownFact
 POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitKnownFact
+POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitReviewAuthorisations
+GET        /agents/review-authorisations                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showReviewAuthorisations
+
 
 # Error Agent Endpoints
 GET         /agents/not-enrolled                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
