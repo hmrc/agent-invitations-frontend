@@ -120,10 +120,10 @@ class AgentsInvitationController @Inject()(
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
-    Redirect(routes.AgentsInvitationController.selectClientType())
+    Redirect(routes.AgentsInvitationController.showClientType())
   }
 
-  val selectClientType: Action[AnyContent] = Action.async { implicit request =>
+  val showClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       authorisationRequestCache.fetchAndClear
       fastTrackCache.fetch.map {
@@ -168,7 +168,7 @@ class AgentsInvitationController @Inject()(
                 personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), true))
             case "business" => Future successful Ok(business_select_service(agentInvitationServiceForm))
             case _ => {
-              Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+              Future successful Redirect(routes.AgentsInvitationController.showClientType())
             }
           }
         case _ =>
@@ -181,11 +181,11 @@ class AgentsInvitationController @Inject()(
                 case `business` =>
                   Future successful Ok(business_select_service(agentInvitationServiceForm))
                 case _ => {
-                  Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+                  Future successful Redirect(routes.AgentsInvitationController.showClientType())
                 }
               }
             case _ => {
-              Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+              Future successful Redirect(routes.AgentsInvitationController.showClientType())
             }
           }
       }
@@ -248,7 +248,7 @@ class AgentsInvitationController @Inject()(
           } else {
             for {
               _      <- fastTrackCache.save(CurrentInvitationInput())
-              result <- Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+              result <- Future successful Redirect(routes.AgentsInvitationController.showClientType())
             } yield result
           }
         }
@@ -259,10 +259,10 @@ class AgentsInvitationController @Inject()(
       clientTypeOnlyForm
         .bindFromRequest()
         .fold(
-          _ => Future successful Redirect(routes.AgentsInvitationController.selectClientType()), {
+          _ => Future successful Redirect(routes.AgentsInvitationController.showClientType()), {
             case Some("personal") => submitPersonalService(arn, isWhitelisted)
             case Some("business") => submitBusinessService(arn, isWhitelisted)
-            case _                => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+            case _                => Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }
         )
     }
@@ -299,7 +299,7 @@ class AgentsInvitationController @Inject()(
       UserInputNinoAndDob(fastTrackDetails.clientType, service, Some(clientId), fastTrackDetails.knownFact))
   }
 
-  val showIdentifyClientForm: Action[AnyContent] = Action.async { implicit request =>
+  val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       fastTrackCache.fetch.map {
         case Some(inviteDetails) if inviteDetails.service.nonEmpty =>
@@ -322,9 +322,9 @@ class AgentsInvitationController @Inject()(
                   fastTrackToIdentifyClientFormIrv(inviteDetails),
                   featureFlags.showKfcPersonalIncome,
                   inviteDetails.fromFastTrack))
-            case _ => Redirect(routes.AgentsInvitationController.selectClientType())
+            case _ => Redirect(routes.AgentsInvitationController.showClientType())
           }
-        case _ => Redirect(routes.AgentsInvitationController.selectClientType())
+        case _ => Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -338,7 +338,7 @@ class AgentsInvitationController @Inject()(
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case _          => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+            case _          => Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }
         )
     }
@@ -355,7 +355,7 @@ class AgentsInvitationController @Inject()(
               featureFlags,
               serviceToMessageKey(currentInvitation.service),
               CheckDetailsPageConfig(currentInvitation, featureFlags)))
-        case None => Redirect(routes.AgentsInvitationController.selectClientType())
+        case None => Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -383,7 +383,7 @@ class AgentsInvitationController @Inject()(
                 redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
               }
             } else
-              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
         )
     }
@@ -399,9 +399,9 @@ class AgentsInvitationController @Inject()(
                 Future successful Ok(
                   confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
               }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
-        case None => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+        case None => Future successful Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -439,20 +439,19 @@ class AgentsInvitationController @Inject()(
                                        routes.AgentsInvitationController.showReviewAuthorisations())
                                    else if (invitationWithClientDetails.clientType == business)
                                      confirmAndRedirect(arn, invitationWithClientDetails, false)
-                                   else Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+                                   else Future successful Redirect(routes.AgentsInvitationController.showClientType())
                         } yield result
                       } else {
                         for {
-                          _ <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
-                          result <- Future successful Redirect(
-                                     routes.AgentsInvitationController.showIdentifyClientForm())
+                          _      <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
+                          result <- Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
                         } yield result
                     }
                   )
               }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
-        case None => Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+        case None => Future successful Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -462,7 +461,7 @@ class AgentsInvitationController @Inject()(
       for {
         cacheItemOpt <- authorisationRequestCache.fetch
         result = cacheItemOpt match {
-          case None => Redirect(routes.AgentsInvitationController.selectClientType())
+          case None => Redirect(routes.AgentsInvitationController.showClientType())
           case Some(cacheItem) =>
             Ok(
               review_authorisations(
@@ -474,33 +473,29 @@ class AgentsInvitationController @Inject()(
   }
 
   def submitReviewAuthorisations = Action.async { implicit request =>
-    authorisationRequestCache.fetch.map {
-      case Some(cachItem) =>
-        agentConfirmationForm("error.review-authorisation.required")
-          .bindFromRequest()
-          .fold(
-            formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(cachItem), formWithErrors)),
-            input => {
-              if (input.choice) {
-                fastTrackCache.save(CurrentInvitationInput(Some(cachItem.clientType)))
-                Redirect(routes.AgentsInvitationController.selectService())
-              } else {
-                NotImplemented
-              }
+    authorisationRequestCache.get.map { cacheItem =>
+      agentConfirmationForm("error.review-authorisation.required")
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem), formWithErrors)),
+          input => {
+            if (input.choice) {
+              fastTrackCache.save(CurrentInvitationInput(Some(cacheItem.clientType)))
+              Redirect(routes.AgentsInvitationController.selectService())
+            } else {
+              NotImplemented
             }
-          )
-      case None => NotImplemented
+          }
+        )
     }
   }
 
   def showDelete(itemId: String) = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      authorisationRequestCache.fetch.map {
-        case Some(cacheItem) =>
-          val deleteItem =
-            cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
-          Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
-        case None => NotImplemented
+      authorisationRequestCache.get.map { cacheItem =>
+        val deleteItem =
+          cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+        Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
       }
     }
   }
@@ -516,13 +511,13 @@ class AgentsInvitationController @Inject()(
                 val deleteItem =
                   cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
                 Ok(delete(DeletePageConfig(deleteItem), formWithErrors))
-              case None => Redirect(routes.AgentsInvitationController.selectClientType())
+              case None => Redirect(routes.AgentsInvitationController.showClientType())
             }
           },
           input =>
             if (input.choice) {
               authorisationRequestCache
-                .updateWith(item => item.copy(clientDetails = item.clientDetails.filterNot(_.itemId == itemId)))
+                .transform(item => item.copy(clientDetails = item.clientDetails.filterNot(_.itemId == itemId)))
                 .map { _ =>
                   Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                 }
@@ -546,34 +541,31 @@ class AgentsInvitationController @Inject()(
         case HMRCPIR if featureFlags.enableIrvToConfirm =>
           Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
         case _ => {
-          if (currentInvitationInput.fromFastTrack) body
-          else {
-            for {
-              clientName <- invitationsService.getClientNameByService(
-                             currentInvitationInput.clientIdentifier,
-                             currentInvitationInput.service)
-              cacheItemOpt <- authorisationRequestCache.fetch
-              currentCache = cacheItemOpt match {
-                case None            => AuthorisationRequest("", Set.empty)
-                case Some(cacheItem) => cacheItem
-              }
-              _ <- authorisationRequestCache.save(
-                    AuthorisationRequest(
-                      currentInvitationInput.clientType.getOrElse(""),
-                      currentCache.clientDetails ++ Set(
-                        ClientDetail(
-                          clientName.getOrElse(""),
-                          currentInvitationInput.service,
-                          currentInvitationInput.clientIdentifier))
-                    ))
-              result <- currentInvitationInput.clientType match {
-                         case `personal` =>
-                           Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                         case `business` => body
-                         case _          => Future.successful(Redirect(routes.AgentsInvitationController.selectClientType()))
-                       }
-            } yield result
-          }
+          for {
+            clientName <- invitationsService.getClientNameByService(
+                           currentInvitationInput.clientIdentifier,
+                           currentInvitationInput.service)
+            cacheItemOpt <- authorisationRequestCache.fetch
+            currentCache = cacheItemOpt match {
+              case None            => AuthorisationRequest("", Set.empty)
+              case Some(cacheItem) => cacheItem
+            }
+            _ <- authorisationRequestCache.save(
+                  AuthorisationRequest(
+                    currentInvitationInput.clientType.getOrElse(""),
+                    currentCache.clientDetails ++ Set(
+                      ClientDetail(
+                        clientName.getOrElse(""),
+                        currentInvitationInput.service,
+                        currentInvitationInput.clientIdentifier))
+                  ))
+            result <- currentInvitationInput.clientType match {
+                       case `personal` =>
+                         Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+                       case `business` => body
+                       case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
+                     }
+          } yield result
         }
       }
     }
@@ -586,7 +578,7 @@ class AgentsInvitationController @Inject()(
           Ok(
             known_fact(fastTrackToIdentifyKnownFact(currentInvitation), serviceToMessageKey(currentInvitation.service)))
         case Some(_) => throw new Exception("no content in cache")
-        case None    => Redirect(routes.AgentsInvitationController.selectClientType())
+        case None    => Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -597,7 +589,7 @@ class AgentsInvitationController @Inject()(
         .bindFromRequest()
         .fold(
           _ => {
-            Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+            Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }, {
             case "HMRC-MTD-IT" =>
               bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
@@ -770,15 +762,13 @@ class AgentsInvitationController @Inject()(
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch.flatMap {
-        case Some(aggregate) =>
-          aggregate.service match {
-            case HMRCMTDVAT => Future successful Forbidden(not_matched(Services.messageKeyForVAT))
-            case HMRCMTDIT  => Future successful Forbidden(not_matched(Services.messageKeyForITSA))
-            case HMRCPIR    => Future successful Forbidden(not_matched(Services.messageKeyForAfi))
-            case _          => throw new Exception("Unsupported Service")
-          }
-        case None => throw new Exception("Empty Cache")
+      fastTrackCache.get.flatMap { aggregate =>
+        aggregate.service match {
+          case HMRCMTDVAT => Future successful Forbidden(not_matched(Services.messageKeyForVAT))
+          case HMRCMTDIT  => Future successful Forbidden(not_matched(Services.messageKeyForITSA))
+          case HMRCPIR    => Future successful Forbidden(not_matched(Services.messageKeyForAfi))
+          case _          => throw new Exception("Unsupported Service")
+        }
       }
     }
   }
@@ -956,7 +946,7 @@ class AgentsInvitationController @Inject()(
         knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
 
       case CurrentInvitationInputNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+        Future successful Redirect(routes.AgentsInvitationController.showClientType())
 
       case CurrentInvitationInputNeedsKnownFact(_) =>
         Future successful Redirect(routes.AgentsInvitationController.knownFact())
@@ -964,13 +954,13 @@ class AgentsInvitationController @Inject()(
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
           case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(routes.AgentsInvitationController.showIdentifyClientForm())
+            Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           case _ =>
-            Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+            Future successful Redirect(routes.AgentsInvitationController.showClientType())
         }
 
       case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.selectClientType())
+        Future successful Redirect(routes.AgentsInvitationController.showClientType())
 
       case CurrentInvitationInputNeedService(_) =>
         Future successful Redirect(routes.AgentsInvitationController.selectService())
@@ -979,7 +969,7 @@ class AgentsInvitationController @Inject()(
         Logger(getClass).warn("Resetting due to mix data in session")
         fastTrackCache
           .save(CurrentInvitationInput())
-          .map(_ => Redirect(routes.AgentsInvitationController.selectClientType()))
+          .map(_ => Redirect(routes.AgentsInvitationController.showClientType()))
     }
 
   private def ifShouldShowService(

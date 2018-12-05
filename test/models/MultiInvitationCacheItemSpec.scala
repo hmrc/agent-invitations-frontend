@@ -27,48 +27,98 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
 
   "MultiInvitationsCacheItem" should {
     "have allDeclinedProcessed" in {
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)), Some("My Agency Name")).allDeclinedProcessed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)
+        ),
+        Some("My Agency Name")
+      ).allDeclinedProcessed shouldBe true
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)), Some("My Agency Name")).allDeclinedProcessed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)
+        ),
+        Some("My Agency Name")
+      ).allDeclinedProcessed shouldBe true
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)), Some("My Agency Name")).allDeclinedProcessed shouldBe false
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+        ),
+        Some("My Agency Name")
+      ).allDeclinedProcessed shouldBe false
     }
     "have allProcessed" in {
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)), Some("My Agency Name")).allProcessed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+        ),
+        Some("My Agency Name")
+      ).allProcessed shouldBe true
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)), Some("My Agency Name")).allProcessed shouldBe false
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+        ),
+        Some("My Agency Name")
+      ).allProcessed shouldBe false
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name")).allProcessed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, processed = true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)
+        ),
+        Some("My Agency Name")
+      ).allProcessed shouldBe true
     }
     "have allAcceptanceFailed" in {
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)), Some("My Agency Name")).allAcceptanceFailed shouldBe false
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+        ),
+        Some("My Agency Name")
+      ).allAcceptanceFailed shouldBe false
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = false)), Some("My Agency Name")).allAcceptanceFailed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = false),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = false)
+        ),
+        Some("My Agency Name")
+      ).allAcceptanceFailed shouldBe true
     }
     "have someAcceptanceFailed" in {
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)), Some("My Agency Name")).someAcceptanceFailed shouldBe true
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+        ),
+        Some("My Agency Name")
+      ).someAcceptanceFailed shouldBe true
 
-      MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)), Some("My Agency Name")).someAcceptanceFailed shouldBe false
+      MultiInvitationsCacheItem(
+        Seq(
+          Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+        ),
+        Some("My Agency Name")
+      ).someAcceptanceFailed shouldBe false
     }
   }
 }

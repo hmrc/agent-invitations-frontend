@@ -70,7 +70,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
     "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -82,7 +82,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
     "redirect to confirm-decline page when no is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -94,7 +94,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
     "redirect to decide-later page when I dont know is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -106,7 +106,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
     "refresh the page with errors when no radio button is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -120,7 +120,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
 
     "throw an error when the radio button selection is invalid" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
-      getInvitationStub(arn, nino, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, nino, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
       an[Exception] should be thrownBy {
         await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
@@ -134,7 +134,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val getConfirmTermsVAT: Action[AnyContent] = controller.getConfirmTerms(invitationIdVAT)
 
     "show the confirm terms page for VAT" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
       val req = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
       val result = getConfirmTermsVAT(req)
@@ -155,7 +155,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "show the invitation expired page when invitation has expired" in {
-      getExpiredInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
+      givenInvitationExpired(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName"   -> "My Agency"), validVrn.value)
       val resultVAT = getConfirmTermsVAT(reqVAT)
@@ -166,7 +166,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "show the request-cancelled page when the invitation has already been cancelled" in {
-      getCancelledInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
+      givenInvitationCancelled(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
       val resultVAT = getConfirmTermsVAT(reqVAT)
@@ -177,7 +177,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val result = getConfirmTermsVAT(authorisedAsValidClientVAT(FakeRequest(), validVrn.value))
@@ -211,8 +211,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val submitConfirmTermsVAT: Action[AnyContent] = controller.submitConfirmTerms(invitationIdVAT)
 
     "redirect to complete page when YES was selected" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenAcceptInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn.value)
@@ -234,8 +234,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when YES was selected" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenAcceptInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn.value)
@@ -247,7 +247,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to confirm-decline when NO was selected" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn.value)
@@ -261,8 +261,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "reshow the page when the radio buttons were not selected with an error message" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenAcceptInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
@@ -281,8 +281,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn.value)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
         .withSession("agencyName" -> "My Agency")
-      getInvitationNoPermissionStub(validVrn.value, invitationIdVAT, identifierVAT)
-      acceptInvitationNoPermissionStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenGetInvitationReturnsNoPermission(validVrn.value, invitationIdVAT, identifierVAT)
+      givenAcceptInvitationReturnsNoPermission(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
       val resultVAT = submitConfirmTermsVAT(reqVAT)
 
@@ -294,8 +294,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val reqVAT = authorisedAsValidClientVAT(FakeRequest(), validVrn.value)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
         .withSession("agencyName" -> "My Agency")
-      alreadyActionedGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
-      alreadyActionedAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenGetInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
+      givenAcceptInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
       val resultVAT= submitConfirmTermsVAT(reqVAT)
 
@@ -336,7 +336,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val result = submitConfirmTermsVAT(authorisedAsValidClientVAT(FakeRequest(), validVrn.value))
@@ -351,7 +351,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val getCompletePageVAT: Action[AnyContent] = controller.getCompletePage(invitationIdVAT)
 
     "show the complete page for VAT" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
       givenGetAgencyNameClientStub(arn)
 
       val result = getCompletePageVAT(
@@ -378,7 +378,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails for VAT" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Accepted")
       val result = getCompletePageVAT(authorisedAsValidClientVAT(FakeRequest(), validVrn.value))
       an[AgencyNameNotFound] should be thrownBy await(result)
     }
@@ -410,7 +410,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val getConfirmInvitationVAT: Action[AnyContent] = controller.getConfirmDecline(invitationIdVAT)
 
     "show the confirm invitation page for VAT" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
       val result = getConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
@@ -444,7 +444,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-VAT enrolment but the invitationId they supplied does not exist" in {
-      notFoundGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationNotFound(validVrn.value, invitationIdVAT, identifierVAT)
       val resultVAT = getConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
       status(resultVAT) shouldBe SEE_OTHER
@@ -453,7 +453,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
-      getAlreadyAcceptedInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
+      givenInvitationAccepted(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
       val resultVAT = getConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
@@ -463,7 +463,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-VAT but with a different validVrn.value" in {
-      incorrectGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationNoPermission(validVrn.value, invitationIdVAT, identifierVAT)
       val resultVAT = getConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
@@ -485,7 +485,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val submitConfirmInvitationVAT: Action[AnyContent] = controller.submitConfirmDecline(invitationIdVAT)
 
     "reshow the page when neither yes nor no choices were selected with an error message" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
       val resultVAT = submitConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
@@ -500,7 +500,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to declined page when YES was selected" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
@@ -513,7 +513,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to confirm terms when NO was selected" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
@@ -527,7 +527,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
       val resultVAT =
         submitConfirmInvitationVAT(authorisedAsValidClientVAT(FakeRequest().withSession(), validVrn.value))
@@ -561,8 +561,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val getInvitationDeclinedVAT = controller.getInvitationDeclined(invitationIdVAT)
 
     "show invitation_declined page for an authenticated client with a valid invitation for VAT" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      rejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenRejectInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
 
       val result = getInvitationDeclinedVAT(
@@ -586,8 +586,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Declined")
-      alreadyActionedRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Declined")
+      givenRejectInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
 
       val resultVAT = getInvitationDeclinedVAT(
@@ -598,7 +598,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
-      notFoundGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationNotFound(validVrn.value, invitationIdVAT, identifierVAT)
       val resultVAT = getInvitationDeclinedVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
@@ -608,7 +608,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-VAT enrolment but with a different id" in {
-      incorrectGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+      givenInvitationNoPermission(validVrn.value, invitationIdVAT, identifierVAT)
       val resultVAT = getInvitationDeclinedVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
@@ -618,7 +618,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val resultVAT = getInvitationDeclinedVAT(
@@ -661,7 +661,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     val getDecideLaterVAT = controller.getDecideLater(invitationIdVAT)
 
     "show the decide later page with VAT content even when user is not authenticated" in {
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       givenGetAgencyNameClientStub(arn)
       val result = getDecideLaterVAT(FakeRequest())
       status(result) shouldBe OK

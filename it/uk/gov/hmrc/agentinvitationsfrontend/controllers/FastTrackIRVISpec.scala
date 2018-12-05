@@ -23,16 +23,30 @@ class FastTrackIRVISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino then selected personal, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack))
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "BBBBBBBB", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
       val result =
         submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for authorised Agent with valid Nino then selected personal, redirect to select-service when cache is empty" in {
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
       verifyAuthoriseAttempt()
     }
   }
@@ -44,10 +58,10 @@ class FastTrackIRVISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino then selected IRV, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, "", "ni", validNino.value, Some(dateOfBirth), fromFastTrack))
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "BBBBBBBB", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -169,10 +183,9 @@ class FastTrackIRVISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for IRV service" in {
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "BBBBBBBB", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val formData =
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
@@ -185,9 +198,8 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "redirect to identify-client when NO is selected for IRV service" in {
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val formData =
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
@@ -205,10 +217,9 @@ class FastTrackIRVISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       testFastTrackCache.currentSession.item.get shouldBe formData
       givenCitizenDetailsReturns404For(validNino.value)
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "BBBBBBBB", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
@@ -241,10 +252,9 @@ class FastTrackIRVISpec extends BaseISpec {
   "POST /agents/more-details" should {
     val request = FakeRequest("POST", "/agents/identify-client")
     "redirect to invitation sent when client details are valid and match for IRV" in {
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "BBBBBBBB", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
@@ -264,9 +274,8 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "redisplay the page with errors when known fact is not valid for IRV" in {
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "service"              -> "HMRC-MTD-VAT",

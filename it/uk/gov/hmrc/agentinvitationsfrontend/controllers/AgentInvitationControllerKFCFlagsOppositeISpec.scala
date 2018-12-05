@@ -81,7 +81,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(personal, serviceITSA, None, None))
-      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -100,7 +100,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
-      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -119,7 +119,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
-      val resultFuture = controller.showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -146,10 +146,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
-      createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
-      getAgentLinkStub(arn, "ABCDEFGH", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -167,8 +166,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -186,9 +184,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getAgentLinkStub(arn, "ABCDEFGH", "business")
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, "ABCDEFGH", "business")
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -209,9 +206,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
+
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -224,8 +221,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -239,8 +236,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
+
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
@@ -325,10 +322,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "redirect to review-authorisation and create invitation for PERSONAL-INCOME-RECORD" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
-      createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      getAgentLinkStub(arn, "ABCDEFGH", "personal")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
@@ -357,13 +354,13 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "", "", None, fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url
     }
 
     "return to client-type for no cache" in {
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
   }
 }

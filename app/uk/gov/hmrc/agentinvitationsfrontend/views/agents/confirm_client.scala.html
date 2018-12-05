@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @(clientName: String, choiceForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
-@back_link(s"${routes.AgentsInvitationController.showIdentifyClientForm()}")
+@back_link(s"${routes.AgentsInvitationController.showIdentifyClient()}")
 
 @if(choiceForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))

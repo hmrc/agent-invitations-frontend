@@ -82,7 +82,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "GET /agents/client-type" should {
     "return 303 for an authorised Agent without OTAC token but with passcode" in {
       val request = FakeRequest("GET", "/agents/client-type?p=foo123")
-      val result = controller.selectClientType(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showClientType(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
       verifyNoAuthoriseAttempt()

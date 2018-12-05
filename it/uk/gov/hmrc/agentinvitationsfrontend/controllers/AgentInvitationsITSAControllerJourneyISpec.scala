@@ -35,7 +35,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
   "GET /agents/identify-client" should {
     val request = FakeRequest("GET", "/agents/identify-client")
-    val showIdentifyClientForm = controller.showIdentifyClientForm()
+    val showIdentifyClientForm = controller.showIdentifyClient()
 
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
@@ -74,9 +74,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "service is HMRC-MTD-IT" should {
 
       "redirect to confirm-client when a valid NINO and postcode are submitted" in {
-        createInvitationStub(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
-        getInvitationStub(arn, validNino.value, invitationIdITSA, serviceITSA, "NI", "Pending")
 
         testFastTrackCache.save(
           CurrentInvitationInput(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
@@ -89,6 +88,21 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
         status(result) shouldBe 303
         redirectLocation(result).get shouldBe routes.AgentsInvitationController.showConfirmClient().url
+      }
+
+      "redirect to client-type when a valid NINO and postcode are submitted but cache is empty" in {
+        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+        givenMatchingClientIdAndPostcode(validNino, validPostcode)
+
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "clientType"       -> "personal",
+          "service"          -> "HMRC-MTD-IT",
+          "clientIdentifier" -> validNino.value,
+          "knownFact"        -> validPostcode)
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
@@ -303,6 +317,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       testFastTrackCache.save(
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenTradingNameMissing(validNino)
+      givenCitizenDetailsReturns404For(validNino.value)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
@@ -317,17 +332,42 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val request = FakeRequest("POST", "/agents/confirm-client")
     val submitConfirmClient = controller.submitConfirmClient()
 
-    "redirect to show-review-authorisations" in {
+    "redirect to show-review-authorisations when YES is selected" in {
       testFastTrackCache.save(
         CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
-      createInvitationStub(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, "NI", "Pending")
-      getAgentLinkStub(arn, "ABCDEFGH", "personal")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
+      status(result) shouldBe 303
+    }
+
+    "redirect to show identify client when NO is selected" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenTradingName(validNino, "64 Bit")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
+      val choice = agentConfirmationForm("error message").fill(Confirmation(false))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url
+      status(result) shouldBe 303
+    }
+
+    "redirect to select client type when client type in cache is not supported" in {
+      testFastTrackCache.save(
+        CurrentInvitationInput(Some("foo"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenTradingName(validNino, "64 Bit")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
       status(result) shouldBe 303
     }
 
@@ -352,13 +392,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA, "", "", None, fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClientForm().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url
     }
 
     "return to client-type for no cache" in {
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
   }
 }

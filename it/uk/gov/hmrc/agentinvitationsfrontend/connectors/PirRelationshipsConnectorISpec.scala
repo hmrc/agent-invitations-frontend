@@ -15,7 +15,7 @@ class PirRelationshipsConnectorISpec extends BaseISpec with ACRStubs {
 
   "GetInactiveIrvRelationships" should {
     "return a sequence of inactive IRV relationships" in {
-      givenInactiveRelationshipsIrv(arn)
+      givenInactiveAfiRelationship(arn)
       val result = await(connector.getInactiveIrvRelationships)
       result(0).serviceName shouldBe "PERSONAL-INCOME-RECORD"
       result(0).arn shouldBe arn
@@ -28,7 +28,7 @@ class PirRelationshipsConnectorISpec extends BaseISpec with ACRStubs {
     }
 
     "return an empty sequence if no inactive relationships are found" in {
-      givenInactiveRelationshipsIrvNotFound
+      givenInactiveAfiRelationshipNotFound
       val result = await(connector.getInactiveIrvRelationships)
       result shouldBe Seq.empty
     }

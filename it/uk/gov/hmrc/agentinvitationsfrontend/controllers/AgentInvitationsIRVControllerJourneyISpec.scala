@@ -37,7 +37,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
   "GET /agents/identify-client" should {
     val request = FakeRequest("GET", "/agents/identify-client")
-    val showIdentifyClientForm = controller.showIdentifyClientForm()
+    val showIdentifyClientForm = controller.showIdentifyClient()
 
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
@@ -69,10 +69,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to review-authorisation when a valid NINO is submitted" in {
-        createInvitationStub(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-        getAgentLinkStub(arn, "ABCDEFGH", "personal")
+        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+        givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-        getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
+        givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
 
         testFastTrackCache.save(CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
@@ -88,6 +88,25 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+      }
+      "redirect to client-type when a valid NINO is submitted but cache is empty" in {
+        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+        givenAgentReference(arn, "ABCDEFGH", "personal")
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+
+        val requestWithForm =
+          request.withFormUrlEncodedBody(
+            "clientType"       -> "personal",
+            "service"          -> servicePIR,
+            "clientIdentifier" -> validNino.value,
+            "knownFact.year"   -> "1980",
+            "knownFact.month"  -> "07",
+            "knownFact.day"    -> "07"
+          )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {

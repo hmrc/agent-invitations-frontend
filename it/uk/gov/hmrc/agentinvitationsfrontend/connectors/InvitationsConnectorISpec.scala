@@ -22,7 +22,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
       "return multi-invitation link for valid data" in {
 
-        getAgentLinkStub(arn, hash, personal.get)
+        givenAgentReference(arn, hash, personal.get)
 
         val result = await(connector.createAgentLink(arn, "personal"))
         result.isDefined shouldBe true
@@ -32,7 +32,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if unexpected response when creating multi-invitation link" in {
-        failedGetAgentLinkStub(arn, personal.get)
+        givenAgentReferenceNotFound(arn, personal.get)
         intercept[NotFoundException] {
           await(connector.createAgentLink(arn, "personal"))
         }
@@ -43,7 +43,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
       "return multi-invitation record for valid uid" in {
 
-        givenAgentReferenceRecordStub(arn, hash)
+        givenAgentReferenceRecordExists(arn, hash)
 
         val result = await(connector.getAgentReferenceRecord(hash))
         result.isDefined shouldBe true
@@ -57,7 +57,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     "service is for ITSA" should {
       val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        createInvitationStub(arn, "AB123456B", invitationIdITSA, "AB123456B", "ni", serviceITSA, identifierITSA)
+        givenInvitationCreationSucceeds(arn, "AB123456B", invitationIdITSA, "AB123456B", "ni", serviceITSA, identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include(
@@ -65,7 +65,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if unexpected response when creating ITSA invitation" in {
-        failedCreateInvitation(arn)
+        givenInvitationCreationFails(arn)
         intercept[BadRequestException] {
           await(connector.createInvitation(arn, agentInvitationITSA))
         }
@@ -75,14 +75,14 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     "service is for PIR" should {
       val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
-        createInvitationStub(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
+        givenInvitationCreationSucceeds(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/B9SCS2T4NZBAX")
       }
 
       "return an error if unexpected response when creating PIR invitation" in {
-        failedCreateInvitation(arn)
+        givenInvitationCreationFails(arn)
         intercept[BadRequestException] {
           await(connector.createInvitation(arn, agentInvitationPIR))
         }
@@ -92,14 +92,14 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     "service is for VAT" should {
       val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
-        createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+        givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/VRN/101747696/invitations/received/CZTW1KY6RTAAT")
       }
 
       "return an error if unexpected response when creating VAT invitation" in {
-        failedCreateInvitation(arn)
+        givenInvitationCreationFails(arn)
         intercept[BadRequestException] {
           await(connector.createInvitation(arn, agentInvitationVAT))
         }
@@ -110,7 +110,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   "Get All Agency Invitations" should {
 
     "return all Agency invitations" in {
-      givenAllInvitationsStub(arn)
+      givenGetInvitations(arn)
       val result: Seq[StoredInvitation] =
         await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result should not be empty
@@ -162,7 +162,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "return an empty set of invitations" in {
-      givenAllInvitationsEmptyStub(arn)
+      givenGetInvitationsReturnsEmpty(arn)
       val result: Seq[StoredInvitation] =
         await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result shouldBe empty
@@ -176,7 +176,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       val getITSAInvitation =
         s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"
       "return an invitation" in {
-        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
         val result = await(
           connector
             .getInvitation(getITSAInvitation))
@@ -184,7 +184,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if invitation not found" in {
-        notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenInvitationNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
         an[NotFoundException] shouldBe thrownBy(
           await(connector
             .getInvitation(getITSAInvitation)))
@@ -195,7 +195,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       val getPIRInvitation =
         s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
       "return PIR Invitation" in {
-        getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        givenInvitationExists(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR, "Pending")
         val result = await(
           connector
             .getInvitation(getPIRInvitation))
@@ -203,7 +203,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if PIR invitation not found" in {
-        notFoundGetInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenInvitationNotFound(validNino.value, invitationIdPIR, identifierPIR)
         an[NotFoundException] shouldBe thrownBy(
           await(connector
             .getInvitation(getPIRInvitation)))
@@ -214,7 +214,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       val getVATInvitation =
         s"/agent-client-authorisation/clients/VRN/${encodePathSegment(validVrn.value)}/invitations/received/${invitationIdVAT.value}"
       "return VAT Invitation" in {
-        getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+        givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
         val result = await(
           connector
             .getInvitation(getVATInvitation))
@@ -222,7 +222,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundGetInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenInvitationNotFound(validVrn.value, invitationIdVAT, identifierVAT)
         an[NotFoundException] shouldBe thrownBy(
           await(connector
             .getInvitation(getVATInvitation)))
@@ -233,19 +233,19 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   "Cancel invitation" should {
 
     "return true if 204 is returned from DES" in {
-      cancelInvitationStub(arn, invitationIdITSA, 204)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 204)
       val result = await(connector.cancelInvitation(arn, invitationIdITSA))
       result shouldBe Some(true)
     }
 
     "return false if invitation is not found" in {
-      cancelInvitationStub(arn, invitationIdITSA, 404)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 404)
       val result = await(connector.cancelInvitation(arn, invitationIdITSA))
       result shouldBe Some(false)
     }
 
     "return None if status returned is invalid" in {
-      cancelInvitationStub(arn, invitationIdITSA, 403)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 403)
       val result = await(connector.cancelInvitation(arn, invitationIdITSA))
       result shouldBe None
     }
@@ -255,21 +255,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for ITSA" should {
       "return true if invitation was accepted" in {
-        acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenAcceptInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe true
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return false if invitation is already actioned" in {
-        alreadyActionedAcceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenAcceptInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation not found" in {
-        notFoundAcceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenAcceptInvitationReturnsNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
@@ -278,21 +278,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for PIR" should {
       "return status 204 if PIR invitation was accepted" in {
-        acceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenAcceptInvitationSucceeds(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
         result shouldBe true
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation is already actioned" in {
-        alreadyActionedAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenAcceptInvitationReturnsAlreadyActioned(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
         result shouldBe false
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation not found" in {
-        notFoundAcceptInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenAcceptInvitationReturnsNotFound(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
         result shouldBe false
         verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
@@ -301,21 +301,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for VAT" should {
       "return status 204 if VAT invitation was accepted" in {
-        acceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenAcceptInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         result shouldBe true
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
-        alreadyActionedAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenAcceptInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundAcceptInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenAcceptInvitationReturnsNotFound(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
@@ -327,21 +327,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for ITSA" should {
       "return status 204 if invitation was rejected" in {
-        rejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenRejectInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe true
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation is already actioned" in {
-        alreadyActionedRejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenRejectInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
 
       "return an error if invitation not found" in {
-        notFoundRejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenRejectInvitationReturnsNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
@@ -350,21 +350,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for PIR" should {
       "return status 204 if PIR invitation was rejected" in {
-        rejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenRejectInvitationSucceeds(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
         result shouldBe true
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation is already actioned" in {
-        alreadyActionedRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenRejectInvitationReturnsAlreadyActioned(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
         result shouldBe false
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation not found" in {
-        notFoundRejectInvitationStub(validNino.value, invitationIdPIR, identifierPIR)
+        givenRejectInvitationReturnsNotFound(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
         result shouldBe false
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
@@ -373,21 +373,21 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "service is for VAT" should {
       "return status 204 if VAT invitation was rejected" in {
-        rejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenRejectInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe true
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation is already actioned" in {
-        alreadyActionedRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenRejectInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
 
       "return an error if VAT invitation not found" in {
-        notFoundRejectInvitationStub(validVrn.value, invitationIdVAT, identifierVAT)
+        givenRejectInvitationReturnsNotFound(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
@@ -434,7 +434,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   "Check Vat Registered Client KFC" should {
     "return Some(true) if DES/ETMP has a matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn, suppliedDate, 204)
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 204)
 
       await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(true)
 
@@ -443,7 +443,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "return Some(false) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn, suppliedDate, 403)
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 403)
 
       await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(false)
 
@@ -452,7 +452,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "return None if DES/ETMP has no customer VAT information" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn, suppliedDate, 404)
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 404)
 
       await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe None
 
@@ -461,7 +461,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
     "throws 5xx is DES/ETMP is unavailable" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
-      checkVatRegisteredClientStub(validVrn, suppliedDate, 502)
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 502)
 
       assertThrows[Upstream5xxResponse] {
         await(connector.checkVatRegisteredClient(validVrn, suppliedDate))

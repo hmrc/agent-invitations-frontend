@@ -73,10 +73,10 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
     val showTrackRequests = requestTrackingController.showTrackRequests
 
     "render a page without cancel authorisation link when flag is off" in {
-      givenAllInvitationsStub(arn)
+      givenGetInvitations(arn)
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
-      givenInactiveRelationshipsIrv(arn)
+      givenInactiveAfiRelationship(arn)
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")

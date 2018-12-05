@@ -21,16 +21,22 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Cache[T] {
+
   def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
   def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]]
 
-  def updateWith(f: T => T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] =
+  def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T]
+
+  def get(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] = fetch.map {
+    case Some(entry) => entry
+    case None        => throw new IllegalStateException("Cached session state expected but not found")
+  }
+
+  def transform(f: T => T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] =
     for {
       entry <- fetch
       modifiedEntry = f(entry.get)
       _ <- save(modifiedEntry)
     } yield modifiedEntry
-
-  def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T]
 }
