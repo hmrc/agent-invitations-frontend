@@ -483,21 +483,27 @@ class AgentsInvitationController @Inject()(
   }
 
   def submitReviewAuthorisations = Action.async { implicit request =>
+  withAuthorisedAsAgent {(arn, _) =>
     journeyStateCache.get.map { journeyState =>
-      agentConfirmationForm("error.review-authorisation.required")
-        .bindFromRequest()
-        .fold(
-          formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors)),
-          input => {
-            if (input.choice) {
-              currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType)))
-              Redirect(routes.AgentsInvitationController.selectService())
-            } else {
-              NotImplemented
-            }
+    agentConfirmationForm("error.review-authorisation.required")
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors)),
+        input => {
+          if (input.choice) {
+            currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType)))
+            Redirect(routes.AgentsInvitationController.selectService())
+          } else {
+            NotImplemented
+//              for{
+//              state <- journeyState.requests
+//              result <- //create an invitation
+//              }yield //redirect to complete
           }
-        )
-    }
+        }
+      )
+  }
+  }
   }
 
   def showDelete(itemId: String) = Action.async { implicit request =>
