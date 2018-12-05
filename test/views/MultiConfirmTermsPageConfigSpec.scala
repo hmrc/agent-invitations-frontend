@@ -17,7 +17,7 @@
 package views
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
@@ -34,11 +34,11 @@ class MultiConfirmTermsPageConfigSpec extends UnitSpec {
 
   "MultiConfirmTermsPageConfig" should {
     "sort invitations by expiry date, descending order" in {
-      val consent1 = Consent(invitationIdITSA, expiryDate, "itsa", false)
-      val consent2 = Consent(invitationIdPIR, expiryDate.minusDays(3), "afi", false)
-      val consent3 = Consent(invitationIdVAT, expiryDate.minusDays(5), "vat", false)
-      val consent4 = Consent(invitationIdVAT, expiryDate.minusDays(3), "vat", false)
-      val consent5 = Consent(invitationIdITSA, expiryDate.plusDays(1), "itsa", false)
+      val consent1 = ClientConsent(invitationIdITSA, expiryDate, "itsa", false)
+      val consent2 = ClientConsent(invitationIdPIR, expiryDate.minusDays(3), "afi", false)
+      val consent3 = ClientConsent(invitationIdVAT, expiryDate.minusDays(5), "vat", false)
+      val consent4 = ClientConsent(invitationIdVAT, expiryDate.minusDays(3), "vat", false)
+      val consent5 = ClientConsent(invitationIdITSA, expiryDate.plusDays(1), "itsa", false)
 
       val consents = Seq(consent1, consent4, consent2, consent5, consent3)
       val config = MultiConfirmTermsPageConfig("Impala Boolean Ltd", "personal", "12345678", consents)

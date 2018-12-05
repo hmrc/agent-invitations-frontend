@@ -206,10 +206,10 @@ class ClientsMultiInvitationController @Inject()(
     } yield result
   }
 
-  private def processConsents(consents: Seq[Consent])(implicit hc: HeaderCarrier): Future[Seq[Consent]] =
+  private def processConsents(consents: Seq[ClientConsent])(implicit hc: HeaderCarrier): Future[Seq[ClientConsent]] =
     for {
       result <- Future.traverse(consents) {
-                 case chosenConsent @ Consent(invitationId, _, _, consent, _) =>
+                 case chosenConsent @ ClientConsent(invitationId, _, _, consent, _) =>
                    if (consent) {
                      invitationsService
                        .acceptInvitation(invitationId)
@@ -378,13 +378,13 @@ class ClientsMultiInvitationController @Inject()(
     } yield name
 
   private def withAgencyNameAndConsents(uid: String, status: InvitationStatus)(
-    body: (String, Seq[Consent]) => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
+    body: (String, Seq[ClientConsent]) => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
     for {
       invitations <- invitationsConnector.getAllClientInvitationsInfoForAgentAndStatus(uid, status)
       agencyName  <- getAgencyName(uid)
       consents = invitations.map(
         invitation =>
-          Consent(
+          ClientConsent(
             invitation.invitationId,
             invitation.expiryDate,
             Services.determineServiceMessageKey(invitation.invitationId),

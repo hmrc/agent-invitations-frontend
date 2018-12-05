@@ -18,10 +18,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, uid: String, consentSeq: Seq[Consent]) {
+case class MultiConfirmTermsPageConfig(
+  agencyName: String,
+  clientType: String,
+  uid: String,
+  consentSeq: Seq[ClientConsent]) {
 
   val backUrl: Call =
     routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
@@ -32,9 +36,9 @@ case class MultiConfirmTermsPageConfig(agencyName: String, clientType: String, u
   val checkAnswersUrl: String =
     routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid).url
 
-  val expiryDateDescending: (Consent, Consent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
+  val expiryDateDescending: (ClientConsent, ClientConsent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
 
-  val serviceKeyAndExpiryDateSeq: Seq[Consent] = {
+  val serviceKeyAndExpiryDateSeq: Seq[ClientConsent] = {
     consentSeq
       .sortWith(expiryDateDescending)
       .map(consent => consent.serviceKey -> consent)

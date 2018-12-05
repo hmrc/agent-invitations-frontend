@@ -21,7 +21,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmDeclineForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsentsJourneyState, ConfirmedTerms, Consent}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState, ConfirmedTerms}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.logging.SessionId
@@ -45,10 +45,12 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.warmUp("personal", uid, normalisedAgentName)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "Appoint My Agency to deal with HMRC for you",
         "We need your approval for each individual or sole trader tax service that My Agency wants to deal with for you.",
-        "I do not want to appoint My Agency")
+        "I do not want to appoint My Agency"
+      )
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
@@ -58,10 +60,12 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.warmUp("business", uid, normalisedAgentName)(FakeRequest())
       status(result) shouldBe OK
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "Appoint My Agency to deal with HMRC for you",
         "We need your approval for each business tax service that My Agency wants to deal with for you.",
-        "I do not want to appoint My Agency")
+        "I do not want to appoint My Agency"
+      )
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
     }
 
@@ -69,7 +73,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAgentReferenceRecordExists(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.warmUp("personal", uid, normalisedAgentName)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result =
+        controller.warmUp("personal", uid, normalisedAgentName)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe OK
       checkHasClientSignOutUrl(result)
     }
@@ -109,13 +114,16 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, "We need your consent to share information",
+      checkHtmlResultWithBodyText(
+        result,
+        "We need your consent to share information",
         "Report my income and expenses through software",
         "5 March 9999",
         "View your PAYE income record",
         "1 November 9999",
         "Submit my VAT Returns through software",
-        "25 December 9999")
+        "25 December 9999"
+      )
 
     }
 
@@ -127,11 +135,13 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, "We need your consent to share information",
+      checkHtmlResultWithBodyText(
+        result,
+        "We need your consent to share information",
         "Report my income and expenses through software",
-        "1 November 9999"
-      )
-      checkHtmlResultWithNotBodyText(result,
+        "1 November 9999")
+      checkHtmlResultWithNotBodyText(
+        result,
         "View your PAYE income record",
         "5 March 9999",
         "Report my VAT Returns through software",
@@ -146,7 +156,6 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
     }
-
 
     "redirect to wrong-account-type if signed-in as business for personal invitation" in {
       givenAllInvitationIdsByStatusReturnsNotFound(uid, "Pending")
@@ -166,114 +175,166 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
     }
 
-
   }
 
   "POST /accept-tax-agent-invitation/consent/:clientType/:uid (multi consent)" should {
     "redirect to check answers page with consent choices" in {
       await(
         testClientConsentsJourneyStateCache
-        .save(
-          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+          .save(ClientConsentsJourneyState(
+            Seq(
+              ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+              ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+              ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+            ),
+            Some("My agency Name")
+          )))
 
-      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for itsa" in {
       await(
         testClientConsentsJourneyStateCache
-        .save(
-          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+          .save(ClientConsentsJourneyState(
+            Seq(
+              ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+              ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+              ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+            ),
+            Some("My agency Name")
+          )))
 
-      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "itsa"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
+        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "itsa"))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
       await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
-        ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
+        ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        ))
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for afi" in {
       await(
         testClientConsentsJourneyStateCache
-        .save(
-          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+          .save(ClientConsentsJourneyState(
+            Seq(
+              ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+              ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+              ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+            ),
+            Some("My agency Name")
+          )))
 
-      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "afi"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
+        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "afi"))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
       await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
-        ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
+        ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        ))
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for vat" in {
       await(
-        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        )))
 
-      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
+        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name")))
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
+        ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My agency Name")
+        ))
     }
 
     "redirect to wrong-account-type page when submitting confirm terms" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-          Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-          Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        )))
 
-      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+      val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(
-        authorisedAsAnyOrganisationClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-          .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest())
+        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
 
-      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
+        ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        ))
     }
 
   }
-
 
   "GET /accept-tax-agent-invitation/confirm-decline/:clientType/:uid (multi confirm decline)" should {
     "show the confirm decline page" in {
@@ -327,7 +388,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "POST /accept-tax-agent-invitation/confirm-decline/:clientType/:uid (multi confirm decline)" should {
 
     "redirect to multi invitations declined if YES is selected and invitations are successfully declined" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(
+          ClientConsentsJourneyState(
+            Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
+            Some("my agency name"))))
 
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -343,11 +408,16 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
     }
 
     "redirect to consent page if NO is selected" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(
+          ClientConsentsJourneyState(
+            Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
+            Some("my agency name"))))
 
       val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(false)))
 
@@ -355,12 +425,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiConfirmTerms("personal", uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.getMultiConfirmTerms("personal", uid).url)
 
     }
 
     "redisplay form with errors if no radio button is selected" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(
+          ClientConsentsJourneyState(
+            Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
+            Some("my agency name"))))
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
@@ -376,14 +451,19 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
+      val result =
+        controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
     }
 
     "redirect to multi invitations declined via failure cases" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(
+          ClientConsentsJourneyState(
+            Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
+            Some("my agency name"))))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllPendingInvitationIdsReturnsFakePending(uid)
@@ -399,14 +479,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(true)))
 
-      val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClientFalse(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
+      val result = controller.submitMultiConfirmDecline("personal", uid)(
+        authorisedAsAnyClientFalse(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
     }
 
     "throw a Illegal State Exception if there is nothing in the cache" in {
-
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -416,7 +497,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an Exception if there is no agency name in the cache" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), None)))
+      await(testClientConsentsJourneyStateCache.save(
+        ClientConsentsJourneyState(Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), None)))
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClientFalse(FakeRequest()))
 
@@ -429,14 +511,22 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/check-answers" should {
     "show the check answers page" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My agency Name")
+        )))
 
       val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Check your answers before sending your response",
+      checkHtmlResultWithBodyText(
+        result,
+        "Check your answers before sending your response",
         "Your consent details",
         "Here are the details of your response to My agency Name",
         "View your PAYE income record",
@@ -459,9 +549,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an Exception if tehre is no agency name in the cache" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), None)))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          None
+        )))
 
       val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -474,79 +570,112 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey  (multi confirm terms individual)" should {
 
     "show the multi confirm terms page for only itsa service" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+        authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "We need your consent to share information",
+      checkHtmlResultWithBodyText(
+        result,
+        "We need your consent to share information",
         "Report my income and expenses through software",
         "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
         "my income and expenses information"
       )
-      checkHtmlResultWithNotBodyText(result,
-        "View your PAYE income record",
-        "Submit my VAT returns through software")
+      checkHtmlResultWithNotBodyText(result, "View your PAYE income record", "Submit my VAT returns through software")
     }
 
     "show the multi confirm terms page for only itsa service when coming from check answers" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
         authorisedAsAnyIndividualClient(FakeRequest()
-          .withHeaders("Referer" -> s"someBaseUrl${routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url}")))
+          .withHeaders(
+            "Referer" -> s"someBaseUrl${routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url}")))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Change your consent",
+      checkHtmlResultWithBodyText(
+        result,
+        "Change your consent",
         "Report my income and expenses through software",
         "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
         "my income and expenses information"
       )
-      checkHtmlResultWithNotBodyText(result,
-        "View your PAYE income record",
-        "Submit my VAT returns through software")
+      checkHtmlResultWithNotBodyText(result, "View your PAYE income record", "Submit my VAT returns through software")
     }
 
     "show the multi confirm terms page for only irv service" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(
+        authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "View your PAYE income record",
         "I consent to HMRC sharing the following information with My Agency Name, so this agent can view my PAYE income record:",
         "who I have worked for in the past"
       )
-      checkHtmlResultWithNotBodyText(result,
+      checkHtmlResultWithNotBodyText(
+        result,
         "Report my income and expenses through software",
         "Submit my VAT Returns through software")
     }
 
     "show the multi confirm terms page for only vat service" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(
+        authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "Submit my VAT Returns through software",
         "I consent to HMRC sharing the following information with My Agency Name, so this agent can submit my VAT Returns through software:",
         "my VAT registration details, such as business name and contact details"
       )
-      checkHtmlResultWithNotBodyText(result,
+      checkHtmlResultWithNotBodyText(
+        result,
         "View your PAYE income record",
         "Report my income and expenses through software")
     }
 
     "return Invalid Journey State when there is nothing in the cache" in {
       await(testClientConsentsJourneyStateCache.clear())
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+        authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[IllegalStateException] shouldBe thrownBy {
         await(result)
@@ -554,10 +683,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "return Invalid Journey State if the chosen consent is empty" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+        authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {
         await(result)
@@ -568,9 +704,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /reject-tax-agent-invitation/declined/uid/:uid (multi invitations declined)" should {
 
     "show the multi invitations declined page for personal" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
@@ -578,18 +720,26 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "You declined this request",
         "You have not given permission to My Agency to:",
         "report your income and expenses through software",
         "report your employer PAYE updates through software",
-        "report your VAT returns through software")
+        "report your VAT returns through software"
+      )
     }
 
     "show the multi invitations declined page for multi ITSA Invitation" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("AG1UGUKTPNJ7Z"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("AG1UGUKTPNJ7Z"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatusReturnsSomeDuplicated(uid, "Rejected")
@@ -597,15 +747,21 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "You declined this request",
         "You have not given permission to My Agency to:",
         "report your income and expenses through software",
-        "report your VAT returns through software")
+        "report your VAT returns through software"
+      )
     }
 
     "show the multi invitations declined page when there is just one invitation" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(
+          ClientConsentsJourneyState(
+            Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true)),
+            Some("My Agency Name"))))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
@@ -613,7 +769,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "You declined this request",
         "You have not given permission to My Agency to report your income and expenses through software")
       checkHtmlResultWithNotBodyText(result, "You have not given permission to {0} to:")
@@ -663,7 +820,6 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
     }
 
-
     "Throw an AgencyNameNotFound exception if agencyName is not found" in {
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
@@ -677,9 +833,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "POST /accept-tax-agent-invitation/submit-answers/:clientType/:uid" should {
     "redirect to accepted invitation page for accepting all invitations" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -696,9 +858,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to accepted invitation page for accepting some invitations" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -715,9 +883,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to declined invitation page for rejecting all invitations" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -730,13 +904,20 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid).url)
     }
 
     "redirect to showSomeResponsesFailed when some of acceptance has failed" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -753,9 +934,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to allResponsesFailed when all of the acceptance has failed" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -784,51 +971,80 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/accepted/:clientType/:uid" should {
     "show accepted invitation page when accepting all invitations" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Approval complete",
+      checkHtmlResultWithBodyText(
+        result,
+        "Approval complete",
         "My Agency Name can now deal with HMRC for you",
         "reporting your income and expenses through software",
         "viewing your income record",
-        "reporting your VAT returns through software")
+        "reporting your VAT returns through software"
+      )
       checkHtmlResultWithNotBodyText(result, "Made a mistake?")
     }
 
     "show accepted invitation page when some invitations are accepted and some are rejected" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Approval complete",
+      checkHtmlResultWithBodyText(
+        result,
+        "Approval complete",
         "My Agency Name can now deal with HMRC for you",
         "My Agency Name is now confirmed as your authorised tax agent for viewing your income record.",
         "Made a mistake?",
         "You did not appoint My Agency Name for 2 services. Contact the person who sent you the request if you declined it by mistake."
       )
-      checkHtmlResultWithNotBodyText(result, "reporting your income and expenses through software",
+      checkHtmlResultWithNotBodyText(
+        result,
+        "reporting your income and expenses through software",
         "reporting your VAT returns through software")
     }
 
     "show different content for made a mistake if only one service is declined" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Approval complete",
+      checkHtmlResultWithBodyText(
+        result,
+        "Approval complete",
         "My Agency Name can now deal with HMRC for you",
         "My Agency Name is now confirmed as your authorised tax agent for viewing your income record.",
         "Made a mistake?",
         "You did not appoint My Agency Name for 1 service. Contact the person who sent you the request if you declined it by mistake."
       )
-      checkHtmlResultWithNotBodyText(result, "reporting your income and expenses through software",
+      checkHtmlResultWithNotBodyText(
+        result,
+        "reporting your income and expenses through software",
         "reporting your VAT returns through software")
     }
 
@@ -842,9 +1058,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "thrown an AgencyNameNotFound exception when there is no agency name in the cache" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          None
+        )))
 
       val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -856,24 +1078,39 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /some-responses-failed (some responses failed)" should {
     "show the some responses failed page when some responses have failed" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Sorry, some of your responses could not be saved",
+      checkHtmlResultWithBodyText(
+        result,
+        "Sorry, some of your responses could not be saved",
         "We could not save your response for the following services:",
-      "Report your income and expenses through software",
+        "Report your income and expenses through software",
         "Report your VAT Returns through software",
-        "You can view which services you appointed My Agency Name to deal with.")
+        "You can view which services you appointed My Agency Name to deal with."
+      )
     }
 
     "throw a bad request exception if there are only successful invitations being passed through" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -883,9 +1120,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a bad request exception if there are only unsuccessful invitations being passed through" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -895,9 +1138,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an exception when there is no agency name in the cache" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          None
+        )))
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -909,14 +1158,22 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /all-responses-failed (all responses failed)" should {
     "show the all responses failed page when all responses have failed" in {
-      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
-        Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My Agency Name")
+        )))
 
       val result = controller.showAllResponsesFailed(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Sorry, there is a problem with the service",
+      checkHtmlResultWithBodyText(
+        result,
+        "Sorry, there is a problem with the service",
         "We could not save your responses. Please try again in 24 hours.")
     }
   }

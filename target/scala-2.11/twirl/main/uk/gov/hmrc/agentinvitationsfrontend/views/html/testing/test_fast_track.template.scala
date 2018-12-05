@@ -114,8 +114,8 @@ Seq[Any](format.raw/*24.176*/("""
 object test_fast_track extends test_fast_track_Scope0.test_fast_track_Scope1.test_fast_track
               /*
                   -- GENERATED --
-                  DATE: Wed Dec 05 16:18:16 GMT 2018
-                  SOURCE: /home/marianne/hmrc/agent-invitations-frontend/app/uk/gov/hmrc/agentinvitationsfrontend/views/testing/test_fast_track.scala.html
+                  DATE: Wed Dec 05 17:06:20 GMT 2018
+                  SOURCE: /Users/arturopala/workspace/hmrc/agent-invitations-frontend/app/uk/gov/hmrc/agentinvitationsfrontend/views/testing/test_fast_track.scala.html
                   HASH: 8f956891203c53eb1e5bab8610349ba073909dab
                   MATRIX: 1243->1072|1496->1249|1522->1266|1905->1246|1934->1617|1964->1621|1974->1623|2103->1742|2144->1744|2174->1747|2246->1793|2301->1839|2341->1841|2373->1846|2476->1922|2642->2067|2680->2078|2848->2225|2885->2235|3063->2392|3101->2403|3287->2568|3327->2581|3500->2733|3540->2746|3627->2812|3667->2825|3746->2883|3786->2896|3919->3007|3953->3014|4122->3153
                   LINES: 31->24|35->26|35->26|42->24|44->32|47->35|47->35|47->35|47->35|48->36|50->38|50->38|50->38|51->39|53->41|56->44|58->46|62->50|63->51|67->55|69->57|73->61|75->63|79->67|81->69|81->69|83->71|83->71|85->73|85->73|86->74|91->79

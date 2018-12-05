@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -466,7 +466,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def showReviewAuthorisations = Action.async { implicit request =>
+  def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       for {
         journeyStateOpt <- journeyStateCache.fetch
@@ -482,31 +482,48 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def submitReviewAuthorisations = Action.async { implicit request =>
-  withAuthorisedAsAgent {(arn, _) =>
-    journeyStateCache.get.map { journeyState =>
-    agentConfirmationForm("error.review-authorisation.required")
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors)),
-        input => {
-          if (input.choice) {
-            currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType)))
-            Redirect(routes.AgentsInvitationController.selectService())
-          } else {
-            NotImplemented
-//              for{
-//              state <- journeyState.requests
-//              result <- //create an invitation
-//              }yield //redirect to complete
-          }
-        }
-      )
-  }
-  }
+  def submitReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, _) =>
+      journeyStateCache.get.flatMap { journeyState =>
+        agentConfirmationForm("error.review-authorisation.required")
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
+              Future.successful(
+                Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors))),
+            input => {
+              if (input.choice) {
+                currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType))) map (
+                  _ => Redirect(routes.AgentsInvitationController.selectService()))
+              } else {
+                for {
+                  processedRequests <- invitationsService
+                                        .createMultipleInvitations(
+                                          arn,
+                                          journeyState.clientType,
+                                          journeyState.requests,
+                                          featureFlags)
+                  result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) {
+                             invitationsService
+                               .createAgentLink(arn, journeyState.clientType)
+                               .map(
+                                 multiLink =>
+                                   Redirect(routes.AgentsInvitationController.invitationSent()).addingToSession(
+                                     "invitationLink" -> multiLink,
+                                     "clientType"     -> journeyState.clientType
+                                 ))
+                           } else {
+                             Future.failed(new Exception("")) //TODO report errors
+                           }
+                } yield result
+              }
+            }
+          )
+      }
+    }
   }
 
-  def showDelete(itemId: String) = Action.async { implicit request =>
+  def showDelete(itemId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       journeyStateCache.get.map { journeyState =>
         val deleteItem =
@@ -516,7 +533,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def submitDelete(itemId: String) = Action.async { implicit request =>
+  def submitDelete(itemId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       agentConfirmationForm("error.delete.radio")
         .bindFromRequest()
@@ -624,7 +641,7 @@ class AgentsInvitationController @Inject()(
     knownFactForm: Form[CurrentAuthorisationRequest],
     arn: Arn,
     isWhitelisted: Boolean,
-    serviceMessageKey: String)(implicit request: Request[AnyContent]) =
+    serviceMessageKey: String)(implicit request: Request[AnyContent]): Future[Result] =
     knownFactForm
       .bindFromRequest()
       .fold(
@@ -632,7 +649,9 @@ class AgentsInvitationController @Inject()(
         data => redirectBasedOnCurrentInputState(arn, data.copy(fromFastTrack = true), isWhitelisted)
       )
 
-  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
+  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier): Future[Result] =
     agentInvitationIdentifyClientFormItsa
       .bindFromRequest()
       .fold(
@@ -654,7 +673,9 @@ class AgentsInvitationController @Inject()(
           } yield redirectResult
       )
 
-  def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
+  def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier): Future[Result] =
     agentInvitationIdentifyClientFormVat
       .bindFromRequest()
       .fold(
@@ -676,7 +697,9 @@ class AgentsInvitationController @Inject()(
           } yield redirectResult
       )
 
-  def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(implicit request: Request[AnyContent], hc: HeaderCarrier) =
+  def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier): Future[Result] =
     agentInvitationIdentifyClientFormIrv
       .bindFromRequest()
       .fold(
@@ -706,25 +729,8 @@ class AgentsInvitationController @Inject()(
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
     for {
-      invId <- invitationsService
-                .createInvitation(arn, fti.service, fti.clientIdentifierType, fti.clientIdentifier)
-                .map(invitation => {
-                  val id = invitation.selfUrl.toString.split("/").toStream.last
-                  if ((invitation.service == HMRCMTDIT && featureFlags.showKfcMtdIt)
-                        | (invitation.service == HMRCPIR && featureFlags.showKfcPersonalIncome)
-                        | (invitation.service == HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-                    auditService.sendAgentInvitationSubmitted(arn, id, fti, "Success")
-                  } else auditService.sendAgentInvitationSubmitted(arn, id, fti, "Not Required")
-                  InvitationId(id)
-                })
-                .recoverWith {
-                  case e =>
-                    Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-                    auditService.sendAgentInvitationSubmitted(arn, "", fti, "Fail", Option(e.getMessage))
-                    Future.failed(e)
-                }
-      multiLink <- invitationsService
-                    .createMultiInvitation(arn, fti.clientType.getOrElse(""))
+      _         <- invitationsService.createInvitation(arn, fti, featureFlags)
+      multiLink <- invitationsService.createAgentLink(arn, fti.clientType.getOrElse(""))
     } yield
       Redirect(routes.AgentsInvitationController.invitationSent())
         .addingToSession(
@@ -736,7 +742,7 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (arn, _) =>
       Logger(getClass).info(s"Session contains ${request.session.get("invitationId")}")
       request.session.get("invitationLink") match {
-        case (Some(link)) =>
+        case Some(link) =>
           val invitationUrl: String = s"$externalUrl$link"
           for {
             _        <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())

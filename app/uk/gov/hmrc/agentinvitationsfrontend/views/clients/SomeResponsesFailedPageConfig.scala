@@ -15,6 +15,6 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
-import uk.gov.hmrc.agentinvitationsfrontend.models.Consent
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 
-case class SomeResponsesFailedPageConfig(consents: Seq[Consent], agencyName: String)
+case class SomeResponsesFailedPageConfig(consents: Seq[ClientConsent], agencyName: String)

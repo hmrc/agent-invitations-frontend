@@ -265,7 +265,7 @@ class ClientsInvitationController @Inject()(
                     SingleCompletePageConfig(
                       agencyName,
                       invitationId,
-                      Consent(invitationId, invitation.expiryDate, messageKey, consent = true, false))))
+                      ClientConsent(invitationId, invitation.expiryDate, messageKey, consent = true, false))))
               }
           })
         }
