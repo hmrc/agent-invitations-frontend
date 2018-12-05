@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, ClientDetail}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest, CurrentAuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -36,7 +36,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/select-service")
 
     "show the select personal service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Set(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
@@ -45,7 +46,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the select business service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("business", Set(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("business", Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
@@ -53,11 +55,17 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the business select service page if there is not content in the authorisationCache but is in the fastTrackCache" in {
-
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("business"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack))
+      val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
     }
 
     "show the select service page if there is an unsupported client type in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("foo", Set(ClientDetail("Gareth Gates", serviceVAT, validVrn.value))))
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("foo", Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
       val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
@@ -69,7 +77,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/review-authorisation")
 
     "show the review authorisations page if there is a single item in the authorisationRequest cache" in {
-      testAgentAuthorisationsCache.save(AuthorisationRequest("personal", Set(ClientDetail("Gareth Gates", serviceITSA, mtdItId.value))))
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Review your authorisation requests",
@@ -89,9 +98,11 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "name may be recorded differently in each service.",
         "Report their income and expenses through software",
         "Viewing their PAYE income record",
-        "Report their VAT Returns through software",
+        "Report their VAT returns through software",
         "Gareth Gates",
+        "Sara Vaterloo",
         "Do you need to add another authorisation for this client?")
+      checkHtmlResultWithNotBodyText(result,"Malcolm Pirson")
       verifyAuthoriseAttempt()
     }
 
@@ -147,7 +158,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
 
-      await(testAgentAuthorisationsCache.fetch) shouldBe Some(AuthorisationRequest("personal",
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe Some(AgentMultiAuthorisationJourneyState("personal",
         Set(clientDetail2,
           clientDetail3)))
     }
@@ -158,7 +169,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
 
-      await(testAgentAuthorisationsCache.fetch) shouldBe Some(AuthorisationRequest("personal",
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe Some(AgentMultiAuthorisationJourneyState("personal",
         Set(clientDetail1,
           clientDetail2,
           clientDetail3)))
@@ -192,11 +203,11 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
   trait AgentAuthorisationFullCacheScenario {
 
-    val clientDetail1 = ClientDetail("Gareth Gates Sr", serviceITSA, mtdItId.value)
-    val clientDetail2 = ClientDetail("Gareth Gates Jr", servicePIR, validNino.value)
-    val clientDetail3 = ClientDetail("Gareth Gates Jr", serviceVAT, validVrn.value)
+    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", serviceITSA, mtdItId.value)
+    val clientDetail2 = AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value)
+    val clientDetail3 = AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value)
 
-    testAgentAuthorisationsCache.save(AuthorisationRequest("personal",
+    testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal",
       Set(clientDetail1,
         clientDetail2,
         clientDetail3)))

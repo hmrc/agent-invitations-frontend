@@ -29,7 +29,7 @@ case class Postcode(value: String) extends KnownFact
 case class VatRegDate(value: String) extends KnownFact
 case class DOB(value: String) extends KnownFact
 
-case class CurrentInvitationInput(
+case class CurrentAuthorisationRequest(
   clientType: Option[String],
   service: String,
   clientIdentifierType: String,
@@ -37,25 +37,25 @@ case class CurrentInvitationInput(
   knownFact: Option[String],
   fromFastTrack: Boolean = false)
 
-object CurrentInvitationInput {
+object CurrentAuthorisationRequest {
 
   val fromFastTrack: Boolean = true
   val fromManual: Boolean = false
 
-  def apply(): CurrentInvitationInput = CurrentInvitationInput(None, "", "", "", None, fromManual)
-  def apply(clientType: Option[String]): CurrentInvitationInput =
-    CurrentInvitationInput(clientType, "", "", "", None, fromManual)
-  def apply(clientType: Option[String], service: String): CurrentInvitationInput =
-    CurrentInvitationInput(clientType, service, "", "", None, fromManual)
+  def apply(): CurrentAuthorisationRequest = CurrentAuthorisationRequest(None, "", "", "", None, fromManual)
+  def apply(clientType: Option[String]): CurrentAuthorisationRequest =
+    CurrentAuthorisationRequest(clientType, "", "", "", None, fromManual)
+  def apply(clientType: Option[String], service: String): CurrentAuthorisationRequest =
+    CurrentAuthorisationRequest(clientType, service, "", "", None, fromManual)
 
-  implicit val format = Json.format[CurrentInvitationInput]
+  implicit val format = Json.format[CurrentAuthorisationRequest]
 
-  implicit val reads: Reads[CurrentInvitationInput] = {
+  implicit val reads: Reads[CurrentAuthorisationRequest] = {
     ((JsPath \ "clientType").readNullable[String] and
       (JsPath \ "service").read[String] and
       (JsPath \ "clientIdentifierType").read[String] and
       (JsPath \ "clientIdentifier").read[String] and
-      (JsPath \ "knownFact").readNullable[String])((a, b, c, d, e) => CurrentInvitationInput(a, b, c, d, e))
+      (JsPath \ "knownFact").readNullable[String])((a, b, c, d, e) => CurrentAuthorisationRequest(a, b, c, d, e))
   }
 }
 

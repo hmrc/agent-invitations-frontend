@@ -19,31 +19,32 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[FastTrackKeyStoreCache])
-trait FastTrackCache extends Cache[CurrentInvitationInput]
+@ImplementedBy(classOf[CurrentAuthorisationRequestKeyStoreCache])
+trait CurrentAuthorisationRequestCache extends Cache[CurrentAuthorisationRequest]
 
 @Singleton
-class FastTrackKeyStoreCache @Inject()(session: SessionCache) extends FastTrackCache {
+class CurrentAuthorisationRequestKeyStoreCache @Inject()(session: SessionCache)
+    extends CurrentAuthorisationRequestCache {
 
   val id = "fast-track-aggregate-input"
 
-  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
-    session.fetchAndGetEntry[CurrentInvitationInput](id)
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentAuthorisationRequest]] =
+    session.fetchAndGetEntry[CurrentAuthorisationRequest](id)
 
-  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentInvitationInput]] =
+  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentAuthorisationRequest]] =
     for {
-      entry <- session.fetchAndGetEntry[CurrentInvitationInput](id)
-      _     <- session.cache(id, CurrentInvitationInput())
+      entry <- session.fetchAndGetEntry[CurrentAuthorisationRequest](id)
+      _     <- session.cache(id, CurrentAuthorisationRequest())
     } yield entry
 
-  def save(invitation: CurrentInvitationInput)(
+  def save(invitation: CurrentAuthorisationRequest)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[CurrentInvitationInput] =
+    ec: ExecutionContext): Future[CurrentAuthorisationRequest] =
     session.cache(id, invitation).map(_ => invitation)
 }

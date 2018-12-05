@@ -25,7 +25,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("personal-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
- @back_link(s"${routes.AgentsInvitationController.showClientType()}")
+ @back_link_referer(request)
  @if(agentInvitationsForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("personal-select-service"))
  }
@@ -67,7 +67,7 @@
  }
 
   @if(basketFlag) {
-    <p><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
+    <p class="margin-top-40"><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
   }
 
 }

@@ -20,25 +20,25 @@ import play.api.libs.json.{Json, OFormat}
 
 import scala.util.Random
 
-case class ClientDetail(
+case class AuthorisationRequest(
   clientName: String,
   service: String,
   clientId: String,
-  itemId: String = ClientDetail.randomItemId)
+  itemId: String = AuthorisationRequest.randomItemId)
 
-object ClientDetail {
+object AuthorisationRequest {
 
   val characterSet = "ABCDEFGHJKLMNOPRSTUWXYZ123456789"
 
   private def randomChar = characterSet(Random.nextInt(characterSet.length)).toString
   private def randomItemId = randomChar + randomChar + randomChar
 
-  implicit val format: OFormat[ClientDetail] = Json.format[ClientDetail]
+  implicit val format: OFormat[AuthorisationRequest] = Json.format[AuthorisationRequest]
 
 }
 
-case class AuthorisationRequest(clientType: String, clientDetails: Set[ClientDetail])
+case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
 
-object AuthorisationRequest {
-  implicit val format: OFormat[AuthorisationRequest] = Json.format[AuthorisationRequest]
+object AgentMultiAuthorisationJourneyState {
+  implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
 }

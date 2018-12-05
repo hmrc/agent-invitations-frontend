@@ -26,9 +26,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.services.FastTrackCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -40,7 +40,7 @@ import scala.util.control.NonFatal
 class TestEndpointsController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   pirRelationshipConnector: PirRelationshipConnector,
-  fastTrackCache: FastTrackCache,
+  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   val authConnector: AuthConnector,
   val env: Environment,
   val withVerifiedPasscode: PasscodeVerification)(
@@ -106,7 +106,7 @@ class TestEndpointsController @Inject()(
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(test_fast_track(testAgentFastTrackForm, isDevEnv))
+      Future successful Ok(test_fast_track(testCurrentAuthorisationRequestForm, isDevEnv))
     }
   }
 }
@@ -128,7 +128,7 @@ object TestEndpointsController {
       }))
   }
 
-  val testAgentFastTrackForm: Form[CurrentInvitationInput] = {
+  val testCurrentAuthorisationRequestForm: Form[CurrentAuthorisationRequest] = {
     Form(
       mapping(
         "clientType"           -> optional(text),
@@ -137,7 +137,7 @@ object TestEndpointsController {
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(clientType, service, clientIdType, clientId, knownFact)
+        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some(
           (

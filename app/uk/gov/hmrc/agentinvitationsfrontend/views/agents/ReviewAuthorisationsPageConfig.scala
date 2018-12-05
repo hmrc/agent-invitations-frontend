@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class ReviewAuthorisationsPageConfig(authorisationRequests: AuthorisationRequest) {
+case class ReviewAuthorisationsPageConfig(authorisationRequests: AgentMultiAuthorisationJourneyState) {
 
-  val numberOfItems: Int = authorisationRequests.clientDetails.size
+  def clientNameOf(authorisationRequest: AuthorisationRequest) =
+    if (authorisationRequest.service == "PERSONAL-INCOME-RECORD") "" else authorisationRequest.clientName
 
-  val clientNamesAreDifferent
-    : Boolean = authorisationRequests.clientDetails.toSeq.map(_.clientName).distinct.length != 1
+  val numberOfItems: Int = authorisationRequests.requests.size
+
+  val clientNamesAreDifferent: Boolean = authorisationRequests.requests.toSeq.map(_.clientName).distinct.length != 1
 
   val submitUrl: Call = routes.AgentsInvitationController.submitReviewAuthorisations()
 }

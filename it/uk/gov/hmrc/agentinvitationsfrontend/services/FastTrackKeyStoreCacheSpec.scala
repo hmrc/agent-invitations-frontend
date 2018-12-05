@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -11,7 +11,7 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session1234356")))
 
-  val currentInvitationInput = CurrentInvitationInput(
+  val currentInvitationInput = CurrentAuthorisationRequest(
     None,
     "service",
     "clientIdentifierType",
@@ -20,14 +20,14 @@ class FastTrackKeyStoreCacheSpec extends BaseISpec {
 
   "FastTrackKeyStoreCache" should {
     "store and fetch saved fast-track invitation from keystore" in {
-      await(testFastTrackCache.save(currentInvitationInput))
-      val result = await(testFastTrackCache.fetch)
+      await(testCurrentAuthorisationRequestCache.save(currentInvitationInput))
+      val result = await(testCurrentAuthorisationRequestCache.fetch)
 
       result shouldBe Some(currentInvitationInput)
     }
 
     "return nothing if no fast-track invitation was stored in keystore" in {
-      val result = await(testFastTrackCache.fetch)
+      val result = await(testCurrentAuthorisationRequestCache.fetch)
       result shouldBe None
     }
   }

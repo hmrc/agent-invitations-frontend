@@ -14,8 +14,7 @@ import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
-import uk.gov.hmrc.agentinvitationsfrontend.models.MultiInvitationsCache
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AuthorisationRequestCache, ContinueUrlCache, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache, ClientConsentsJourneyStateCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -82,13 +81,13 @@ abstract class BaseISpec
   def commonStubs(): Unit =
     givenAuditConnector()
 
-  protected lazy val testFastTrackCache = new TestFastTrackCache
+  protected lazy val testCurrentAuthorisationRequestCache = new TestCurrentAuthorisationRequestCache
 
-  protected lazy val testAgentAuthorisationsCache = new TestAgentAuthorisationsCache
+  protected lazy val testAgentMultiAuthorisationJourneyStateCache = new TestAgentMultiAuthorisationJourneyStateCache
 
-  protected lazy val testMultiInvitationsCache = new TestMultiInvitationsCache
+  protected lazy val testClientConsentsJourneyStateCache = new TestClientConsentsJourneyStateCache
 
-  protected lazy val continueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
+  protected lazy val testContinueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
 
   protected implicit val materializer = app.materializer
 
@@ -118,18 +117,18 @@ abstract class BaseISpec
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testFastTrackCache.clear()
-    continueUrlKeyStoreCache.clear()
-    testAgentAuthorisationsCache.clear()
-    testMultiInvitationsCache.clear()
+    testCurrentAuthorisationRequestCache.clear()
+    testContinueUrlKeyStoreCache.clear()
+    testAgentMultiAuthorisationJourneyStateCache.clear()
+    testClientConsentsJourneyStateCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[ContinueUrlCache]).toInstance(continueUrlKeyStoreCache)
-      bind(classOf[MultiInvitationsCache]).toInstance(testMultiInvitationsCache)
-      bind(classOf[AuthorisationRequestCache]).toInstance(testAgentAuthorisationsCache)
+      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
+      bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
+      bind(classOf[ClientConsentsJourneyStateCache]).toInstance(testClientConsentsJourneyStateCache)
+      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
     }
   }
 

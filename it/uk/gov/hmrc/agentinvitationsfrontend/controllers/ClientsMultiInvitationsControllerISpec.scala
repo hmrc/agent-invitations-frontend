@@ -21,11 +21,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmDeclineForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, Consent, MultiInvitationsCacheItem}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsentsJourneyState, ConfirmedTerms, Consent}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -171,8 +171,10 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "POST /accept-tax-agent-invitation/consent/:clientType/:uid (multi consent)" should {
     "redirect to check answers page with consent choices" in {
-      await(testMultiInvitationsCache
-        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(
+        testClientConsentsJourneyStateCache
+        .save(
+          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
           Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
 
@@ -186,8 +188,10 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for itsa" in {
-      await(testMultiInvitationsCache
-        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(
+        testClientConsentsJourneyStateCache
+        .save(
+          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
           Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
 
@@ -200,14 +204,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
+        ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for afi" in {
-      await(testMultiInvitationsCache
-        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(
+        testClientConsentsJourneyStateCache
+        .save(
+          ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
           Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
 
@@ -220,14 +227,15 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
+        ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
 
     "redirect to check answers page and update cache correctly when answers have been changed using individual consent page for vat" in {
-      await(testMultiInvitationsCache
-        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
           Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
 
@@ -240,14 +248,13 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url)
 
-      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name")))
     }
 
     "redirect to wrong-account-type page when submitting confirm terms" in {
-      await(testMultiInvitationsCache
-        .save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
           Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name"))))
 
@@ -260,7 +267,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
 
-      await(testMultiInvitationsCache.fetch) shouldBe Some(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My agency Name")))
     }
@@ -320,7 +327,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "POST /accept-tax-agent-invitation/confirm-decline/:clientType/:uid (multi confirm decline)" should {
 
     "redirect to multi invitations declined if YES is selected and invitations are successfully declined" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
 
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -340,7 +347,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to consent page if NO is selected" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
 
       val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(false)))
 
@@ -353,7 +360,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redisplay form with errors if no radio button is selected" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
@@ -376,7 +383,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to multi invitations declined via failure cases" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), Some("my agency name"))))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllPendingInvitationIdsReturnsFakePending(uid)
@@ -409,7 +416,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an Exception if there is no agency name in the cache" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), None)))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)), None)))
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(authorisedAsAnyClientFalse(FakeRequest()))
 
@@ -422,7 +429,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/check-answers" should {
     "show the check answers page" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My agency Name"))))
 
@@ -442,7 +449,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a Illegal State Exception if there is nothing in the cache" in {
-      await(testMultiInvitationsCache.clear())
+      await(testClientConsentsJourneyStateCache.clear())
 
       val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
@@ -452,7 +459,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an Exception if tehre is no agency name in the cache" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), None)))
 
@@ -467,7 +474,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey  (multi confirm terms individual)" should {
 
     "show the multi confirm terms page for only itsa service" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -484,7 +491,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the multi confirm terms page for only itsa service when coming from check answers" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -504,7 +511,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the multi confirm terms page for only irv service" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -521,7 +528,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the multi confirm terms page for only vat service" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -538,7 +545,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "return Invalid Journey State when there is nothing in the cache" in {
-      await(testMultiInvitationsCache.clear())
+      await(testClientConsentsJourneyStateCache.clear())
       val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[IllegalStateException] shouldBe thrownBy {
@@ -547,7 +554,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "return Invalid Journey State if the chosen consent is empty" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
       val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -561,7 +568,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /reject-tax-agent-invitation/declined/uid/:uid (multi invitations declined)" should {
 
     "show the multi invitations declined page for personal" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -580,7 +587,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the multi invitations declined page for multi ITSA Invitation" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("AG1UGUKTPNJ7Z"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -598,7 +605,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the multi invitations declined page when there is just one invitation" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true)), Some("My Agency Name"))))
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true)), Some("My Agency Name"))))
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
@@ -613,7 +620,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a Illegal State Exception if there is nothing in the cache" in {
-      await(testMultiInvitationsCache.clear())
+      await(testClientConsentsJourneyStateCache.clear())
 
       givenAgentReferenceRecordExists(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
@@ -670,7 +677,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "POST /accept-tax-agent-invitation/submit-answers/:clientType/:uid" should {
     "redirect to accepted invitation page for accepting all invitations" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -689,7 +696,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to accepted invitation page for accepting some invitations" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -708,7 +715,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to declined invitation page for rejecting all invitations" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
 
@@ -727,7 +734,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to showSomeResponsesFailed when some of acceptance has failed" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -746,7 +753,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to allResponsesFailed when all of the acceptance has failed" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true)), Some("My Agency Name"))))
 
@@ -765,7 +772,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an exception when the cache is empty" in {
-      await(testMultiInvitationsCache.clear())
+      await(testClientConsentsJourneyStateCache.clear())
 
       val result = controller.submitAnswers(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       an[IllegalStateException] shouldBe thrownBy {
@@ -777,7 +784,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/accepted/:clientType/:uid" should {
     "show accepted invitation page when accepting all invitations" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)), Some("My Agency Name"))))
 
@@ -792,7 +799,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show accepted invitation page when some invitations are accepted and some are rejected" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
 
@@ -809,7 +816,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show different content for made a mistake if only one service is declined" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
 
@@ -826,7 +833,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an Illegal State Exception when the cache is empty" in {
-      await(testMultiInvitationsCache.clear())
+      await(testClientConsentsJourneyStateCache.clear())
 
       val result = controller.invitationAccepted(authorisedAsAnyIndividualClient(FakeRequest()))
       an[IllegalStateException] shouldBe thrownBy {
@@ -835,7 +842,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "thrown an AgencyNameNotFound exception when there is no agency name in the cache" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
 
@@ -849,7 +856,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /some-responses-failed (some responses failed)" should {
     "show the some responses failed page when some responses have failed" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
 
@@ -864,7 +871,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a bad request exception if there are only successful invitations being passed through" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)), Some("My Agency Name"))))
 
@@ -876,7 +883,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw a bad request exception if there are only unsuccessful invitations being passed through" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
 
@@ -888,7 +895,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an exception when there is no agency name in the cache" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), None)))
 
@@ -902,7 +909,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /all-responses-failed (all responses failed)" should {
     "show the all responses failed page when all responses have failed" in {
-      await(testMultiInvitationsCache.save(MultiInvitationsCacheItem(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+      await(testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(Seq(Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
         Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true),
         Consent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)), Some("My Agency Name"))))
 
