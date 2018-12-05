@@ -25,7 +25,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-@back_link(s"${routes.AgentsInvitationController.selectClientType()}")
+@back_link(s"${routes.AgentsInvitationController.showClientType()}")
 @if(agentInvitationsForm.hasErrors) {
 @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("service"))
 }

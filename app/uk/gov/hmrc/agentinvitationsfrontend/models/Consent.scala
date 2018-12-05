@@ -25,7 +25,7 @@ case class Consent(
   expiryDate: LocalDate,
   serviceKey: String,
   consent: Boolean,
-  isSuccessful: Boolean = false)
+  processed: Boolean = false)
 
 object Consent {
   implicit val format = Json.format[Consent]

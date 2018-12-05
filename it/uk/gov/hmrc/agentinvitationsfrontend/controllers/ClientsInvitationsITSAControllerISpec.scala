@@ -70,7 +70,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
       "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
         val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
-        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
         val result =
           submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -82,7 +82,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
     "redirect to confirm-decline page when no is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -94,7 +94,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
     "redirect to decide-later page when I dont know is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       val result =
         submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
           .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -106,7 +106,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
       "refresh the page with errors when no radio button is selected" in {
         val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
-        getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
         val result =
           submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
@@ -120,7 +120,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
     "throw an error when the radio button selection is invalid" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
 
       an[Exception] should be thrownBy{
         await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
@@ -134,7 +134,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val getConfirmTermsITSA: Action[AnyContent] = controller.getConfirmTerms(invitationIdITSA)
 
     "show the confirm terms page for ITSA" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
       val resultITSA = getConfirmTermsITSA(reqITSA)
@@ -153,7 +153,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "show the invitation expired page when invitation has expired" in {
-      getExpiredInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      givenInvitationExpired(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
       val resultITSA = getConfirmTermsITSA(reqITSA)
@@ -164,7 +164,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "show the request-cancelled page when the invitation has already been cancelled" in {
-      getCancelledInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      givenInvitationCancelled(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
       val resultITSA = getConfirmTermsITSA(reqITSA)
@@ -175,7 +175,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val result = getConfirmTermsITSA(authorisedAsValidClientITSA(FakeRequest(), mtdItId.value))
@@ -209,8 +209,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val submitConfirmTermsITSA: Action[AnyContent] = controller.submitConfirmTerms(invitationIdITSA)
 
     "redirect to complete page when YES was selected" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenAcceptInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
@@ -234,8 +234,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "call agent-client-authorisation to accept the invitation and create the relationship in ETMP when YES was selected" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenAcceptInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
@@ -248,7 +248,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to confirm-decline when NO was selected" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
@@ -263,8 +263,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "reshow the page when the radio buttons were not selected with an error message" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      acceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenAcceptInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
@@ -284,8 +284,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
         .withSession("agencyName" -> "My Agency")
-      getInvitationNoPermissionStub(mtdItId.value, invitationIdITSA, identifierITSA)
-      acceptInvitationNoPermissionStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenGetInvitationReturnsNoPermission(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenAcceptInvitationReturnsNoPermission(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
       val resultITSA = submitConfirmTermsITSA(reqITSA)
 
@@ -298,8 +298,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       val reqITSA = authorisedAsValidClientITSA(FakeRequest(), mtdItId.value)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
         .withSession("agencyName" -> "My Agency")
-      alreadyActionedGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
-      alreadyActionedAcceptInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenGetInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenAcceptInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
       val resultITSA = submitConfirmTermsITSA(reqITSA)
 
@@ -341,7 +341,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val result = submitConfirmTermsITSA(authorisedAsValidClientITSA(FakeRequest(), mtdItId.value))
@@ -356,7 +356,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val getCompletePageITSA: Action[AnyContent] = controller.getCompletePage(invitationIdITSA)
 
     "show the complete page for ITSA" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
       givenGetAgencyNameClientStub(arn)
       val result = getCompletePageITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
@@ -381,7 +381,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails for ITSA" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Accepted")
       givenAgencyNameNotFoundClientStub(arn)
 
       val result = getCompletePageITSA(authorisedAsValidClientITSA(FakeRequest(), mtdItId.value))
@@ -416,7 +416,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val getConfirmInvitationITSA: Action[AnyContent] = controller.getConfirmDecline(invitationIdITSA)
 
     "show the confirm invitation page for ITSA" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
       val result = getConfirmInvitationITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
@@ -459,7 +459,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-MTD-IT enrolment but the invitationId they supplied does not exist" in {
-      notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
       val resultITSA = getConfirmInvitationITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
       status(resultITSA) shouldBe SEE_OTHER
@@ -477,7 +477,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to invitationAlreadyResponded when an invitation is returned that is already actioned" in {
-      getAlreadyAcceptedInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
+      givenInvitationAccepted(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA)
       val resultITSA = getConfirmInvitationITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
@@ -487,7 +487,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different mtdItId.value" in {
-      incorrectGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationNoPermission(mtdItId.value, invitationIdITSA, identifierITSA)
       val resultITSA = getConfirmInvitationITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
@@ -509,7 +509,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val submitConfirmInvitationITSA: Action[AnyContent] = controller.submitConfirmDecline(invitationIdITSA)
 
     "reshow the page when neither yes nor no choices were selected with an error message" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
       val resultITSA = submitConfirmInvitationITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
@@ -523,7 +523,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to declined page when YES was selected" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
@@ -535,7 +535,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to confirm terms when NO was selected" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
@@ -548,7 +548,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
 
       val resultITSA =
         submitConfirmInvitationITSA(authorisedAsValidClientITSA(FakeRequest().withSession(), mtdItId.value))
@@ -582,8 +582,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val getInvitationDeclinedITSA = controller.getInvitationDeclined(invitationIdITSA)
 
     "show invitation_declined page for an authenticated client with a valid invitation for ITSA" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-      rejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenRejectInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
 
       val result = getInvitationDeclinedITSA(
@@ -614,8 +614,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to invitationAlreadyResponded when declined a invitation that is already actioned" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Declined")
-      alreadyActionedRejectInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Declined")
+      givenRejectInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
       givenGetAgencyNameClientStub(arn)
 
       val resultITSA = getInvitationDeclinedITSA(
@@ -626,7 +626,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to notFoundInvitation when invitation does not exist" in {
-      notFoundGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
       val resultITSA = getInvitationDeclinedITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
@@ -645,7 +645,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "redirect to /incorrect/ if authenticated user has HMRC-MTD-IT enrolment but with a different id" in {
-      incorrectGetInvitationStub(mtdItId.value, invitationIdITSA, identifierITSA)
+      givenInvitationNoPermission(mtdItId.value, invitationIdITSA, identifierITSA)
       val resultITSA = getInvitationDeclinedITSA(
         authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value))
 
@@ -655,7 +655,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     }
 
     "return exception when agency name retrieval fails" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenAgencyNameNotFoundClientStub(arn)
 
       val resultITSA = getInvitationDeclinedITSA(
@@ -690,7 +690,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
     val getDecideLaterITSA = controller.getDecideLater(invitationIdITSA)
 
     "show the decide later page with ITSA content even when user is not authenticated" in {
-      getInvitationStub(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       givenGetAgencyNameClientStub(arn)
       val result = getDecideLaterITSA(FakeRequest())
       status(result) shouldBe OK

@@ -34,6 +34,6 @@ trait TestCache[T] {
     Future successful entry
   }
 
-  def save(item: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    Future successful (currentSession.item = Some(item))
+  def save(item: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] =
+    Future.successful(currentSession.item = Some(item)).map(_ => item)
 }

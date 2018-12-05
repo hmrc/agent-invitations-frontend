@@ -28,7 +28,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testFastTrackCache.save(
         CurrentInvitationInput(None, "", "ni", validNino.value, None, fromFastTrack))
-      createInvitationStub(
+      givenInvitationCreationSucceeds(
         arn,
         validNino.value,
         invitationIdPIR,
@@ -36,7 +36,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -115,7 +114,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "Redirect to select service when there is None in the cache" in {
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
 
     "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
@@ -148,7 +147,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "redirect to client-type if there is no invitation in the cache" in {
       val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
   }
 
@@ -156,7 +155,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-client")
 
     "redirect to client-type when form data is invalid" in {
-      createInvitationStub(
+      givenInvitationCreationSucceeds(
         arn,
         validNino.value,
         invitationIdPIR,
@@ -165,7 +164,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         servicePIR,
         "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
       val formData =
@@ -173,7 +171,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testFastTrackCache.save(formData)
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.selectClientType().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
   }
 }

@@ -35,7 +35,7 @@ case class CheckDetailsPageConfig(currentInvitationInput: CurrentInvitationInput
 
   val needKnownFact: Boolean = shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty
 
-  val clientTypeUrl: Call = routes.AgentsInvitationController.selectClientType()
+  val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
 
   val knownFactUrl: Call = routes.AgentsInvitationController.knownFact()
 

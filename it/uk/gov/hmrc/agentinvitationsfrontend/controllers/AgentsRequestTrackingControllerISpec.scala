@@ -39,10 +39,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val showTrackRequests = controller.showTrackRequests
 
     "render a page listing non-empty invitations with client's names resolved" in {
-      givenAllInvitationsStub(arn)
+      givenGetInvitations(arn)
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
-      givenInactiveRelationshipsIrv(arn)
+      givenInactiveAfiRelationship(arn)
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
@@ -112,10 +112,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "render a page listing non-empty invitations without client's names" in {
-      givenAllInvitationsStub(arn)
+      givenGetInvitations(arn)
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
-      givenInactiveRelationshipsIrv(arn)
+      givenInactiveAfiRelationship(arn)
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingNameNotFound(Nino("AB123456A"))
@@ -152,10 +152,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "render a page listing empty invitations" in {
-      givenAllInvitationsEmptyStub(arn)
+      givenGetInvitationsReturnsEmpty(arn)
       givenInactiveITSARelationshipsNotFound
       givenInactiveVATRelationshipsNotFound
-      givenInactiveRelationshipsIrvNotFound
+      givenInactiveAfiRelationshipNotFound
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
@@ -264,7 +264,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val postConfirmCancel = controller.submitConfirmCancel
 
     "when yes is selected on confirm cancel page, cancel the invitation and send to invitation cancelled page" in {
-      cancelInvitationStub(arn, invitationIdITSA, 204)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 204)
       val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
         .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
 
@@ -273,7 +273,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "NotFound when yes is selected on confirm cancel page, but cancellation fails because invitation is not found" in {
-      cancelInvitationStub(arn, invitationIdITSA, 404)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 404)
       val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
         .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
 
@@ -281,7 +281,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "Forbidden when yes is selected on confirm cancel page, but cancellation fails because inivtation status is invalid" in {
-      cancelInvitationStub(arn, invitationIdITSA, 403)
+      givenCancelInvitationReturns(arn, invitationIdITSA, 403)
       val result = postConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancel" -> "true")
         .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"), arn.value))
 
@@ -377,7 +377,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for IRV" in {
-      deleteRelationship(arn, "PERSONAL-INCOME-RECORD", validNino.value)
+      givenTerminateAfiRelationshipSucceeds(arn, "PERSONAL-INCOME-RECORD", validNino.value)
       val result = postConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
         .withSession("service" -> servicePIR, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"), arn.value))
 

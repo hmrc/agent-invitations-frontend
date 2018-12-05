@@ -29,16 +29,30 @@ class FastTrackVatISpec extends BaseISpec {
           validVrn.value,
           Some(validRegistrationDate),
           fromFastTrack))
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getAgentLinkStub(arn, "BBBBBBBB", "business")
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to select-service when cache is empty" in {
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+
+      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
       verifyAuthoriseAttempt()
     }
   }
@@ -50,10 +64,10 @@ class FastTrackVatISpec extends BaseISpec {
     "return 303 for authorised Agent with valid VAT information and selected VAT, redirect to invitation-sent" in {
       testFastTrackCache.save(
         CurrentInvitationInput(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getAgentLinkStub(arn, "BBBBBBBB", "business")
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 204)
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -227,10 +241,9 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for VAT service" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
-      getAgentLinkStub(arn, "BBBBBBBB", "business")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
@@ -243,9 +256,8 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentInvitationInput(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
@@ -258,9 +270,8 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type and known fact are not provided and YES is selected for VAT service" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentInvitationInput(None, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
@@ -273,7 +284,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to more-details when known fact is not provided and YES is selected for VAT service" in {
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentInvitationInput(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
@@ -286,9 +297,8 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, "VRN", "Pending")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
@@ -305,7 +315,7 @@ class FastTrackVatISpec extends BaseISpec {
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
 
       testFastTrackCache.save(invitation)
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 403)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 403)
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
@@ -324,7 +334,7 @@ class FastTrackVatISpec extends BaseISpec {
         CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
 
       testFastTrackCache.save(invitation)
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse("2007-07-07"), 404)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 404)
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
@@ -358,10 +368,9 @@ class FastTrackVatISpec extends BaseISpec {
   "POST /agents/more-details" should {
     val request = FakeRequest("POST", "/agents/identify-client")
     "redirect to invitation sent when client details are valid and match for VAT" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
-      getAgentLinkStub(arn, "BBBBBBBB", "business")
-      getInvitationStub(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
-      checkVatRegisteredClientStub(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "business",
@@ -381,9 +390,8 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redisplay the page with errors when known fact is not valid for VAT" in {
-      createInvitationStub(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      getInvitationStub(arn, validNino.value, invitationIdPIR, servicePIR, "NI", "Pending")
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "service"              -> "PERSONAL-INCOME-RECORD",

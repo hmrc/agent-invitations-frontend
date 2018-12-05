@@ -31,7 +31,7 @@ class RelationshipServiceISpec extends BaseISpec {
     "return list of relationships inactive for given agent" in {
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
-      givenInactiveRelationshipsIrv(arn)
+      givenInactiveAfiRelationship(arn)
       givenNinoForMtdItId(mtdItId, validNino)
       givenNinoForMtdItId(mtdItId2, validNino)
       givenTradingName(validNino, "Boolean Ltd")

@@ -25,7 +25,16 @@ import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MultiInvitationsCacheItem(consents: Seq[Consent], agencyName: Option[String])
+case class MultiInvitationsCacheItem(consents: Seq[Consent], agencyName: Option[String]) {
+
+  def allDeclinedProcessed = consents.forall(_.consent == false)
+
+  def allAcceptanceFailed = consents.filter(_.consent).forall(_.processed == false)
+
+  def someAcceptanceFailed = consents.filter(_.consent).exists(_.processed == false)
+
+  def allProcessed = consents.forall(_.processed)
+}
 
 object MultiInvitationsCacheItem {
   implicit val format = Json.format[MultiInvitationsCacheItem]
@@ -48,6 +57,8 @@ class MultiInvitationsKeyStoreCache @Inject()(session: SessionCache) extends Mul
       _     <- session.cache(id, MultiInvitationsCacheItem(Seq.empty, None))
     } yield entry
 
-  def save(input: MultiInvitationsCacheItem)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    session.cache(id, input).map(_ => ())
+  def save(input: MultiInvitationsCacheItem)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[MultiInvitationsCacheItem] =
+    session.cache(id, input).map(_ => input)
 }

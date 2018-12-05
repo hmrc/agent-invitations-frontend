@@ -41,8 +41,9 @@ class AgentAuthorisationsKeyStoreCache @Inject()(session: SessionCache) extends 
       _     <- session.cache(id, AuthorisationRequest("", Set.empty))
     } yield entry
 
-  def save(
-    agentAuthorisationInput: AuthorisationRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    session.cache(id, agentAuthorisationInput).map(_ => ())
+  def save(agentAuthorisationInput: AuthorisationRequest)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[AuthorisationRequest] =
+    session.cache(id, agentAuthorisationInput).map(_ => agentAuthorisationInput)
 
 }
