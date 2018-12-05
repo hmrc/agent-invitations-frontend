@@ -18,32 +18,35 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, CurrentInvitationInput}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[AgentAuthorisationsKeyStoreCache])
-trait AuthorisationRequestCache extends Cache[AuthorisationRequest]
+@ImplementedBy(classOf[AgentMultiAuthorisationJourneyStateKeyStoreCache])
+trait AgentMultiAuthorisationJourneyStateCache extends Cache[AgentMultiAuthorisationJourneyState]
 
 @Singleton
-class AgentAuthorisationsKeyStoreCache @Inject()(session: SessionCache) extends AuthorisationRequestCache {
+class AgentMultiAuthorisationJourneyStateKeyStoreCache @Inject()(session: SessionCache)
+    extends AgentMultiAuthorisationJourneyStateCache {
 
   val id = "agent-aggregate-input"
 
-  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
-    session.fetchAndGetEntry[AuthorisationRequest](id)
+  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AgentMultiAuthorisationJourneyState]] =
+    session.fetchAndGetEntry[AgentMultiAuthorisationJourneyState](id)
 
-  def fetchAndClear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthorisationRequest]] =
+  def fetchAndClear(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[AgentMultiAuthorisationJourneyState]] =
     for {
-      entry <- session.fetchAndGetEntry[AuthorisationRequest](id)
-      _     <- session.cache(id, AuthorisationRequest("", Set.empty))
+      entry <- session.fetchAndGetEntry[AgentMultiAuthorisationJourneyState](id)
+      _     <- session.cache(id, AgentMultiAuthorisationJourneyState("", Set.empty))
     } yield entry
 
-  def save(agentAuthorisationInput: AuthorisationRequest)(
+  def save(agentAuthorisationInput: AgentMultiAuthorisationJourneyState)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[AuthorisationRequest] =
+    ec: ExecutionContext): Future[AgentMultiAuthorisationJourneyState] =
     session.cache(id, agentAuthorisationInput).map(_ => agentAuthorisationInput)
 
 }

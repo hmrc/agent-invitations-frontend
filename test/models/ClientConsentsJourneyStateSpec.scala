@@ -17,17 +17,17 @@
 package models
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Consent, MultiInvitationsCacheItem}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsentsJourneyState, Consent}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.play.test.UnitSpec
 
-class MultiInvitationCacheItemSpec extends UnitSpec {
+class ClientConsentsJourneyStateSpec extends UnitSpec {
 
   val expiryDate = LocalDate.now()
 
-  "MultiInvitationsCacheItem" should {
+  "ClientConsentsJourneyState" should {
     "have allDeclinedProcessed" in {
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, true),
@@ -36,7 +36,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, false),
@@ -45,7 +45,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
@@ -55,7 +55,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
       ).allDeclinedProcessed shouldBe false
     }
     "have allProcessed" in {
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
@@ -64,7 +64,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).allProcessed shouldBe true
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, false),
@@ -73,7 +73,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).allProcessed shouldBe false
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, processed = true),
@@ -83,7 +83,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
       ).allProcessed shouldBe true
     }
     "have allAcceptanceFailed" in {
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
@@ -92,7 +92,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).allAcceptanceFailed shouldBe false
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = false),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
@@ -102,7 +102,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
       ).allAcceptanceFailed shouldBe true
     }
     "have someAcceptanceFailed" in {
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
@@ -111,7 +111,7 @@ class MultiInvitationCacheItemSpec extends UnitSpec {
         Some("My Agency Name")
       ).someAcceptanceFailed shouldBe true
 
-      MultiInvitationsCacheItem(
+      ClientConsentsJourneyState(
         Seq(
           Consent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
           Consent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),

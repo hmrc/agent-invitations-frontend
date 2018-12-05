@@ -5,8 +5,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{FastTrackCache, FastTrackKeyStoreCache}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{CurrentAuthorisationRequestCache, CurrentAuthorisationRequestKeyStoreCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -53,12 +53,12 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testFastTrackCache.clear()
+    testCurrentAuthorisationRequestCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit =
-      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
+      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
   }
 
   "Show Feature Flags are switched off" should {
@@ -69,7 +69,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
+          CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -79,7 +79,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentInvitationInput(personal, servicePIR, "ni", validNino.value, None)
+        val formData = CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None)
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -90,7 +90,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentInvitationInput(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)

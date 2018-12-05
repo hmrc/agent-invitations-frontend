@@ -41,7 +41,7 @@ class ClientsMultiInvitationController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   val messagesApi: play.api.i18n.MessagesApi,
-  multiInvitationCache: MultiInvitationsCache,
+  journeyStateCache: ClientConsentsJourneyStateCache,
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
@@ -83,8 +83,8 @@ class ClientsMultiInvitationController @Inject()(
     withAuthorisedAsAnyClient { (affinity, _) =>
       if (matchClientTypeToGroup(affinity, clientType)) {
         withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
-          multiInvitationCache
-            .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
+          journeyStateCache
+            .save(ClientConsentsJourneyState(consents, Some(agencyName)))
             .map { _ =>
               Ok(
                 confirm_terms_multi(
@@ -105,15 +105,15 @@ class ClientsMultiInvitationController @Inject()(
     Action.async { implicit request =>
       withAuthorisedAsAnyClient { (_, _) =>
         for {
-          cacheItem <- multiInvitationCache.get
+          journeyState <- journeyStateCache.get
           result <- {
-            val chosenConsent = cacheItem.consents.find(_.serviceKey == givenServiceKey).toSeq
+            val chosenConsent = journeyState.consents.find(_.serviceKey == givenServiceKey).toSeq
             if (chosenConsent.nonEmpty) {
               Future successful Ok(
                 confirm_terms_multi(
                   confirmTermsMultiForm,
                   MultiConfirmTermsPageConfig(
-                    cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                    journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                     clientType,
                     uid,
                     chosenConsent))).addingToSession("whichConsent" -> givenServiceKey)
@@ -138,23 +138,23 @@ class ClientsMultiInvitationController @Inject()(
           .fold(
             formWithErrors =>
               for {
-                cacheItem <- multiInvitationCache.get
+                journeyState <- journeyStateCache.get
                 result <- {
                   Future successful Ok(
                     confirm_terms_multi(
                       formWithErrors,
                       MultiConfirmTermsPageConfig(
-                        cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                        journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                         clientType,
                         uid,
-                        cacheItem.consents)
+                        journeyState.consents)
                     ))
                 }
               } yield result,
             confirmedTerms => {
               val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
               for {
-                _ <- multiInvitationCache.transform(updateMultiInvitation(updatedConfirmedTerms))
+                _ <- journeyStateCache.transform(updateMultiInvitation(updatedConfirmedTerms))
               } yield {
                 Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
                   .addingToSession(
@@ -189,14 +189,14 @@ class ClientsMultiInvitationController @Inject()(
 
   def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
     for {
-      cacheItem <- multiInvitationCache.get
+      journeyState <- journeyStateCache.get
       result <- {
         Future.successful(
           Ok(
             check_answers(
               CheckAnswersPageConfig(
-                cacheItem.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
-                cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                journeyState.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
+                journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
                 uid)
             )
@@ -224,11 +224,11 @@ class ClientsMultiInvitationController @Inject()(
   def submitAnswers(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
-        cacheItem <- multiInvitationCache.get
+        journeyState <- journeyStateCache.get
         result <- {
-          processConsents(cacheItem.consents).flatMap { updatedConsents =>
+          processConsents(journeyState.consents).flatMap { updatedConsents =>
             {
-              multiInvitationCache.save(cacheItem.copy(consents = updatedConsents)).map { modifiedCache =>
+              journeyStateCache.save(journeyState.copy(consents = updatedConsents)).map { modifiedCache =>
                 if (modifiedCache.allDeclinedProcessed) {
                   Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
                 } else if (modifiedCache.allAcceptanceFailed) {
@@ -256,12 +256,12 @@ class ClientsMultiInvitationController @Inject()(
 
   def showSomeResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
-      multiInvitationCache.get.flatMap { cacheItem =>
-        if (cacheItem.consents.exists(_.processed == false) && cacheItem.consents.exists(_.processed == true)) {
+      journeyStateCache.get.flatMap { journeyState =>
+        if (journeyState.consents.exists(_.processed == false) && journeyState.consents.exists(_.processed == true)) {
           Future successful Ok(
             some_responses_failed(SomeResponsesFailedPageConfig(
-              cacheItem.consents.filter(_.processed == false).map(c => c.serviceKey -> c).toMap.values.toSeq,
-              cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name"))
+              journeyState.consents.filter(_.processed == false).map(c => c.serviceKey -> c).toMap.values.toSeq,
+              journeyState.agencyName.getOrElse(throw new Exception("Lost agency name"))
             )))
         } else targets.InvalidJourneyState
       }
@@ -271,12 +271,12 @@ class ClientsMultiInvitationController @Inject()(
   val invitationAccepted: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       for {
-        cacheItem <- multiInvitationCache.get
+        journeyState <- journeyStateCache.get
         result <- {
           Future successful Ok(
             complete(MultiCompletePageConfig(
-              cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
-              cacheItem.consents
+              journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
+              journeyState.consents
                 .filter(_.processed == true)
                 .map(consent => consent.serviceKey -> consent)
                 .toMap
@@ -293,8 +293,8 @@ class ClientsMultiInvitationController @Inject()(
       withAuthorisedAsAnyClient { (affinity, _) =>
         if (matchClientTypeToGroup(affinity, clientType)) {
           withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
-            multiInvitationCache
-              .save(MultiInvitationsCacheItem(consents, Some(agencyName)))
+            journeyStateCache
+              .save(ClientConsentsJourneyState(consents, Some(agencyName)))
               .map { _ =>
                 Ok(
                   confirm_decline(
@@ -316,7 +316,7 @@ class ClientsMultiInvitationController @Inject()(
       withAuthorisedAsAnyClient { (affinity, _) =>
         if (matchClientTypeToGroup(affinity, clientType)) {
           for {
-            cacheItem <- multiInvitationCache.get
+            journeyState <- journeyStateCache.get
             result <- {
               confirmDeclineForm
                 .bindFromRequest()
@@ -325,16 +325,16 @@ class ClientsMultiInvitationController @Inject()(
                     Future successful Ok(confirm_decline(
                       formWithErrors,
                       MultiConfirmDeclinePageConfig(
-                        cacheItem.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                        journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                         clientType,
                         uid,
-                        cacheItem.consents.map(_.serviceKey))
+                        journeyState.consents.map(_.serviceKey))
                     )),
                   confirmForm =>
                     if (confirmForm.value.contains(true)) {
                       for {
                         _ <- Future.sequence(
-                              cacheItem.consents.map(c => invitationsService.rejectInvitation(c.invitationId)))
+                              journeyState.consents.map(c => invitationsService.rejectInvitation(c.invitationId)))
                       } yield Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
                     } else {
                       Future.successful(
@@ -353,10 +353,10 @@ class ClientsMultiInvitationController @Inject()(
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyClient { (_, _) =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
-        multiInvitationCache.get
-          .map { cacheItem =>
+        journeyStateCache.get
+          .map { journeyState =>
             {
-              val cacheIds = cacheItem.consents.map(_.serviceKey)
+              val cacheIds = journeyState.consents.map(_.serviceKey)
               val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.serviceKey)).map(_.serviceKey).distinct
               Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
             }
@@ -404,7 +404,7 @@ object ClientsMultiInvitationController {
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def updateMultiInvitation(confirmedTerms: ConfirmedTerms)(
-    item: MultiInvitationsCacheItem): MultiInvitationsCacheItem = {
+    item: ClientConsentsJourneyState): ClientConsentsJourneyState = {
 
     val hasConsent: String => Boolean = {
       case "itsa" => confirmedTerms.itsaConsent

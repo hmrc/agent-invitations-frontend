@@ -1,5 +1,0 @@
-package uk.gov.hmrc.agentinvitationsfrontend.support
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.AuthorisationRequestCache
-
-class TestAgentAuthorisationsCache extends AuthorisationRequestCache with TestCache[AuthorisationRequest]

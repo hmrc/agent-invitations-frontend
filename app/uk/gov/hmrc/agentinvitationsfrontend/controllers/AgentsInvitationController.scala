@@ -47,9 +47,9 @@ class AgentsInvitationController @Inject()(
   @Named("agent-services-account-frontend.external-url") asAccUrl: String,
   invitationsService: InvitationsService,
   auditService: AuditService,
-  fastTrackCache: FastTrackCache,
-  authorisationRequestCache: AuthorisationRequestCache,
-  continueUrlStoreService: ContinueUrlCache,
+  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
+  continueUrlCache: ContinueUrlCache,
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
@@ -95,7 +95,7 @@ class AgentsInvitationController @Inject()(
   private[controllers] val agentServicesAccountUrl: String =
     if (isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
 
-  val agentInvitationIdentifyKnownFactForm: Form[CurrentInvitationInput] =
+  val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
 
   val agentInvitationIdentifyClientFormItsa: Form[UserInputNinoAndPostcode] =
@@ -110,13 +110,13 @@ class AgentsInvitationController @Inject()(
   val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
     AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
 
-  val agentFastTrackPostcodeForm: Form[CurrentInvitationInput] =
+  val agentFastTrackPostcodeForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags))
 
-  val agentFastTrackDateOfBirthForm: Form[CurrentInvitationInput] =
+  val agentFastTrackDateOfBirthForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags))
 
-  val agentFastTrackVatRegDateForm: Form[CurrentInvitationInput] =
+  val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
@@ -125,12 +125,12 @@ class AgentsInvitationController @Inject()(
 
   val showClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      authorisationRequestCache.fetchAndClear
-      fastTrackCache.fetch.map {
+      journeyStateCache.fetchAndClear
+      currentAuthorisationRequestCache.fetch.map {
         case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
           Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
         case _ =>
-          fastTrackCache.fetchAndClear
+          currentAuthorisationRequestCache.fetchAndClear
           Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
       }
     }
@@ -143,13 +143,13 @@ class AgentsInvitationController @Inject()(
         .fold(
           formWithErrors => Future successful Ok(client_type(formWithErrors, clientTypes, agentServicesAccountUrl)),
           userInput => {
-            val updateAggregate = fastTrackCache.fetch
-              .map(_.getOrElse(CurrentInvitationInput()))
+            val updateAggregate = currentAuthorisationRequestCache.fetch
+              .map(_.getOrElse(CurrentAuthorisationRequest()))
               .map(_.copy(clientType = userInput.clientType))
 
             updateAggregate.flatMap(
               updateFastTrack =>
-                fastTrackCache
+                currentAuthorisationRequestCache
                   .save(updateFastTrack)
                   .flatMap(_ => redirectBasedOnCurrentInputState(arn, updateFastTrack, isWhitelisted)))
 
@@ -160,8 +160,8 @@ class AgentsInvitationController @Inject()(
 
   val selectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      authorisationRequestCache.fetch.flatMap {
-        case Some(basket) if basket.clientDetails.nonEmpty =>
+      journeyStateCache.fetch.flatMap {
+        case Some(basket) if basket.requests.nonEmpty =>
           basket.clientType match {
             case "personal" =>
               Future successful Ok(
@@ -172,7 +172,7 @@ class AgentsInvitationController @Inject()(
             }
           }
         case _ =>
-          fastTrackCache.fetch.flatMap {
+          currentAuthorisationRequestCache.fetch.flatMap {
             case Some(input) if input.clientType.nonEmpty =>
               input.clientType match {
                 case `personal` =>
@@ -201,17 +201,17 @@ class AgentsInvitationController @Inject()(
       .fold(
         formWithErrors => {
           for {
-            authorisationBasket <- authorisationRequestCache.fetch
+            authorisationBasket <- journeyStateCache.fetch
           } yield Ok(personal_select_service(formWithErrors, allowedServices, authorisationBasket.isDefined))
         },
         userInput => {
-          val updateAggregate = fastTrackCache.fetch
-            .map(_.getOrElse(CurrentInvitationInput()))
+          val updateAggregate = currentAuthorisationRequestCache.fetch
+            .map(_.getOrElse(CurrentAuthorisationRequest()))
             .map(_.copy(service = userInput.service))
 
           updateAggregate.flatMap(
             updateFastTrack =>
-              fastTrackCache
+              currentAuthorisationRequestCache
                 .save(updateFastTrack)
                 .flatMap(_ =>
                   ifShouldShowService(updateFastTrack, featureFlags, isWhitelisted) {
@@ -232,13 +232,13 @@ class AgentsInvitationController @Inject()(
         },
         userInput => {
           if (userInput.service == HMRCMTDVAT) {
-            val updateAggregate = fastTrackCache.fetch
-              .map(_.getOrElse(CurrentInvitationInput()))
+            val updateAggregate = currentAuthorisationRequestCache.fetch
+              .map(_.getOrElse(CurrentAuthorisationRequest()))
               .map(_.copy(service = HMRCMTDVAT))
 
             updateAggregate.flatMap(
               updateFastTrack =>
-                fastTrackCache
+                currentAuthorisationRequestCache
                   .save(updateFastTrack)
                   .flatMap(_ =>
                     ifShouldShowService(updateFastTrack, featureFlags, isWhitelisted) {
@@ -247,7 +247,7 @@ class AgentsInvitationController @Inject()(
 
           } else {
             for {
-              _      <- fastTrackCache.save(CurrentInvitationInput())
+              _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
               result <- Future successful Redirect(routes.AgentsInvitationController.showClientType())
             } yield result
           }
@@ -268,58 +268,67 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  private val fastTrackToIdentifyKnownFact = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service
-    val clientId = fastTrackDetails.clientIdentifier
-    val clientIdType = fastTrackDetails.clientIdentifierType
+  private val authorisationRequestToIdentifyKnownFact = (authorisationRequest: CurrentAuthorisationRequest) => {
+    val service = authorisationRequest.service
+    val clientId = authorisationRequest.clientIdentifier
+    val clientIdType = authorisationRequest.clientIdentifierType
     agentInvitationIdentifyKnownFactForm.fill(
-      CurrentInvitationInput(fastTrackDetails.clientType, service, clientIdType, clientId, fastTrackDetails.knownFact)
+      CurrentAuthorisationRequest(
+        authorisationRequest.clientType,
+        service,
+        clientIdType,
+        clientId,
+        authorisationRequest.knownFact)
     )
 
   }
 
-  private val fastTrackToIdentifyClientFormItsa = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service
-    val clientId = fastTrackDetails.clientIdentifier
+  private val authorisationRequestToIdentifyClientFormItsa = (authorisationRequest: CurrentAuthorisationRequest) => {
+    val service = authorisationRequest.service
+    val clientId = authorisationRequest.clientIdentifier
     agentInvitationIdentifyClientFormItsa.fill(
-      UserInputNinoAndPostcode(fastTrackDetails.clientType, service, Some(clientId), fastTrackDetails.knownFact))
+      UserInputNinoAndPostcode(
+        authorisationRequest.clientType,
+        service,
+        Some(clientId),
+        authorisationRequest.knownFact))
   }
 
-  private val fastTrackToIdentifyClientFormVat = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service
-    val clientId = fastTrackDetails.clientIdentifier
+  private val authorisationRequestToIdentifyClientFormVat = (authorisationRequest: CurrentAuthorisationRequest) => {
+    val service = authorisationRequest.service
+    val clientId = authorisationRequest.clientIdentifier
     agentInvitationIdentifyClientFormVat.fill(
-      UserInputVrnAndRegDate(fastTrackDetails.clientType, service, Some(clientId), fastTrackDetails.knownFact))
+      UserInputVrnAndRegDate(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
   }
 
-  private val fastTrackToIdentifyClientFormIrv = (fastTrackDetails: CurrentInvitationInput) => {
-    val service = fastTrackDetails.service
-    val clientId = fastTrackDetails.clientIdentifier
+  private val authorisationRequestToIdentifyClientFormIrv = (authorisationRequest: CurrentAuthorisationRequest) => {
+    val service = authorisationRequest.service
+    val clientId = authorisationRequest.clientIdentifier
     agentInvitationIdentifyClientFormIrv.fill(
-      UserInputNinoAndDob(fastTrackDetails.clientType, service, Some(clientId), fastTrackDetails.knownFact))
+      UserInputNinoAndDob(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
   }
 
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch.map {
+      currentAuthorisationRequestCache.fetch.map {
         case Some(inviteDetails) if inviteDetails.service.nonEmpty =>
           inviteDetails.service match {
             case HMRCMTDIT =>
               Ok(
                 identify_client_itsa(
-                  fastTrackToIdentifyClientFormItsa(inviteDetails),
+                  authorisationRequestToIdentifyClientFormItsa(inviteDetails),
                   featureFlags.showKfcMtdIt,
                   inviteDetails.fromFastTrack))
             case HMRCMTDVAT =>
               Ok(
                 identify_client_vat(
-                  fastTrackToIdentifyClientFormVat(inviteDetails),
+                  authorisationRequestToIdentifyClientFormVat(inviteDetails),
                   featureFlags.showKfcMtdVat,
                   inviteDetails.fromFastTrack))
             case HMRCPIR =>
               Ok(
                 identify_client_irv(
-                  fastTrackToIdentifyClientFormIrv(inviteDetails),
+                  authorisationRequestToIdentifyClientFormIrv(inviteDetails),
                   featureFlags.showKfcPersonalIncome,
                   inviteDetails.fromFastTrack))
             case _ => Redirect(routes.AgentsInvitationController.showClientType())
@@ -346,7 +355,7 @@ class AgentsInvitationController @Inject()(
 
   val checkDetails: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch.map {
+      currentAuthorisationRequestCache.fetch.map {
         case Some(currentInvitation) =>
           Ok(
             check_details(
@@ -362,7 +371,8 @@ class AgentsInvitationController @Inject()(
 
   val submitDetails: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      val cachedCurrentInvitationInput = fastTrackCache.fetch.map(_.getOrElse(CurrentInvitationInput()))
+      val cachedCurrentInvitationInput =
+        currentAuthorisationRequestCache.fetch.map(_.getOrElse(CurrentAuthorisationRequest()))
       checkDetailsForm
         .bindFromRequest()
         .fold(
@@ -391,7 +401,7 @@ class AgentsInvitationController @Inject()(
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch.flatMap {
+      currentAuthorisationRequestCache.fetch.flatMap {
         case Some(data) =>
           (data.clientIdentifier, data.service) match {
             case (clientId, service) if clientId.nonEmpty =>
@@ -408,7 +418,7 @@ class AgentsInvitationController @Inject()(
 
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      fastTrackCache.fetch.flatMap {
+      currentAuthorisationRequestCache.fetch.flatMap {
         case Some(invitationWithClientDetails) =>
           (
             invitationWithClientDetails.clientType,
@@ -424,15 +434,15 @@ class AgentsInvitationController @Inject()(
                     data =>
                       if (data.choice) {
                         for {
-                          cacheItemOpt <- authorisationRequestCache.fetch
-                          currentCache = cacheItemOpt match {
-                            case None            => AuthorisationRequest("", Set.empty)
-                            case Some(cacheItem) => cacheItem
+                          journeyStateOpt <- journeyStateCache.fetch
+                          currentCache = journeyStateOpt match {
+                            case None            => AgentMultiAuthorisationJourneyState("", Set.empty)
+                            case Some(journeyState) => journeyState
                           }
-                          _ <- authorisationRequestCache.save(AuthorisationRequest(
+                          _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
                                 if (currentCache.clientType.nonEmpty) currentCache.clientType
                                 else invitationWithClientDetails.clientType.getOrElse(""),
-                                currentCache.clientDetails ++ Seq(ClientDetail(clientName, service, clientId))
+                                currentCache.requests ++ Seq(AuthorisationRequest(clientName, service, clientId))
                               ))
                           result <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
                                      Future successful Redirect(
@@ -443,7 +453,7 @@ class AgentsInvitationController @Inject()(
                         } yield result
                       } else {
                         for {
-                          _      <- fastTrackCache.save(CurrentInvitationInput(clientType, service))
+                          _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType, service))
                           result <- Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
                         } yield result
                     }
@@ -459,13 +469,13 @@ class AgentsInvitationController @Inject()(
   def showReviewAuthorisations = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       for {
-        cacheItemOpt <- authorisationRequestCache.fetch
-        result = cacheItemOpt match {
+        journeyStateOpt <- journeyStateCache.fetch
+        result = journeyStateOpt match {
           case None => Redirect(routes.AgentsInvitationController.showClientType())
-          case Some(cacheItem) =>
+          case Some(journeyState) =>
             Ok(
               review_authorisations(
-                ReviewAuthorisationsPageConfig(cacheItem),
+                ReviewAuthorisationsPageConfig(journeyState),
                 agentConfirmationForm("error.review-authorisation.required")))
         }
       } yield result
@@ -473,14 +483,14 @@ class AgentsInvitationController @Inject()(
   }
 
   def submitReviewAuthorisations = Action.async { implicit request =>
-    authorisationRequestCache.get.map { cacheItem =>
+    journeyStateCache.get.map { journeyState =>
       agentConfirmationForm("error.review-authorisation.required")
         .bindFromRequest()
         .fold(
-          formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(cacheItem), formWithErrors)),
+          formWithErrors => Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors)),
           input => {
             if (input.choice) {
-              fastTrackCache.save(CurrentInvitationInput(Some(cacheItem.clientType)))
+              currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType)))
               Redirect(routes.AgentsInvitationController.selectService())
             } else {
               NotImplemented
@@ -492,9 +502,9 @@ class AgentsInvitationController @Inject()(
 
   def showDelete(itemId: String) = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      authorisationRequestCache.get.map { cacheItem =>
+      journeyStateCache.get.map { journeyState =>
         val deleteItem =
-          cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+          journeyState.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
         Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
       }
     }
@@ -506,18 +516,18 @@ class AgentsInvitationController @Inject()(
         .bindFromRequest()
         .fold(
           formWithErrors => {
-            authorisationRequestCache.fetch.map {
-              case Some(cacheItem) =>
+            journeyStateCache.fetch.map {
+              case Some(journeyState) =>
                 val deleteItem =
-                  cacheItem.clientDetails.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+                  journeyState.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
                 Ok(delete(DeletePageConfig(deleteItem), formWithErrors))
               case None => Redirect(routes.AgentsInvitationController.showClientType())
             }
           },
           input =>
             if (input.choice) {
-              authorisationRequestCache
-                .transform(item => item.copy(clientDetails = item.clientDetails.filterNot(_.itemId == itemId)))
+              journeyStateCache
+                .transform(item => item.copy(requests = item.requests.filterNot(_.itemId == itemId)))
                 .map { _ =>
                   Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                 }
@@ -529,11 +539,11 @@ class AgentsInvitationController @Inject()(
   }
 
   private[controllers] def redirectOrShowConfirmClient(
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     featureFlags: FeatureFlags)(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
-    if (currentInvitationInput.fromFastTrack) body
+    if (currentAuthorisationRequest.fromFastTrack) body
     else {
-      currentInvitationInput.service match {
+      currentAuthorisationRequest.service match {
         case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
           Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
         case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
@@ -543,23 +553,23 @@ class AgentsInvitationController @Inject()(
         case _ => {
           for {
             clientName <- invitationsService.getClientNameByService(
-                           currentInvitationInput.clientIdentifier,
-                           currentInvitationInput.service)
-            cacheItemOpt <- authorisationRequestCache.fetch
-            currentCache = cacheItemOpt match {
-              case None            => AuthorisationRequest("", Set.empty)
-              case Some(cacheItem) => cacheItem
+                           currentAuthorisationRequest.clientIdentifier,
+                           currentAuthorisationRequest.service)
+            journeyStateOpt <- journeyStateCache.fetch
+            currentCache = journeyStateOpt match {
+              case None            => AgentMultiAuthorisationJourneyState("", Set.empty)
+              case Some(journeyState) => journeyState
             }
-            _ <- authorisationRequestCache.save(
-                  AuthorisationRequest(
-                    currentInvitationInput.clientType.getOrElse(""),
-                    currentCache.clientDetails ++ Set(
-                      ClientDetail(
+            _ <- journeyStateCache.save(
+                  AgentMultiAuthorisationJourneyState(
+                    currentAuthorisationRequest.clientType.getOrElse(""),
+                    currentCache.requests ++ Set(
+                      AuthorisationRequest(
                         clientName.getOrElse(""),
-                        currentInvitationInput.service,
-                        currentInvitationInput.clientIdentifier))
+                        currentAuthorisationRequest.service,
+                        currentAuthorisationRequest.clientIdentifier))
                   ))
-            result <- currentInvitationInput.clientType match {
+            result <- currentAuthorisationRequest.clientType match {
                        case `personal` =>
                          Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                        case `business` => body
@@ -572,11 +582,13 @@ class AgentsInvitationController @Inject()(
 
   val knownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetch.map {
+      currentAuthorisationRequestCache.fetch.map {
         case Some(currentInvitation)
             if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
           Ok(
-            known_fact(fastTrackToIdentifyKnownFact(currentInvitation), serviceToMessageKey(currentInvitation.service)))
+            known_fact(
+              authorisationRequestToIdentifyKnownFact(currentInvitation),
+              serviceToMessageKey(currentInvitation.service)))
         case Some(_) => throw new Exception("no content in cache")
         case None    => Redirect(routes.AgentsInvitationController.showClientType())
       }
@@ -603,7 +615,7 @@ class AgentsInvitationController @Inject()(
   }
 
   def bindKnownFactForm(
-    knownFactForm: Form[CurrentInvitationInput],
+    knownFactForm: Form[CurrentAuthorisationRequest],
     arn: Arn,
     isWhitelisted: Boolean,
     serviceMessageKey: String)(implicit request: Request[AnyContent]) =
@@ -623,15 +635,15 @@ class AgentsInvitationController @Inject()(
         },
         userInput =>
           for {
-            maybeCachedInvitation <- fastTrackCache.fetch
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
             invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentInvitationInput())
+              .getOrElse(CurrentAuthorisationRequest())
               .copy(
                 clientIdentifier = userInput.clientIdentifier.getOrElse(""),
                 clientIdentifierType = "ni",
                 knownFact = userInput.postcode
               )
-            _              <- fastTrackCache.save(invitationWithClientDetails)
+            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
             redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
           } yield redirectResult
       )
@@ -645,15 +657,15 @@ class AgentsInvitationController @Inject()(
         },
         userInput =>
           for {
-            maybeCachedInvitation <- fastTrackCache.fetch
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
             invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentInvitationInput())
+              .getOrElse(CurrentAuthorisationRequest())
               .copy(
                 clientIdentifier = userInput.clientIdentifier.getOrElse(""),
                 clientIdentifierType = "vrn",
                 knownFact = userInput.registrationDate
               )
-            _              <- fastTrackCache.save(invitationWithClientDetails)
+            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
             redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
           } yield redirectResult
       )
@@ -672,15 +684,15 @@ class AgentsInvitationController @Inject()(
         },
         userInput =>
           for {
-            maybeCachedInvitation <- fastTrackCache.fetch
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
             invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentInvitationInput())
+              .getOrElse(CurrentAuthorisationRequest())
               .copy(
                 clientIdentifier = userInput.clientIdentifier.getOrElse(""),
                 clientIdentifierType = "ni",
                 knownFact = userInput.dob
               )
-            _              <- fastTrackCache.save(invitationWithClientDetails)
+            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
             redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
           } yield redirectResult
       )
@@ -721,8 +733,8 @@ class AgentsInvitationController @Inject()(
         case (Some(link)) =>
           val invitationUrl: String = s"$externalUrl$link"
           for {
-            _        <- fastTrackCache.save(CurrentInvitationInput())
-            continue <- continueUrlStoreService.fetch
+            _        <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
+            continue <- continueUrlCache.fetch
           } yield {
             val clientType = if (link.contains("personal")) "personal" else "business"
             Ok(invitation_sent(invitationUrl, continue.isDefined, featureFlags.enableTrackRequests, clientType))
@@ -736,16 +748,15 @@ class AgentsInvitationController @Inject()(
   val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        continue <- continueUrlStoreService.fetch.map(continue =>
-                     continue.getOrElse(ContinueUrl(agentServicesAccountUrl)))
-        _ <- continueUrlStoreService.remove()
+        continue <- continueUrlCache.fetch.map(continue => continue.getOrElse(ContinueUrl(agentServicesAccountUrl)))
+        _        <- continueUrlCache.remove()
       } yield Redirect(continue.url)
     }
   }
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.fetchAndClear.map {
+      currentAuthorisationRequestCache.fetchAndClear.map {
         case Some(aggregate) =>
           aggregate.service match {
             case HMRCMTDVAT =>
@@ -762,7 +773,7 @@ class AgentsInvitationController @Inject()(
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      fastTrackCache.get.flatMap { aggregate =>
+      currentAuthorisationRequestCache.get.flatMap { aggregate =>
         aggregate.service match {
           case HMRCMTDVAT => Future successful Forbidden(not_matched(Services.messageKeyForVAT))
           case HMRCMTDIT  => Future successful Forbidden(not_matched(Services.messageKeyForITSA))
@@ -775,9 +786,9 @@ class AgentsInvitationController @Inject()(
 
   private[controllers] def confirmAndRedirect(
     arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    currentInvitationInput match {
+    currentAuthorisationRequest match {
       case CurrentInvitationInputItsaReady(completeItsaInvitation) =>
         createInvitation(arn, completeItsaInvitation)
       case CurrentInvitationInputVatReady(completeVatInvitation) =>
@@ -786,7 +797,7 @@ class AgentsInvitationController @Inject()(
         createInvitation(arn, completeIrvInvitation)
       case _ =>
         Logger(getClass).warn(s"Something has gone wrong. Redirected back to check current state.")
-        redirectBasedOnCurrentInputState(arn, currentInvitationInput, isWhitelisted)
+        redirectBasedOnCurrentInputState(arn, currentAuthorisationRequest, isWhitelisted)
     }
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
@@ -804,11 +815,11 @@ class AgentsInvitationController @Inject()(
                   throw new IllegalStateException("No Error Url Provided")
               }
             },
-            currentInvitationInput => {
-              val fastTrackInput = currentInvitationInput.copy(fromFastTrack = true)
-              fastTrackCache.save(fastTrackInput).flatMap { _ =>
+            currentAuthorisationRequest => {
+              val authorisationRequest = currentAuthorisationRequest.copy(fromFastTrack = true)
+              currentAuthorisationRequestCache.save(authorisationRequest).flatMap { _ =>
                 withMaybeContinueUrlCached {
-                  ifShouldShowService(fastTrackInput, featureFlags, isWhitelisted) {
+                  ifShouldShowService(authorisationRequest, featureFlags, isWhitelisted) {
                     Future successful Redirect(routes.AgentsInvitationController.checkDetails())
                   }
                 }
@@ -824,7 +835,7 @@ class AgentsInvitationController @Inject()(
 
   private[controllers] def knownFactCheckVat(
     arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     fastTrackVatInvitation: FastTrackVatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     fastTrackVatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
@@ -832,29 +843,29 @@ class AgentsInvitationController @Inject()(
         invitationsService
           .checkVatRegistrationDateMatches(fastTrackVatInvitation.clientIdentifier, vatRegDate) flatMap {
           case Some(true) =>
-            redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+            redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
               createInvitation(arn, fastTrackVatInvitation)
             }
           case Some(false) =>
-            fastTrackCache.save(currentInvitationInput).map { _ =>
+            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
               Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
               Redirect(routes.AgentsInvitationController.notMatched())
             }
           case None =>
-            fastTrackCache.save(currentInvitationInput).map { _ =>
+            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
               Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
               Redirect(routes.AgentsInvitationController.notEnrolled())
             }
         }
       case None =>
-        redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
           createInvitation(arn, fastTrackVatInvitation)
         }
     }
 
   private[controllers] def knownFactCheckItsa(
     arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     fastTrackItsaInvitation: FastTrackItsaInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     fastTrackItsaInvitation.postcode match {
@@ -864,11 +875,11 @@ class AgentsInvitationController @Inject()(
                           .checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode.value)
           result <- hasPostcode match {
                      case Some(true) =>
-                       redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+                       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
                          createInvitation(arn, fastTrackItsaInvitation)
                        }
                      case Some(false) =>
-                       fastTrackCache.save(currentInvitationInput).map { _ =>
+                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
                          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
                          auditService.sendAgentInvitationSubmitted(
                            arn,
@@ -879,7 +890,7 @@ class AgentsInvitationController @Inject()(
                          Redirect(routes.AgentsInvitationController.notMatched())
                        }
                      case None =>
-                       fastTrackCache.save(currentInvitationInput).map { _ =>
+                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
                          Logger(getClass).warn(
                            s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
                          auditService.sendAgentInvitationSubmitted(
@@ -893,14 +904,14 @@ class AgentsInvitationController @Inject()(
                    }
         } yield result
       case None =>
-        redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
           createInvitation(arn, fastTrackItsaInvitation)
         }
     }
 
   private[controllers] def knownFactCheckIrv(
     arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     fastTrackPirInvitation: FastTrackPirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
@@ -910,7 +921,7 @@ class AgentsInvitationController @Inject()(
             .checkCitizenRecordMatches(fastTrackPirInvitation.clientIdentifier, LocalDate.parse(dob.value))
             .flatMap {
               case Some(true) =>
-                redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+                redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
                   createInvitation(arn, fastTrackPirInvitation)
                 }
               case Some(false) =>
@@ -926,24 +937,24 @@ class AgentsInvitationController @Inject()(
           Future successful Redirect(routes.AgentsInvitationController.notMatched())
       }
     } else {
-      redirectOrShowConfirmClient(currentInvitationInput, featureFlags) {
+      redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
         createInvitation(arn, fastTrackPirInvitation)
       }
     }
 
   def redirectBasedOnCurrentInputState(
     arn: Arn,
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    currentInvitationInput match {
+    currentAuthorisationRequest match {
       case CurrentInvitationInputVatReady(completeVatInvitation) =>
-        knownFactCheckVat(arn, currentInvitationInput, completeVatInvitation, isWhitelisted)
+        knownFactCheckVat(arn, currentAuthorisationRequest, completeVatInvitation, isWhitelisted)
 
       case CurrentInvitationInputItsaReady(completeItsaInvitation) =>
-        knownFactCheckItsa(arn, currentInvitationInput, completeItsaInvitation, isWhitelisted)
+        knownFactCheckItsa(arn, currentAuthorisationRequest, completeItsaInvitation, isWhitelisted)
 
       case CurrentInvitationInputPirReady(completePirInvitation) =>
-        knownFactCheckIrv(arn, currentInvitationInput, completePirInvitation, isWhitelisted)
+        knownFactCheckIrv(arn, currentAuthorisationRequest, completePirInvitation, isWhitelisted)
 
       case CurrentInvitationInputNeedsClientType(_) =>
         Future successful Redirect(routes.AgentsInvitationController.showClientType())
@@ -967,16 +978,16 @@ class AgentsInvitationController @Inject()(
 
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")
-        fastTrackCache
-          .save(CurrentInvitationInput())
+        currentAuthorisationRequestCache
+          .save(CurrentAuthorisationRequest())
           .map(_ => Redirect(routes.AgentsInvitationController.showClientType()))
     }
 
   private def ifShouldShowService(
-    currentInvitationInput: CurrentInvitationInput,
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
     featureFlags: FeatureFlags,
     isWhitelisted: Boolean)(body: => Future[Result]): Future[Result] =
-    currentInvitationInput.service match {
+    currentAuthorisationRequest.service match {
       case HMRCPIR if !isWhitelisted =>
         Logger(getClass).warn(s"User is not whitelisted to create $HMRCPIR invitation")
         Future successful BadRequest
@@ -999,14 +1010,14 @@ class AgentsInvitationController @Inject()(
     block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
     withMaybeContinueUrl {
       case None      => block
-      case Some(url) => continueUrlStoreService.save(url).flatMap(_ => block)
+      case Some(url) => continueUrlCache.save(url).flatMap(_ => block)
     }
 
   private def withMaybeErrorUrlCached[A](
     block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
     withMaybeErrorUrl {
       case None      => block(None)
-      case Some(url) => continueUrlStoreService.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
+      case Some(url) => continueUrlCache.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
     }
 }
 
@@ -1226,22 +1237,23 @@ object AgentsInvitationController {
     }
   }
 
-  private val validateFastTrackForm: Constraint[CurrentInvitationInput] =
-    Constraint[CurrentInvitationInput] { formData: CurrentInvitationInput =>
+  private val validateFastTrackForm: Constraint[CurrentAuthorisationRequest] =
+    Constraint[CurrentAuthorisationRequest] { formData: CurrentAuthorisationRequest =>
       formData match {
-        case CurrentInvitationInput(Some("personal") | None, HMRCMTDIT, "ni", clientId, _, _)
+        case CurrentAuthorisationRequest(Some("personal") | None, HMRCMTDIT, "ni", clientId, _, _)
             if Nino.isValid(clientId) =>
           Valid
-        case CurrentInvitationInput(Some("personal") | None, HMRCPIR, "ni", clientId, _, _) if Nino.isValid(clientId) =>
+        case CurrentAuthorisationRequest(Some("personal") | None, HMRCPIR, "ni", clientId, _, _)
+            if Nino.isValid(clientId) =>
           Valid
-        case CurrentInvitationInput(_, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
-        case _                                                                                     => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case CurrentAuthorisationRequest(_, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
+        case _                                                                                          => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
   def agentFastTrackKnownFactForm(
     featureFlags: FeatureFlags,
-    knownFactMapping: Mapping[Option[String]]): Form[CurrentInvitationInput] =
+    knownFactMapping: Mapping[Option[String]]): Form[CurrentAuthorisationRequest] =
     Form(
       mapping(
         "clientType"           -> optional(text),
@@ -1250,15 +1262,15 @@ object AgentsInvitationController {
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> knownFactMapping
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(clientType, service, clientIdType, clientId, knownFact)
-      })({ fastTrack =>
+        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
         Some(
           (
-            fastTrack.clientType,
-            fastTrack.service,
-            fastTrack.clientIdentifierType,
-            fastTrack.clientIdentifier,
-            fastTrack.knownFact))
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
       }).verifying(validateFastTrackForm))
 
   def postcodeMapping(featureFlags: FeatureFlags) =
@@ -1278,7 +1290,7 @@ object AgentsInvitationController {
   def vatRegDateMapping(featureFlags: FeatureFlags) =
     optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
 
-  val agentFastTrackForm: Form[CurrentInvitationInput] =
+  val agentFastTrackForm: Form[CurrentAuthorisationRequest] =
     Form(
       mapping(
         "clientType" -> optional(
@@ -1289,15 +1301,15 @@ object AgentsInvitationController {
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
-      })({ fastTrack =>
+        CurrentAuthorisationRequest(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
         Some(
           (
-            fastTrack.clientType,
-            fastTrack.service,
-            fastTrack.clientIdentifierType,
-            fastTrack.clientIdentifier,
-            fastTrack.knownFact))
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
       }).verifying(validateFastTrackForm))
 
   def clientTypeFor(clientType: Option[String], service: String): Option[String] =
@@ -1307,7 +1319,7 @@ object AgentsInvitationController {
       case _                        => None
     })
 
-  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentInvitationInput] =
+  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentAuthorisationRequest] =
     Form(
       mapping(
         "clientType" -> optional(text),
@@ -1317,15 +1329,15 @@ object AgentsInvitationController {
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentInvitationInput(clientType, service, clientIdType, clientId, knownFact)
-      })({ fastTrack =>
+        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
         Some(
           (
-            fastTrack.clientType,
-            fastTrack.service,
-            fastTrack.clientIdentifierType,
-            fastTrack.clientIdentifier,
-            fastTrack.knownFact))
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
       }))
 
   object ClientForMtdItWithFlagOn {
@@ -1373,9 +1385,10 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputItsaReady {
-    def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackItsaInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(
+      implicit featureFlags: FeatureFlags): Option[FastTrackItsaInvitation] =
       arg match {
-        case CurrentInvitationInput(_, HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
+        case CurrentAuthorisationRequest(_, HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcMtdIt || postcodeOpt.exists(
               _.matches(postcodeRegex))) =>
           Some(
@@ -1387,9 +1400,9 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputPirReady {
-    def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
       arg match {
-        case CurrentInvitationInput(_, HMRCPIR, "ni", clientIdentifier, dobOpt, _)
+        case CurrentAuthorisationRequest(_, HMRCPIR, "ni", clientIdentifier, dobOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcPersonalIncome || dobOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
@@ -1401,9 +1414,9 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputVatReady {
-    def unapply(arg: CurrentInvitationInput)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
       arg match {
-        case CurrentInvitationInput(clientType, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
+        case CurrentAuthorisationRequest(clientType, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
             if clientType.isDefined && Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt
               .exists(DateFieldHelper.validateDate)) =>
           Some(
@@ -1416,16 +1429,16 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputNeedsClientIdentifier {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput match {
-        case CurrentInvitationInput(clientType, service, _, clientIdentifier, _, _) =>
+    def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
+      currentAuthorisationRequest match {
+        case CurrentAuthorisationRequest(clientType, service, _, clientIdentifier, _, _) =>
           service match {
             case HMRCMTDVAT if !Vrn.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(clientType, HMRCMTDVAT, "vrn", "", None))
+              Some(CurrentAuthorisationRequest(clientType, HMRCMTDVAT, "vrn", "", None))
             case HMRCMTDIT if !Nino.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(clientType, HMRCMTDIT, "ni", "", None))
+              Some(CurrentAuthorisationRequest(clientType, HMRCMTDIT, "ni", "", None))
             case HMRCPIR if !Nino.isValid(clientIdentifier) =>
-              Some(CurrentInvitationInput(clientType, HMRCPIR, "ni", "", None))
+              Some(CurrentAuthorisationRequest(clientType, HMRCPIR, "ni", "", None))
             case _ => None
           }
         case _ => None
@@ -1433,49 +1446,50 @@ object AgentsInvitationController {
   }
 
   object CurrentInvitationInputFromFastTrackNeedsClientType {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput match {
-        case input: CurrentInvitationInput if input.fromFastTrack && input.clientType.isEmpty => Some(input)
-        case _                                                                                => None
+    def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
+      currentAuthorisationRequest match {
+        case input: CurrentAuthorisationRequest if input.fromFastTrack && input.clientType.isEmpty => Some(input)
+        case _                                                                                     => None
       }
   }
 
   object CurrentInvitationInputNeedsClientType {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput match {
-        case input: CurrentInvitationInput if !input.fromFastTrack && input.clientType.isEmpty => Some(input)
-        case _                                                                                 => None
+    def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
+      currentAuthorisationRequest match {
+        case input: CurrentAuthorisationRequest if !input.fromFastTrack && input.clientType.isEmpty => Some(input)
+        case _                                                                                      => None
       }
   }
 
   object CurrentInvitationInputNeedsKnownFact {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput match {
-        case CurrentInvitationInput(clientType, HMRCMTDVAT, _, _, Some(vatRegDate), true)
+    def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
+      currentAuthorisationRequest match {
+        case CurrentAuthorisationRequest(clientType, HMRCMTDVAT, _, _, Some(vatRegDate), true)
             if supportedClientTypes.contains(clientType) && !DateFieldHelper.validateDate(vatRegDate) =>
-          Some(currentInvitationInput.copy(knownFact = None))
+          Some(currentAuthorisationRequest.copy(knownFact = None))
 
-        case CurrentInvitationInput(`personal`, HMRCMTDIT, _, _, Some(postcode), true)
+        case CurrentAuthorisationRequest(`personal`, HMRCMTDIT, _, _, Some(postcode), true)
             if !postcode.matches(postcodeRegex) =>
-          Some(currentInvitationInput.copy(knownFact = None))
+          Some(currentAuthorisationRequest.copy(knownFact = None))
 
-        case CurrentInvitationInput(`personal`, HMRCPIR, _, _, Some(dob), true) if !DateFieldHelper.validateDate(dob) =>
-          Some(currentInvitationInput.copy(knownFact = None))
+        case CurrentAuthorisationRequest(`personal`, HMRCPIR, _, _, Some(dob), true)
+            if !DateFieldHelper.validateDate(dob) =>
+          Some(currentAuthorisationRequest.copy(knownFact = None))
 
-        case CurrentInvitationInput(clientType, service, _, _, None, true)
+        case CurrentAuthorisationRequest(clientType, service, _, _, None, true)
             if supportedClientTypes.contains(clientType) && Services.supportedServices.contains(service) =>
-          Some(currentInvitationInput)
+          Some(currentAuthorisationRequest)
 
         case _ => None
       }
   }
 
   object CurrentInvitationInputNeedService {
-    def unapply(currentInvitationInput: CurrentInvitationInput): Option[CurrentInvitationInput] =
-      currentInvitationInput match {
-        case CurrentInvitationInput(clientType, service, _, _, _, _) if service.isEmpty =>
+    def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
+      currentAuthorisationRequest match {
+        case CurrentAuthorisationRequest(clientType, service, _, _, _, _) if service.isEmpty =>
           //TODO Change when mandatory
-          Some(currentInvitationInput.copy(clientType = clientType))
+          Some(currentAuthorisationRequest.copy(clientType = clientType))
         case _ => None
       }
   }

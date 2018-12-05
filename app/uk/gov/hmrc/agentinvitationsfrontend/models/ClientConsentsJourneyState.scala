@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.agents
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
+package uk.gov.hmrc.agentinvitationsfrontend.models
+import play.api.libs.json.Json
 
-case class DeletePageConfig(clientDetail: AuthorisationRequest) {
+case class ClientConsentsJourneyState(consents: Seq[Consent], agencyName: Option[String]) {
 
-  val submitUrl = routes.AgentsInvitationController.submitDelete(clientDetail.itemId)
+  def allDeclinedProcessed = consents.forall(_.consent == false)
 
+  def allAcceptanceFailed = consents.filter(_.consent).forall(_.processed == false)
+
+  def someAcceptanceFailed = consents.filter(_.consent).exists(_.processed == false)
+
+  def allProcessed = consents.forall(_.processed)
+}
+
+object ClientConsentsJourneyState {
+  implicit val format = Json.format[ClientConsentsJourneyState]
 }

@@ -22,8 +22,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
-@(knownFactForm: Form[CurrentInvitationInput], serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+@(knownFactForm: Form[CurrentAuthorisationRequest], serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)

@@ -4,7 +4,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentInvitationInput, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -22,7 +22,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val submitService = controller.submitService()
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -40,7 +40,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for ITSA service" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -77,8 +77,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
-        testFastTrackCache.save(
-          CurrentInvitationInput(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
+        testCurrentAuthorisationRequestCache.save(
+          CurrentAuthorisationRequest(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientType"       -> "personal",
           "service"          -> "HMRC-MTD-IT",
@@ -187,9 +187,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       val invitation =
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
-      testFastTrackCache.save(invitation)
-      testFastTrackCache.currentSession.item.get shouldBe invitation
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
+      testCurrentAuthorisationRequestCache.save(invitation)
+      testCurrentAuthorisationRequestCache.currentSession.item.get shouldBe invitation
 
       val result = invitationSent(
         authorisedAsValidAgent(
@@ -219,7 +219,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch).get shouldBe CurrentInvitationInput()
+      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
     }
   }
 
@@ -235,8 +235,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
       val invitation =
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
-      testFastTrackCache.save(invitation)
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
+      testCurrentAuthorisationRequestCache.save(invitation)
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
@@ -251,7 +251,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch).get shouldBe invitation
+      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
     }
   }
 
@@ -261,7 +261,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
       val ninoForm =
         agentInvitationIdentifyClientFormItsa(featureFlags).fill(
           UserInputNinoAndPostcode(personal, serviceITSA, None, None))
@@ -279,7 +279,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.button"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testFastTrackCache.fetch) shouldBe None
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
 
     }
   }
@@ -289,8 +289,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val showConfirmClient = controller.showConfirmClient()
 
     "return 200 and show client trading name" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenTradingName(validNino, "64 Bit")
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -301,8 +301,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return 200 and show client's name" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenTradingNameMissing(validNino)
       givenCitizenDetailsAreKnownFor(validNino.value, "Anne Marri", "Son Pear")
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
@@ -314,8 +314,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return 200 and no client name was found" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenTradingNameMissing(validNino)
       givenCitizenDetailsReturns404For(validNino.value)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
@@ -333,8 +333,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to show-review-authorisations when YES is selected" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
@@ -346,8 +346,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to show identify client when NO is selected" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
@@ -359,8 +359,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to select client type when client type in cache is not supported" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(Some("foo"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("foo"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
@@ -372,8 +372,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return 200 for not selecting an option" in {
-      testFastTrackCache.save(
-        CurrentInvitationInput(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenTradingName(validNino, "64 Bit")
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -389,7 +389,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal, serviceITSA, "", "", None, fromManual))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url

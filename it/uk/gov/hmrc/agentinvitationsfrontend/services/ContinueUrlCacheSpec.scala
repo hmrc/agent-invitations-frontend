@@ -15,18 +15,18 @@ class ContinueUrlCacheSpec extends BaseISpec {
 
   "ContinueUrlStoreService" should {
     "store continue url" in {
-      await(continueUrlKeyStoreCache.save(url))
-      await(continueUrlKeyStoreCache.fetch) shouldBe Some(url)
+      await(testContinueUrlKeyStoreCache.save(url))
+      await(testContinueUrlKeyStoreCache.fetch) shouldBe Some(url)
     }
 
     "return nothing if there is no continue url" in {
-      await(continueUrlKeyStoreCache.fetch) shouldBe None
+      await(testContinueUrlKeyStoreCache.fetch) shouldBe None
     }
 
     "return nothing when ContinueUrl is removed" in {
-      await(continueUrlKeyStoreCache.save(url))
-      await(continueUrlKeyStoreCache.remove())
-      await(continueUrlKeyStoreCache.fetch) shouldBe None
+      await(testContinueUrlKeyStoreCache.save(url))
+      await(testContinueUrlKeyStoreCache.remove())
+      await(testContinueUrlKeyStoreCache.fetch) shouldBe None
     }
   }
 }

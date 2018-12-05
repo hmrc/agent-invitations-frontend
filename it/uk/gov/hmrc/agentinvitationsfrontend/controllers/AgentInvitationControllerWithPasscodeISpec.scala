@@ -23,8 +23,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentInvitationInput, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentAuthorisationsKeyStoreCache, AuthorisationRequestCache, FastTrackCache}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateKeyStoreCache, AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.logging.SessionId
@@ -63,14 +63,14 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testFastTrackCache.clear()
-    testAgentAuthorisationsCache.clear()
+    testCurrentAuthorisationRequestCache.clear()
+    testAgentMultiAuthorisationJourneyStateCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[FastTrackCache]).toInstance(testFastTrackCache)
-      bind(classOf[AuthorisationRequestCache]).toInstance(testAgentAuthorisationsCache)
+      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
+      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
     }
   }
 
@@ -99,7 +99,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 for an authorised whitelisted Agent with OTAC session key in select service page" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
       val request =
         FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken, "someOtacToken123"))
       stubFor(
@@ -121,7 +121,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 and don't show the IRV option for an authorised non-whitelisted agent without passcode or OTAC session key in select service page" in {
-      testFastTrackCache.save(CurrentInvitationInput(personal))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
       val request = FakeRequest("GET", "/agents/select-service")
       stubFor(
         get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
@@ -144,7 +144,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "POST to /select-service" when {
     "service is IRV" should {
       "redirect to /identify-client if user is whitelisted (has valid OTAC session key)" in {
-        testFastTrackCache.save(CurrentInvitationInput(personal))
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
         stubFor(
           get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
             .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
@@ -164,7 +164,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        testFastTrackCache.save(CurrentInvitationInput())
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
@@ -178,7 +178,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        testFastTrackCache.save(CurrentInvitationInput(personal))
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
         val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
         val result = controller.submitService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -191,7 +191,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        testFastTrackCache.save(CurrentInvitationInput(business))
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
         val result = controller.submitService(

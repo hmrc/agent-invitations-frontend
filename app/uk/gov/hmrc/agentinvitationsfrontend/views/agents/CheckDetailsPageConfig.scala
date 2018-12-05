@@ -18,9 +18,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentInvitationInput
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 
-case class CheckDetailsPageConfig(currentInvitationInput: CurrentInvitationInput, featureFlags: FeatureFlags) {
+case class CheckDetailsPageConfig(currentInvitationInput: CurrentAuthorisationRequest, featureFlags: FeatureFlags) {
 
   private val shouldShowKF: Boolean = {
     currentInvitationInput.service match {
