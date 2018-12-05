@@ -116,7 +116,8 @@ class ClientsMultiInvitationController @Inject()(
                     journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                     clientType,
                     uid,
-                    chosenConsent))).addingToSession("whichConsent" -> givenServiceKey)
+                    chosenConsent)
+                )).addingToSession("whichConsent" -> givenServiceKey)
             } else {
               targets.InvalidJourneyState
             }
@@ -140,15 +141,14 @@ class ClientsMultiInvitationController @Inject()(
               for {
                 journeyState <- journeyStateCache.get
                 result <- {
-                  Future successful Ok(
-                    confirm_terms_multi(
-                      formWithErrors,
-                      MultiConfirmTermsPageConfig(
-                        journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
-                        clientType,
-                        uid,
-                        journeyState.consents)
-                    ))
+                  Future successful Ok(confirm_terms_multi(
+                    formWithErrors,
+                    MultiConfirmTermsPageConfig(
+                      journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                      clientType,
+                      uid,
+                      journeyState.consents)
+                  ))
                 }
               } yield result,
             confirmedTerms => {
@@ -198,7 +198,8 @@ class ClientsMultiInvitationController @Inject()(
                 journeyState.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
                 journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
-                uid)
+                uid
+              )
             )
           ))
       }
