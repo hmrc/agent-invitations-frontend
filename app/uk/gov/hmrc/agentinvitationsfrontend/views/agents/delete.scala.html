@@ -31,6 +31,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"delete.heading", "Your client"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
 
+    @back_link_referer(request)
 
     @form(config.submitUrl) {
 

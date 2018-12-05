@@ -436,7 +436,7 @@ class AgentsInvitationController @Inject()(
                         for {
                           journeyStateOpt <- journeyStateCache.fetch
                           currentCache = journeyStateOpt match {
-                            case None            => AgentMultiAuthorisationJourneyState("", Set.empty)
+                            case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
                             case Some(journeyState) => journeyState
                           }
                           _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
@@ -557,7 +557,7 @@ class AgentsInvitationController @Inject()(
                            currentAuthorisationRequest.service)
             journeyStateOpt <- journeyStateCache.fetch
             currentCache = journeyStateOpt match {
-              case None            => AgentMultiAuthorisationJourneyState("", Set.empty)
+              case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
               case Some(journeyState) => journeyState
             }
             _ <- journeyStateCache.save(
