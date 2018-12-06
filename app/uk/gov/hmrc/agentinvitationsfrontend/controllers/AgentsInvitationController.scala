@@ -513,7 +513,7 @@ class AgentsInvitationController @Inject()(
                                      "clientType"     -> journeyState.clientType
                                  ))
                            } else {
-                             Future.failed(new Exception("")) //TODO report errors
+                             Future.failed(new Exception("Invitation creation failed"))
                            }
                 } yield result
               }
