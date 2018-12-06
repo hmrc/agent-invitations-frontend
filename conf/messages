@@ -93,10 +93,13 @@ error.confirm-client.required=Select yes if you want to ask this client for auth
 # Invitation Sent
 invitation-sent-link.header=One more step
 invitation-sent.header=What you need to do next
-invitation-sent.l1=Copy this link and email it to your client:<br /><span id="invitationUrl" class="word-wrap">{0}</span>
-invitation-sent.l2=Ask your client to go to the link to accept your authorisation request. They will need their Government Gateway login details to confirm who they are. They can set up an account if they do not have one.
-invitation-sent.p1=Your client cannot authorise you until this is done.
-invitation-sent.p2=The link expires 10 days from now.
+invitation-sent.l1=Copy this link and email it to your client:
+invitation-sent.l1.p.personal=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.</span>
+invitation-sent.l1.p.business=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.</span>
+invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
+invitation-sent.p1=The link expires 10 days from now.
+invitation-sent.p2.personal=They will need their Government Gateway login details for their personal tax affairs to confirm who they are. They can set up an account if they do not have one.
+invitation-sent.p2.business=They will need their Government Gateway login details for their business tax affairs to confirm who they are. They can set up an account if they do not have one.
 invitation-sent.continueToASAccount.button=Return to your agent services account
 invitation-sent.continueJourney.button=Continue
 invitation-sent.trackRequests.button=Track your recent authorisation requests

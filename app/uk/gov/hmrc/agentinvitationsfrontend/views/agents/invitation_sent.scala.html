@@ -29,31 +29,34 @@
   <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
 
   <ol class="list list-number margin-left-0">
-    <li class="margin-bottom-30">@Html(Messages("invitation-sent.l1", invitationUrl))</li>
+    <li class="margin-bottom-30"><p>@Messages("invitation-sent.l1")</p>
+        <p><span id="invitationUrl" class="word-wrap">@invitationUrl</span></p>
+        <p>@Html(Messages(s"invitation-sent.l1.p.$clientType"))</p></li>
     <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
   </ol>
 
-  <p>@Messages("invitation-sent.p1")</p>
-
-  <p class="panel panel-border-wide margin-bottom-30">@Messages("invitation-sent.p2")</p>
+    <div class="panel panel-border-wide margin-bottom-30">
+        <p>@Messages("invitation-sent.p1")</p>
+        <p>@Messages(s"invitation-sent.p2.$clientType")</p>
+    </div>
 
 
   @defining(if(hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
     @if(hasContinueUrl && trackRequests) {
       <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-      <p><a href="@routes.AgentsRequestTrackingController.showTrackRequests()" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button") @Messages("invitation-sent.new-window")</a></p>
+      <p><a class="text-link-small" href="@routes.AgentsRequestTrackingController.showTrackRequests()" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button") @Messages("invitation-sent.new-window")</a></p>
 
     } else {
       @if(trackRequests) {
         <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a>
-        <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
-        <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+        <p><a class="text-link-small" href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
+        <p><a class="text-link-small" href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
       } else {
         @if(hasContinueUrl) {
           <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
         } else {
           <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-          <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+          <p><a class="text-link-small" href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
         }
       }
 
