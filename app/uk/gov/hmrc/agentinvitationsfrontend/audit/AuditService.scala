@@ -17,10 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.models.FastTrackInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, InvitationParams}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,10 +39,10 @@ object AgentInvitationEvent extends Enumeration {
 @Singleton
 class AuditService @Inject()(val auditConnector: AuditConnector) {
 
-  def sendAgentInvitationSubmitted[T <: TaxIdentifier](
+  def sendAgentInvitationSubmitted(
     arn: Arn,
     invitationId: String,
-    fti: FastTrackInvitation[T],
+    params: InvitationParams,
     result: String,
     failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any]): Future[Unit] =
     auditEvent(
@@ -53,9 +52,9 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "factCheck"            -> result,
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType"         -> fti.clientIdentifierType,
-        "clientId"             -> fti.clientIdentifier.value,
-        "service"              -> fti.service
+        "clientIdType"         -> params.clientIdentifierType,
+        "clientId"             -> params.clientId,
+        "service"              -> params.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
 

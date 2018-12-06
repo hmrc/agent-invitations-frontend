@@ -15,19 +15,18 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+
+import org.joda.time.LocalDate
 import play.api.libs.json.Json
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-case class ClientConsentsJourneyState(consents: Seq[ClientConsent], agencyName: Option[String]) {
+case class ClientConsent(
+  invitationId: InvitationId,
+  expiryDate: LocalDate,
+  serviceKey: String,
+  consent: Boolean,
+  processed: Boolean = false)
 
-  def allDeclinedProcessed = consents.forall(_.consent == false)
-
-  def allAcceptanceFailed = consents.filter(_.consent).forall(_.processed == false)
-
-  def someAcceptanceFailed = consents.filter(_.consent).exists(_.processed == false)
-
-  def allProcessed = consents.forall(_.processed)
-}
-
-object ClientConsentsJourneyState {
-  implicit val format = Json.format[ClientConsentsJourneyState]
+object ClientConsent {
+  implicit val format = Json.format[ClientConsent]
 }

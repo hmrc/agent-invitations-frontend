@@ -16,17 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-
-case class Consent(
-  invitationId: InvitationId,
-  expiryDate: LocalDate,
-  serviceKey: String,
-  consent: Boolean,
-  processed: Boolean = false)
-
-object Consent {
-  implicit val format = Json.format[Consent]
+trait InvitationParams {
+  def service: String
+  def clientIdentifierType: String
+  def clientId: String
 }

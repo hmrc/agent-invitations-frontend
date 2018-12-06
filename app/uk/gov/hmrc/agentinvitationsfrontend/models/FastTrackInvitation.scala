@@ -59,12 +59,14 @@ object CurrentAuthorisationRequest {
   }
 }
 
-trait FastTrackInvitation[T <: TaxIdentifier] {
+trait FastTrackInvitation[T <: TaxIdentifier] extends InvitationParams {
   def clientType: Option[String]
   def service: String
   def clientIdentifier: T
   def clientIdentifierType: String
   def knownFact: Option[KnownFact]
+
+  def clientId: String = clientIdentifier.value
 }
 
 case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[Postcode])

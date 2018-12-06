@@ -18,38 +18,93 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
+import play.api.Logger
+import play.api.mvc.Request
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, Services, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
-  val citizenDetailsConnector: CitizenDetailsConnector)
+  val citizenDetailsConnector: CitizenDetailsConnector,
+  auditService: AuditService)
     extends GetClientName {
 
-  def createInvitation(arn: Arn, service: String, clientIdentifierType: String, clientIdentifier: TaxIdentifier)(
+  def createInvitation(arn: Arn, params: InvitationParams, featureFlags: FeatureFlags)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[StoredInvitation] = {
-    val agentInvitation = AgentInvitation(service, clientIdentifierType, clientIdentifier.value)
+    ec: ExecutionContext,
+    request: Request[_]): Future[InvitationId] = {
+    val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
 
-    for {
+    (for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
       invitation <- invitationsConnector
                      .getInvitation(locationOpt.getOrElse {
                        throw new Exception("Invitation location expected; but missing.")
                      })
-    } yield invitation
+    } yield invitation)
+      .map(invitation => {
+        val id = invitation.selfUrl.toString.split("/").toStream.last
+        if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
+              | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
+              | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+          auditService.sendAgentInvitationSubmitted(arn, id, params, "Success")
+        } else auditService.sendAgentInvitationSubmitted(arn, id, params, "Not Required")
+        InvitationId(id)
+      })
+      .recoverWith {
+        case NonFatal(e) =>
+          Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+          auditService.sendAgentInvitationSubmitted(arn, "", params, "Fail", Option(e.getMessage))
+          Future.failed(e)
+      }
   }
 
-  def createMultiInvitation(arn: Arn, clientType: String)(
+  def createMultipleInvitations(
+    arn: Arn,
+    clientType: String,
+    requests: Set[AuthorisationRequest],
+    featureFlags: FeatureFlags)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[String] =
+    ec: ExecutionContext,
+    request: Request[_]): Future[Set[AuthorisationRequest]] =
+    Future.sequence(requests.map(params => {
+      val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
+
+      (for {
+        locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
+        invitation <- invitationsConnector
+                       .getInvitation(locationOpt.getOrElse {
+                         throw new Exception("Invitation location expected; but missing.")
+                       })
+      } yield invitation)
+        .map(invitation => {
+          val id = invitation.selfUrl.toString.split("/").toStream.last
+          if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
+                | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
+                | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+            auditService.sendAgentInvitationSubmitted(arn, id, params, "Success")
+          } else auditService.sendAgentInvitationSubmitted(arn, id, params, "Not Required")
+          params.copy(state = AuthorisationRequest.CREATED)
+        })
+        .recover {
+          case NonFatal(e) =>
+            Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+            auditService.sendAgentInvitationSubmitted(arn, "", params, "Fail", Option(e.getMessage))
+            params.copy(state = AuthorisationRequest.FAILED)
+        }
+    }))
+
+  def createAgentLink(arn: Arn, clientType: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     invitationsConnector.createAgentLink(arn, clientType).map {
       case Some(multiInv) => multiInv
       case None           => throw new Exception("Creating multi-invitation link failed")
