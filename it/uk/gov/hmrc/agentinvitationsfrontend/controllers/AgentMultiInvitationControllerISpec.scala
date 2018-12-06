@@ -122,6 +122,60 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
     }
 
+    "Redirect to complete if NO is selected and all invitation creation is successful" in new AgentAuthorisationFullCacheScenario {
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReference(arn, uid, "personal")
+
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+    }
+
+    "What to do if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
+      givenInvitationCreationFails(arn)
+
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "What to do if NO is selected and some invitation creations fail" in new AgentAuthorisationFullCacheScenario {
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationFails(arn)
+
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "Throw an Exception if NO is selected, invitation creation is successful but link creation fails" in new AgentAuthorisationFullCacheScenario {
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", "HMRC-MTD-IT", "NI")
+      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenAgentReferenceNotFound(arn, "personal")
+
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
+    "Throw an Exception if there is nothing in the cache" in {
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
+
+      an[Exception] shouldBe thrownBy {
+        await(result)
+      }
+    }
+
     "Redisplay the page with errors if no option is chosen" in new AgentAuthorisationFullCacheScenario {
 
       val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
@@ -203,7 +257,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
   trait AgentAuthorisationFullCacheScenario {
 
-    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", serviceITSA, mtdItId.value)
+    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value)
     val clientDetail2 = AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value)
     val clientDetail3 = AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value)
 
