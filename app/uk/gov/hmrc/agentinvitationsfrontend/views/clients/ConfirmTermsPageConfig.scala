@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
+import org.joda.time.LocalDate
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
@@ -47,6 +48,9 @@ case class MultiConfirmTermsPageConfig(
       .toSeq
       .sortWith(expiryDateDescending)
   }
+
+  def isPending(consent: ClientConsent): Boolean =
+    if (consent.expiryDate.isBefore(LocalDate.now())) false else true
 }
 
 case class SingleConfirmTermsPageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String) {

@@ -106,12 +106,33 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   }
 
   "GET /accept-tax-agent-invitation/consent/:clientType/:uid (multi consent)" should {
-    "show the multi consent page with separate consent for each service" in {
+    "show the multi consent page with separate consent for each service for personal" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenAgentReferenceRecordExists(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result,
+        "We need your consent to share information",
+        "Report my income and expenses through software",
+        "5 March 9999",
+        "View your PAYE income record",
+        "1 November 9999",
+        "Submit my VAT Returns through software",
+        "25 December 9999"
+      )
+
+    }
+
+    "show the multi consent page with separate consent for each service for business" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      givenAgentReferenceRecordExists(arn, uid)
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.getMultiConfirmTerms("business", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
@@ -148,7 +169,17 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         "25 December 2000")
     }
 
-    "redirect to notFound if no invitations are found" in {
+    "redirect to not found invitation if there are no invitations found" in {
+      givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
+      givenAgentReferenceRecordExists(arn, uid)
+      givenGetAgencyNameClientStub(arn)
+
+      val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+    }
+
+    "redirect to notFound if an exception is thrown by an external service" in {
       givenAllInvitationIdsByStatusReturnsNotFound(uid, "Pending")
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -304,34 +335,35 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "redirect to wrong-account-type page when submitting confirm terms" in {
       await(
-        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
-          Seq(
-            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
-          ),
-          Some("My agency Name")
-        )))
+    testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+      Seq(
+        ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+      ),
+      Some("My agency Name")
+    )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+    ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest())
-        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(
+    authorisedAsAnyOrganisationClient(FakeRequest())
+      .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+      .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
 
       await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
-        ClientConsentsJourneyState(
-          Seq(
-            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
-          ),
-          Some("My agency Name")
-        ))
+    ClientConsentsJourneyState(
+      Seq(
+        ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+        ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+        ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+      ),
+      Some("My agency Name")
+    ))
     }
 
   }
