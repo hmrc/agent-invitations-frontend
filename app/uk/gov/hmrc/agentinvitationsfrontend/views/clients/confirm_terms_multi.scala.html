@@ -67,10 +67,6 @@
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
 }
 
-@isPending(expiryDate: LocalDate) = @{
-    if(expiryDate.isAfter(LocalDate.now()) || expiryDate == LocalDate.now()) true else false
-}
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
@@ -97,21 +93,20 @@
             </legend>
                 @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
 
-                    @if(isPending(consent.expiryDate)) {
+                    @if(pageConfig.isPending(consent)) {
 
                         <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
-                      @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent == true) {
-                          @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                              '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
-                              '_groupDivClass -> "div-underline",
-                              '_value -> "true")
-                      }else {
-                          @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                              '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
-                              '_groupDivClass -> "div-underline")
-                      }
-
+                        @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
+                            @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                                '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                                '_groupDivClass -> "div-underline",
+                                '_value -> "true")
+                        } else {
+                            @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                                '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                                '_groupDivClass -> "div-underline")
+                        }
                     }
                 }
 

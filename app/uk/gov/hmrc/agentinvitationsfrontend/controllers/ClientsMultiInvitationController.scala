@@ -83,14 +83,16 @@ class ClientsMultiInvitationController @Inject()(
     withAuthorisedAsAnyClient { (affinity, _) =>
       if (matchClientTypeToGroup(affinity, clientType)) {
         withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
-          journeyStateCache
-            .save(ClientConsentsJourneyState(consents, Some(agencyName)))
-            .map { _ =>
-              Ok(
-                confirm_terms_multi(
-                  confirmTermsMultiForm,
-                  MultiConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
-            }
+          if (consents.nonEmpty) {
+            journeyStateCache
+              .save(ClientConsentsJourneyState(consents, Some(agencyName)))
+              .map { _ =>
+                Ok(
+                  confirm_terms_multi(
+                    confirmTermsMultiForm,
+                    MultiConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
+              }
+          } else targets.NotFoundInvitation
         }.recoverWith {
           case _: NotFoundException => targets.NotFoundInvitation
         }
@@ -136,35 +138,22 @@ class ClientsMultiInvitationController @Inject()(
         val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
         confirmTermsMultiForm
           .bindFromRequest()
-          .fold(
-            formWithErrors =>
-              for {
-                journeyState <- journeyStateCache.get
-                result <- {
-                  Future successful Ok(confirm_terms_multi(
-                    formWithErrors,
-                    MultiConfirmTermsPageConfig(
-                      journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
-                      clientType,
-                      uid,
-                      journeyState.consents)
-                  ))
-                }
-              } yield result,
-            confirmedTerms => {
-              val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
-              for {
-                _ <- journeyStateCache.transform(updateMultiInvitation(updatedConfirmedTerms))
-              } yield {
-                Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
-                  .addingToSession(
-                    "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
-                    "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
-                    "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
-                  )
-              }
+          .value match {
+          case Some(confirmedTerms) => {
+            val updatedConfirmedTerms = determineNewTerms(serviceKey, confirmedTermsSession, confirmedTerms)
+            for {
+              _ <- journeyStateCache.transform(updateMultiInvitation(updatedConfirmedTerms))
+            } yield {
+              Redirect(routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid))
+                .addingToSession(
+                  "itsaChoice" -> updatedConfirmedTerms.itsaConsent.toString,
+                  "afiChoice"  -> updatedConfirmedTerms.afiConsent.toString,
+                  "vatChoice"  -> updatedConfirmedTerms.vatConsent.toString
+                )
             }
-          )
+          }
+          case None => targets.InvalidJourneyState
+        }
       } else {
         Future successful Redirect(routes.ClientErrorController.incorrectClientType())
           .addingToSession("clientType" -> clientType)
@@ -236,10 +225,8 @@ class ClientsMultiInvitationController @Inject()(
                   Redirect(routes.ClientsMultiInvitationController.showAllResponsesFailed())
                 } else if (modifiedCache.someAcceptanceFailed) {
                   Redirect(routes.ClientsMultiInvitationController.showSomeResponsesFailed())
-                } else if (modifiedCache.allProcessed) {
-                  Redirect(routes.ClientsMultiInvitationController.invitationAccepted())
                 } else {
-                  Redirect(routes.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid))
+                  Redirect(routes.ClientsMultiInvitationController.invitationAccepted())
                 }
               }
             }

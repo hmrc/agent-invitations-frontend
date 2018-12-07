@@ -179,6 +179,17 @@ trait ACAStubs {
         )
     )
 
+  def givenAllInvitationIdsByStatusReturnsEmpty(uid: String, status: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[]
+                 |""".stripMargin)))
+
 
   def givenAgentReferenceNotFound(arn: Arn, clientType: String): Unit =
     stubFor(
