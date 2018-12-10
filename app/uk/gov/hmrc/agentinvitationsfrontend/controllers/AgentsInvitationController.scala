@@ -439,6 +439,7 @@ class AgentsInvitationController @Inject()(
                             case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
                             case Some(journeyState) => journeyState
                           }
+                          invitations <- invitationsService.getClientInvitation(clientId, )
                           _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
                                 if (currentCache.clientType.nonEmpty) currentCache.clientType
                                 else invitationWithClientDetails.clientType.getOrElse(""),
@@ -800,6 +801,12 @@ class AgentsInvitationController @Inject()(
   val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       Future successful Ok(all_authorisations_removed())
+    }
+  }
+
+  val alreadyAuthorisationPending: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      Future successful Ok
     }
   }
 

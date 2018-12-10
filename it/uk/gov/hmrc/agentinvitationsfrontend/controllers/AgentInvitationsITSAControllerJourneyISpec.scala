@@ -372,6 +372,20 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 303
     }
 
+    "redirect to already-authorisation-pending when the agent has already created an invitation for this client and service" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, "itsa", "Pending")
+      givenTradingName(validNino, "64 Bit")
+      givenAgentReference(arn, "ABCDEFGH", "personal")
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.alreadyAuthorisationPending().url
+    }
+
     "return 200 for not selecting an option" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
