@@ -471,12 +471,13 @@ class AgentsInvitationController @Inject()(
       for {
         journeyStateOpt <- journeyStateCache.fetch
         result = journeyStateOpt match {
-          case None => Redirect(routes.AgentsInvitationController.showClientType())
-          case Some(journeyState) =>
+          case Some(journeyState) if journeyState.requests.nonEmpty =>
             Ok(
               review_authorisations(
                 ReviewAuthorisationsPageConfig(journeyState),
                 agentConfirmationForm("error.review-authorisation.required")))
+          case Some(_) => Redirect(routes.AgentsInvitationController.allAuthorisationsRemoved())
+          case None    => Redirect(routes.AgentsInvitationController.showClientType())
         }
       } yield result
     }
@@ -793,6 +794,12 @@ class AgentsInvitationController @Inject()(
           case _          => throw new Exception("Unsupported Service")
         }
       }
+    }
+  }
+
+  val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      Future successful Ok(all_authorisations_removed())
     }
   }
 

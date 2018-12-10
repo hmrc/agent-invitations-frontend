@@ -106,6 +106,14 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       verifyAuthoriseAttempt()
     }
 
+    "redirect to the all authorisation removed page if there are no authorisations in the cache" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.allAuthorisationsRemoved().url)
+    }
+
     "redirect to select clientType page is there is nothing in the cache" in {
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
@@ -252,6 +260,18 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       checkHtmlResultWithBodyText(result,
         "Select yes if you want to remove the authorisation request for this client")
 
+    }
+  }
+
+  "GET /all-authorisations-removed" should {
+    val request = FakeRequest("GET", "/agents/all-authorisations-removed")
+    "Display the all authorisations removed error page" in {
+      val result = controller.allAuthorisationsRemoved()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Authorisation request removed",
+        "You have removed all of your new authorisation requests.",
+        "Start a new request")
     }
   }
 

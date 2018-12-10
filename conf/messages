@@ -185,6 +185,11 @@ client-request-cancelled.header=The tax agent has cancelled this authorisation r
 client-request-cancelled.p=Ask the tax agent to send another request if you still want to authorise them.
 client-request-cancelled.button=Finish and sign out
 
+#All authorisations removed
+all-authorisations-removed.header=Authorisation request removed
+all-authorisations-removed.p=You have removed all of your new authorisation requests.
+all-authorisations-removed.button=Start a new request
+
 # Client Pages
 # Landing Page
 landing-page.itsa.header=Do you want to authorise your tax agent to report your income and expenses through software?
