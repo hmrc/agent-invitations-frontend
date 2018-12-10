@@ -532,3 +532,8 @@ authorisation-cancelled.track.button=Return to track your recent authorisation r
 cancel-auth-problem.header=Sorry, there is a problem with the service
 cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 cancel-auth-problem.button=Try again
+
+#Pending authorisation already exists
+pending-authorisation-exists.header=There is a problem
+pending-authorisation-exists.p=You have already added the same authorisation request for this client.
+pending-authorisation-exists.button=Return to your authorisation requests

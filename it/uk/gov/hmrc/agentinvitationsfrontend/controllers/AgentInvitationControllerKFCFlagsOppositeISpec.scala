@@ -19,7 +19,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port"                                -> wireMockPort,
+        "microservice.services.auth.port"                                     -> wireMockPort,
         "microservice.services.agent-client-authorisation.port"               -> wireMockPort,
         "microservice.services.agent-services-account.port"                   -> wireMockPort,
         "microservice.services.company-auth.login-url"                        -> wireMockHost,
@@ -166,7 +166,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
+      givenInvitationCreationSucceeds(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        identifierPIR)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -184,7 +191,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
 
       val result = submitIdentifyClient(
@@ -221,7 +235,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
 
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -236,7 +257,14 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
+      givenInvitationCreationSucceeds(
+        arn,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        identifierPIR)
 
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -276,7 +304,13 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -303,7 +337,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 200 and no client name was found for PERSONAL-INCOME-RECORD" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromManual))
       givenCitizenDetailsReturns404For(validNino.value)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -325,6 +360,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
@@ -351,7 +387,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url

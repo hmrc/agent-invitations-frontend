@@ -137,7 +137,9 @@ class InvitationsConnector @Inject()(
         .map(obj => (obj \ "_embedded" \ "invitations").as[Seq[StoredInvitation]])
     }
 
-  def getAllPendingInvitationsForClient(arn: Arn, clientId: String, service:String)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+  def getAllPendingInvitationsForClient(arn: Arn, clientId: String, service: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Seq[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
       val url = getAgencyInvitationsForClientUrl(arn, clientId, service)
       http
