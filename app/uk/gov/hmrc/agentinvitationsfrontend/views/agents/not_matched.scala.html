@@ -19,14 +19,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(hasJourneyCache: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-matched.$serviceId.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-matched.$serviceId.header"), serviceId))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"not-matched.header"), ""))) {
 
-  <h1 class="heading-xlarge">@Messages(s"not-matched.$serviceId.header")</h1>
+  <h1 id="notMatchedHeader" class="heading-xlarge">@Messages(s"not-matched.header")</h1>
 
-  <p id="notMatched">@Messages(s"not-matched.$serviceId.description")</p>
+  <p id="notMatched">@Messages(s"not-matched.description")</p>
 
-  <a href="@routes.AgentsInvitationController.showIdentifyClient()" class="button">@Messages(s"not-matched.$serviceId.button")</a>
+  <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
+
+  <a href="@routes.AgentsInvitationController.showIdentifyClient()" class="button">@Messages(s"not-matched.button")</a>
+
+  @if(hasJourneyCache) {
+   <a href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("not-matched.review-link")</a>
+  }
 
 }

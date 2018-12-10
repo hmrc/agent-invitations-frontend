@@ -303,13 +303,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, notEnrolled)
   }
 
-  "GET /agents/not-matched" should {
-    val request = FakeRequest("GET", "/agents/not-matched")
-    val notMatched = controller.notMatched()
-
-    behave like anAuthorisedAgentEndpoint(request, notMatched)
-  }
-
   def noKeyStoreCacheFound(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent]) =
     "return 303, redirect to select-service when no keystore cache is found" in {
       val result = await(action(authorisedAsValidAgent(request, arn.value)))

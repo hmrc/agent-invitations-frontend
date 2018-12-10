@@ -230,32 +230,6 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
   }
 
-  "GET /agents/not-matched" should {
-    val request = FakeRequest("GET", "/agents/not-matched")
-    val notMatched = controller.notMatched()
-
-    "return 403 for authorised Agent who submitted not matching known facts for ITSA" in {
-      val invitation =
-        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
-      testCurrentAuthorisationRequestCache.save(invitation)
-
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 403
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(
-          "generic.title",
-          htmlEscapedMessage("not-matched.itsa.header"),
-          htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.description"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.itsa.button"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
-    }
-  }
-
   "GET /agents/not-enrolled" should {
     val request = FakeRequest("GET", "/agents/not-enrolled")
     val notEnrolled = controller.notEnrolled()
