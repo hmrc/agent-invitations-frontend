@@ -32,7 +32,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.description"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.advice"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.button"))
-      checkHtmlResultWithNotBodyText(result, "Return to review authorisations")
+      checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
 
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -54,7 +54,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, "The details you entered do not match to the same client.")
       checkHtmlResultWithBodyText(result, "Check them and try again.")
       checkHtmlResultWithBodyText(result,"Try again")
-      checkHtmlResultWithBodyText(result, "Return to review authorisations")
+      checkHtmlResultWithBodyText(result, "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }

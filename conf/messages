@@ -172,7 +172,7 @@ not-matched.header=There is a problem
 not-matched.description = The details you entered do not match to the same client.
 not-matched.advice = Check them and try again.
 not-matched.button = Try again
-not-matched.review-link = Return to review authorisations
+not-matched.review-link = Return to your authorisation requests
 
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request
