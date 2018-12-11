@@ -29,10 +29,10 @@
 
   <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
 
-  <a href="@routes.AgentsInvitationController.showIdentifyClient()" class="button">@Messages(s"not-matched.button")</a>
+  <a id="showIdentifyClientButton" href="@routes.AgentsInvitationController.showIdentifyClient()" class="button">@Messages(s"not-matched.button")</a>
 
   @if(hasJourneyCache) {
-   <a href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("not-matched.review-link")</a>
+   <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link-small" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("not-matched.review-link")</a></p>
   }
 
 }
