@@ -29,7 +29,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "generic.title",
           "There is a problem",
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, "The details you entered do not match to the same client.")
+      checkHtmlResultWithBodyText(result, "The details you entered do not match to a client.")
       checkHtmlResultWithBodyText(result, "Check them and try again.")
       checkHtmlResultWithBodyText(result,"Try again")
       checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
@@ -50,7 +50,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "generic.title",
           "There is a problem",
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, "The details you entered do not match to the same client.")
+      checkHtmlResultWithBodyText(result, "The details you entered do not match to a client.")
       checkHtmlResultWithBodyText(result, "Check them and try again.")
       checkHtmlResultWithBodyText(result,"Try again")
       checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
@@ -71,7 +71,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "generic.title",
           "There is a problem",
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, "The details you entered do not match to the same client.")
+      checkHtmlResultWithBodyText(result, "The details you entered do not match to a client.")
       checkHtmlResultWithBodyText(result, "Check them and try again.")
       checkHtmlResultWithBodyText(result,"Try again")
       checkHtmlResultWithBodyText(result, "Return to your authorisation requests")
