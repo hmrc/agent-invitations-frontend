@@ -21,6 +21,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentMultiAuthorisationJourneyStateCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.not_matched
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -42,7 +43,8 @@ class AgentsErrorController @Inject()(
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       journeyStateCache.fetch.map { aggregateOpt =>
-        Forbidden(not_matched(aggregateOpt.nonEmpty))
+        val aggregate = aggregateOpt.getOrElse(AgentMultiAuthorisationJourneyState("", Set.empty))
+        Forbidden(not_matched(aggregate.requests.nonEmpty))
       }
     }
   }
