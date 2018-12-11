@@ -209,30 +209,4 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     }
   }
 
-  "GET /agents/not-matched" should {
-    val request = FakeRequest("GET", "/agents/not-matched")
-    val notMatched = controller.notMatched()
-
-    "return 403 for authorised Agent who enter nino for IRV but no record found" in {
-      val invitation = CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth))
-      testCurrentAuthorisationRequestCache.save(invitation)
-
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 403
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(
-          "generic.title",
-          htmlEscapedMessage("not-matched.afi.header"),
-          htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.description"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-matched.afi.button"))
-      checkHasAgentSignOutLink(result)
-      verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
-    }
-
-    behave like anAuthorisedAgentEndpoint(request, notMatched)
-  }
 }
