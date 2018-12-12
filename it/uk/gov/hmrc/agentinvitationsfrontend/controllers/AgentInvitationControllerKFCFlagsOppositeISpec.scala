@@ -174,6 +174,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "ni",
         servicePIR,
         identifierPIR)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
