@@ -74,7 +74,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
 
-        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        testCurrentAuthorisationRequestCache.save(
+          CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientType"       -> "personal",

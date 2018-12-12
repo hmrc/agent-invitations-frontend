@@ -23,7 +23,6 @@ case class AuthorisationRequest(
   clientName: String,
   service: String,
   clientId: String,
-  itemId: String = AuthorisationRequest.randomItemId,
   state: String = AuthorisationRequest.NEW)
     extends InvitationParams {
 
@@ -33,7 +32,10 @@ case class AuthorisationRequest(
     case Services.HMRCPIR    => "ni"
   }
 
+  lazy val itemId: String = AuthorisationRequest.randomItemId
+
 }
+
 object AuthorisationRequest {
 
   private val IdCharacterSet = "ABCDEFGHJKLMNOPRSTUWXYZ123456789"
