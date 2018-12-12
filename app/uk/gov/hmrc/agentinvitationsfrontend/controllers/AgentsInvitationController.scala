@@ -795,19 +795,6 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val notMatched: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.get.flatMap { aggregate =>
-        aggregate.service match {
-          case HMRCMTDVAT => Future successful Forbidden(not_matched(Services.messageKeyForVAT))
-          case HMRCMTDIT  => Future successful Forbidden(not_matched(Services.messageKeyForITSA))
-          case HMRCPIR    => Future successful Forbidden(not_matched(Services.messageKeyForAfi))
-          case _          => throw new Exception("Unsupported Service")
-        }
-      }
-    }
-  }
-
   val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       Future successful Ok(all_authorisations_removed())
@@ -885,7 +872,7 @@ class AgentsInvitationController @Inject()(
           case Some(false) =>
             currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
               Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
-              Redirect(routes.AgentsInvitationController.notMatched())
+              Redirect(routes.AgentsErrorController.notMatched())
             }
           case None =>
             currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
@@ -923,7 +910,7 @@ class AgentsInvitationController @Inject()(
                            fastTrackItsaInvitation,
                            "Fail",
                            Some("POSTCODE_DOES_NOT_MATCH"))
-                         Redirect(routes.AgentsInvitationController.notMatched())
+                         Redirect(routes.AgentsErrorController.notMatched())
                        }
                      case None =>
                        currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
@@ -962,15 +949,15 @@ class AgentsInvitationController @Inject()(
                 }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Future successful Redirect(routes.AgentsInvitationController.notMatched())
+                Future successful Redirect(routes.AgentsErrorController.notMatched())
               case None =>
                 Logger(getClass).warn(
                   s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Future successful Redirect(routes.AgentsInvitationController.notMatched())
+                Future successful Redirect(routes.AgentsErrorController.notMatched())
             }
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
-          Future successful Redirect(routes.AgentsInvitationController.notMatched())
+          Future successful Redirect(routes.AgentsErrorController.notMatched())
       }
     } else {
       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {

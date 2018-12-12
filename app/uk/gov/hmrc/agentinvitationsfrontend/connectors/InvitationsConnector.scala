@@ -66,7 +66,7 @@ class InvitationsConnector @Inject()(
         .print(createdOnOrAfter)}"
     )
 
-  private[connectors] def getAgencyInvitationsForClientUrl(arn: Arn, clientId: String, service: String): URL =
+  private[connectors] def getAllPendingInvitationsForClientUrl(arn: Arn, clientId: String, service: String): URL =
     new URL(
       baseUrl,
       s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Pending&clientId=$clientId&service=$service"
@@ -141,7 +141,7 @@ class InvitationsConnector @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
-      val url = getAgencyInvitationsForClientUrl(arn, clientId, service)
+      val url = getAllPendingInvitationsForClientUrl(arn, clientId, service)
       http
         .GET[JsObject](url.toString)
         .map(obj => (obj \ "_embedded" \ "invitations").as[Seq[StoredInvitation]])

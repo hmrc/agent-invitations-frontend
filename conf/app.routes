@@ -27,7 +27,7 @@ POST        /agents/delete                                      @uk.gov.hmrc.age
 
 # Error Agent Endpoints
 GET         /agents/not-enrolled                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notEnrolled
-GET         /agents/not-matched                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notMatched
+GET         /agents/not-matched                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notMatched
 GET         /agents/all-authorisations-removed                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.allAuthorisationsRemoved
 GET         /agents/already-authorisation-pending                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.pendingAuthorisationExists
 

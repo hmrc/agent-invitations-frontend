@@ -168,17 +168,11 @@ not-enrolled.vat.description=You cannot ask for authorisation from this client u
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
-not-matched.itsa.header=There is a problem
-not-matched.itsa.description = We could not find any records that match the details you entered.
-not-matched.itsa.button = Try again
-
-not-matched.vat.header=There is a problem
-not-matched.vat.description = We could not find any records that match the details you entered.
-not-matched.vat.button = Try again
-
-not-matched.afi.header=There is a problem
-not-matched.afi.description = We could not find any records that match the details you entered.
-not-matched.afi.button = Try again
+not-matched.header=There is a problem
+not-matched.description = The details you entered do not match to a client.
+not-matched.advice = Check them and try again.
+not-matched.button = Try again
+not-matched.review-link = Return to your authorisation requests
 
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request
