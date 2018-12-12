@@ -201,7 +201,7 @@ class InvitationsService @Inject()(
   def hasPendingInvitationsFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.getAllPendingInvitationsForClient(arn, clientId, service).map(_.nonEmpty)
+    invitationsConnector.getAllPendingInvitationsForClient(arn, clientId, service).map(s => s.nonEmpty)
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"

@@ -439,21 +439,28 @@ class AgentsInvitationController @Inject()(
                             case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
                             case Some(journeyState) => journeyState
                           }
-                          _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
-                                if (currentCache.clientType.nonEmpty) currentCache.clientType
-                                else invitationWithClientDetails.clientType.getOrElse(""),
-                                currentCache.requests ++ Seq(AuthorisationRequest(clientName, service, clientId))
-                              ))
+
                           hasPendingInvitations <- invitationsService.hasPendingInvitationsFor(arn, clientId, service)
                           result <- if (hasPendingInvitations) {
                                      Future successful Redirect(
                                        routes.AgentsInvitationController.pendingAuthorisationExists())
-                                   } else if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
-                                     Future successful Redirect(
-                                       routes.AgentsInvitationController.showReviewAuthorisations())
-                                   else if (invitationWithClientDetails.clientType == business)
-                                     confirmAndRedirect(arn, invitationWithClientDetails, false)
-                                   else Future successful Redirect(routes.AgentsInvitationController.showClientType())
+                                   } else
+                                     for {
+                                       _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
+                                             if (currentCache.clientType.nonEmpty) currentCache.clientType
+                                             else invitationWithClientDetails.clientType.getOrElse(""),
+                                             currentCache.requests ++ Seq(
+                                               AuthorisationRequest(clientName, service, clientId))
+                                           ))
+                                       redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
+                                                    Future successful Redirect(
+                                                      routes.AgentsInvitationController.showReviewAuthorisations())
+                                                  else if (invitationWithClientDetails.clientType == business)
+                                                    confirmAndRedirect(arn, invitationWithClientDetails, false)
+                                                  else
+                                                    Future successful Redirect(
+                                                      routes.AgentsInvitationController.showClientType())
+                                     } yield redirect
                         } yield result
                       } else {
                         for {
