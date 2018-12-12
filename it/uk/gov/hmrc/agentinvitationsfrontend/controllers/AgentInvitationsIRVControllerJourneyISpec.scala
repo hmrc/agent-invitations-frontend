@@ -73,6 +73,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
@@ -90,10 +91,12 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
       }
+
       "redirect to client-type when a valid NINO is submitted but cache is empty" in {
         givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
@@ -108,6 +111,30 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      }
+
+      "redirect to already-authorisation-pending when a valid NINO is submitted but authorisation already exists" in {
+        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+        givenAgentReference(arn, "ABCDEFGH", "personal")
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+        givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
+
+        testCurrentAuthorisationRequestCache.save(
+          CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody(
+            "clientType"       -> "personal",
+            "service"          -> servicePIR,
+            "clientIdentifier" -> validNino.value,
+            "knownFact.year"   -> "1980",
+            "knownFact.month"  -> "07",
+            "knownFact.day"    -> "07"
+          )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.pendingAuthorisationExists().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {

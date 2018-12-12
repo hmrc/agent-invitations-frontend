@@ -733,9 +733,23 @@ class AgentsInvitationController @Inject()(
                 clientIdentifierType = "ni",
                 knownFact = userInput.dob
               )
-            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-          } yield redirectResult
+            hasPendingInvitations <- if (invitationWithClientDetails.service.nonEmpty && invitationWithClientDetails.clientIdentifier.nonEmpty)
+                                      invitationsService.hasPendingInvitationsFor(
+                                        arn,
+                                        invitationWithClientDetails.clientIdentifier,
+                                        invitationWithClientDetails.service)
+                                    else Future.successful(false)
+            result <- if (hasPendingInvitations) {
+                       Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+                     } else
+                       for {
+                         _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
+                         redirectResult <- redirectBasedOnCurrentInputState(
+                                            arn,
+                                            invitationWithClientDetails,
+                                            isWhitelisted)
+                       } yield redirectResult
+          } yield result
       )
 
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
