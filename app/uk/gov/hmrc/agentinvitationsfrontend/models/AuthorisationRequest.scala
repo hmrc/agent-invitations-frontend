@@ -23,7 +23,8 @@ case class AuthorisationRequest(
   clientName: String,
   service: String,
   clientId: String,
-  state: String = AuthorisationRequest.NEW)
+  state: String = AuthorisationRequest.NEW,
+  itemId: String = AuthorisationRequest.randomItemId)
     extends InvitationParams {
 
   def clientIdentifierType: String = service match {
@@ -32,8 +33,20 @@ case class AuthorisationRequest(
     case Services.HMRCPIR    => "ni"
   }
 
-  lazy val itemId: String = AuthorisationRequest.randomItemId
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AuthorisationRequest]
 
+  override def equals(other: Any): Boolean = other match {
+    case that: AuthorisationRequest =>
+      (that canEqual this) &&
+        service == that.service &&
+        clientId == that.clientId
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(service, clientId)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object AuthorisationRequest {
