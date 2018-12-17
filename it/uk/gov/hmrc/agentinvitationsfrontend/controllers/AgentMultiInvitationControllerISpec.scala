@@ -29,6 +29,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
+  lazy val errorController: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
+
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   "GET /agents/select-service" should {
@@ -176,15 +178,14 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
     }
 
-    "What to do if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
+    "Redirect to create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationFails(arn)
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
-      an[Exception] shouldBe thrownBy {
-        await(result)
-      }
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsErrorController.allCreateAuthorisationFailed.url)
     }
 
     "What to do if NO is selected and some invitation creations fail" in new AgentAuthorisationFullCacheScenario {
@@ -197,7 +198,14 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "HMRC-MTD-IT",
         "NI")
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      givenInvitationCreationFails(arn)
+      givenInvitationCreationFailsForService(
+        arn,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))

@@ -220,6 +220,29 @@ trait ACAStubs {
     givenInvitationExists(arn, clientId, invitationId, service, serviceIdentifier, "Pending")
   }
 
+  def givenInvitationCreationFailsForService(
+                                       arn: Arn,
+                                       clientId: String,
+                                       invitationId: InvitationId,
+                                       suppliedClientId: String,
+                                       suppliedClientType: String,
+                                       service: String,
+                                       serviceIdentifier: String): Unit = {
+    stubFor(
+      post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
+        .withRequestBody(
+          equalToJson(s"""
+                         |{
+                         |   "service": "$service",
+                         |   "clientIdType": "$suppliedClientType",
+                         |   "clientId":"$suppliedClientId"
+                         |}""".stripMargin)
+        )
+        .willReturn(
+          aResponse()
+            .withStatus(404)))
+  }
+
   def givenInvitationCreationFails(arn: Arn): Unit =
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))

@@ -64,4 +64,6 @@ object AuthorisationRequest {
 
   def eachHasBeenCreatedIn(requests: Set[AuthorisationRequest]): Boolean = requests.forall(_.state == CREATED)
 
+  def noneHaveBeenCreatedIn(requests: Set[AuthorisationRequest]): Boolean = requests.forall(_.state == FAILED)
+
 }
