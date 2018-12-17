@@ -524,6 +524,8 @@ class AgentsInvitationController @Inject()(
                                      "invitationLink" -> multiLink,
                                      "clientType"     -> journeyState.clientType
                                  ))
+                           } else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests)) {
+                             Future successful Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed)
                            } else {
                              Future.failed(new Exception("Invitation creation failed"))
                            }
