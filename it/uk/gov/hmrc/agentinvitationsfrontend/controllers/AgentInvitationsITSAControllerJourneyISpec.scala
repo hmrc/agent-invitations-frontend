@@ -4,7 +4,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -204,13 +204,12 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some("AB101AB"))
       testCurrentAuthorisationRequestCache.save(invitation)
       testCurrentAuthorisationRequestCache.currentSession.item.get shouldBe invitation
+      val authRequest =
+        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest), Some("someurl")))
 
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession(
-            "invitationLink" -> "/invitations/personal/ABCDEFGH/my-client-name",
-            "deadline"       -> "27 December 2017"),
-          arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,

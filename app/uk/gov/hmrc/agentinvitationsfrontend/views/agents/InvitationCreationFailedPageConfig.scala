@@ -18,4 +18,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
-case class InvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])
+trait InvitationCreationFailedPageConfig {
+  def failedRequests: Set[AuthorisationRequest]
+  def isAll: Boolean
+
+  val hasSingleRequest: Boolean = failedRequests.map(_.service).size == 1
+}
+
+case class SomeInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])
+    extends InvitationCreationFailedPageConfig {
+
+  override def failedRequests: Set[AuthorisationRequest] = requests.filter(_.state == AuthorisationRequest.FAILED)
+
+  override def isAll: Boolean = false
+}
+
+case class AllInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])
+    extends InvitationCreationFailedPageConfig {
+
+  override def failedRequests: Set[AuthorisationRequest] = requests.filter(_.state == AuthorisationRequest.FAILED)
+
+  override def isAll: Boolean = true
+}

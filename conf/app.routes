@@ -30,7 +30,8 @@ GET         /agents/not-enrolled                                             @uk
 GET         /agents/not-matched                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notMatched
 GET         /agents/all-authorisations-removed                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.allAuthorisationsRemoved
 GET         /agents/already-authorisation-pending                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.pendingAuthorisationExists
-GET         /agents/create-authorisation-failed                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.allCreateAuthorisationFailed
+GET         /agents/all-create-authorisation-failed                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.allCreateAuthorisationFailed
+GET         /agents/some-create-authorisation-failed                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.someCreateAuthorisationFailed
 
 # Request tracking
 GET         /track                                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests

@@ -20,7 +20,10 @@ import play.api.libs.json.{Json, OFormat}
 
 import scala.util.Random
 
-case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
+case class AgentMultiAuthorisationJourneyState(
+  clientType: String,
+  requests: Set[AuthorisationRequest],
+  agentLink: Option[String] = None)
 
 object AgentMultiAuthorisationJourneyState {
   implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
