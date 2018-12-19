@@ -53,9 +53,7 @@ class TestEndpointsController @Inject()(
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(delete_relationship(testRelationshipForm))
-    }
+    Future successful Ok(delete_relationship(testRelationshipForm))
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
@@ -77,27 +75,23 @@ class TestEndpointsController @Inject()(
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(create_relationship(testRelationshipForm))
-    }
+    Future successful Ok(create_relationship(testRelationshipForm))
   }
 
   def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      testRelationshipForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
-          validFormData => {
-            pirRelationshipConnector
-              .createRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-              .map {
-                case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-                case _       => Redirect(agentRoutes.AgentsInvitationController.notMatched())
-              }
-          }
-        )
-    }
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
+        validFormData => {
+          pirRelationshipConnector
+            .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
+              case _       => Redirect(agentRoutes.AgentsErrorController.notMatched())
+            }
+        }
+      )
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
