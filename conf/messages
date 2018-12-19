@@ -192,6 +192,8 @@ create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
 create-auth-failed.HMRC-MTD-VAT=Report their VAT returns through software
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
+create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.button.try=Try again
 create-auth-failed.button.continue=Continue
 

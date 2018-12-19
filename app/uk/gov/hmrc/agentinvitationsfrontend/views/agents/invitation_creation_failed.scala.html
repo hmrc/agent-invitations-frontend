@@ -69,8 +69,11 @@
       ) {
           <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
           <p>
-              You can continue without these requests, or
-              <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+              @if(config.hasSingleRequest) {
+                  @Html(Messages("create-auth-failed.link-text.one"))
+              }else {
+                  @Html(Messages("create-auth-failed.link-text.some"))
+              }
           </p>
       }
 
