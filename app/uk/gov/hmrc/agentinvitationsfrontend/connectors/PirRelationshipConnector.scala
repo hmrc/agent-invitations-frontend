@@ -85,4 +85,20 @@ class PirRelationshipConnector @Inject()(
     s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"
 
   private def craftUrl(location: String) = new URL(baseUrl, location)
+
+  /* TEST ONLY Connector method for create relationship. This method should not be used in production code */
+  def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Int] = {
+    val url = new URL(
+      baseUrl,
+      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+    val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+    http
+      .PUT[JsObject, HttpResponse](url.toString, body)
+      .map(_.status)
+      .recover {
+        case _: Upstream5xxResponse => 500
+      }
+  }
 }
