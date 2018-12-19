@@ -74,9 +74,19 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, notMatched)
   }
 
-  "GET /create-authorisation-failed" should {
-    val request = FakeRequest("GET", "/create-authorisation-failed")
-    "display the create authorisation failed error page" in new AgentAuthorisationFullCacheScenario {
+  "GET /all-create-authorisation-failed" should {
+    val request = FakeRequest("GET", "/all-create-authorisation-failed")
+    "display the all create authorisation failed error page" in {
+      val clientDetail1 =
+        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+      val clientDetail2 =
+        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.FAILED)
+      val clientDetail3 =
+        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.FAILED)
+
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+
       val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -89,19 +99,56 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         "Malcolm Pirson",
         "View their PAYE income record",
         "Sara Vaterloo",
-        "Report their VAT returns through software"
+        "Report their VAT returns through software",
+        "Try again"
       )
+    }
+
+    "throw an Exception if there is nothing in the cache" in {
+      val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+
+      intercept[Exception] {
+        await(result)
+      }.getMessage shouldBe "Cached session state expected but not found"
     }
   }
 
-  trait AgentAuthorisationFullCacheScenario {
+  "GET /some-create-authorisation-failed" should {
+    val request = FakeRequest("GET", "/some-create-authorisation-failed")
+    "display the some create authorisation failed error page" in {
+      val clientDetail1 =
+        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+      val clientDetail2 =
+        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.CREATED)
+      val clientDetail3 =
+        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.FAILED)
 
-    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value)
-    val clientDetail2 = AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value)
-    val clientDetail3 = AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
 
-    testAgentMultiAuthorisationJourneyStateCache.save(
-      AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
 
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "Sorry, there is a problem with the service",
+        "We could not create the following authorisation requests.",
+        "Gareth Gates Sr",
+        "Report their income and expenses through software",
+        "Sara Vaterloo",
+        "Report their VAT returns through software",
+        "You can continue without these requests",
+        "Continue"
+      )
+      checkHtmlResultWithNotBodyText(result, "Malcolm Pirson", "View their PAYE income record")
+    }
+
+    "throw an Exception if there is nothing in the cache" in {
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+
+      intercept[Exception] {
+        await(result)
+      }.getMessage shouldBe "Cached session state expected but not found"
+    }
   }
 }

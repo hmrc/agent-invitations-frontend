@@ -31,7 +31,7 @@
     <h1 class="heading-xlarge">@Messages("create-auth-failed.header")</h1>
 
     <p class = "margin-bottom-20">
-  @if(config.requests.map(_.service).size == 1){
+  @if(config.hasSingleRequest){
 
     @Messages(s"create-auth-failed.p1", "request")
 
@@ -40,7 +40,7 @@
   }</p>
 
       <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
-      @for(request <- config.requests) {
+      @for(request <- config.failedRequests) {
           <div>
               <dt class="cya-question">
               @request.clientName
@@ -52,13 +52,29 @@
       }
       </dl>
 
-  <p>@Html(Messages("create-auth-failed.p2", "/invitations/agents/client-type"))</p>
+  @if(config.isAll) {
+  <p>@Html(Messages("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
 
     @form(
         action = Call("POST", routes.AgentsInvitationController.submitReviewAuthorisations().url),
         'id -> "tryAgainInvitationCreation"
     ) {
         <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
-        <div><button class="button" type="submit" id="resendRequest">@Messages("create-auth-failed.button")</button></div>
+        <div><button class="button" type="submit" id="resendRequest">@Messages("create-auth-failed.button.try")</button></div>
     }
+  }else {
+      @form(
+          action = Call("POST", routes.AgentsInvitationController.submitReviewAuthorisations().url),
+          'id -> "tryAgainInvitationCreation"
+      ) {
+          <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
+          <p>
+              You can continue without these requests, or
+              <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+          </p>
+      }
+
+      <a href="@routes.AgentsInvitationController.invitationSent.url" class="button">@Messages("create-auth-failed.button.continue")</a>
+
+  }
 }

@@ -9,6 +9,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,10 +26,11 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name", "clientType" -> "personal"),
-          arn.value))
+      val authRequest =
+        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest), Some("/someUrl/personal")))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -44,9 +46,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString/someUrl/personal"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)
@@ -58,13 +58,11 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession(
-            "invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
-            "clientType" -> "personal",
-            "sessionId"    -> "session12345"),
-          arn.value))
+      val authRequest =
+        AuthorisationRequest("clienty name", servicePIR, validNino.value, AuthorisationRequest.CREATED, "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest), Some("/someUrl/personal")))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -80,9 +78,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString/someUrl/personal"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)
@@ -94,11 +90,11 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
       val continueUrl = ContinueUrl("/someVat/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
-            "clientType" -> "personal"),
-          arn.value))
+      val authRequest =
+        AuthorisationRequest("clienty name", serviceVAT, validVrn.value, AuthorisationRequest.CREATED, "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("business", Set(authRequest), Some("/someUrl/business")))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -114,9 +110,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString/someUrl/business"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkInviteSentExitSurveyAgentSignOutLink(result)

@@ -178,8 +178,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
     }
 
-    "Redirect to create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
+    "Redirect to all create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationFails(arn)
+      givenAgentReference(arn, uid, "personal")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
@@ -188,7 +189,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       redirectLocation(result) shouldBe Some(routes.AgentsErrorController.allCreateAuthorisationFailed.url)
     }
 
-    "What to do if NO is selected and some invitation creations fail" in new AgentAuthorisationFullCacheScenario {
+    "Redirect to some create authorisation failed if NO is selected and some invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationSucceeds(
         arn,
         validNino.value,
@@ -206,13 +207,13 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "vrn",
         serviceVAT,
         identifierVAT)
+      givenAgentReference(arn, uid, "personal")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
-      an[Exception] shouldBe thrownBy {
-        await(result)
-      }
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsErrorController.someCreateAuthorisationFailed.url)
     }
 
     "Throw an Exception if NO is selected, invitation creation is successful but link creation fails" in new AgentAuthorisationFullCacheScenario {
