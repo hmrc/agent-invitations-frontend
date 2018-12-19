@@ -115,7 +115,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
   "GET /some-create-authorisation-failed" should {
     val request = FakeRequest("GET", "/some-create-authorisation-failed")
-    "display the some create authorisation failed error page" in {
+    "display the some create authorisation failed error page with more than one failed request" in {
       val clientDetail1 =
         AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
       val clientDetail2 =
@@ -138,9 +138,33 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         "Sara Vaterloo",
         "Report their VAT returns through software",
         "You can continue without these requests",
-        "Continue"
+        "Continue",
+        "You can continue without these requests"
       )
       checkHtmlResultWithNotBodyText(result, "Malcolm Pirson", "View their PAYE income record")
+    }
+
+    "display the some creation failed error page with one failed request" in {
+      val clientDetail1 =
+        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+      val clientDetail2 =
+        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.CREATED)
+      val clientDetail3 =
+        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.CREATED)
+
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "We could not create the following authorisation request.",
+        "You can continue without this request"
+      )
+      checkHtmlResultWithNotBodyText(result, "Malcolm Pirson", "View their PAYE income record")
+
     }
 
     "throw an Exception if there is nothing in the cache" in {
