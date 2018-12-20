@@ -57,6 +57,22 @@ trait AfiRelationshipStub {
             .withStatus(200)
         ))
 
+  def givenTestOnlyTerminateAfiRelationshipSucceeds(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+        ))
+
+  def givenTerminateAfiRelationshipFails(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(500)
+        ))
+
   def deleteRelationshipFailed(arn: Arn, service: String, clientId: String): Unit =
     stubFor(
       delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
@@ -107,6 +123,31 @@ trait AfiRelationshipStub {
                |}]""".stripMargin
           )
     ))
+
+  def createRelationshipFailed(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(aResponse()
+          .withStatus(500)))
+
+  def givenInactiveRelationshipsIrv(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
+        .willReturn(aResponse()
+          .withStatus(200)
+          .withBody(
+            s"""
+               |[{
+               |   "arn":"${arn.value}",
+               |   "endDate":"2015-09-21T15:21:51.040",
+               |   "clientId":"AB123456A"
+               |},
+               |{  "arn":"${arn.value}",
+               |   "endDate":"2018-09-24T15:21:51.040",
+               |   "clientId":"GZ753451B"
+               |}]""".stripMargin
+          )
+        ))
 
   def givenInactiveRelationshipsIrvNotFound =
     stubFor(

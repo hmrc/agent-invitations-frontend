@@ -57,21 +57,19 @@ class TestEndpointsController @Inject()(
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      testRelationshipForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
-          validFormData => {
-            pirRelationshipConnector
-              .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-              .map {
-                case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-                case _          => Redirect(agentRoutes.AgentsInvitationController.notMatched())
-              }
-          }
-        )
-    }
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
+        validFormData => {
+          pirRelationshipConnector
+            .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
+              case _          => Redirect(agentRoutes.AgentsInvitationController.notMatched())
+            }
+        }
+      )
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
@@ -88,7 +86,7 @@ class TestEndpointsController @Inject()(
             .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
               case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-              case _       => Redirect(agentRoutes.AgentsErrorController.notMatched())
+              case _       => Redirect(agentRoutes.AgentsInvitationController.notMatched())
             }
         }
       )

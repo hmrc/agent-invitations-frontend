@@ -101,4 +101,19 @@ class PirRelationshipConnector @Inject()(
         case _: Upstream5xxResponse => 500
       }
   }
+
+  /* TEST ONLY Connector method for delete relationship. This method should not be used in production code */
+  def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Option[Boolean]] = {
+    val url = new URL(
+      baseUrl,
+      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+    http
+      .DELETE[HttpResponse](url.toString)
+      .map(_ => Some(true))
+      .recover {
+        case _: NotFoundException   => Some(false)
+        case _: Upstream5xxResponse => None
+      }
+  }
 }
