@@ -32,7 +32,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/test-only/relationships/delete")
     val submitDeleteRelationship = controller.submitDeleteRelationship()
     "delete an existing relationship" in {
-      givenTerminateAfiRelationshipSucceeds(arn, afiService, clientId)
+      givenTestOnlyTerminateAfiRelationshipSucceeds(arn, afiService, clientId)
 
       val result = await(
         submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)

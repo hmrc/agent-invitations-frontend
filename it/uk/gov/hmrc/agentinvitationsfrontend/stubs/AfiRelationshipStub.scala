@@ -57,6 +57,15 @@ trait AfiRelationshipStub {
             .withStatus(200)
         ))
 
+  def givenTestOnlyTerminateAfiRelationshipSucceeds(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      delete(urlEqualTo(s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+        ))
+
+
   def givenTerminateAfiRelationshipFails(arn: Arn, service: String, clientId: String): Unit =
     stubFor(
       delete(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))

@@ -64,7 +64,7 @@ class TestEndpointsController @Inject()(
         formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
         validFormData => {
           pirRelationshipConnector
-            .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
               case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
               case _          => Redirect(agentRoutes.AgentsErrorController.notMatched())
