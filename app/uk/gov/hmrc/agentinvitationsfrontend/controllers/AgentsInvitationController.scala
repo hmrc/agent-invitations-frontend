@@ -455,9 +455,9 @@ class AgentsInvitationController @Inject()(
                                        redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
                                                     Future successful Redirect(
                                                       routes.AgentsInvitationController.showReviewAuthorisations())
-                                                  else if (invitationWithClientDetails.clientType == business)
+                                                  else if (invitationWithClientDetails.clientType == business) {
                                                     confirmAndRedirect(arn, invitationWithClientDetails, false)
-                                                  else
+                                                  } else
                                                     Future successful Redirect(
                                                       routes.AgentsInvitationController.showClientType())
                                      } yield redirect
@@ -515,9 +515,7 @@ class AgentsInvitationController @Inject()(
                                           journeyState.clientType,
                                           journeyState.requests,
                                           featureFlags)
-                  generatedAgentLink <- invitationsService.createAgentLink(arn, journeyState.clientType)
-                  _ <- journeyStateCache.save(
-                        journeyState.copy(requests = processedRequests, agentLink = Some(generatedAgentLink)))
+                  _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
                   result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
                              Future successful Redirect(routes.AgentsInvitationController.invitationSent())
                            else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
@@ -753,28 +751,19 @@ class AgentsInvitationController @Inject()(
     for {
       _         <- invitationsService.createInvitation(arn, fti, featureFlags)
       multiLink <- invitationsService.createAgentLink(arn, fti.clientType.getOrElse(""))
-    } yield
-      Redirect(routes.AgentsInvitationController.invitationSent())
-        .addingToSession(
-          "invitationLink" -> multiLink,
-          "clientType"     -> fti.clientType.getOrElse("")
-        )
+    } yield Redirect(routes.AgentsInvitationController.invitationSent())
 
   val invitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { (arn, _) =>
       journeyStateCache.get.flatMap(cacheItem =>
-        cacheItem.agentLink match {
-          case Some(link) =>
-            val invitationUrl: String = s"$externalUrl$link"
-            for {
-              _        <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
-              continue <- continueUrlCache.fetch
-            } yield {
-              val clientType = if (link.contains("personal")) "personal" else "business"
-              Ok(invitation_sent(invitationUrl, continue.isDefined, featureFlags.enableTrackRequests, clientType))
-            }
-          case _ =>
-            throw new RuntimeException("User attempted to browse to invitationSent")
+        for {
+          agentLink <- invitationsService.createAgentLink(arn, cacheItem.clientType)
+          _         <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
+          continue  <- continueUrlCache.fetch
+        } yield {
+          val invitationUrl: String = s"$externalUrl$agentLink"
+          val clientType = if (agentLink.contains("personal")) "personal" else "business"
+          Ok(invitation_sent(invitationUrl, continue.isDefined, featureFlags.enableTrackRequests, clientType))
       })
     }
   }

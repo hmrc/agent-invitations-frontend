@@ -200,10 +200,11 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val invitationSent = controller.invitationSent()
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
+      givenAgentReference(arn, uid, "personal")
       val authRequest =
         AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest), Some("/someurl/personal")))
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -221,7 +222,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage(s"$wireMockBaseUrlAsString/someurl/personal"))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -229,16 +233,11 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
     }
 
-    "throw a RuntimeException when there is no link in the cache" in {
-      val authRequest =
-        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest), None))
-
+    "throw a IllegalStateException when there is nothing in the cache" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
-      intercept[RuntimeException] {
+      intercept[IllegalStateException] {
         await(result)
-      }.getMessage shouldBe "User attempted to browse to invitationSent"
+      }.getMessage shouldBe "Cached session state expected but not found"
     }
   }
 

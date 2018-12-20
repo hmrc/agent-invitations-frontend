@@ -216,34 +216,6 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       redirectLocation(result) shouldBe Some(routes.AgentsErrorController.someCreateAuthorisationFailed.url)
     }
 
-    "Throw an Exception if NO is selected, invitation creation is successful but link creation fails" in new AgentAuthorisationFullCacheScenario {
-      givenInvitationCreationSucceeds(
-        arn,
-        validNino.value,
-        invitationIdITSA,
-        validNino.value,
-        "ni",
-        "HMRC-MTD-IT",
-        "NI")
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-      givenInvitationCreationSucceeds(
-        arn,
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        identifierVAT)
-      givenAgentReferenceNotFound(arn, "personal")
-
-      val result = controller.submitReviewAuthorisations()(
-        authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
-
-      an[Exception] shouldBe thrownBy {
-        await(result)
-      }
-    }
-
     "Throw an Exception if there is nothing in the cache" in {
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
