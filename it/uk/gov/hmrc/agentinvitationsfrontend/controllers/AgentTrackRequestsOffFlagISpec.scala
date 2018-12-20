@@ -70,7 +70,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")

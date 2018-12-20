@@ -48,7 +48,7 @@
     @if(fromFastTrack){
         @back_link_referer(request)
     }else {
-        @back_link(s"${routes.AgentsInvitationController.selectService()}")
+        @back_link(s"${routes.AgentsInvitationController.showSelectService()}")
     }
 
     @if(agentInvitationsForm.hasErrors) {

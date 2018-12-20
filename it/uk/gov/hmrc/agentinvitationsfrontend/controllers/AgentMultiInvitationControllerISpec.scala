@@ -41,7 +41,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         AgentMultiAuthorisationJourneyState(
           "personal",
           Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
-      val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
       checkHasAgentSignOutLink(result)
@@ -53,7 +53,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         AgentMultiAuthorisationJourneyState(
           "business",
           Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
-      val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -68,7 +68,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
           validNino.value,
           Some(validPostcode),
           fromFastTrack))
-      val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -79,7 +79,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         AgentMultiAuthorisationJourneyState(
           "foo",
           Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
-      val result = controller.selectService()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
       verifyAuthoriseAttempt()
@@ -149,7 +149,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "Redirect to complete if NO is selected and all invitation creation is successful" in new AgentAuthorisationFullCacheScenario {
@@ -175,7 +175,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.invitationSent().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showInvitationSent().url)
     }
 
     "Redirect to all create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {

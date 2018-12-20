@@ -102,7 +102,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
     "through select-service, return 400 and prevent agents" when {
       val request = FakeRequest("POST", "/agents/select-service")
-      val submitService = controller.submitService()
+      val submitService = controller.submitSelectService()
 
       "creating an ITSA invitation" in {
         val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))

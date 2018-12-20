@@ -19,7 +19,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
@@ -188,14 +188,14 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
       }
     }
   }
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
 
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
