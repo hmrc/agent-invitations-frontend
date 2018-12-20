@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateKeyStoreCache, AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, AgentMultiAuthorisationJourneyStateKeyStoreCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.logging.SessionId
@@ -92,7 +92,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "GET /agents/select-service" should {
     "return 303 for an authorised Agent without OTAC token but with passcode" in {
       val request = FakeRequest("GET", "/agents/select-service?p=foo123")
-      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result)(timeout).get should be("/verification/otac/login?p=foo123")
       verifyNoAuthoriseAttempt()
@@ -107,7 +107,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
           .willReturn(aResponse()
             .withStatus(200)))
-      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -127,7 +127,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
           .willReturn(aResponse()
             .withStatus(200)))
-      val result = controller.selectService(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -155,7 +155,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
-        val result = controller.submitService(
+        val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
@@ -168,7 +168,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
-        val result = controller.submitService(
+        val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 400
@@ -180,7 +180,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         val request = FakeRequest("POST", "/agents/select-service")
         testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
         val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
-        val result = controller.submitService(
+        val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
@@ -194,7 +194,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
         val serviceForm =
           agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
-        val result = controller.submitService(
+        val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303

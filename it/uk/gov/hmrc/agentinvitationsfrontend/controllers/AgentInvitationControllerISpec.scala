@@ -95,7 +95,8 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val submitClientType = controller.submitClientType()
 
     "return 200 for authorised Agent with no selected service and show error on the page" in {
-      val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> ""), arn.value))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> ""), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -115,7 +116,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   "GET /agents/select-service" should {
     val request = FakeRequest("GET", "/agents/select-service")
-    val selectService = controller.selectService()
+    val selectService = controller.showSelectService()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for personal" in {
       val invitation =
@@ -175,11 +176,14 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 200 for authorised Agent with no personal selected service and show error on the page" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> personal.get,"service" -> ""), arn.value))
+      val result = submitService(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> personal.get, "service" -> ""),
+          arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -196,7 +200,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for authorised Agent with no business selected service and show error on the page" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> business.get,"service" -> ""), arn.value))
+      val result = submitService(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> business.get, "service" -> ""),
+          arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -213,7 +220,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "redirect to select client type if the service is not VAT" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> business.get,"service" -> "HMRC-MTD-IT"), arn.value))
+      val result = submitService(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> business.get, "service" -> "HMRC-MTD-IT"),
+          arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
@@ -221,7 +231,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "redirect to select client type if the service in the form is not supported" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "foo","service" -> "HMRC-MTD-IT"), arn.value))
+      val result = submitService(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> "foo", "service" -> "HMRC-MTD-IT"),
+          arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
@@ -243,7 +256,8 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
@@ -266,7 +280,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
 
     "return exception when no invitation id and deadline found" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
@@ -283,9 +297,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val unsupportedForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(None,"UNSUPPORTED", None, None))
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(None, "UNSUPPORTED", None, None))
 
       intercept[Exception] {
         await(
@@ -307,6 +322,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "return 303, redirect to select-service when no keystore cache is found" in {
       val result = await(action(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 }

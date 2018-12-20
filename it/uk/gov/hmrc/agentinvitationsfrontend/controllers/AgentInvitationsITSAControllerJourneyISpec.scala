@@ -19,7 +19,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
@@ -181,7 +181,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
       }
 
       "redirect to /agents/select-service when there are errors in the form" in {
@@ -190,14 +190,14 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.selectService().url)
+        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
       }
     }
   }
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")

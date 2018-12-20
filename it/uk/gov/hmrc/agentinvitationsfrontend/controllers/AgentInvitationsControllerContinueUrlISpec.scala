@@ -18,7 +18,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")

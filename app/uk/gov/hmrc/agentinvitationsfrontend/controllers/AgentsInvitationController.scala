@@ -158,7 +158,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val selectService: Action[AnyContent] = Action.async { implicit request =>
+  val showSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
       journeyStateCache.fetch.flatMap {
         case Some(basket) if basket.requests.nonEmpty =>
@@ -192,7 +192,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def submitPersonalService(arn: Arn, isWhitelisted: Boolean)(
+  def submitSelectServicePersonal(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[_],
     hc: HeaderCarrier): Future[Result] = {
     val allowedServices = enabledServices(isWhitelisted)
@@ -221,7 +221,7 @@ class AgentsInvitationController @Inject()(
       )
   }
 
-  def submitBusinessService(arn: Arn, isWhitelisted: Boolean)(
+  def submitSelectServiceBusiness(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[_],
     hc: HeaderCarrier): Future[Result] =
     agentInvitationBusinessServiceForm
@@ -254,14 +254,14 @@ class AgentsInvitationController @Inject()(
         }
       )
 
-  val submitService: Action[AnyContent] = Action.async { implicit request =>
+  val submitSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       clientTypeOnlyForm
         .bindFromRequest()
         .fold(
           _ => Future successful Redirect(routes.AgentsInvitationController.showClientType()), {
-            case Some("personal") => submitPersonalService(arn, isWhitelisted)
-            case Some("business") => submitBusinessService(arn, isWhitelisted)
+            case Some("personal") => submitSelectServicePersonal(arn, isWhitelisted)
+            case Some("business") => submitSelectServiceBusiness(arn, isWhitelisted)
             case _                => Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }
         )
@@ -343,7 +343,7 @@ class AgentsInvitationController @Inject()(
       serviceNameForm
         .bindFromRequest()
         .fold(
-          _ => Future successful Redirect(routes.AgentsInvitationController.selectService()), {
+          _ => Future successful Redirect(routes.AgentsInvitationController.showSelectService()), {
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
@@ -353,7 +353,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val checkDetails: Action[AnyContent] = Action.async { implicit request =>
+  val showCheckDetails: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
         case Some(currentInvitation) =>
@@ -369,7 +369,7 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val submitDetails: Action[AnyContent] = Action.async { implicit request =>
+  val submitCheckDetails: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       val cachedCurrentInvitationInput =
         currentAuthorisationRequestCache.fetch.map(_.getOrElse(CurrentAuthorisationRequest()))
@@ -506,7 +506,7 @@ class AgentsInvitationController @Inject()(
             input => {
               if (input.choice) {
                 currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType))) map (
-                  _ => Redirect(routes.AgentsInvitationController.selectService()))
+                  _ => Redirect(routes.AgentsInvitationController.showSelectService()))
               } else {
                 for {
                   processedRequests <- invitationsService
@@ -517,7 +517,7 @@ class AgentsInvitationController @Inject()(
                                           featureFlags)
                   _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
                   result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
-                             Future successful Redirect(routes.AgentsInvitationController.invitationSent())
+                             Future successful Redirect(routes.AgentsInvitationController.showInvitationSent())
                            else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                              Future successful Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
                            else Future successful Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
@@ -609,7 +609,7 @@ class AgentsInvitationController @Inject()(
       }
     }
 
-  val knownFact: Action[AnyContent] = Action.async { implicit request =>
+  val showKnownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
         case Some(currentInvitation)
@@ -751,9 +751,9 @@ class AgentsInvitationController @Inject()(
     for {
       _         <- invitationsService.createInvitation(arn, fti, featureFlags)
       multiLink <- invitationsService.createAgentLink(arn, fti.clientType.getOrElse(""))
-    } yield Redirect(routes.AgentsInvitationController.invitationSent())
+    } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
-  val invitationSent: Action[AnyContent] = Action.async { implicit request =>
+  val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       journeyStateCache.get.flatMap(cacheItem =>
         for {
@@ -842,7 +842,7 @@ class AgentsInvitationController @Inject()(
               currentAuthorisationRequestCache.save(authorisationRequest).flatMap { _ =>
                 withMaybeContinueUrlCached {
                   ifShouldShowService(authorisationRequest, featureFlags, isWhitelisted) {
-                    Future successful Redirect(routes.AgentsInvitationController.checkDetails())
+                    Future successful Redirect(routes.AgentsInvitationController.showCheckDetails())
                   }
                 }
               }
@@ -982,7 +982,7 @@ class AgentsInvitationController @Inject()(
         Future successful Redirect(routes.AgentsInvitationController.showClientType())
 
       case CurrentInvitationInputNeedsKnownFact(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.knownFact())
+        Future successful Redirect(routes.AgentsInvitationController.showKnownFact())
 
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
@@ -996,7 +996,7 @@ class AgentsInvitationController @Inject()(
         Future successful Redirect(routes.AgentsInvitationController.showClientType())
 
       case CurrentInvitationInputNeedService(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.selectService())
+        Future successful Redirect(routes.AgentsInvitationController.showSelectService())
 
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")

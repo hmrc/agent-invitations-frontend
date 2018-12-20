@@ -53,7 +53,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid Nino then selected IRV, redirect to invitation-sent" in {
       testCurrentAuthorisationRequestCache.save(
@@ -88,7 +88,7 @@ class FastTrackIRVISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
     }
 
     "return 303 and redirect to error url if service calling fast-track for PIR contains invalid nino" in {
@@ -151,7 +151,7 @@ class FastTrackIRVISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
 
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
@@ -168,7 +168,7 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
@@ -191,7 +191,7 @@ class FastTrackIRVISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -205,7 +205,7 @@ class FastTrackIRVISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -223,7 +223,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
@@ -240,7 +240,7 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's date of birth?")
       checkHtmlResultWithBodyText(
         result,
