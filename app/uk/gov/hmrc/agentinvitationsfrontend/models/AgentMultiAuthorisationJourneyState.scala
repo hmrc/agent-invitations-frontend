@@ -18,12 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-import scala.util.Random
-
-case class AgentMultiAuthorisationJourneyState(
-  clientType: String,
-  requests: Set[AuthorisationRequest],
-  agentLink: Option[String] = None)
+case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
 
 object AgentMultiAuthorisationJourneyState {
   implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
