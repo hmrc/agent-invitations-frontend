@@ -19,14 +19,25 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
-  <h1 class="heading-xlarge">@Messages("pending-authorisation-exists.header")</h1>
+  @back_link_referer(request)
 
-  <p>@Messages("pending-authorisation-exists.p")</p>
+  <h1 class="heading-xlarge margin-top-0">@Messages("pending-authorisation-exists.header")</h1>
 
-  <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("pending-authorisation-exists.button")</a>
+  @if(authRequestsExist) {
+
+   <p>@Messages("pending-authorisation-exists.p")</p>
+
+   <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("pending-authorisation-exists.button")</a>
+  }else {
+    <p>@Messages("pending-authorisation-exists.no-requests.p")</p>
+
+   <div><a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a></div>
+
+    <div class = "margin-top-30 text-link-small"><a href="@routes.AgentsInvitationController.showClientType()">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+  }
 
 }

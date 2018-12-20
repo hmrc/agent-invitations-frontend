@@ -400,17 +400,29 @@ class AgentsInvitationController @Inject()(
   }
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
         case Some(data) =>
-          (data.clientIdentifier, data.service) match {
-            case (clientId, service) if clientId.nonEmpty =>
-              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Future successful Ok(
-                  confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
-              }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-          }
+          for {
+            hasPendingInvitations <- invitationsService
+                                      .hasPendingInvitationsFor(arn, data.clientIdentifier, data.service)
+            result <- if (hasPendingInvitations) {
+                       Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+                     } else {
+                       (data.clientIdentifier, data.service) match {
+                         case (clientId, service) if clientId.nonEmpty =>
+                           invitationsService.getClientNameByService(clientId, service).flatMap { name =>
+                             Future successful Ok(
+                               confirm_client(
+                                 name.getOrElse(""),
+                                 agentConfirmationForm("error.confirm-client.required")))
+                           }
+                         case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+                       }
+                     }
+
+          } yield result
+
         case None => Future successful Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
@@ -439,28 +451,22 @@ class AgentsInvitationController @Inject()(
                             case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
                             case Some(journeyState) => journeyState
                           }
-
-                          hasPendingInvitations <- invitationsService.hasPendingInvitationsFor(arn, clientId, service)
-                          result <- if (hasPendingInvitations) {
-                                     Future successful Redirect(
-                                       routes.AgentsInvitationController.pendingAuthorisationExists())
-                                   } else
-                                     for {
-                                       _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
-                                             if (currentCache.clientType.nonEmpty) currentCache.clientType
-                                             else invitationWithClientDetails.clientType.getOrElse(""),
-                                             currentCache.requests ++ Seq(
-                                               AuthorisationRequest(clientName, service, clientId))
-                                           ))
-                                       redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
-                                                    Future successful Redirect(
-                                                      routes.AgentsInvitationController.showReviewAuthorisations())
-                                                  else if (invitationWithClientDetails.clientType == business) {
-                                                    confirmAndRedirect(arn, invitationWithClientDetails, false)
-                                                  } else
-                                                    Future successful Redirect(
-                                                      routes.AgentsInvitationController.showClientType())
-                                     } yield redirect
+                          result <- for {
+                                     _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
+                                           if (currentCache.clientType.nonEmpty) currentCache.clientType
+                                           else invitationWithClientDetails.clientType.getOrElse(""),
+                                           currentCache.requests ++ Seq(
+                                             AuthorisationRequest(clientName, service, clientId))
+                                         ))
+                                     redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
+                                                  Future successful Redirect(
+                                                    routes.AgentsInvitationController.showReviewAuthorisations())
+                                                else if (invitationWithClientDetails.clientType == business) {
+                                                  confirmAndRedirect(arn, invitationWithClientDetails, false)
+                                                } else
+                                                  Future successful Redirect(
+                                                    routes.AgentsInvitationController.showClientType())
+                                   } yield redirect
                         } yield result
                       } else {
                         for {
@@ -749,8 +755,7 @@ class AgentsInvitationController @Inject()(
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
     for {
-      _         <- invitationsService.createInvitation(arn, fti, featureFlags)
-      multiLink <- invitationsService.createAgentLink(arn, fti.clientType.getOrElse(""))
+      _ <- invitationsService.createInvitation(arn, fti, featureFlags)
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
@@ -802,7 +807,9 @@ class AgentsInvitationController @Inject()(
 
   val pendingAuthorisationExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(pending_authorisation_exists())
+      for {
+        cacheItem <- journeyStateCache.get
+      } yield Ok(pending_authorisation_exists(cacheItem.requests.nonEmpty))
     }
   }
 

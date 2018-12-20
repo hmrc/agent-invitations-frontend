@@ -544,3 +544,6 @@ cancel-auth-problem.button=Try again
 pending-authorisation-exists.header=There is a problem
 pending-authorisation-exists.p=You have already added the same authorisation request for this client.
 pending-authorisation-exists.button=Return to your authorisation requests
+pending-authorisation-exists.no-requests.p=You already created an authorisation request for this client. They have not yet responded to this request.
+pending-authorisation-exists.track.button=Track your authorisation requests
+pending-authorisation-exists.new-request.link=Start a new request
