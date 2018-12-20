@@ -71,13 +71,25 @@ trait AfiRelationshipStub {
         .willReturn(aResponse()
           .withStatus(201)))
 
-  def createRelationshipFailed(arn: Arn, service: String, clientId: String): Unit =
+  def givenTestOnlyCreateAfiRelationshipSucceeds(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      put(urlEqualTo(s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(aResponse()
+          .withStatus(201)))
+
+  def givenCreateAfiRelationshipFails(arn: Arn, service: String, clientId: String): Unit =
     stubFor(
       put(urlEqualTo(s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"))
         .willReturn(aResponse()
           .withStatus(500)))
 
-  def givenInactiveRelationshipsIrv(arn: Arn) =
+  def givenTestOnlyCreateAfiRelationshipFails(arn: Arn, service: String, clientId: String): Unit =
+    stubFor(
+      put(urlEqualTo(s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId"))
+        .willReturn(aResponse()
+          .withStatus(500)))
+
+  def givenInactiveAfiRelationship(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
         .willReturn(aResponse()
