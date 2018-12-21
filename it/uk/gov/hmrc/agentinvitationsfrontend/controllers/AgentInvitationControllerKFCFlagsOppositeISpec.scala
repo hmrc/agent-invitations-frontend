@@ -149,6 +149,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -201,6 +202,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         serviceVAT,
         identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -361,7 +363,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =

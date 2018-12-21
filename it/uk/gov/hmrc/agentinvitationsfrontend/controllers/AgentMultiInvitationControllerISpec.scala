@@ -323,7 +323,12 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
   "GET /already-authorisation-pending" should {
     val request = FakeRequest("GET", "/agents/already-authorisation-pending")
-    "Display the pending authorisation already exists error page" in {
+    "Display the pending authorisation already exists error page version when there are other authorisation requests in the basket" in {
+      val authRequest1 =
+        AuthorisationRequest("Mr Client ITSA", serviceITSA, validNino.value, AuthorisationRequest.NEW, "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest1)))
+
       val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -332,6 +337,21 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "There is a problem",
         "You have already added the same authorisation request for this client.",
         "Return to your authorisation requests")
+    }
+
+    "Display the pending authorisation already exists error page version when there are no authorisation requests left in the basket" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
+      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "There is a problem",
+        "You already created an authorisation request for this client. They have not yet responded to this request.",
+        "Track your authorisation requests",
+        "Start a new request"
+      )
     }
   }
 

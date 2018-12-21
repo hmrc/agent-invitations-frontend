@@ -50,7 +50,7 @@
       @if(trackRequests) {
         <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a>
         <p><a class="text-link-small" href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
-        <p><a class="text-link-small" href="@routes.AgentsInvitationController.showSelectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+        <p><a class="text-link-small" href="@routes.AgentsInvitationController.showClientType()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
       } else {
         @if(hasContinueUrl) {
           <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
