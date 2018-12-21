@@ -345,7 +345,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
         controller.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "fals++e")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }

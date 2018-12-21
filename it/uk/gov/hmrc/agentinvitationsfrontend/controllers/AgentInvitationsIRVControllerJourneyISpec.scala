@@ -112,10 +112,6 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to already-authorisation-pending when a valid NINO is submitted but authorisation already exists" in {
-        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
-        givenAgentReference(arn, "ABCDEFGH", "personal")
-        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-        givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
 
         testCurrentAuthorisationRequestCache.save(

@@ -80,6 +80,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           serviceVAT,
           identifierVAT)
         givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(
@@ -113,6 +114,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           serviceVAT,
           identifierVAT)
         givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientType"       -> "business",
@@ -126,6 +128,23 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
         status(result) shouldBe 303
         redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
+      }
+
+      "redirect to pending authorisations exist if there are already pending invitations for this client" in {
+        givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
+
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "clientType"       -> "business",
+          "service"          -> "HMRC-MTD-VAT",
+          "clientIdentifier" -> validVrn.value,
+          "knownFact.year"   -> "2007",
+          "knownFact.month"  -> "7",
+          "knownFact.day"    -> "7"
+        )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
       }
 
       "redisplay page with errors when an empty VRN is submitted" in {
@@ -341,7 +360,6 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           validVrn.value,
           Some(validRegistrationDate),
           fromFastTrack))
-      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState(personal.get, Set.empty))
       givenInvitationCreationSucceeds(
         arn,
         validVrn.value,
@@ -352,7 +370,6 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
@@ -381,35 +398,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showInvitationSent().url)
       status(result) shouldBe 303
-    }
-
-    "redirect to already-authorisation-pending when the agent has already created an invitation for this client and service" in {
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(
-          business,
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack))
-      givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, "vat", "Pending")
-      givenAgentReference(arn, "ABCDEFGH", "business")
-      givenClientDetails(validVrn)
-      givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
-
-      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
-      val result =
-        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
-
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
     }
 
     "fail when creation of invitation is unsuccessful" in {
@@ -425,7 +419,6 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       givenInvitationCreationFails(arn)
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
