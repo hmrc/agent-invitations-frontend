@@ -121,20 +121,6 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
       }
 
-      "redirect to pending authorisations exist if there are already pending invitations for this client" in {
-        givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
-
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType"       -> "personal",
-          "service"          -> "HMRC-MTD-IT",
-          "clientIdentifier" -> validNino.value,
-          "knownFact"        -> validPostcode)
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
-
-        status(result) shouldBe 303
-        redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
-      }
-
       "redisplay page with errors when an empty NINO is submitted" in {
         val requestWithForm = request
           .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> "", "knownFact" -> validPostcode)
@@ -349,6 +335,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
@@ -362,10 +350,24 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+
       val choice = agentConfirmationForm("error message").fill(Confirmation(false))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url
+      status(result) shouldBe 303
+    }
+
+    "redirect to already-invitations-pending when YES is selected but there are already invitations for this client" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
+
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
       status(result) shouldBe 303
     }
 
@@ -375,6 +377,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))

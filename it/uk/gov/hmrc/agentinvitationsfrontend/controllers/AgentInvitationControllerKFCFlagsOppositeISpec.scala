@@ -363,6 +363,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
@@ -382,6 +383,18 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
+    }
+
+    "redirect to already-authorisation-pending if there are already authorisations pending for this client" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
+
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
+      status(result) shouldBe 303
     }
 
     behaveLikeMissingCacheScenarios(submitConfirmClient, request)
