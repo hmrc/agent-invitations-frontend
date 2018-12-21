@@ -400,21 +400,18 @@ class AgentsInvitationController @Inject()(
   }
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
         case Some(data) =>
-          for {
-            result <- (data.clientIdentifier, data.service) match {
-                       case (clientId, service) if clientId.nonEmpty =>
-                         invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                           Future successful Ok(
-                             confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
-                         }
-                       case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-                     }
-          } yield result
-
-        case None => Future successful Redirect(routes.AgentsInvitationController.showClientType())
+          (data.clientIdentifier, data.service) match {
+            case (clientId, service) if clientId.nonEmpty =>
+              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
+                Future successful Ok(
+                  confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
+              }
+            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+          }
+        case _ => Future successful Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
@@ -652,7 +649,7 @@ class AgentsInvitationController @Inject()(
         data => redirectBasedOnCurrentInputState(arn, data.copy(fromFastTrack = true), isWhitelisted)
       )
 
-  def checkForPending(arn: Arn, clientId: String, service: String, body: Future[Result])(
+  def checkPendingAuthorisationsFor(arn: Arn, clientId: String, service: String, body: Future[Result])(
     implicit hc: HeaderCarrier): Future[Result] =
     invitationsService.hasPendingInvitationsFor(arn, clientId, service).flatMap {
       case true  => Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
@@ -669,7 +666,7 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt, true))
         },
         userInput =>
-          checkForPending(
+          checkPendingAuthorisationsFor(
             arn,
             userInput.clientIdentifier.getOrElse(""),
             userInput.service,
@@ -698,7 +695,7 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
         },
         userInput =>
-          checkForPending(
+          checkPendingAuthorisationsFor(
             arn,
             userInput.clientIdentifier.getOrElse(""),
             userInput.service,
@@ -732,7 +729,7 @@ class AgentsInvitationController @Inject()(
             ))
         },
         userInput =>
-          checkForPending(
+          checkPendingAuthorisationsFor(
             arn,
             userInput.clientIdentifier.getOrElse(""),
             userInput.service,

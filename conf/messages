@@ -352,7 +352,7 @@ client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for reporting your income and expenses through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for reporting your VAT returns through software.
-client-complete.whatHappensNext.p1=Go to <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you</a> to:
+client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
 client-complete.button.mta=Manage your tax agents
