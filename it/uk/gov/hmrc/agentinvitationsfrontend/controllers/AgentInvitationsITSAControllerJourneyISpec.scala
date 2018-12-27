@@ -74,6 +74,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "service is HMRC-MTD-IT" should {
 
       "redirect to confirm-client when a valid NINO and postcode are submitted" in {
+        val journeyState = AgentMultiAuthorisationJourneyState(
+          "personal",
+          Set(AuthorisationRequest("clientName", serviceITSA, validNino.value, "itemid")))
+        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
         givenInvitationCreationSucceeds(
@@ -99,6 +103,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redirect to client-type when a valid NINO and postcode are submitted but cache is empty" in {
+        val journeyState = AgentMultiAuthorisationJourneyState(
+          "personal",
+          Set(AuthorisationRequest("clientName", serviceITSA, validNino.value, "itemid")))
+        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
           validNino.value,
@@ -330,6 +338,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to show-review-authorisations when YES is selected" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
@@ -360,6 +370,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to already-invitations-pending when YES is selected but there are already invitations for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "personal",
+        Set(AuthorisationRequest("clientName", serviceITSA, validNino.value, "itemid")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
@@ -371,7 +385,25 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 303
     }
 
+    "redirect to already-invitations-pending when YES is selected but there are already invitations in the basket for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "personal",
+        Set(AuthorisationRequest("clientName", serviceITSA, validNino.value, "itemid")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
+      status(result) shouldBe 303
+    }
+
     "redirect to select client type when client type in cache is not supported" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("foo", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("foo"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
       givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
