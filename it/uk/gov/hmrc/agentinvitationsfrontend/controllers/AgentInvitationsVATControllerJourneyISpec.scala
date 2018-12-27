@@ -71,6 +71,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "service is HMRC-MTD-VAT" should {
 
       "redirect to confirm-client when a valid VRN and registrationDate are submitted" in {
+        val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
           validVrn.value,
@@ -105,6 +107,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to client-type when a valid VRN and registrationDate are submitted but cache is empty" in {
+        val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
           validVrn.value,
@@ -335,6 +339,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to review-authorisations if client type is personal" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(
           personal,
@@ -392,6 +398,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "redirect to pending authorisations exist if there are already pending invitations for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(
           personal,
@@ -401,6 +409,28 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           Some(validRegistrationDate),
           fromFastTrack))
       givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
+
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.pendingAuthorisationExists().url)
+      status(result) shouldBe 303
+    }
+
+    "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "business",
+        Set(AuthorisationRequest("clientName", serviceVAT, validVrn.value, "itemId")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(
+          personal,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =

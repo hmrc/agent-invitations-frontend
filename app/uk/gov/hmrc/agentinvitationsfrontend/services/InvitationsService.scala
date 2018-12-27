@@ -198,10 +198,22 @@ class InvitationsService @Inject()(
                         }
     } yield result
 
-  def hasPendingInvitationsFor(arn: Arn, clientId: String, service: String)(
+  def hasPendingInvitationsFor(
+    arn: Arn,
+    clientId: String,
+    service: String,
+    cache: AgentMultiAuthorisationJourneyStateCache)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.getAllPendingInvitationsForClient(arn, clientId, service).map(s => s.nonEmpty)
+    for {
+      hasPendingInvitations <- invitationsConnector
+                                .getAllPendingInvitationsForClient(arn, clientId, service)
+                                .map(s => s.nonEmpty)
+      hasPendingInvitationServiceInJourney <- cache.get.map(cacheItem =>
+                                               cacheItem.requests.map(_.service).contains(service))
+      hasPendingInvitationClientIdInJourney <- cache.get.map(cacheItem =>
+                                                cacheItem.requests.map(_.clientId).contains(clientId))
+    } yield hasPendingInvitations | (hasPendingInvitationServiceInJourney && hasPendingInvitationClientIdInJourney)
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"

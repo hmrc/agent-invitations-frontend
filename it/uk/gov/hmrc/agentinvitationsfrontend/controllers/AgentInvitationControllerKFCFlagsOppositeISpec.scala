@@ -139,6 +139,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitIdentifyClient = controller.submitIdentifyClient()
 
     "return 303 review-authorisation for ITSA" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenTradingName(validNino, "64 Bit")
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
@@ -160,6 +162,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 confirm-client for IRV" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual)
@@ -186,6 +190,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 invitation-sent for VAT" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenClientDetails(validVrn)
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
@@ -358,6 +364,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to review-authorisation and create invitation for PERSONAL-INCOME-RECORD" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
       givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
@@ -386,9 +394,27 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "redirect to already-authorisation-pending if there are already authorisations pending for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
+
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
+      status(result) shouldBe 303
+    }
+
+    "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "personal",
+        Set(AuthorisationRequest("clientName", servicePIR, validNino.value, "itemId")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
