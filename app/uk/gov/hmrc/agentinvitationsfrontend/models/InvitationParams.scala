@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 trait InvitationParams {
+  def clientType: Option[String]
   def service: String
   def clientIdentifierType: String
   def clientId: String

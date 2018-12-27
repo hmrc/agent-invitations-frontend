@@ -117,6 +117,7 @@ class TrackedInvitationSpec extends UnitSpec {
 
   val exampleInvitation = StoredInvitation(
     Arn("TARN0000001"),
+    None,
     "",
     "",
     "",

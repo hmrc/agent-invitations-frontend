@@ -496,7 +496,10 @@ recent-invitations.invitations.actions.invalidrelationship=Start new request
 
 #ResendLink page
 resend-link.header=Resend this link to your client
+resend-link.list-item-1.p1=Copy this link and email it to your client.
+resend-link.list-item-1.p2=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">{0} taxes</span>.</span> 
 resend-link.p2=The link expires {0} days from now.
+resend-link.p3=They will need their Government Gateway login details for their {0} tax affairs to confirm who they are. They can set up an account if they do not have one.
 resend-link.returnToAsa=Return to your agent services account
 
 #Confirm cancel page

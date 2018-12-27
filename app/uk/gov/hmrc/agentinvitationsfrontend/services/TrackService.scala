@@ -68,26 +68,29 @@ class TrackService @Inject()(
                               name <- getTradingName(nino)
                             } yield
                               InactiveClient(
+                                Some("personal"),
                                 "HMRC-MTD-IT",
                                 name.getOrElse(""),
                                 nino.map(ni => ni.value).getOrElse(""),
                                 "ni",
                                 dateTo)
-                          case VatTrackRelationship(_, dateTo, clientId) =>
+                          case VatTrackRelationship(_, clientType, dateTo, clientId) =>
                             for {
                               vatName <- getVatName(Some(Vrn(clientId)))
-                            } yield InactiveClient("HMRC-MTD-VAT", vatName.getOrElse(""), clientId, "vrn", dateTo)
+                            } yield
+                              InactiveClient(clientType, "HMRC-MTD-VAT", vatName.getOrElse(""), clientId, "vrn", dateTo)
                           case IrvTrackRelationship(_, dateTo, clientId) =>
                             for {
                               citizenName <- getCitizenName(Some(Nino(clientId)))
                             } yield
                               InactiveClient(
+                                Some("personal"),
                                 "PERSONAL-INCOME-RECORD",
                                 citizenName.getOrElse(""),
                                 clientId,
                                 "ni",
                                 dateTo)
-                          case _ => Future successful InactiveClient("", "", "", "", None)
+                          case _ => Future successful InactiveClient(None, "", "", "", "", None)
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
   }
@@ -136,6 +139,7 @@ class TrackService @Inject()(
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
                                case TrackedInvitation(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -145,6 +149,7 @@ class TrackService @Inject()(
                                    expiryDate,
                                    invitationId) if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -155,6 +160,7 @@ class TrackService @Inject()(
                                    Some(invitationId))
 
                                case TrackedInvitation(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -164,6 +170,7 @@ class TrackService @Inject()(
                                    _,
                                    invitationId) =>
                                  Future successful TrackInformationSorted(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -173,12 +180,13 @@ class TrackService @Inject()(
                                    None,
                                    Some(invitationId))
                                case _ =>
-                                 Future successful TrackInformationSorted("", "", "", None, "", None, None, None)
+                                 Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
-                                 case InactiveClient(service, clientName, clientId, clientIdType, dateTo) =>
+                                 case InactiveClient(clientType, service, clientName, clientId, clientIdType, dateTo) =>
                                    Future successful TrackInformationSorted(
+                                     clientType,
                                      service,
                                      clientId,
                                      clientIdType,
@@ -188,7 +196,16 @@ class TrackService @Inject()(
                                      None,
                                      None)
                                  case _ =>
-                                   Future successful TrackInformationSorted("", "", "", None, "", None, None, None)
+                                   Future successful TrackInformationSorted(
+                                     None,
+                                     "",
+                                     "",
+                                     "",
+                                     None,
+                                     "",
+                                     None,
+                                     None,
+                                     None)
                                }
     } yield (trackInfoInvitations ++ trackInfoRelationships).sorted(TrackInformationSorted.orderingByDate)
   }

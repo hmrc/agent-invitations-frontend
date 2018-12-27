@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
 case class TrackInformationSorted(
+  clientType: Option[String],
   service: String,
   clientId: String,
   clientIdType: String,

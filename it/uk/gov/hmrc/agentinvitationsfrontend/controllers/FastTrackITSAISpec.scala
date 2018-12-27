@@ -21,7 +21,15 @@ class FastTrackITSAISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected Individual, redirect to invitation-sent" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(None, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack))
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
@@ -35,7 +43,15 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected Individual, redirect to select-service when cache is empty" in {
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
@@ -56,7 +72,15 @@ class FastTrackITSAISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected ITSA, redirect to invitation-sent" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, "", "ni", validNino.value, Some(validPostcode), fromFastTrack))
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
@@ -281,6 +305,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to confirm_invitation when YES is selected for ITSA service" in {
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -303,6 +328,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to identify-client when NO is selected for ITSA service" in {
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -385,6 +411,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdITSA,
         validNino.value,

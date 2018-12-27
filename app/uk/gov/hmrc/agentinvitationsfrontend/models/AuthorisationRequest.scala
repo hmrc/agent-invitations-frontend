@@ -21,6 +21,7 @@ import scala.util.Random
 
 case class AuthorisationRequest(
   clientName: String,
+  clientType: Option[String],
   service: String,
   clientId: String,
   state: String = AuthorisationRequest.NEW,

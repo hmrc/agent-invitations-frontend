@@ -73,6 +73,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to confirm-client when a valid VRN and registrationDate are submitted" in {
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -107,6 +108,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to client-type when a valid VRN and registrationDate are submitted but cache is empty" in {
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -221,7 +223,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "business")
       val authRequest =
-        AuthorisationRequest("clienty name", serviceVAT, validVrn.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceVAT,
+          validVrn.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
 
@@ -345,6 +353,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -374,6 +383,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState(business.get, Set.empty))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,

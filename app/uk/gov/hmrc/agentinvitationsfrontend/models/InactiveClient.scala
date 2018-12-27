@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import org.joda.time.LocalDate
 
 case class InactiveClient(
+  clientType: Option[String],
   serviceName: String,
   clientName: String,
   clientId: String,

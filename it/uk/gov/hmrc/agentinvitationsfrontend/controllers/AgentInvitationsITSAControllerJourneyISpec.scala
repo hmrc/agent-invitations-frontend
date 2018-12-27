@@ -78,6 +78,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
           CurrentAuthorisationRequest(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validNino.value,
           invitationIdITSA,
           validNino.value,
@@ -101,6 +102,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       "redirect to client-type when a valid NINO and postcode are submitted but cache is empty" in {
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validNino.value,
           invitationIdITSA,
           validNino.value,
@@ -204,7 +206,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
       val authRequest =
-        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
 
@@ -332,7 +340,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "redirect to show-review-authorisations when YES is selected" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
@@ -347,7 +363,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "redirect to show identify client when NO is selected" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
@@ -374,7 +398,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "redirect to select client type when client type in cache is not supported" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("foo"), serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
-      givenInvitationCreationSucceeds(arn, mtdItId.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        mtdItId.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)

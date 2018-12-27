@@ -47,17 +47,22 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
         val result = await(connector.getAgentReferenceRecord(hash))
         result.isDefined shouldBe true
-        result.get shouldBe AgentReferenceRecord(
-          hash,
-          arn,
-          Seq("99-with-flake"))
+        result.get shouldBe AgentReferenceRecord(hash, arn, Seq("99-with-flake"))
       }
     }
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation("HMRC-MTD-IT", "ni", "AB123456B")
+      val agentInvitationITSA = AgentInvitation(Some("personal"), "HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        givenInvitationCreationSucceeds(arn, "AB123456B", invitationIdITSA, "AB123456B", "ni", serviceITSA, identifierITSA)
+        givenInvitationCreationSucceeds(
+          arn,
+          personal,
+          "AB123456B",
+          invitationIdITSA,
+          "AB123456B",
+          "ni",
+          serviceITSA,
+          identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
         result.get should include(
@@ -73,9 +78,17 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation("PERSONAL-INCOME-RECORD", "ni", "AB123456B")
+      val agentInvitationPIR = AgentInvitation(Some("personal"), "PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
-        givenInvitationCreationSucceeds(arn, "AB123456B", invitationIdPIR, "AB123456B", "ni", servicePIR, identifierPIR)
+        givenInvitationCreationSucceeds(
+          arn,
+          personal,
+          "AB123456B",
+          invitationIdPIR,
+          "AB123456B",
+          "ni",
+          servicePIR,
+          identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/B9SCS2T4NZBAX")
@@ -90,9 +103,17 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation("HMRC-MTD-VAT", "vrn", validVrn.value)
+      val agentInvitationVAT = AgentInvitation(Some("business"), "HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
-        givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+        givenInvitationCreationSucceeds(
+          arn,
+          business,
+          validVrn.value,
+          invitationIdVAT,
+          validVrn.value,
+          "vrn",
+          serviceVAT,
+          identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/VRN/101747696/invitations/received/CZTW1KY6RTAAT")
@@ -128,6 +149,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       result.count(_.status == "Expired") shouldBe 3
       result(0) shouldBe StoredInvitation(
         arn,
+        Some("personal"),
         "HMRC-MTD-IT",
         "AB123456A",
         "Pending",
@@ -139,6 +161,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       )
       result(4) shouldBe StoredInvitation(
         arn,
+        Some("personal"),
         "HMRC-MTD-VAT",
         "101747696",
         "Accepted",
@@ -150,6 +173,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       )
       result(8) shouldBe StoredInvitation(
         arn,
+        Some("personal"),
         "PERSONAL-INCOME-RECORD",
         "AB123456B",
         "Rejected",

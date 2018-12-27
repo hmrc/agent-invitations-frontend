@@ -40,7 +40,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
+          Set(AuthorisationRequest("Gareth Gates", Some("personal"), serviceITSA, mtdItId.value))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
@@ -52,7 +52,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "business",
-          Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
+          Set(AuthorisationRequest("Gareth Gates", Some("business"), serviceVAT, validVrn.value))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
@@ -78,7 +78,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "foo",
-          Set(AuthorisationRequest("Gareth Gates", serviceVAT, validVrn.value))))
+          Set(AuthorisationRequest("Gareth Gates", Some("personal"), serviceVAT, validVrn.value))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
@@ -93,7 +93,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
+          Set(AuthorisationRequest("Gareth Gates", Some("personal"), serviceITSA, mtdItId.value))))
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -155,15 +155,25 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     "Redirect to complete if NO is selected and all invitation creation is successful" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdITSA,
         validNino.value,
         "ni",
         "HMRC-MTD-IT",
         "NI")
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
       givenInvitationCreationSucceeds(
         arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -192,13 +202,22 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     "Redirect to some create authorisation failed if NO is selected and some invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdITSA,
         validNino.value,
         "ni",
         "HMRC-MTD-IT",
         "NI")
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
       givenInvitationCreationFailsForService(
         arn,
         validVrn.value,
@@ -325,7 +344,13 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/already-authorisation-pending")
     "Display the pending authorisation already exists error page version when there are other authorisation requests in the basket" in {
       val authRequest1 =
-        AuthorisationRequest("Mr Client ITSA", serviceITSA, validNino.value, AuthorisationRequest.NEW, "itemId")
+        AuthorisationRequest(
+          "Mr Client ITSA",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.NEW,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest1)))
 
@@ -357,9 +382,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
   trait AgentAuthorisationFullCacheScenario {
 
-    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value)
-    val clientDetail2 = AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value)
-    val clientDetail3 = AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value)
+    val clientDetail1 = AuthorisationRequest("Gareth Gates Sr", Some("personal"), serviceITSA, validNino.value)
+    val clientDetail2 = AuthorisationRequest("Malcolm Pirson", Some("personal"), servicePIR, validNino.value)
+    val clientDetail3 = AuthorisationRequest("Sara Vaterloo", Some("personal"), serviceVAT, validVrn.value)
 
     testAgentMultiAuthorisationJourneyStateCache.save(
       AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))

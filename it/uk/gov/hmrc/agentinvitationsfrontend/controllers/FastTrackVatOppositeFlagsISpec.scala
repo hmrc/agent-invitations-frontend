@@ -243,7 +243,15 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
@@ -264,7 +272,15 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "render confirm_invitations when client type is provided, known fact is not required and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       val formData =
         CurrentAuthorisationRequest(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
@@ -279,7 +295,15 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
@@ -306,7 +330,15 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to client-type when not provided and then submit and redirect to complete" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
       givenAgentReference(arn, "BBBBBBBB", "personal")
 
@@ -331,7 +363,15 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
@@ -371,6 +411,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     "redirect to invitation sent when client details are valid and match for VAT" in {
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,

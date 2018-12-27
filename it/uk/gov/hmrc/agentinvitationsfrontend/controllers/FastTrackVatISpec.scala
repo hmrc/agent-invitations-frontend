@@ -31,6 +31,7 @@ class FastTrackVatISpec extends BaseISpec {
           fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -52,6 +53,7 @@ class FastTrackVatISpec extends BaseISpec {
     "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to select-service when cache is empty" in {
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -80,6 +82,7 @@ class FastTrackVatISpec extends BaseISpec {
         CurrentAuthorisationRequest(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -280,7 +283,15 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
@@ -301,7 +312,15 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
@@ -315,7 +334,15 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type and known fact are not provided and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
@@ -342,7 +369,15 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
@@ -433,6 +468,7 @@ class FastTrackVatISpec extends BaseISpec {
     "redirect to invitation sent when client details are valid and match for VAT" in {
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -460,7 +496,15 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redisplay the page with errors when known fact is not valid for VAT" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val requestWithForm = request.withFormUrlEncodedBody(
