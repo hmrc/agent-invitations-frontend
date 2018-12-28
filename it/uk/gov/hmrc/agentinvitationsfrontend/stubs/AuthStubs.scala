@@ -21,24 +21,24 @@ trait AuthStubs {
     authenticatedClient(request, "Individual", Enrolment("HMRC-NI", "NINO", clientId))
 
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
-    authenticatedClient(request, "Organisation",  Enrolment("HMRC-MTD-VAT", "VRN", clientId))
+    authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
   def authorisedAsAnyIndividualClient[A](request: FakeRequest[A]): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-         |{
-         |"authorise": [ {
-         |  "authProviders": [ "GovernmentGateway" ]
-         |},
-         |{
-         |  "$or" : [ {
-         |      "affinityGroup" : "Individual"
-         |    }, {
-         |      "affinityGroup" : "Organisation"
-         |    } ]
-         |} ],
-         |  "retrieve": [ "allEnrolments" ]
-         |}
+        |{
+        |"authorise": [ {
+        |  "authProviders": [ "GovernmentGateway" ]
+        |},
+        |{
+        |  "$or" : [ {
+        |      "affinityGroup" : "Individual"
+        |    }, {
+        |      "affinityGroup" : "Organisation"
+        |    } ]
+        |} ],
+        |  "retrieve": [ "allEnrolments" ]
+        |}
        """.stripMargin,
       s"""
          |{
@@ -74,19 +74,19 @@ trait AuthStubs {
   def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A]): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-         |{
-         |"authorise": [ {
-         |  "authProviders": [ "GovernmentGateway" ]
-         |},
-         |{
-         |  "$or" : [ {
-         |      "affinityGroup" : "Individual"
-         |    }, {
-         |      "affinityGroup" : "Organisation"
-         |    } ]
-         |} ],
-         |  "retrieve": [ "allEnrolments" ]
-         |}
+        |{
+        |"authorise": [ {
+        |  "authProviders": [ "GovernmentGateway" ]
+        |},
+        |{
+        |  "$or" : [ {
+        |      "affinityGroup" : "Individual"
+        |    }, {
+        |      "affinityGroup" : "Organisation"
+        |    } ]
+        |} ],
+        |  "retrieve": [ "allEnrolments" ]
+        |}
        """.stripMargin,
       s"""
          |{
@@ -243,6 +243,9 @@ trait AuthStubs {
 
   def verifyAuthoriseAttempt(): Unit =
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
+
+  def verify2AuthoriseAttempt(): Unit =
+    verify(2, postRequestedFor(urlEqualTo("/auth/authorise")))
 
   def verifyNoAuthoriseAttempt(): Unit =
     verify(0, postRequestedFor(urlEqualTo("/auth/authorise")))

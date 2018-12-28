@@ -23,7 +23,7 @@ import play.api.data.format.Formats._
 import play.api.data.validation._
 import play.api.data.{Form, Mapping}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -570,41 +570,59 @@ class AgentsInvitationController @Inject()(
   private[controllers] def redirectOrShowConfirmClient(
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     featureFlags: FeatureFlags)(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
-    if (currentAuthorisationRequest.fromFastTrack) body
-    else {
-      currentAuthorisationRequest.service match {
-        case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
-          Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
-        case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
-          Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
-        case HMRCPIR if featureFlags.enableIrvToConfirm =>
-          Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
-        case _ => {
-          for {
-            clientName <- invitationsService.getClientNameByService(
-                           currentAuthorisationRequest.clientIdentifier,
-                           currentAuthorisationRequest.service)
-            journeyStateOpt <- journeyStateCache.fetch
-            currentCache = journeyStateOpt match {
-              case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
-              case Some(journeyState) => journeyState
-            }
-            _ <- journeyStateCache.save(
-                  AgentMultiAuthorisationJourneyState(
-                    currentAuthorisationRequest.clientType.getOrElse(""),
-                    currentCache.requests ++ Set(
-                      AuthorisationRequest(
-                        clientName.getOrElse(""),
-                        currentAuthorisationRequest.service,
-                        currentAuthorisationRequest.clientIdentifier))
-                  ))
-            result <- currentAuthorisationRequest.clientType match {
-                       case `personal` =>
-                         Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                       case `business` => body
-                       case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
-                     }
-          } yield result
+    withAuthorisedAsAgent { (arn, _) =>
+      if (currentAuthorisationRequest.fromFastTrack) body
+      else {
+        currentAuthorisationRequest.service match {
+          case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
+            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+          case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
+            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+          case HMRCPIR if featureFlags.enableIrvToConfirm =>
+            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+          case _ =>
+            invitationsService
+              .hasPendingInvitationsFor(
+                arn,
+                currentAuthorisationRequest.clientIdentifier,
+                currentAuthorisationRequest.service,
+                journeyStateCache)
+              .flatMap {
+                case true
+                    if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
+                      (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
+                      (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) => {
+                  Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+                }
+                case _ => {
+                  for {
+                    clientName <- invitationsService.getClientNameByService(
+                                   currentAuthorisationRequest.clientIdentifier,
+                                   currentAuthorisationRequest.service)
+                    journeyStateOpt <- journeyStateCache.fetch
+                    currentCache = journeyStateOpt match {
+                      case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
+                      case Some(journeyState) => journeyState
+                    }
+                    _ <- journeyStateCache.save(
+                          AgentMultiAuthorisationJourneyState(
+                            currentAuthorisationRequest.clientType.getOrElse(""),
+                            currentCache.requests ++ Set(
+                              AuthorisationRequest(
+                                clientName.getOrElse(""),
+                                currentAuthorisationRequest.service,
+                                currentAuthorisationRequest.clientIdentifier))
+                          ))
+                    result <- currentAuthorisationRequest.clientType match {
+                               case `personal` =>
+                                 Future successful Redirect(
+                                   routes.AgentsInvitationController.showReviewAuthorisations())
+                               case `business` => body
+                               case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
+                             }
+                  } yield result
+                }
+              }
         }
       }
     }
@@ -655,13 +673,6 @@ class AgentsInvitationController @Inject()(
         data => redirectBasedOnCurrentInputState(arn, data.copy(fromFastTrack = true), isWhitelisted)
       )
 
-  def checkPendingAuthorisationsFor(arn: Arn, clientId: String, service: String, flagOn: Boolean, body: Future[Result])(
-    implicit hc: HeaderCarrier): Future[Result] =
-    invitationsService.hasPendingInvitationsFor(arn, clientId, service, journeyStateCache).flatMap {
-      case true if !flagOn => Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
-      case _               => body
-    }
-
   def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier): Future[Result] =
@@ -672,24 +683,18 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt, true))
         },
         userInput =>
-          checkPendingAuthorisationsFor(
-            arn,
-            userInput.clientIdentifier.getOrElse(""),
-            userInput.service,
-            featureFlags.enableMtdItToConfirm,
-            for {
-              maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-              invitationWithClientDetails = maybeCachedInvitation
-                .getOrElse(CurrentAuthorisationRequest())
-                .copy(
-                  clientIdentifier = userInput.clientIdentifier.getOrElse(""),
-                  clientIdentifierType = "ni",
-                  knownFact = userInput.postcode
-                )
-              _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-              redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-            } yield redirectResult
-        )
+          for {
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
+            invitationWithClientDetails = maybeCachedInvitation
+              .getOrElse(CurrentAuthorisationRequest())
+              .copy(
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "ni",
+                knownFact = userInput.postcode
+              )
+            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
+            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
+          } yield redirectResult
       )
 
   def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(
@@ -702,24 +707,18 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
         },
         userInput =>
-          checkPendingAuthorisationsFor(
-            arn,
-            userInput.clientIdentifier.getOrElse(""),
-            userInput.service,
-            featureFlags.enableMtdVatToConfirm,
-            for {
-              maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-              invitationWithClientDetails = maybeCachedInvitation
-                .getOrElse(CurrentAuthorisationRequest())
-                .copy(
-                  clientIdentifier = userInput.clientIdentifier.getOrElse(""),
-                  clientIdentifierType = "vrn",
-                  knownFact = userInput.registrationDate
-                )
-              _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-              redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-            } yield redirectResult
-        )
+          for {
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
+            invitationWithClientDetails = maybeCachedInvitation
+              .getOrElse(CurrentAuthorisationRequest())
+              .copy(
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "vrn",
+                knownFact = userInput.registrationDate
+              )
+            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
+            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
+          } yield redirectResult
       )
 
   def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
@@ -737,29 +736,23 @@ class AgentsInvitationController @Inject()(
             ))
         },
         userInput =>
-          checkPendingAuthorisationsFor(
-            arn,
-            userInput.clientIdentifier.getOrElse(""),
-            userInput.service,
-            featureFlags.enableIrvToConfirm,
-            for {
-              maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-              invitationWithClientDetails = maybeCachedInvitation
-                .getOrElse(CurrentAuthorisationRequest())
-                .copy(
-                  clientIdentifier = userInput.clientIdentifier.getOrElse(""),
-                  clientIdentifierType = "ni",
-                  knownFact = userInput.dob
-                )
-              result <- for {
-                         _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                         redirectResult <- redirectBasedOnCurrentInputState(
-                                            arn,
-                                            invitationWithClientDetails,
-                                            isWhitelisted)
-                       } yield redirectResult
-            } yield result
-        )
+          for {
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
+            invitationWithClientDetails = maybeCachedInvitation
+              .getOrElse(CurrentAuthorisationRequest())
+              .copy(
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "ni",
+                knownFact = userInput.dob
+              )
+            result <- for {
+                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
+                       redirectResult <- redirectBasedOnCurrentInputState(
+                                          arn,
+                                          invitationWithClientDetails,
+                                          isWhitelisted)
+                     } yield redirectResult
+          } yield result
       )
 
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
