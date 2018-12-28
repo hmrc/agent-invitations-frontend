@@ -433,7 +433,7 @@ class AgentsInvitationController @Inject()(
                     formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
                     data =>
                       if (data.choice) {
-                        invitationsService.hasPendingInvitationsFor(arn, clientId, service).flatMap {
+                        invitationsService.hasPendingInvitationsFor(arn, clientId, service, journeyStateCache).flatMap {
                           case true =>
                             Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
                           case false => {
@@ -658,7 +658,7 @@ class AgentsInvitationController @Inject()(
 
   def checkPendingAuthorisationsFor(arn: Arn, clientId: String, service: String, flagOn: Boolean, body: Future[Result])(
     implicit hc: HeaderCarrier): Future[Result] =
-    invitationsService.hasPendingInvitationsFor(arn, clientId, service).flatMap {
+    invitationsService.hasPendingInvitationsFor(arn, clientId, service, journeyStateCache).flatMap {
       case true if !flagOn => Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
       case _               => body
     }
