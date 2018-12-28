@@ -9,10 +9,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 
-
 trait ACRStubs {
   me: WireMockSupport =>
-
 
   def givenInactiveITSARelationships(arn: Arn) =
     stubFor(
@@ -40,9 +38,8 @@ trait ACRStubs {
   def givenInactiveITSARelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-IT"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
   def givenInactiveVATRelationships(arn: Arn) =
     stubFor(
@@ -70,11 +67,10 @@ trait ACRStubs {
   def givenInactiveVATRelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
-  def givenCancelledAuthorisationItsa(arn: Arn, nino:Nino, status: Int) =
+  def givenCancelledAuthorisationItsa(arn: Arn, nino: Nino, status: Int) =
     stubFor(
       delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}"))
         .willReturn(
@@ -83,12 +79,62 @@ trait ACRStubs {
         )
     )
 
-  def givenCancelledAuthorisationVat(arn: Arn, vrn:Vrn, status: Int) =
+  def givenCancelledAuthorisationVat(arn: Arn, vrn: Vrn, status: Int) =
     stubFor(
       delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)
+        )
+    )
+
+  def giveActiveRelationshipItsaExistsFor(arn: Arn, nino: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent/service/HMRC-MTD-IT/client/NI/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""{
+                 |  "arn":"${arn.value}"
+                 |  "dateFrom":"2015-09-10"
+                 |}
+               """.stripMargin
+            )
+        )
+    )
+
+  def giveActiveRelationshipItsaNotFoundFor(arn: Arn, nino: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent/service/HMRC-MTD-IT/client/NI/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        )
+    )
+
+  def giveActiveRelationshipVatExistsFor(arn: Arn, vrn: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent/service/HMRC-MTD-VAT/client/VRN/$vrn"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""{
+                 |  "arn":"${arn.value}"
+                 |  "dateFrom":"2015-09-10"
+                 |}
+               """.stripMargin
+            )
+        )
+    )
+
+  def giveActiveRelationshipVatNotFoundFor(arn: Arn, vrn: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent/service/HMRC-MTD-VAT/client/VRN/$vrn"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
         )
     )
 }

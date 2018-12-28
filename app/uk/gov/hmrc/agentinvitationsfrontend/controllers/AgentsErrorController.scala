@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -27,6 +28,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationF
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{invitation_creation_failed, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+
+import scala.concurrent.Future
 
 @Singleton
 class AgentsErrorController @Inject()(
@@ -61,6 +64,12 @@ class AgentsErrorController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       journeyStateCache.get.map(cacheItem =>
         Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
+    }
+  }
+
+  val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      Future successful Ok
     }
   }
 

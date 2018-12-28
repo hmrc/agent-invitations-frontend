@@ -161,6 +161,23 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.pendingAuthorisationExists().url)
       }
 
+      "redirect to already-authorisation-present when a valid NINO is submitted but client already has relationship with agent for this service" in {
+        givenAfiRelationshipIsActive(arn, servicePIR, nino, true)
+        val requestWithForm =
+          request.withFormUrlEncodedBody(
+            "clientType"       -> "personal",
+            "service"          -> servicePIR,
+            "clientIdentifier" -> validNino.value,
+            "knownFact.year"   -> "1980",
+            "knownFact.month"  -> "07",
+            "knownFact.day"    -> "07"
+          )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.activeRelationshipExists().url)
+      }
+
       "redisplay page with errors when an empty NINO is submitted" in {
         val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
