@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,25 +186,43 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
         await(
           tested.getClientNameByService(
-            TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe Some(
-          "Aaa Itsa Trader")
-
-        await(
-          tested.getClientNameByService(
-            TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe Some(
-          "Aaa Ltd.")
-
-        await(
-          tested
-            .getClientNameByService(TrackedInvitation(
-              "PERSONAL-INCOME-RECORD",
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-IT",
               nino.value,
               "ni",
               None,
-              "Expired",
+              "Pending",
               dateTime,
               now,
-              "foo"))) shouldBe Some("Aa1 Aa2")
+              "foo"))) shouldBe Some("Aaa Itsa Trader")
+
+        await(
+          tested.getClientNameByService(
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-VAT",
+              vrn.value,
+              "vrn",
+              None,
+              "Accepted",
+              dateTime,
+              now,
+              "foo"))) shouldBe Some("Aaa Ltd.")
+
+        await(
+          tested
+            .getClientNameByService(
+              TrackedInvitation(
+                Some("personal"),
+                "PERSONAL-INCOME-RECORD",
+                nino.value,
+                "ni",
+                None,
+                "Expired",
+                dateTime,
+                now,
+                "foo"))) shouldBe Some("Aa1 Aa2")
       }
     }
 
@@ -226,25 +244,64 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
         await(
           tested.addClientName(
-            TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe
-          TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", Some("Aaa Itsa Trader"), "Pending", dateTime, now, "foo")
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-IT",
+              nino.value,
+              "ni",
+              None,
+              "Pending",
+              dateTime,
+              now,
+              "foo"))) shouldBe
+          TrackedInvitation(
+            Some("personal"),
+            "HMRC-MTD-IT",
+            nino.value,
+            "ni",
+            Some("Aaa Itsa Trader"),
+            "Pending",
+            dateTime,
+            now,
+            "foo")
 
         await(
           tested.addClientName(
-            TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe
-          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", Some("Aaa Ltd."), "Accepted", dateTime, now, "foo")
-
-        await(
-          tested.addClientName(TrackedInvitation(
-            "PERSONAL-INCOME-RECORD",
-            nino.value,
-            "ni",
-            None,
-            "Rejected",
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-VAT",
+              vrn.value,
+              "vrn",
+              None,
+              "Accepted",
+              dateTime,
+              now,
+              "foo"))) shouldBe
+          TrackedInvitation(
+            Some("personal"),
+            "HMRC-MTD-VAT",
+            vrn.value,
+            "vrn",
+            Some("Aaa Ltd."),
+            "Accepted",
             dateTime,
             now,
-            "foo"))) shouldBe
+            "foo")
+
+        await(
+          tested.addClientName(
+            TrackedInvitation(
+              Some("personal"),
+              "PERSONAL-INCOME-RECORD",
+              nino.value,
+              "ni",
+              None,
+              "Rejected",
+              dateTime,
+              now,
+              "foo"))) shouldBe
           TrackedInvitation(
+            Some("personal"),
             "PERSONAL-INCOME-RECORD",
             nino.value,
             "ni",
@@ -271,16 +328,46 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
         await(
           tested.addClientName(
-            TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe
-          TrackedInvitation("HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo")
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-IT",
+              nino.value,
+              "ni",
+              None,
+              "Pending",
+              dateTime,
+              now,
+              "foo"))) shouldBe
+          TrackedInvitation(Some("personal"), "HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo")
 
         await(
           tested.addClientName(
-            TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe
-          TrackedInvitation("HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo")
+            TrackedInvitation(
+              Some("personal"),
+              "HMRC-MTD-VAT",
+              vrn.value,
+              "vrn",
+              None,
+              "Accepted",
+              dateTime,
+              now,
+              "foo"))) shouldBe
+          TrackedInvitation(Some("personal"), "HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo")
 
         await(
-          tested.addClientName(TrackedInvitation(
+          tested.addClientName(
+            TrackedInvitation(
+              Some("personal"),
+              "PERSONAL-INCOME-RECORD",
+              nino.value,
+              "ni",
+              None,
+              "Rejected",
+              dateTime,
+              now,
+              "foo"))) shouldBe
+          TrackedInvitation(
+            Some("personal"),
             "PERSONAL-INCOME-RECORD",
             nino.value,
             "ni",
@@ -288,8 +375,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             "Rejected",
             dateTime,
             now,
-            "foo"))) shouldBe
-          TrackedInvitation("PERSONAL-INCOME-RECORD", nino.value, "ni", None, "Rejected", dateTime, now, "foo")
+            "foo")
       }
     }
 
@@ -349,6 +435,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
   def invitationForService(service: String) =
     StoredInvitation(
       Arn(""),
+      Some("personal"),
       service,
       if (service == "HMRC-MTD-VAT") vrn.value else nino.value,
       "Pending",

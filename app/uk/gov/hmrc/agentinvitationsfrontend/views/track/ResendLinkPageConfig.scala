@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.support
+package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-import java.net.URLEncoder
+import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-object CallOps {
+case class ResendLinkPageConfig(externalUrl: String, agentLink: String, clientType: String, expiryDate: String) {
 
-  def addParamsToUrl(url: String, params: (String, Option[String])*): String = {
-    val query = params collect { case (k, Some(v)) => s"$k=${URLEncoder.encode(v, "UTF-8")}" } mkString "&"
-    if (query.isEmpty) {
-      url
-    } else if (url.endsWith("?") || url.endsWith("&")) {
-      url + query
-    } else {
-      val join = if (url.contains("?")) "&" else "?"
-      url + join + query
-    }
-  }
+  def fullAgentLink: String = s"$externalUrl$agentLink"
+
+  def trackLink: Call =
+    routes.AgentsRequestTrackingController.showTrackRequests()
+
+  def newRequestLink: Call =
+    routes.AgentsInvitationController.showClientType()
 }

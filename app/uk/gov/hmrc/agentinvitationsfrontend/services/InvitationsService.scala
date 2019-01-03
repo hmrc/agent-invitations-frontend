@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[InvitationId] = {
-    val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
+    val agentInvitation =
+      AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
 
     (for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -78,7 +79,8 @@ class InvitationsService @Inject()(
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =
     Future.sequence(requests.map(params => {
-      val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
+      val agentInvitation =
+        AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
 
       (for {
         locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)

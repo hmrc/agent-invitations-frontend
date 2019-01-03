@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
 import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
@@ -141,9 +141,10 @@ object TestEndpointsController {
   val testTrackInformationForm: Form[TrackResendForm] = {
     Form(
       mapping(
-        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "expiryDate"   -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientType" -> optional(text)
+          .verifying("Unsupported client type", clientType => supportedClientTypes.contains(clientType)),
+        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
 

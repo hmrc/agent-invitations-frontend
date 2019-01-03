@@ -26,7 +26,15 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(None, "", "ni", validNino.value, None, fromFastTrack))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
       val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -162,7 +170,15 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-client")
 
     "redirect to client-type when form data is invalid" in {
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")

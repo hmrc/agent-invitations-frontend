@@ -76,7 +76,13 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
       val authRequest =
-        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
@@ -100,7 +106,13 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, "personal")
       val authRequest =
-        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import org.joda.time.{DateTime, LocalDate}
 
 case class TrackedInvitation(
+  clientType: Option[String],
   service: String,
   clientId: String,
   clientIdType: String,
@@ -49,6 +50,15 @@ object TrackedInvitation {
           || i.suppliedClientId.isEmpty) (i.clientId, i.clientIdType)
       else (i.suppliedClientId, i.suppliedClientIdType)
 
-    TrackedInvitation(i.service, clientId, clientIdType, None, i.status, i.lastUpdated, i.expiryDate, i.invitationId)
+    TrackedInvitation(
+      i.clientType,
+      i.service,
+      clientId,
+      clientIdType,
+      None,
+      i.status,
+      i.lastUpdated,
+      i.expiryDate,
+      i.invitationId)
   }
 }

@@ -55,7 +55,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("Gareth Gates", serviceITSA, mtdItId.value))))
+          Set(AuthorisationRequest("Gareth Gates", Some("personal"), serviceITSA, mtdItId.value))))
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
@@ -78,11 +78,26 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("GET", "/all-create-authorisation-failed")
     "display the all create authorisation failed error page" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          Some("personal"),
+          servicePIR,
+          validNino.value,
+          state = AuthorisationRequest.FAILED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          Some("business"),
+          serviceVAT,
+          validVrn.value,
+          state = AuthorisationRequest.FAILED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
@@ -117,11 +132,26 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("GET", "/some-create-authorisation-failed")
     "display the some create authorisation failed error page with more than one failed request" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          Some("personal"),
+          servicePIR,
+          validNino.value,
+          state = AuthorisationRequest.CREATED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          Some("business"),
+          serviceVAT,
+          validVrn.value,
+          state = AuthorisationRequest.FAILED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
@@ -146,11 +176,26 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display the some creation failed error page with one failed request" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", servicePIR, validNino.value, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          Some("personal"),
+          servicePIR,
+          validNino.value,
+          state = AuthorisationRequest.CREATED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", serviceVAT, validVrn.value, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          Some("business"),
+          serviceVAT,
+          validVrn.value,
+          state = AuthorisationRequest.CREATED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))

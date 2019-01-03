@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -448,7 +448,7 @@ class AgentsInvitationController @Inject()(
                                                if (currentCache.clientType.nonEmpty) currentCache.clientType
                                                else invitationWithClientDetails.clientType.getOrElse(""),
                                                currentCache.requests ++ Seq(
-                                                 AuthorisationRequest(clientName, service, clientId))
+                                                 AuthorisationRequest(clientName, clientType, service, clientId))
                                              ))
                                          redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
                                                       Future successful Redirect(
@@ -610,6 +610,7 @@ class AgentsInvitationController @Inject()(
                             currentCache.requests ++ Set(
                               AuthorisationRequest(
                                 clientName.getOrElse(""),
+                                currentAuthorisationRequest.clientType,
                                 currentAuthorisationRequest.service,
                                 currentAuthorisationRequest.clientIdentifier))
                           ))

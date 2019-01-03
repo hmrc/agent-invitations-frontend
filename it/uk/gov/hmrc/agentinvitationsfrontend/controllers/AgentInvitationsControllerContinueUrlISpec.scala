@@ -24,7 +24,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
       val authRequest =
-        AuthorisationRequest("clienty name", serviceITSA, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
 
@@ -61,7 +67,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
       testContinueUrlKeyStoreCache.save(continueUrl)
       val authRequest =
-        AuthorisationRequest("clienty name", servicePIR, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          servicePIR,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
 
@@ -98,7 +110,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       val continueUrl = ContinueUrl("/someVat/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
       val authRequest =
-        AuthorisationRequest("clienty name", serviceVAT, validVrn.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceVAT,
+          validVrn.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
 

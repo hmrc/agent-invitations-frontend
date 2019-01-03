@@ -67,9 +67,17 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     "service is PERSONAL-INCOME-RECORD" should {
 
       "redirect to review-authorisation when a valid NINO is submitted" in {
+        givenInvitationCreationSucceeds(
+          arn,
+          personal,
+          validNino.value,
+          invitationIdPIR,
+          validNino.value,
+          "ni",
+          servicePIR,
+          "NI")
         val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
-        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
@@ -93,9 +101,17 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to client-type when a valid NINO is submitted but cache is empty" in {
+        givenInvitationCreationSucceeds(
+          arn,
+          personal,
+          validNino.value,
+          invitationIdPIR,
+          validNino.value,
+          "ni",
+          servicePIR,
+          "NI")
         val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
-        givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
@@ -141,7 +157,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to already-authorisation-pending when a valid NINO is submitted but it already exists in the basket" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", servicePIR, validNino.value, "itemId")))
+          Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
         testCurrentAuthorisationRequestCache.save(
@@ -228,7 +244,13 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
       val authRequest =
-        AuthorisationRequest("clienty name", servicePIR, validNino.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          servicePIR,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
 
