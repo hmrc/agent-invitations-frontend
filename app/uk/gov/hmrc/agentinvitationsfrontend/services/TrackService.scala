@@ -54,7 +54,8 @@ class TrackService @Inject()(
     getClientNameByService(invitation).map(cn => invitation.copy(clientName = cn))
 
   def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] = {
-    val itsaRelationships: Future[Seq[ItsaTrackRelationship]] = relationshipsConnector.getInactiveItsaRelationships
+    val itsaRelationships: Future[Seq[ItsaInactiveTrackRelationship]] =
+      relationshipsConnector.getInactiveItsaRelationships
     val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
     val irvRelationships: Future[Seq[IrvTrackRelationship]] = pirRelationshipConnector.getInactiveIrvRelationships
 
@@ -62,7 +63,7 @@ class TrackService @Inject()(
       relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships, irvRelationships)).map(_.flatten)
 
       inactiveClients <- Future.traverse(relationships) {
-                          case ItsaTrackRelationship(_, dateTo, clientId) =>
+                          case ItsaInactiveTrackRelationship(_, dateTo, clientId) =>
                             for {
                               nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
                               name <- getTradingName(nino)

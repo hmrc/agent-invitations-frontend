@@ -30,18 +30,35 @@ sealed trait TrackRelationship extends Product with Serializable {
   val clientId: String
 }
 
-case class ItsaTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
+case class ItsaInactiveTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String)
+    extends TrackRelationship {
   val serviceName = Services.HMRCMTDIT
 }
 
-object ItsaTrackRelationship {
-  implicit val relationshipWrites = Json.writes[ItsaTrackRelationship]
+object ItsaInactiveTrackRelationship {
+  implicit val relationshipWrites = Json.writes[ItsaInactiveTrackRelationship]
 
-  implicit val reads: Reads[ItsaTrackRelationship] =
+  implicit val reads: Reads[ItsaInactiveTrackRelationship] =
     ((JsPath \ "arn").read[Arn] and
       (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(ItsaTrackRelationship.apply _)
+      (JsPath \ "referenceNumber").read[String])(ItsaInactiveTrackRelationship.apply _)
 
+}
+
+trait Relationship {
+  val arn: Arn
+  val dateTo: Option[LocalDate]
+  val dateFrom: Option[LocalDate]
+}
+
+case class ItsaRelationship(arn: Arn, dateTo: Option[LocalDate], dateFrom: Option[LocalDate]) extends Relationship
+
+object ItsaRelationship {
+  implicit val relationshipWrites = Json.writes[ItsaRelationship]
+
+  implicit val reads: Reads[ItsaRelationship] = ((JsPath \ "arn").read[Arn] and
+    (JsPath \ "dateTo").readNullable[LocalDate] and
+    (JsPath \ "dateFrom").readNullable[LocalDate])(ItsaRelationship.apply _)
 }
 
 case class VatTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {

@@ -91,10 +91,11 @@ class PirRelationshipConnector @Inject()(
     monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
       http
         .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)
+        .map(_.headOption)
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No active relationships were found for IRV")
-            Seq.empty
+            None
         }
     }
 

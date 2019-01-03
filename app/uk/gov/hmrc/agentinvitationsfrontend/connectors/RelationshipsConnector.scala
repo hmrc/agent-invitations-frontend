@@ -59,10 +59,10 @@ class RelationshipsConnector @Inject()(
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[ItsaTrackRelationship]] =
+    ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
     monitor("ConsumedApi-Get-InactiveItsaRelationships-GET") {
       http
-        .GET[Seq[ItsaTrackRelationship]](getInactiveItsaRelationshipUrl.toString)
+        .GET[Seq[ItsaInactiveTrackRelationship]](getInactiveItsaRelationshipUrl.toString)
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No inactive relationships were found for ITSA")
@@ -108,22 +108,24 @@ class RelationshipsConnector @Inject()(
   def getItsaRelationshipForAgent(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
     monitor("ConsumedApi-Get-ItsaRelationshipForAgent-GET") {
       http
-        .GET[Seq[ItsaTrackRelationship]](getRelationshipItsaForAgentUrl(nino).toString)
-        .recover {
+        .GET[ItsaRelationship](getRelationshipItsaForAgentUrl(nino).toString)
+        .map(Some(_))
+        .recover[Option[ItsaRelationship]] {
           case _: NotFoundException =>
             Logger(getClass).warn("No relationships were found for this agent and client for ITSA")
-            Seq.empty
+            None
         }
     }
 
   def getVatRelationshipForAgent(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
     monitor("ConsumedApi-Get-VatRelationshipForAgent-GET") {
       http
-        .GET[Seq[VatTrackRelationship]](getRelationshipVatForAgentUrl(vrn).toString)
-        .recover {
+        .GET[VatTrackRelationship](getRelationshipVatForAgentUrl(vrn).toString)
+        .map(Some(_))
+        .recover[Option[VatTrackRelationship]] {
           case _: NotFoundException =>
             Logger(getClass).warn("No relationships were found for this agent and client for VAT")
-            Seq.empty
+            None
         }
     }
 }
