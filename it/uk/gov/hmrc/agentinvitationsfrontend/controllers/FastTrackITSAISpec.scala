@@ -39,7 +39,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
 
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected Individual, redirect to select-service when cache is empty" in {
@@ -90,7 +90,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
   }
 

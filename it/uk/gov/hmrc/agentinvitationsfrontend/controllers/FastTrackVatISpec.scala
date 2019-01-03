@@ -47,7 +47,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
 
     "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to select-service when cache is empty" in {
@@ -98,7 +98,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
   }
 

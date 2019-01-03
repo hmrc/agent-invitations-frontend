@@ -135,9 +135,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
-
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientType"       -> "personal",
@@ -159,9 +160,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
           Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
-
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientType"       -> "personal",
