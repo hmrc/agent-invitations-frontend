@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ class AgentsInvitationController @Inject()(
   @Named("agent-invitations-frontend.external-url") externalUrl: String,
   @Named("agent-services-account-frontend.external-url") asAccUrl: String,
   invitationsService: InvitationsService,
+  relationshipsService: RelationshipsService,
   auditService: AuditService,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
@@ -430,13 +431,23 @@ class AgentsInvitationController @Inject()(
                 agentConfirmationForm("error.confirm-client.required")
                   .bindFromRequest()
                   .fold(
-                    formWithErrors => Future successful Ok(confirm_client(clientName, formWithErrors)),
+                    formWithErrors => {
+                      Future successful Ok(confirm_client(clientName, formWithErrors))
+                    },
                     data =>
                       if (data.choice) {
-                        invitationsService.hasPendingInvitationsFor(arn, clientId, service, journeyStateCache).flatMap {
-                          case true =>
+                        val result = for {
+                          hasPendingInvitations <- invitationsService
+                                                    .hasPendingInvitationsFor(arn, clientId, service, journeyStateCache)
+                          hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(arn, clientId, service)
+                        } yield (hasPendingInvitations, hasActiveRelationship)
+
+                        result.flatMap {
+                          case (true, _) =>
                             Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
-                          case false => {
+                          case (_, true) =>
+                            Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
+                          case (false, false) => {
                             for {
                               journeyStateOpt <- journeyStateCache.fetch
                               currentCache = journeyStateOpt match {
@@ -461,6 +472,7 @@ class AgentsInvitationController @Inject()(
                                        } yield redirect
                             } yield result
                           }
+
                         }
                       } else {
                         for {
@@ -581,48 +593,59 @@ class AgentsInvitationController @Inject()(
           case HMRCPIR if featureFlags.enableIrvToConfirm =>
             Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
           case _ =>
-            invitationsService
-              .hasPendingInvitationsFor(
-                arn,
-                currentAuthorisationRequest.clientIdentifier,
-                currentAuthorisationRequest.service,
-                journeyStateCache)
-              .flatMap {
-                case true
-                    if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
-                      (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
-                      (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) => {
-                  Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
-                }
-                case _ => {
-                  for {
-                    clientName <- invitationsService.getClientNameByService(
-                                   currentAuthorisationRequest.clientIdentifier,
-                                   currentAuthorisationRequest.service)
-                    journeyStateOpt <- journeyStateCache.fetch
-                    currentCache = journeyStateOpt match {
-                      case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
-                      case Some(journeyState) => journeyState
-                    }
-                    _ <- journeyStateCache.save(
-                          AgentMultiAuthorisationJourneyState(
-                            currentAuthorisationRequest.clientType.getOrElse(""),
-                            currentCache.requests ++ Set(
-                              AuthorisationRequest(
-                                clientName.getOrElse(""),
-                                currentAuthorisationRequest.service,
-                                currentAuthorisationRequest.clientIdentifier))
-                          ))
-                    result <- currentAuthorisationRequest.clientType match {
-                               case `personal` =>
-                                 Future successful Redirect(
-                                   routes.AgentsInvitationController.showReviewAuthorisations())
-                               case `business` => body
-                               case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
-                             }
-                  } yield result
-                }
+            val result = for {
+              hasPendingInvitations <- invitationsService
+                                        .hasPendingInvitationsFor(
+                                          arn,
+                                          currentAuthorisationRequest.clientIdentifier,
+                                          currentAuthorisationRequest.service,
+                                          journeyStateCache)
+              hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(
+                                        arn,
+                                        currentAuthorisationRequest.clientIdentifier,
+                                        currentAuthorisationRequest.service)
+            } yield (hasPendingInvitations, hasActiveRelationship)
+
+            result.flatMap {
+              case (true, _)
+                  if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
+                    (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
+                    (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) =>
+                Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+
+              case (_, true)
+                  if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
+                    (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
+                    (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) =>
+                Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
+              case _ => {
+                for {
+                  clientName <- invitationsService.getClientNameByService(
+                                 currentAuthorisationRequest.clientIdentifier,
+                                 currentAuthorisationRequest.service)
+                  journeyStateOpt <- journeyStateCache.fetch
+                  currentCache = journeyStateOpt match {
+                    case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
+                    case Some(journeyState) => journeyState
+                  }
+                  _ <- journeyStateCache.save(
+                        AgentMultiAuthorisationJourneyState(
+                          currentAuthorisationRequest.clientType.getOrElse(""),
+                          currentCache.requests ++ Set(
+                            AuthorisationRequest(
+                              clientName.getOrElse(""),
+                              currentAuthorisationRequest.service,
+                              currentAuthorisationRequest.clientIdentifier))
+                        ))
+                  result <- currentAuthorisationRequest.clientType match {
+                             case `personal` =>
+                               Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+                             case `business` => body
+                             case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
+                           }
+                } yield result
               }
+            }
         }
       }
     }

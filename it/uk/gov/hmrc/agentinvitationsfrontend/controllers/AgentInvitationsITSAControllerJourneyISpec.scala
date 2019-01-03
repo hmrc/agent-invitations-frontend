@@ -402,7 +402,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
-      giveActiveRelationshipItsaExistsFor(arn, nino)
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      giveActiveRelationshipItsaExistsFor(arn, validNino.value)
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))

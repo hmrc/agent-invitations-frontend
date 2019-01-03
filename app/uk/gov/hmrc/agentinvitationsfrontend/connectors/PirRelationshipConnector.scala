@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -77,6 +78,22 @@ class PirRelationshipConnector @Inject()(
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No inactive relationships were found for IRV")
+            Seq.empty
+        }
+    }
+
+  def getActiveIrvRelationshipUrl(arn: Arn, clientId: Nino): URL =
+    new URL(
+      baseUrl,
+      s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
+
+  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier) =
+    monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
+      http
+        .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No active relationships were found for IRV")
             Seq.empty
         }
     }

@@ -164,7 +164,16 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to already-authorisation-present when a valid NINO is submitted but client already has relationship with agent for this service" in {
-        givenAfiRelationshipIsActive(arn, servicePIR, nino, true)
+        val journeyState = AgentMultiAuthorisationJourneyState(
+          "personal",
+          Set(AuthorisationRequest("clientName", servicePIR, "AB123456B", "itemId")))
+        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+        testCurrentAuthorisationRequestCache.save(
+          CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+        givenAfiRelationshipIsActiveForAgent(arn, validNino)
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientType"       -> "personal",

@@ -440,7 +440,22 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "business",
+        Set(AuthorisationRequest("clientName", serviceVAT, validVrn9755.value, "itemId")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack))
+
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       giveActiveRelationshipVatExistsFor(arn, validVrn.value)
+
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =
         submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))

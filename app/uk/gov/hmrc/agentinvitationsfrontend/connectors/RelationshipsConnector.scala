@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,12 @@ class RelationshipsConnector @Inject()(
   def deleteRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
     new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
 
+  def getRelationshipItsaForAgentUrl(nino: Nino): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/service/HMRC-MTD-IT/client/NI/${nino.value}")
+
+  def getRelationshipVatForAgentUrl(vrn: Vrn): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
+
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[ItsaTrackRelationship]] =
@@ -97,5 +103,27 @@ class RelationshipsConnector @Inject()(
       case _ => {
         None
       }
+    }
+
+  def getItsaRelationshipForAgent(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-ItsaRelationshipForAgent-GET") {
+      http
+        .GET[Seq[ItsaTrackRelationship]](getRelationshipItsaForAgentUrl(nino).toString)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for ITSA")
+            Seq.empty
+        }
+    }
+
+  def getVatRelationshipForAgent(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-VatRelationshipForAgent-GET") {
+      http
+        .GET[Seq[VatTrackRelationship]](getRelationshipVatForAgentUrl(vrn).toString)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for VAT")
+            Seq.empty
+        }
     }
 }
