@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -22,16 +23,19 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentMultiAuthorisationJourneyStateCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{invitation_creation_failed, not_matched}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+
+import scala.concurrent.Future
 
 @Singleton
 class AgentsErrorController @Inject()(
   auditService: AuditService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
+  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
@@ -61,6 +65,15 @@ class AgentsErrorController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       journeyStateCache.get.map(cacheItem =>
         Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
+    }
+  }
+
+  val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      for {
+        cacheItem        <- journeyStateCache.get
+        currentCacheItem <- currentAuthorisationRequestCache.get
+      } yield Ok(active_authorisation_exists(cacheItem.requests.nonEmpty, currentCacheItem.service))
     }
   }
 

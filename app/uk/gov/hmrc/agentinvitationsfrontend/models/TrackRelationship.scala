@@ -31,18 +31,19 @@ sealed trait TrackRelationship extends Product with Serializable {
   val clientId: String
 }
 
-case class ItsaTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
+case class ItsaInactiveTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String)
+    extends TrackRelationship {
   val serviceName = Services.HMRCMTDIT
   val clientType = Some("personal")
 }
 
-object ItsaTrackRelationship {
-  implicit val relationshipWrites = Json.writes[ItsaTrackRelationship]
+object ItsaInactiveTrackRelationship {
+  implicit val relationshipWrites = Json.writes[ItsaInactiveTrackRelationship]
 
-  implicit val reads: Reads[ItsaTrackRelationship] =
+  implicit val reads: Reads[ItsaInactiveTrackRelationship] =
     ((JsPath \ "arn").read[Arn] and
       (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(ItsaTrackRelationship.apply _)
+      (JsPath \ "referenceNumber").read[String])(ItsaInactiveTrackRelationship.apply _)
 
 }
 

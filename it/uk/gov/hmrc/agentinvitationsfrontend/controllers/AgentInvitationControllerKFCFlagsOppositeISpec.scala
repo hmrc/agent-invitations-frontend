@@ -27,6 +27,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "microservice.services.des.port"                                      -> wireMockPort,
         "microservice.services.agent-fi-relationship.port"                    -> wireMockPort,
         "microservice.services.citizen-details.host"                          -> wireMockHost,
+        "microservice.services.agent-client-relationships.port"               -> wireMockPort,
+        "microservice.services.agent-client-relationships.host"               -> wireMockHost,
         "microservice.services.citizen-details.port"                          -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url"       -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url"  -> wireMockBaseUrlAsString,
@@ -160,6 +162,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -167,6 +170,28 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
+    }
+
+    "return 303 already-authorisation-present when there is already a relationship between the agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      givenTradingName(validNino, "64 Bit")
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
+      testCurrentAuthorisationRequestCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormItsa.fill(
+          UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
+
     }
 
     "return 303 confirm-client for IRV" in {
@@ -219,6 +244,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -226,6 +252,27 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showInvitationSent().url
+    }
+
+    "return 303 already-authorisation-present when there is already a relationship for the agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      givenClientDetails(validVrn)
+      val formData =
+        CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
+      testCurrentAuthorisationRequestCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormVat.fill(
+          UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
+
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
     }
 
   }

@@ -1,14 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, ItsaTrackRelationship}
+import uk.gov.hmrc.agentinvitationsfrontend.models.InactiveClient
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RelationshipServiceISpec extends BaseISpec {
+class TrackServiceISpec extends BaseISpec {
 
   val service: TrackService = app.injector.instanceOf[TrackService]
 
@@ -43,6 +42,7 @@ class RelationshipServiceISpec extends BaseISpec {
     validNino.value,
     "ni",
     Some(LocalDate.parse("2015-09-21")))
+
   val irvRelationship2 = InactiveClient(
     Some("personal"),
     "PERSONAL-INCOME-RECORD",

@@ -425,6 +425,21 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 303
     }
 
+    "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
+
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
+      status(result) shouldBe 303
+    }
+
     "redirect to select client type when client type in cache is not supported" in {
       val journeyState = AgentMultiAuthorisationJourneyState("foo", Set.empty)
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)

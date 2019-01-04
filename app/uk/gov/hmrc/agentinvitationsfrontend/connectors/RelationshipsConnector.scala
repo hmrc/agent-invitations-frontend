@@ -51,12 +51,18 @@ class RelationshipsConnector @Inject()(
   def deleteRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
     new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
 
+  def checkRelationshipItsaUrl(arn: Arn, nino: Nino): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}")
+
+  def checkRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
+
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[ItsaTrackRelationship]] =
+    ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
     monitor("ConsumedApi-Get-InactiveItsaRelationships-GET") {
       http
-        .GET[Seq[ItsaTrackRelationship]](getInactiveItsaRelationshipUrl.toString)
+        .GET[Seq[ItsaInactiveTrackRelationship]](getInactiveItsaRelationshipUrl.toString)
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No inactive relationships were found for ITSA")
@@ -97,5 +103,29 @@ class RelationshipsConnector @Inject()(
       case _ => {
         None
       }
+    }
+
+  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
+      http
+        .GET[HttpResponse](checkRelationshipItsaUrl(arn, nino).toString)
+        .map(_ => true)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for ITSA")
+            false
+        }
+    }
+
+  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-CheckVatRelationship-GET") {
+      http
+        .GET[HttpResponse](checkRelationshipVatUrl(arn, vrn).toString)
+        .map(_ => true)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for VAT")
+            false
+        }
     }
 }

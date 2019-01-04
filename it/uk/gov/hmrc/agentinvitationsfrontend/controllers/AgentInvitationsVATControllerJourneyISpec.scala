@@ -449,6 +449,30 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 303
     }
 
+    "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "business",
+        Set(AuthorisationRequest("clientName", Some("business"), serviceVAT, validVrn9755.value, "itemId")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack))
+
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
+
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
+      status(result) shouldBe 303
+    }
+
     "fail when creation of invitation is unsuccessful" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(

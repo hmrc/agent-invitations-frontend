@@ -9,10 +9,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 
-
 trait ACRStubs {
   me: WireMockSupport =>
-
 
   def givenInactiveITSARelationships(arn: Arn) =
     stubFor(
@@ -40,9 +38,8 @@ trait ACRStubs {
   def givenInactiveITSARelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-IT"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
   def givenInactiveVATRelationships(arn: Arn) =
     stubFor(
@@ -70,11 +67,10 @@ trait ACRStubs {
   def givenInactiveVATRelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
-  def givenCancelledAuthorisationItsa(arn: Arn, nino:Nino, status: Int) =
+  def givenCancelledAuthorisationItsa(arn: Arn, nino: Nino, status: Int) =
     stubFor(
       delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}"))
         .willReturn(
@@ -83,9 +79,27 @@ trait ACRStubs {
         )
     )
 
-  def givenCancelledAuthorisationVat(arn: Arn, vrn:Vrn, status: Int) =
+  def givenCancelledAuthorisationVat(arn: Arn, vrn: Vrn, status: Int) =
     stubFor(
       delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
+  def givenCheckRelationshipItsaWithStatus(arn: Arn, nino: String, status: Int) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
+  def givenCheckRelationshipVatWithStatus(arn: Arn, vrn: String, status: Int) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/$vrn"))
         .willReturn(
           aResponse()
             .withStatus(status)
