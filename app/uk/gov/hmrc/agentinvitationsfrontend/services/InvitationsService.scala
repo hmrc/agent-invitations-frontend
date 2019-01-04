@@ -208,8 +208,7 @@ class InvitationsService @Inject()(
     service: String,
     cache: AgentMultiAuthorisationJourneyStateCache)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] = {
-    val x = 3
+    ec: ExecutionContext): Future[Boolean] =
     for {
       hasPendingInvitations <- invitationsConnector
                                 .getAllPendingInvitationsForClient(arn, clientId, service)
@@ -219,7 +218,6 @@ class InvitationsService @Inject()(
       hasPendingInvitationClientIdInJourney <- cache.get.map(cacheItem =>
                                                 cacheItem.requests.map(_.clientId).contains(clientId))
     } yield hasPendingInvitations | (hasPendingInvitationServiceInJourney && hasPendingInvitationClientIdInJourney)
-  }
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
