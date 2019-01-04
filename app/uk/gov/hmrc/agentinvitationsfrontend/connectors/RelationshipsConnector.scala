@@ -45,18 +45,6 @@ class RelationshipsConnector @Inject()(
   val getInactiveVatRelationshipUrl: URL =
     new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT")
 
-  def deleteRelationshipItsaUrl(arn: Arn, nino: Nino): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}")
-
-  def deleteRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
-
-  def checkRelationshipItsaUrl(arn: Arn, nino: Nino): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}")
-
-  def checkRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
-
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
@@ -85,7 +73,10 @@ class RelationshipsConnector @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedAPI-DELETE-ItsaRelationship-DELETE") {
-      http.DELETE(deleteRelationshipItsaUrl(arn, nino).toString).map(_ => Some(true))
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}").toString
+      http.DELETE(url).map(_ => Some(true))
     }.recover {
       case _: NotFoundException => Some(false)
       case _                    => None
@@ -95,20 +86,22 @@ class RelationshipsConnector @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedAPI-DELETE-VatRelationship-DELETE") {
-      http.DELETE(deleteRelationshipVatUrl(arn, vrn).toString).map(_ => Some(true))
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}").toString
+      http.DELETE(url).map(_ => Some(true))
     }.recover {
-      case _: NotFoundException => {
-        Some(false)
-      }
-      case _ => {
-        None
-      }
+      case _: NotFoundException => Some(false)
+      case _                    => None
     }
 
-  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}").toString
       http
-        .GET[HttpResponse](checkRelationshipItsaUrl(arn, nino).toString)
+        .GET[HttpResponse](url)
         .map(_ => true)
         .recover {
           case _: NotFoundException =>
@@ -117,10 +110,13 @@ class RelationshipsConnector @Inject()(
         }
     }
 
-  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor("ConsumedApi-Get-CheckVatRelationship-GET") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}").toString
       http
-        .GET[HttpResponse](checkRelationshipVatUrl(arn, vrn).toString)
+        .GET[HttpResponse](url)
         .map(_ => true)
         .recover {
           case _: NotFoundException =>

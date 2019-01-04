@@ -38,6 +38,7 @@ import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
 import scala.concurrent.Future
 
@@ -587,11 +588,11 @@ class AgentsInvitationController @Inject()(
       else {
         currentAuthorisationRequest.service match {
           case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
-            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+            Redirect(routes.AgentsInvitationController.showConfirmClient())
           case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
-            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+            Redirect(routes.AgentsInvitationController.showConfirmClient())
           case HMRCPIR if featureFlags.enableIrvToConfirm =>
-            Future successful Redirect(routes.AgentsInvitationController.showConfirmClient())
+            Redirect(routes.AgentsInvitationController.showConfirmClient())
           case _ =>
             val result = for {
               hasPendingInvitations <- invitationsService
@@ -608,15 +609,15 @@ class AgentsInvitationController @Inject()(
 
             result.flatMap {
               case (true, _)
-                  if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) =>
+                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
+                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
+                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
                 Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
 
               case (_, true)
-                  if (currentAuthorisationRequest.service == "PERSONAL-INCOME-RECORD" && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == "HMRC-MTD-IT" && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == "HMRC-MTD-VAT" && !featureFlags.enableMtdVatToConfirm) =>
+                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
+                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
+                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
                 Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
               case _ => {
                 for {
@@ -674,11 +675,11 @@ class AgentsInvitationController @Inject()(
           _ => {
             Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }, {
-            case "HMRC-MTD-IT" =>
+            case Services.HMRCMTDIT =>
               bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
-            case "PERSONAL-INCOME-RECORD" =>
+            case Services.HMRCPIR =>
               bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
-            case "HMRC-MTD-VAT" =>
+            case Services.HMRCMTDVAT =>
               bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
           }
         )
@@ -1156,10 +1157,9 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormItsa(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =
     Form(
       mapping(
-        "clientType" -> optional(text),
-        "service"    -> text,
-        "clientIdentifier" -> normalizedText.verifying(
-          validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format")),
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
         "knownFact" -> optionalIf(
           featureFlags.showKfcMtdIt,
           trimmedUppercaseText.verifying(
@@ -1191,10 +1191,9 @@ object AgentsInvitationController {
   def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndDob] =
     Form(
       mapping(
-        "clientType" -> optional(text),
-        "service"    -> text,
-        "clientIdentifier" -> normalizedText.verifying(
-          validNino(nonEmptyFailure = "error.nino.required", invalidFailure = "enter-nino.invalid-format")),
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
         "knownFact" -> optionalIf(
           featureFlags.showKfcPersonalIncome,
           dateFieldsMapping(validDobDateFormat)
