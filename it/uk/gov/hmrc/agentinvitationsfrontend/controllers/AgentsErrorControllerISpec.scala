@@ -175,4 +175,51 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       }.getMessage shouldBe "Cached session state expected but not found"
     }
   }
+
+  "GET /already-authorisation-present" should {
+    val request = FakeRequest("GET", "/already-authorisation-present")
+    "display the already authorisation present page when there are no requests in the journey cache" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You are already authorised",
+        "This client has already authorised you to report their income and expenses through software.",
+        "Start a new request"
+      )
+    }
+
+    "display the already authorisation present page when there are some requests in the journey cache" in {
+      val clientDetail1 =
+        AuthorisationRequest("Gareth Gates Sr", serviceITSA, validNino.value, state = AuthorisationRequest.FAILED)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You are already authorised",
+        "This client has already authorised you to report their income and expenses through software.",
+        "Return to your authorisation requests"
+      )
+    }
+
+    "throw an Exception if there is nothing in the cache" in {
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+
+      intercept[Exception] {
+        await(result)
+      }.getMessage shouldBe "Cached session state expected but not found"
+
+    }
+  }
 }

@@ -454,7 +454,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           fromFastTrack))
 
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
-      giveActiveRelationshipVatExistsFor(arn, validVrn.value)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =

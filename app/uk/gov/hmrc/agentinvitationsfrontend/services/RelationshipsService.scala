@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -30,13 +31,13 @@ class RelationshipsService @Inject()(
 
   def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) = {
-    val relationships = service match {
-      case "HMRC-MTD-IT"            => relationshipsConnector.getItsaRelationshipForAgent(Nino(clientId))
-      case "HMRC-MTD-VAT"           => relationshipsConnector.getVatRelationshipForAgent(Vrn(clientId))
-      case "PERSONAL-INCOME-RECORD" => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId))
+    ec: ExecutionContext) =
+    service match {
+      case HMRCMTDIT => {
+        relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
+      }
+      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
+      case HMRCPIR    => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
     }
-    relationships.map(_.isDefined)
-  }
 
 }

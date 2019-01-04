@@ -88,67 +88,21 @@ trait ACRStubs {
         )
     )
 
-  def giveActiveRelationshipItsaExistsFor(arn: Arn, nino: String) =
+  def givenCheckRelationshipItsaWithStatus(arn: Arn, nino: String, status: Int) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/service/HMRC-MTD-IT/client/NI/$nino"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/$nino"))
         .willReturn(
           aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[{
-                 |   "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-21",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747696"
-                 |},
-                 |{  "arn":"${arn.value}",
-                 |   "dateTo":"2018-09-24",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747641"
-                 |}]""".stripMargin
-            )
+            .withStatus(status)
         )
     )
 
-  def giveActiveRelationshipItsaNotFoundFor(arn: Arn, nino: String) =
+  def givenCheckRelationshipVatWithStatus(arn: Arn, vrn: String, status: Int) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/service/HMRC-MTD-IT/client/NI/$nino"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/$vrn"))
         .willReturn(
           aResponse()
-            .withStatus(404)
-        )
-    )
-
-  def giveActiveRelationshipVatExistsFor(arn: Arn, vrn: String) =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/service/HMRC-MTD-VAT/client/VRN/$vrn"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[{
-                 |   "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-21",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747696"
-                 |},
-                 |{  "arn":"${arn.value}",
-                 |   "dateTo":"2018-09-24",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747641"
-                 |}]""".stripMargin
-            )
-        )
-    )
-
-  def giveActiveRelationshipVatNotFoundFor(arn: Arn, vrn: String) =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/service/HMRC-MTD-VAT/client/VRN/$vrn"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)
+            .withStatus(status)
         )
     )
 }

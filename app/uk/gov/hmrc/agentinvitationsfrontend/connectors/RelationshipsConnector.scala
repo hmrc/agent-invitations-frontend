@@ -51,11 +51,11 @@ class RelationshipsConnector @Inject()(
   def deleteRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
     new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
 
-  def getRelationshipItsaForAgentUrl(nino: Nino): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/service/HMRC-MTD-IT/client/NI/${nino.value}")
+  def checkRelationshipItsaUrl(arn: Arn, nino: Nino): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}")
 
-  def getRelationshipVatForAgentUrl(vrn: Vrn): URL =
-    new URL(baseUrl, s"/agent-client-relationships/agent/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
+  def checkRelationshipVatUrl(arn: Arn, vrn: Vrn): URL =
+    new URL(baseUrl, s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}")
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
@@ -105,27 +105,27 @@ class RelationshipsConnector @Inject()(
       }
     }
 
-  def getItsaRelationshipForAgent(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    monitor("ConsumedApi-Get-ItsaRelationshipForAgent-GET") {
+  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
       http
-        .GET[ItsaRelationship](getRelationshipItsaForAgentUrl(nino).toString)
-        .map(Some(_))
-        .recover[Option[ItsaRelationship]] {
+        .GET[HttpResponse](checkRelationshipItsaUrl(arn, nino).toString)
+        .map(_ => true)
+        .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No relationships were found for this agent and client for ITSA")
-            None
+            false
         }
     }
 
-  def getVatRelationshipForAgent(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    monitor("ConsumedApi-Get-VatRelationshipForAgent-GET") {
+  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    monitor("ConsumedApi-Get-CheckVatRelationship-GET") {
       http
-        .GET[VatTrackRelationship](getRelationshipVatForAgentUrl(vrn).toString)
-        .map(Some(_))
-        .recover[Option[VatTrackRelationship]] {
+        .GET[HttpResponse](checkRelationshipVatUrl(arn, vrn).toString)
+        .map(_ => true)
+        .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No relationships were found for this agent and client for VAT")
-            None
+            false
         }
     }
 }

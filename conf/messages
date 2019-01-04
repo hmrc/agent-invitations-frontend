@@ -547,3 +547,11 @@ pending-authorisation-exists.button=Return to your authorisation requests
 pending-authorisation-exists.no-requests.p=You already created an authorisation request for this client. They have not yet responded to this request.
 pending-authorisation-exists.track.button=Track your authorisation requests
 pending-authorisation-exists.new-request.link=Start a new request
+
+#Active authorisatio exists
+active-authorisation-exists.header=You are already authorised
+active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to report their income and expenses through software.
+active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
+active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to report their VAT Returns through software.
+active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
+active-authorisation-exists.return=Return to your authorisation requests
