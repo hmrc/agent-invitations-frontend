@@ -264,7 +264,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a confirm cancel page" in {
       val result = showConfirmCancel(
-        authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value), arn.value))
+        authorisedAsValidAgent(
+          request.withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT"),
+          arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -293,6 +295,19 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/request-cancelled")
+    }
+
+    "redirect to track page when there is no invitationId in the session" in {
+      givenCancelInvitationReturns(arn, invitationIdITSA, 204)
+      val result = postConfirmCancel(
+        authorisedAsValidAgent(
+          request
+            .withFormUrlEncodedBody("confirmCancel" -> "true")
+            .withSession("clientName" -> "Joe Volcano"),
+          arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track")
     }
 
     "NotFound when yes is selected on confirm cancel page, but cancellation fails because invitation is not found" in {
@@ -352,7 +367,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = showRequestCancelled(
         authorisedAsValidAgent(
           request
-            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
+            .withSession(
+              "invitationId" -> invitationIdITSA.value,
+              "clientName"   -> "Joe Volcano",
+              "service"      -> "HMRC-MTD-IT"),
           arn.value))
 
       status(result) shouldBe 200
@@ -548,8 +566,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
             .withSession(
               "invitationId" -> invitationIdITSA.value,
               "clientId"     -> validNino.value,
-              "clientName"   -> "Buttercup Powerpuff"),
-          arn.value))
+              "clientName"   -> "Buttercup Powerpuff",
+              "service"      -> "HMRC-MTD-IT"),
+          arn.value
+        ))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -568,8 +588,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
             .withSession(
               "invitationId" -> invitationIdPIR.value,
               "clientId"     -> validNino.value,
-              "clientName"   -> "Bubbles Powerpuff"),
-          arn.value))
+              "clientName"   -> "Bubbles Powerpuff",
+              "service"      -> "PERSONAL-INCOME-RECORD"),
+          arn.value
+        ))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -588,8 +610,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
             .withSession(
               "invitationId" -> invitationIdVAT.value,
               "clientId"     -> validVrn.value,
-              "clientName"   -> "Blossom Powerpuff"),
-          arn.value))
+              "clientName"   -> "Blossom Powerpuff",
+              "service"      -> "HMRC-MTD-VAT"),
+          arn.value
+        ))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
