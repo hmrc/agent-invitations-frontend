@@ -127,45 +127,48 @@ class AgentsRequestTrackingController @Inject()(
 
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
-      val service = Services.determineServiceMessageKey(invitationId)
-      Future successful Ok(confirm_cancel(invitationId, service, confirmCancelForm))
+      val service = request.session.get("service").getOrElse("")
+      Future successful Ok(confirm_cancel(service, confirmCancelForm))
     }
   }
 
   def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
-      val service = Services.determineServiceMessageKey(invitationId)
-      confirmCancelForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors => {
-            Future successful Ok(confirm_cancel(invitationId, service, formWithErrors))
-          },
-          data => {
-            if (data.value.getOrElse(true)) {
-              invitationsConnector
-                .cancelInvitation(arn, invitationId)
-                .map {
-                  case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
-                  case Some(false) => NotFound
-                  case _           => Forbidden
+      request.session.get("invitationId") match {
+        case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
+        case Some(id) =>
+          val invitationId = InvitationId(id)
+          val service = Services.determineServiceMessageKey(invitationId)
+          confirmCancelForm
+            .bindFromRequest()
+            .fold(
+              formWithErrors => {
+                Future successful Ok(confirm_cancel(service, formWithErrors))
+              },
+              data => {
+                if (data.value.getOrElse(true)) {
+                  invitationsConnector
+                    .cancelInvitation(arn, invitationId)
+                    .map {
+                      case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
+                      case Some(false) => NotFound
+                      case _           => Forbidden
+                    }
+                } else {
+                  Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
                 }
-            } else {
-              Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
-            }
-          }
-        )
+              }
+            )
+      }
+
     }
   }
 
   def showRequestCancelled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
-      val service = Services.determineServiceMessageKey(invitationId)
+      val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      Future successful Ok(request_cancelled(invitationId, service, clientName))
+      Future successful Ok(request_cancelled(service, clientName))
     }
   }
 
@@ -214,8 +217,7 @@ class AgentsRequestTrackingController @Inject()(
 
   def showAuthorisationCancelled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
-      val service = Services.determineServiceMessageKey(invitationId)
+      val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
       val clientId = request.session.get("clientId").getOrElse("")
       Future successful Ok(authorisation_cancelled(service, clientId, clientName))

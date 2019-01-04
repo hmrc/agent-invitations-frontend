@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(invitationId: InvitationId, service: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 

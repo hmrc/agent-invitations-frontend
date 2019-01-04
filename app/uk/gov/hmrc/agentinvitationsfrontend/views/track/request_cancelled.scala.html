@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@(invitationId: InvitationId, service: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
