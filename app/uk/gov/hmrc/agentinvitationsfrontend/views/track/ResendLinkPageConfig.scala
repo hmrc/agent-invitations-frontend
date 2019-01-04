@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-trait InvitationParams {
-  def clientType: Option[String]
-  def service: String
-  def clientIdentifierType: String
-  def clientId: String
+import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+
+case class ResendLinkPageConfig(externalUrl: String, agentLink: String, clientType: String, expiryDate: String) {
+
+  def fullAgentLink: String = s"$externalUrl$agentLink"
+
+  def trackLink: Call =
+    routes.AgentsRequestTrackingController.showTrackRequests()
+
+  def newRequestLink: Call =
+    routes.AgentsInvitationController.showClientType()
 }

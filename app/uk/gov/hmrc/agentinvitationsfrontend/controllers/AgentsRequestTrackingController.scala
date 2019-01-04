@@ -30,8 +30,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationControl
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
+import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{authorisation_cancelled, cancel_authorisation_problem, confirm_cancel, confirm_cancel_authorisation, recent_invitations, request_cancelled, resend_link}
+import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
@@ -40,7 +41,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-case class TrackResendForm(service: String, invitationId: String, expiryDate: String)
+case class TrackResendForm(service: String, clientType: Option[String], expiryDate: String)
 
 case class CancelRequestForm(invitationId: String, service: String, clientName: String)
 
@@ -53,6 +54,7 @@ class AgentsRequestTrackingController @Inject()(
   val withVerifiedPasscode: PasscodeVerification,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
+  val invitationsService: InvitationsService,
   val invitationsConnector: InvitationsConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
@@ -85,15 +87,24 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def submitToResendLink: Action[AnyContent] = Action.async { implicit request =>
-    trackInformationForm
-      .bindFromRequest()
-      .fold(
-        _ => {
-          Logger(getClass).error("Error in form when redirecting to resend-link page.")
-          Future successful BadRequest
-        },
-        data => Future successful Ok(resend_link(data.service, data.invitationId, data.expiryDate, externalUrl))
-      )
+    withAuthorisedAsAgent { (arn, _) =>
+      trackInformationForm
+        .bindFromRequest()
+        .fold(
+          _ => {
+            Logger(getClass).error("Error in form when redirecting to resend-link page.")
+            Future successful BadRequest
+          },
+          data => {
+            for {
+              agentLink <- invitationsService.createAgentLink(arn, data.clientType.getOrElse(""))
+            } yield
+              Ok(
+                resend_link(
+                  ResendLinkPageConfig(externalUrl, agentLink, data.clientType.getOrElse(""), data.expiryDate)))
+          }
+        )
+    }
   }
 
   def submitToConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
@@ -223,8 +234,8 @@ class AgentsRequestTrackingController @Inject()(
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "invitationId" -> text
-          .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
+        "clientType" -> optional(text)
+          .verifying("Unsupported client type", clientType => Services.supportedClientTypes.contains(clientType)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }

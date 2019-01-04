@@ -459,7 +459,7 @@ class AgentsInvitationController @Inject()(
                                                if (currentCache.clientType.nonEmpty) currentCache.clientType
                                                else invitationWithClientDetails.clientType.getOrElse(""),
                                                currentCache.requests ++ Seq(
-                                                 AuthorisationRequest(clientName, service, clientId))
+                                                 AuthorisationRequest(clientName, clientType, service, clientId))
                                              ))
                                          redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
                                                       Future successful Redirect(
@@ -634,6 +634,7 @@ class AgentsInvitationController @Inject()(
                           currentCache.requests ++ Set(
                             AuthorisationRequest(
                               clientName.getOrElse(""),
+                              currentAuthorisationRequest.clientType,
                               currentAuthorisationRequest.service,
                               currentAuthorisationRequest.clientIdentifier))
                         ))

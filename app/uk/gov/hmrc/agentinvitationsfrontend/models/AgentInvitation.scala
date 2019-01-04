@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.Json
 
-case class AgentInvitation(service: String, clientIdType: String, clientId: String)
+case class AgentInvitation(clientType: Option[String], service: String, clientIdType: String, clientId: String)
 
 object AgentInvitation {
   implicit val format = Json.format[AgentInvitation]

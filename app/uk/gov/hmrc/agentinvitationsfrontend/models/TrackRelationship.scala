@@ -25,6 +25,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 sealed trait TrackRelationship extends Product with Serializable {
   val arn: Arn
+  val clientType: Option[String]
   val serviceName: String
   val dateTo: Option[LocalDate]
   val clientId: String
@@ -33,6 +34,7 @@ sealed trait TrackRelationship extends Product with Serializable {
 case class ItsaInactiveTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String)
     extends TrackRelationship {
   val serviceName = Services.HMRCMTDIT
+  val clientType = Some("personal")
 }
 
 object ItsaInactiveTrackRelationship {
@@ -45,23 +47,8 @@ object ItsaInactiveTrackRelationship {
 
 }
 
-trait Relationship {
-  val arn: Arn
-  val dateTo: Option[LocalDate]
-  val dateFrom: Option[LocalDate]
-}
-
-case class ItsaRelationship(arn: Arn, dateTo: Option[LocalDate], dateFrom: Option[LocalDate]) extends Relationship
-
-object ItsaRelationship {
-  implicit val relationshipWrites = Json.writes[ItsaRelationship]
-
-  implicit val reads: Reads[ItsaRelationship] = ((JsPath \ "arn").read[Arn] and
-    (JsPath \ "dateTo").readNullable[LocalDate] and
-    (JsPath \ "dateFrom").readNullable[LocalDate])(ItsaRelationship.apply _)
-}
-
-case class VatTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
+case class VatTrackRelationship(arn: Arn, clientType: Option[String], dateTo: Option[LocalDate], clientId: String)
+    extends TrackRelationship {
   val serviceName = Services.HMRCMTDVAT
 }
 
@@ -70,6 +57,7 @@ object VatTrackRelationship {
 
   implicit val reads: Reads[VatTrackRelationship] =
     ((JsPath \ "arn").read[Arn] and
+      (JsPath \ "clientType").readNullable[String] and
       (JsPath \ "dateTo").readNullable[LocalDate] and
       (JsPath \ "referenceNumber").read[String])(VatTrackRelationship.apply _)
 
@@ -77,6 +65,7 @@ object VatTrackRelationship {
 
 case class IrvTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
   val serviceName = Services.HMRCPIR
+  val clientType = Some("personal")
 }
 
 object IrvTrackRelationship {

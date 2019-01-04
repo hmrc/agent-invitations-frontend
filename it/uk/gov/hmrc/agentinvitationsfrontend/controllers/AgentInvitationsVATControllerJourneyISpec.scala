@@ -75,6 +75,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -111,6 +112,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
+          personal,
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -225,7 +227,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "business")
       val authRequest =
-        AuthorisationRequest("clienty name", serviceVAT, validVrn.value, AuthorisationRequest.CREATED, "itemId")
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceVAT,
+          validVrn.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
 
@@ -351,6 +359,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
           fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -380,6 +389,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState(business.get, Set.empty))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -420,7 +430,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", serviceVAT, validVrn.value, "itemId")))
+        Set(AuthorisationRequest("clientName", personal, serviceVAT, validVrn.value, "itemId")))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(
@@ -442,7 +452,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", serviceVAT, validVrn9755.value, "itemId")))
+        Set(AuthorisationRequest("clientName", Some("business"), serviceVAT, validVrn9755.value, "itemId")))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(

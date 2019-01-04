@@ -150,7 +150,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
@@ -198,6 +206,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdPIR,
         validNino.value,
@@ -226,6 +235,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -276,7 +286,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
 
       val result = fastTrack(
@@ -293,6 +311,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -315,6 +334,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdPIR,
         validNino.value,
@@ -415,7 +435,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
@@ -457,7 +485,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "personal",
-        Set(AuthorisationRequest("clientName", servicePIR, validNino.value, "itemId")))
+        Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))

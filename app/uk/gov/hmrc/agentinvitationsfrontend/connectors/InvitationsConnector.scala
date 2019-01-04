@@ -315,6 +315,7 @@ class InvitationsConnector @Inject()(
       implicit val urlReads: SimpleObjectReads[URL] = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
 
       ((JsPath \ "arn").read[Arn] and
+        (JsPath \ "clientType").readNullable[String] and
         (JsPath \ "service").read[String] and
         (JsPath \ "clientId").read[String] and
         (JsPath \ "clientIdType").read[String] and
@@ -326,7 +327,7 @@ class InvitationsConnector @Inject()(
         (JsPath \ "expiryDate").read[LocalDate] and
         (JsPath \ "invitationId").read[String] and
         (JsPath \ "_links" \ "self").read[URL])(
-        (a, b, c, d, e, f, g, h, i, j, k, l) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l)
+        (a, b, c, d, e, f, g, h, i, j, k, l, m) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m)
       )
     }
   }

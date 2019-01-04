@@ -23,6 +23,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 case class StoredInvitation(
   arn: Arn,
+  clientType: Option[String],
   service: String,
   clientId: String,
   clientIdType: String,
@@ -47,6 +48,7 @@ object StoredInvitation {
 
   def apply(
     arn: Arn,
+    clientType: Option[String],
     service: String,
     clientId: String,
     status: String,
@@ -57,6 +59,7 @@ object StoredInvitation {
     selfUrl: URL): StoredInvitation =
     StoredInvitation(
       arn,
+      clientType,
       service,
       clientId,
       clientIdTypeByService(service),
