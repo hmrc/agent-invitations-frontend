@@ -277,7 +277,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val notEnrolled = controller.notEnrolled()
     val featureFlags = FeatureFlags()
 
-    "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client" in {
+    "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with no requests in basket" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("business", Set.empty))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
       val vrnForm =
         agentInvitationIdentifyClientFormVat(featureFlags).fill(
@@ -288,12 +289,29 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(
-          "generic.title",
-          htmlEscapedMessage("not-enrolled.vat.header"),
-          htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.description"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.vat.button"))
+        "This client has not signed up to report their VAT returns using software.",
+        "Start a new request")
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+    }
+
+    "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
+      val authRequest: AuthorisationRequest = AuthorisationRequest("name", business, serviceVAT, validVrn.value)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
+      val vrnForm =
+        agentInvitationIdentifyClientFormVat(featureFlags).fill(
+          UserInputVrnAndRegDate(business, serviceVAT, None, None))
+      val result =
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(
+        result,
+        "This client has not signed up to report their VAT returns using software.",
+        "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       await(testCurrentAuthorisationRequestCache.fetch) shouldBe None

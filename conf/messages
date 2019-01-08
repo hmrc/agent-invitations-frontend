@@ -159,8 +159,7 @@ known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
-not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software.
-not-enrolled.p1.itsa=They cannot authorise you for this service until they have signed up.
+not-enrolled.p1.itsa=This client has not signed up to report their income and expenses using software.
 not-enrolled.p1.vat=This client has not signed up to report their VAT returns using software.
 not-enrolled.p2=They cannot authorise you for this service until they have signed up.
 not-enrolled.button=Back to your account
