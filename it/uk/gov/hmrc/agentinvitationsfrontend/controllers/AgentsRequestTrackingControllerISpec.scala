@@ -188,6 +188,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "What you need to do next",
         "Copy this link and email it to your client.",
         "You only need to send it to them once.",
+        "individual or sole trader tax affairs",
         "The link expires 5 days from now.",
         "Track your recent authorisation requests",
         "Return to your agent services account",
