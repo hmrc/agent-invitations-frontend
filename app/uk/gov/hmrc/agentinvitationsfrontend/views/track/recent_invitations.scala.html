@@ -60,11 +60,11 @@
                             <span>@Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
                         </td>
                         <td class="status">
-                            @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.effectiveStatus.toLowerCase}")
+                            @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
                             <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                         </td>
                         <td class="action">
-                            @{invitationOrRelationship.effectiveStatus match {
+                            @{invitationOrRelationship.status match {
                                 case "Pending" => pending_form(invitationOrRelationship)
                                 case "Accepted" => if(cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship)}
                                 case _ => new_request_form(invitationOrRelationship)
@@ -84,10 +84,10 @@
 }
 
 @dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
-    @if(invitation.effectiveStatus=="Pending") {
+    @if(invitation.status=="Pending") {
         <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate)
     } else {
-        @if(invitation.effectiveStatus=="Expired") {
+        @if(invitation.status=="Expired") {
             @displayDate(invitation.expiryDate)
         } else {
             @displayDate(invitation.date)

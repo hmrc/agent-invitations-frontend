@@ -30,5 +30,5 @@
     <input type="hidden" name="service" id="service" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientId" id="clientId" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="clientName" id="clientName" value="@{invitationOrRelationship.clientName}">
-    <button class="button--link-style" type="submit" id="resendRequest" onclick="">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.effectiveStatus.toLowerCase}")</button>
+    <button class="button--link-style" type="submit" id="resendRequest" onclick="">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
 }

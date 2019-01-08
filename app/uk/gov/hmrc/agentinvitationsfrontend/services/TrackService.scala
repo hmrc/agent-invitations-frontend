@@ -155,7 +155,7 @@ class TrackService @Inject()(
                                    clientId,
                                    clientIdType,
                                    clientName,
-                                   effectiveStatus(status, expiryDate),
+                                   status,
                                    None,
                                    Some(expiryDate),
                                    Some(invitationId))
@@ -210,8 +210,4 @@ class TrackService @Inject()(
                                }
     } yield (trackInfoInvitations ++ trackInfoRelationships).sorted(TrackInformationSorted.orderingByDate)
   }
-
-  def effectiveStatus(status: String, expiryDate: LocalDate)(implicit now: LocalDate): String =
-    if (status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate))) "Expired"
-    else status
 }

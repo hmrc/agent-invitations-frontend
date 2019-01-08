@@ -30,10 +30,6 @@ case class TrackedInvitation(
   invitationId: String
 ) extends ServiceAndClient {
 
-  def effectiveStatus(implicit now: LocalDate): String =
-    if (status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate))) "Expired"
-    else status
-
   def lastUpdatedFormatted = LocalDate.parse(lastUpdated.toString)
 
 }

@@ -30,13 +30,6 @@ case class TrackInformationSorted(
   expiryDate: Option[LocalDate],
   invitationId: Option[String]) {
 
-  def effectiveStatus(implicit now: LocalDate): String =
-    expiryDate match {
-      case Some(expDate) if status == "Pending" && (now.isAfter(expDate) || now.isEqual(expDate)) => "Expired"
-      case Some(_)                                                                                => status
-      case None                                                                                   => status
-    }
-
   def sortDate: Option[LocalDate] =
     if (date.isEmpty) expiryDate
     else if (expiryDate.isEmpty) date
