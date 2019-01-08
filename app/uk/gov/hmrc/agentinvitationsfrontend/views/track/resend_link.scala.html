@@ -46,7 +46,7 @@
     <li class="margin-bottom-30">
         <p>@Messages("resend-link.list-item-1.p1")</p>
         <p>@config.fullAgentLink</p>
-        <p>@Html(Messages("resend-link.list-item-1.p2", config.clientType))</p>
+        <p>@Html(Messages(s"resend-link.list-item-1.${config.clientType}.p2"))</p>
     </li>
     <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
   </ol>
