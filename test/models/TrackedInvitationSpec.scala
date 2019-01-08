@@ -29,43 +29,12 @@ class TrackedInvitationSpec extends UnitSpec {
 
   "TrackedInvitation" when {
     "converted from the stored one" should {
-      "have status Expired if already expired" in {
-
-        val invitation = exampleInvitation
-          .copy(status = "Pending", expiryDate = now.minusDays(1))
-        val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.status shouldBe "Pending"
-        tracked.effectiveStatus shouldBe "Expired"
-        tracked.expiryDate shouldBe now.minusDays(1)
-      }
-
-      "have status Expired if expired today" in {
-
-        val invitation = exampleInvitation
-          .copy(status = "Pending", created = DateTime.now, expiryDate = now)
-        val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.status shouldBe "Pending"
-        tracked.effectiveStatus shouldBe "Expired"
-        tracked.expiryDate shouldBe now
-      }
-
-      "have status Pending if not yet expired" in {
-
-        val invitation = exampleInvitation
-          .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
-        val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.status shouldBe "Pending"
-        tracked.effectiveStatus shouldBe "Pending"
-        tracked.expiryDate shouldBe now.plusDays(1)
-      }
 
       "have status Pending if expires tomorrow" in {
-
         val invitation = exampleInvitation
           .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
-        tracked.effectiveStatus shouldBe "Pending"
         tracked.expiryDate shouldBe now.plusDays(1)
       }
 
@@ -75,12 +44,10 @@ class TrackedInvitationSpec extends UnitSpec {
           .copy(status = "Accepted", lastUpdated = dateTime)
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Accepted"
-        tracked.effectiveStatus shouldBe "Accepted"
         tracked.lastUpdated shouldBe dateTime
       }
 
       "have clientId of clientIdType if ni" in {
-
         val invitation = exampleInvitation
           .copy(clientId = "foo", clientIdType = "ni", suppliedClientId = "bar", suppliedClientIdType = "barType")
         val tracked = TrackedInvitation.fromStored(invitation)
@@ -89,7 +56,6 @@ class TrackedInvitationSpec extends UnitSpec {
       }
 
       "have clientId of clientIdType if vrn" in {
-
         val invitation = exampleInvitation
           .copy(clientId = "bla", clientIdType = "vrn", suppliedClientId = "car", suppliedClientIdType = "ni")
         val tracked = TrackedInvitation.fromStored(invitation)
@@ -98,7 +64,6 @@ class TrackedInvitationSpec extends UnitSpec {
       }
 
       "have clientId of suppliedIdType if clientIdType not preferable" in {
-
         val invitation = exampleInvitation
           .copy(clientId = "foo", clientIdType = "MTDITID", suppliedClientId = "bar", suppliedClientIdType = "barType")
         val tracked = TrackedInvitation.fromStored(invitation)
@@ -107,7 +72,6 @@ class TrackedInvitationSpec extends UnitSpec {
       }
 
       "not have clientName" in {
-
         val invitation = exampleInvitation
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.clientName shouldBe None
