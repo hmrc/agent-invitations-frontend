@@ -306,7 +306,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         await(
           notEnrolled(
             authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))
-      }.getMessage shouldBe "Unsupported Service"
+      }.getMessage shouldBe "Unsupported Service: UNSUPPORTED_SERVICE"
     }
 
     "return 5xx when there is nothing in the cache" in {
