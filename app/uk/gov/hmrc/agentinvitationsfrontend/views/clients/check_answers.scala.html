@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,10 @@
             @Messages(s"check-answers.consent.${consent.consent}")
             </dd>
             <dd class="app-check-your-answers__change">
-                <a href=@pageConfig.changeUrl(consent.serviceKey)>@Messages("check-answers.change-link")</a>
+                <a href=@pageConfig.changeUrl(consent.serviceKey)>
+                    @Messages("check-answers.change-link")
+                    <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${consent.serviceKey}")</span>
+                </a>
             </dd>
         </div>
     }
