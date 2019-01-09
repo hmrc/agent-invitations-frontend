@@ -20,7 +20,7 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputVrnAndRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -297,6 +297,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val unsupportedForm =

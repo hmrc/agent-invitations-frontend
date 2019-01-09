@@ -270,7 +270,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val notEnrolled = controller.notEnrolled()
     val featureFlags = FeatureFlags()
 
-    "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client" in {
+    "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are no requests in basket" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
       val ninoForm =
         agentInvitationIdentifyClientFormItsa(featureFlags).fill(
@@ -281,16 +282,32 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(
-          "generic.title",
-          htmlEscapedMessage("not-enrolled.itsa.header"),
-          htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.description"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.itsa.button"))
+        "This client has not signed up to report their income and expenses using software.",
+        "Start a new request")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+    }
 
+    "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are requests in basket" in {
+      val authRequest = AuthorisationRequest("name", personal, serviceITSA, nino)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
+      val ninoForm =
+        agentInvitationIdentifyClientFormItsa(featureFlags).fill(
+          UserInputNinoAndPostcode(personal, serviceITSA, None, None))
+      val result =
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 403
+      checkHtmlResultWithBodyText(
+        result,
+        "This client has not signed up to report their income and expenses using software.",
+        "Return to your authorisation requests")
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
   }
 

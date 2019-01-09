@@ -159,12 +159,10 @@ known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
-not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
-not-enrolled.itsa.description=You cannot ask for authorisation from this client until they have signed up.
-not-enrolled.itsa.button=Back to your account
-
-not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
-not-enrolled.vat.description=You cannot ask for authorisation from this client until they have signed up.
+not-enrolled.p1.itsa=This client has not signed up to report their income and expenses using software.
+not-enrolled.p1.vat=This client has not signed up to report their VAT returns using software.
+not-enrolled.p2=They cannot authorise you for this service until they have signed up.
+not-enrolled.button=Back to your account
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
@@ -172,7 +170,7 @@ not-matched.header=There is a problem
 not-matched.description = The details you entered do not match to a client.
 not-matched.advice = Check them and try again.
 not-matched.button = Try again
-not-matched.review-link = Return to your authorisation requests
+review-auths.link = Return to your authorisation requests
 
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request
@@ -182,7 +180,7 @@ client-request-cancelled.button=Finish and sign out
 #All authorisations removed
 all-authorisations-removed.header=Authorisation request removed
 all-authorisations-removed.p=You have removed all of your new authorisation requests.
-all-authorisations-removed.button=Start a new request
+new-request.button=Start a new request
 
 #Create authorisation failed
 create-auth-failed.header=Sorry, there is a problem with the service
@@ -545,7 +543,7 @@ cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 cancel-auth-problem.button=Try again
 
 #Pending authorisation already exists
-pending-authorisation-exists.header=There is a problem
+problem.header=There is a problem
 pending-authorisation-exists.p=You have already added the same authorisation request for this client.
 pending-authorisation-exists.button=Return to your authorisation requests
 pending-authorisation-exists.no-requests.p=You already created an authorisation request for this client. They have not yet responded to this request.

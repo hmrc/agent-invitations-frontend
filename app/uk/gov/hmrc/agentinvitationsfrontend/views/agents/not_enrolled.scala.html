@@ -17,15 +17,25 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(serviceId: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceId: String, hasRequests: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-enrolled.$serviceId.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.$serviceId.header"), serviceId))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("problem.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.p1.$serviceId"), serviceId))) {
 
-  <h1 class="heading-xlarge">@Messages(s"not-enrolled.$serviceId.header")</h1>
+  <h1 class="heading-xlarge">@Messages("problem.header")</h1>
 
-  <p>@Messages(s"not-enrolled.$serviceId.description")</p>
+  <p>@Messages(s"not-enrolled.p1.$serviceId")</p>
 
-  <a href="@{externalUrls.agentServicesAccountUrl}/agent-services-account" class="button">@Messages(s"not-enrolled.$serviceId.button")</a>
+  <p>@Messages(s"not-enrolled.p2")</p>
+
+  @if(hasRequests) {
+   <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("review-auths.link")</a>
+  }else {
+   <a href=@routes.AgentsInvitationController.showClientType() class="button">@Messages("new-request.button")</a>
+  }
+
+
+
 
 }
