@@ -814,14 +814,16 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetchAndClear.flatMap {
         case Some(aggregate) =>
-          journeyStateCache.get.map(cacheItem =>
+          journeyStateCache.get.map(cacheItem => {
+            val hasRequests = cacheItem.requests.nonEmpty
             aggregate.service match {
               case HMRCMTDVAT =>
-                Forbidden(not_enrolled(Services.messageKeyForVAT, cacheItem.requests.nonEmpty))
+                Forbidden(not_enrolled(Services.messageKeyForVAT, hasRequests))
               case HMRCMTDIT =>
-                Forbidden(not_enrolled(Services.messageKeyForITSA, cacheItem.requests.nonEmpty))
-              case _ =>
-                throw new Exception("Unsupported Service")
+                Forbidden(not_enrolled(Services.messageKeyForITSA, hasRequests))
+              case ex =>
+                throw new Exception(s"Unsupported Service: $ex")
+            }
           })
         case None => throw new Exception("Empty Cache")
       }
