@@ -810,23 +810,20 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
+  val notSignedUp: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetchAndClear.flatMap {
-        case Some(aggregate) =>
-          journeyStateCache.get.map(cacheItem => {
-            val hasRequests = cacheItem.requests.nonEmpty
-            aggregate.service match {
-              case HMRCMTDVAT =>
-                Forbidden(not_enrolled(Services.messageKeyForVAT, hasRequests))
-              case HMRCMTDIT =>
-                Forbidden(not_enrolled(Services.messageKeyForITSA, hasRequests))
-              case ex =>
-                throw new Exception(s"Unsupported Service: $ex")
-            }
-          })
-        case None => throw new Exception("Empty Cache")
-      }
+      currentAuthorisationRequestCache.get.flatMap(aggregate =>
+        journeyStateCache.get.map(cacheItem => {
+          val hasRequests = cacheItem.requests.nonEmpty
+          aggregate.service match {
+            case HMRCMTDVAT =>
+              Forbidden(not_signed_up(Services.messageKeyForVAT, hasRequests))
+            case HMRCMTDIT =>
+              Forbidden(not_signed_up(Services.messageKeyForITSA, hasRequests))
+            case ex =>
+              throw new Exception(s"Unsupported Service: $ex")
+          }
+        }))
     }
   }
 
@@ -914,7 +911,7 @@ class AgentsInvitationController @Inject()(
           case None =>
             currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
               Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
-              Redirect(routes.AgentsInvitationController.notEnrolled())
+              Redirect(routes.AgentsInvitationController.notSignedUp())
             }
         }
       case None =>
@@ -959,7 +956,7 @@ class AgentsInvitationController @Inject()(
                            fastTrackItsaInvitation,
                            "Fail",
                            Some("CLIENT_REGISTRATION_NOT_FOUND"))
-                         Redirect(routes.AgentsInvitationController.notEnrolled())
+                         Redirect(routes.AgentsInvitationController.notSignedUp())
                        }
                    }
         } yield result

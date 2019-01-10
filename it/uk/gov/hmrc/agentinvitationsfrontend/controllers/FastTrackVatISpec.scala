@@ -421,7 +421,7 @@ class FastTrackVatISpec extends BaseISpec {
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
     }
 
-    "return 303 not-enrolled if Agent attempted to invite a client for VAT" in {
+    "return 303 not-signed-up if Agent attempted to invite a client for VAT" in {
       val invitation =
         CurrentAuthorisationRequest(
           business,
@@ -441,7 +441,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
       verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
 

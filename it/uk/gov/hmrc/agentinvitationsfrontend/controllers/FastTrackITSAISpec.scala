@@ -367,7 +367,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe formData
     }
 
-    "return 303 not-enrolled if Agent attempts to invite client who does not have an ITSA enrolment" in {
+    "return 303 not-signed-up if Agent attempts to invite client who does not have an ITSA enrolment" in {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
@@ -380,7 +380,7 @@ class FastTrackITSAISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEvent(arn.value, validNino.value, "ni", "Fail", serviceITSA)

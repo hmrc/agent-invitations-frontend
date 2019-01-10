@@ -23,6 +23,8 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("problem.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.p1.$serviceId"), serviceId))) {
 
+    @back_link_referer(request)
+
   <h1 class="heading-xlarge">@Messages("problem.header")</h1>
 
   <p>@Messages(s"not-enrolled.p1.$serviceId")</p>
