@@ -291,9 +291,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, invitationSent)
   }
 
-  "GET /agents/not-enrolled" should {
-    val request = FakeRequest("GET", "/agents/not-enrolled")
-    val notEnrolled = controller.notEnrolled()
+  "GET /agents/not-signed-up" should {
+    val request = FakeRequest("GET", "/agents/not-signed-up")
+    val notEnrolled = controller.notSignedUp()
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
@@ -313,7 +313,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "return 5xx when there is nothing in the cache" in {
       intercept[Exception] {
         await(notEnrolled(authorisedAsValidAgent(request, arn.value)))
-      }.getMessage shouldBe "Empty Cache"
+      }.getMessage shouldBe "Cached session state expected but not found"
     }
 
     behave like anAuthorisedAgentEndpoint(request, notEnrolled)

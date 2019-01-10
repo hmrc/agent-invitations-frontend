@@ -265,9 +265,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
   }
 
-  "GET /agents/not-enrolled" should {
-    val request = FakeRequest("GET", "/agents/not-enrolled")
-    val notEnrolled = controller.notEnrolled()
+  "GET /agents/not-signed-up" should {
+    val request = FakeRequest("GET", "/agents/not-signed-up")
+    val notEnrolled = controller.notSignedUp()
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are no requests in basket" in {
@@ -282,11 +282,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their income and expenses using software.",
+        "This client has not signed up to report their income and expenses through software.",
         "Start a new request")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are requests in basket" in {
@@ -303,11 +302,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their income and expenses using software.",
+        "This client has not signed up to report their income and expenses through software.",
         "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
   }
 

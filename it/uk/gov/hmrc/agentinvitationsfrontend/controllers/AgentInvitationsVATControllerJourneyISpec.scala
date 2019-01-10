@@ -272,9 +272,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
   }
 
-  "GET /agents/not-enrolled" should {
-    val request = FakeRequest("GET", "/agents/not-enrolled")
-    val notEnrolled = controller.notEnrolled()
+  "GET /agents/not-signed-up" should {
+    val request = FakeRequest("GET", "/agents/not-signed-up")
+    val notEnrolled = controller.notSignedUp()
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with no requests in basket" in {
@@ -289,11 +289,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their VAT returns using software.",
+        "This client has not signed up to report their VAT returns through software.",
         "Start a new request")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
@@ -310,11 +309,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their VAT returns using software.",
+        "This client has not signed up to report their VAT returns through software.",
         "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
   }
 
