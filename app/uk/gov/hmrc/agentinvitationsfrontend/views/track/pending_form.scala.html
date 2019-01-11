@@ -28,10 +28,10 @@
         invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.service}">
     <input type="hidden" name="clientType" id="clientType-@{
-        invitationOrRelationship.service}" value="@{
+        invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.clientType}">
     <input type="hidden" name="expiryDate" id="expiryDate-@{
-        invitationOrRelationship.service}" value="@{
+        invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.expiryDate}">
     <div><button class="button--link-style" type="submit" id="resendLinkRequest-@{
         invitationOrRelationship.service}">@Messages("recent-invitations.invitations.actions.pending")</button></div>
@@ -43,12 +43,12 @@
     'class -> "form js-form"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{
-        invitationOrRelationship.service}" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="invitationId" id="clientIdentifier-@{
-        invitationOrRelationship.service}" value="@{invitationOrRelationship.invitationId}">
-    <input type="hidden" name="clientName" id="knownFact-@{
-        invitationOrRelationship.service}" value="@{invitationOrRelationship.clientName}">
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="invitationId" id="invitationId-@{
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.invitationId}">
+    <input type="hidden" name="clientName" id="clientName-@{
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientName}">
     <button class="button--link-style" type="submit" id="confirmCancelRequest-@{
-        invitationOrRelationship.service}">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
+        invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
 }
 
