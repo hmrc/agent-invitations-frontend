@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,10 @@
     'id -> "resendLink",
     'class -> "form js-form actionButtons"
 ) {
-    <input type="hidden" name="service" id="serviceResendLink" value="@{
-        invitationOrRelationship.service}">
-    <input type="hidden" name="invitationId" id="invitationId" value="@{
-        invitationOrRelationship.invitationId}">
-    <input type="hidden" name="expiryDate" id="expiryDate" value="@{
-        invitationOrRelationship.expiryDate}">
-    <div><button class="button--link-style" type="submit" id="resendLinkRequest">@Messages("recent-invitations.invitations.actions.pending")</button></div>
+    <input type="hidden" name="service" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="invitationId" value="@{invitationOrRelationship.invitationId}">
+    <input type="hidden" name="expiryDate" value="@{invitationOrRelationship.expiryDate}">
+    <div><button class="button--link-style" type="submit">@Messages("recent-invitations.invitations.actions.pending")</button></div>
 }
 
 @form(
@@ -38,9 +35,9 @@
     'id -> "postToConfirmCancel",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service" id="serviceConfirmCancel" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="invitationId" id="clientIdentifier" value="@{invitationOrRelationship.invitationId}">
-    <input type="hidden" name="clientName" id="knownFact" value="@{invitationOrRelationship.clientName}">
-    <button class="button--link-style" type="submit" id="confirmCancelRequest">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
+    <input type="hidden" name="service" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="invitationId" value="@{invitationOrRelationship.invitationId}">
+    <input type="hidden" name="clientName" value="@{invitationOrRelationship.clientName}">
+    <button class="button--link-style" type="submit">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
 }
 
