@@ -24,13 +24,17 @@
     'id -> "resendLink",
     'class -> "form js-form actionButtons"
 ) {
-    <input type="hidden" name="service" id="serviceResendLink" value="@{
+    <input type="hidden" name="service" id="serviceResendLink-@{
+        invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.service}">
-    <input type="hidden" name="clientType" id="clientType" value="@{
+    <input type="hidden" name="clientType" id="clientType-@{
+        invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.clientType}">
-    <input type="hidden" name="expiryDate" id="expiryDate" value="@{
+    <input type="hidden" name="expiryDate" id="expiryDate-@{
+        invitationOrRelationship.invitationId}" value="@{
         invitationOrRelationship.expiryDate}">
-    <div><button class="button--link-style" type="submit" id="resendLinkRequest">@Messages("recent-invitations.invitations.actions.pending")</button></div>
+    <div><button class="button--link-style" type="submit" id="resendLinkRequest-@{
+        invitationOrRelationship.service}">@Messages("recent-invitations.invitations.actions.pending")</button></div>
 }
 
 @form(
@@ -38,9 +42,13 @@
     'id -> "postToConfirmCancel",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service" id="serviceConfirmCancel" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="invitationId" id="clientIdentifier" value="@{invitationOrRelationship.invitationId}">
-    <input type="hidden" name="clientName" id="knownFact" value="@{invitationOrRelationship.clientName}">
-    <button class="button--link-style" type="submit" id="confirmCancelRequest">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
+    <input type="hidden" name="service" id="serviceConfirmCancel-@{
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="invitationId" id="invitationId-@{
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.invitationId}">
+    <input type="hidden" name="clientName" id="clientName-@{
+        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientName}">
+    <button class="button--link-style" type="submit" id="confirmCancelRequest-@{
+        invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
 }
 
