@@ -788,9 +788,9 @@ class AgentsInvitationController @Inject()(
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      journeyStateCache.get.flatMap(cacheItem =>
+      currentAuthorisationRequestCache.get.flatMap(cacheItem =>
         for {
-          agentLink <- invitationsService.createAgentLink(arn, cacheItem.clientType)
+          agentLink <- invitationsService.createAgentLink(arn, cacheItem.clientType.getOrElse(""))
           _         <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
           continue  <- continueUrlCache.fetch
         } yield {
