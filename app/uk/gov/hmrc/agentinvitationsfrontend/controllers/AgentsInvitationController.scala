@@ -790,9 +790,12 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.get.flatMap(cacheItem =>
         for {
-          agentLink <- invitationsService.createAgentLink(arn, cacheItem.clientType.getOrElse(""))
-          _         <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
-          continue  <- continueUrlCache.fetch
+          agentLink <- invitationsService.createAgentLink(
+                        arn,
+                        cacheItem.clientType.getOrElse(
+                          throw new IllegalStateException("no client type found in cache")))
+          _        <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
+          continue <- continueUrlCache.fetch
         } yield {
           val invitationUrl: String = s"$externalUrl$agentLink"
           val clientType = if (agentLink.contains("personal")) "personal" else "business"

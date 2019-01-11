@@ -243,6 +243,17 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
     }
 
+    "throw an IllegalStateException when there is nothing in the cache" in {
+      givenAgentReference(arn, uid, "personal")
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(None, serviceITSA, "ni", nino, Some(validPostcode)))
+
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      intercept[IllegalStateException] {
+        await(result)
+      }.getMessage shouldBe "no client type found in cache"
+    }
+
     "throw a IllegalStateException when there is nothing in the cache" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       intercept[IllegalStateException] {
