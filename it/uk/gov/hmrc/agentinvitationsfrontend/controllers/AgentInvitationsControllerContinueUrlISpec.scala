@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -23,16 +23,8 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
@@ -66,16 +58,8 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          servicePIR,
-          validNino.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
@@ -109,16 +93,8 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       givenAgentReference(arn, uid, "business")
       val continueUrl = ContinueUrl("/someVat/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceVAT,
-          validVrn.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("business"), serviceITSA, "ni", nino, Some(validPostcode)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 

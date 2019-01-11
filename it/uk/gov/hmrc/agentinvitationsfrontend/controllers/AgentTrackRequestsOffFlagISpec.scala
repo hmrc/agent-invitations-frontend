@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -75,16 +75,8 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -105,16 +97,8 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, "personal")
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
