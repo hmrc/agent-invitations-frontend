@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,8 @@ class TrackService @Inject()(
     getClientNameByService(invitation).map(cn => invitation.copy(clientName = cn))
 
   def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] = {
-    val itsaRelationships: Future[Seq[ItsaTrackRelationship]] = relationshipsConnector.getInactiveItsaRelationships
+    val itsaRelationships: Future[Seq[ItsaInactiveTrackRelationship]] =
+      relationshipsConnector.getInactiveItsaRelationships
     val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
     val irvRelationships: Future[Seq[IrvTrackRelationship]] = pirRelationshipConnector.getInactiveIrvRelationships
 
@@ -62,32 +63,35 @@ class TrackService @Inject()(
       relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships, irvRelationships)).map(_.flatten)
 
       inactiveClients <- Future.traverse(relationships) {
-                          case ItsaTrackRelationship(_, dateTo, clientId) =>
+                          case ItsaInactiveTrackRelationship(_, dateTo, clientId) =>
                             for {
                               nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
                               name <- getTradingName(nino)
                             } yield
                               InactiveClient(
+                                Some("personal"),
                                 "HMRC-MTD-IT",
                                 name.getOrElse(""),
                                 nino.map(ni => ni.value).getOrElse(""),
                                 "ni",
                                 dateTo)
-                          case VatTrackRelationship(_, dateTo, clientId) =>
+                          case VatTrackRelationship(_, clientType, dateTo, clientId) =>
                             for {
                               vatName <- getVatName(Some(Vrn(clientId)))
-                            } yield InactiveClient("HMRC-MTD-VAT", vatName.getOrElse(""), clientId, "vrn", dateTo)
+                            } yield
+                              InactiveClient(clientType, "HMRC-MTD-VAT", vatName.getOrElse(""), clientId, "vrn", dateTo)
                           case IrvTrackRelationship(_, dateTo, clientId) =>
                             for {
                               citizenName <- getCitizenName(Some(Nino(clientId)))
                             } yield
                               InactiveClient(
+                                Some("personal"),
                                 "PERSONAL-INCOME-RECORD",
                                 citizenName.getOrElse(""),
                                 clientId,
                                 "ni",
                                 dateTo)
-                          case _ => Future successful InactiveClient("", "", "", "", None)
+                          case _ => Future successful InactiveClient(None, "", "", "", "", None)
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
   }
@@ -136,6 +140,7 @@ class TrackService @Inject()(
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
                                case TrackedInvitation(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -145,16 +150,18 @@ class TrackService @Inject()(
                                    expiryDate,
                                    invitationId) if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
                                    clientName,
-                                   effectiveStatus(status, expiryDate),
+                                   status,
                                    None,
                                    Some(expiryDate),
                                    Some(invitationId))
 
                                case TrackedInvitation(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -164,6 +171,7 @@ class TrackService @Inject()(
                                    _,
                                    invitationId) =>
                                  Future successful TrackInformationSorted(
+                                   clientType,
                                    service,
                                    clientId,
                                    clientIdType,
@@ -173,12 +181,13 @@ class TrackService @Inject()(
                                    None,
                                    Some(invitationId))
                                case _ =>
-                                 Future successful TrackInformationSorted("", "", "", None, "", None, None, None)
+                                 Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
-                                 case InactiveClient(service, clientName, clientId, clientIdType, dateTo) =>
+                                 case InactiveClient(clientType, service, clientName, clientId, clientIdType, dateTo) =>
                                    Future successful TrackInformationSorted(
+                                     clientType,
                                      service,
                                      clientId,
                                      clientIdType,
@@ -188,12 +197,17 @@ class TrackService @Inject()(
                                      None,
                                      None)
                                  case _ =>
-                                   Future successful TrackInformationSorted("", "", "", None, "", None, None, None)
+                                   Future successful TrackInformationSorted(
+                                     None,
+                                     "",
+                                     "",
+                                     "",
+                                     None,
+                                     "",
+                                     None,
+                                     None,
+                                     None)
                                }
     } yield (trackInfoInvitations ++ trackInfoRelationships).sorted(TrackInformationSorted.orderingByDate)
   }
-
-  def effectiveStatus(status: String, expiryDate: LocalDate)(implicit now: LocalDate): String =
-    if (status == "Pending" && (now.isAfter(expiryDate) || now.isEqual(expiryDate))) "Expired"
-    else status
 }

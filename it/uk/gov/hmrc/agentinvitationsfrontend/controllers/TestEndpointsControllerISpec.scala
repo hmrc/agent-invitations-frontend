@@ -32,7 +32,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/test-only/relationships/delete")
     val submitDeleteRelationship = controller.submitDeleteRelationship()
     "delete an existing relationship" in {
-      givenTerminateAfiRelationshipSucceeds(arn, afiService, clientId)
+      givenTestOnlyTerminateAfiRelationshipSucceeds(arn, afiService, clientId)
 
       val result = await(
         submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)
@@ -76,7 +76,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/test-only/relationships/create")
     val submitCreateRelationship = controller.submitCreateRelationship()
     "delete an existing relationship" in {
-      givenCreateAfiRelationshipSucceeds(arn, afiService, clientId)
+      givenTestOnlyCreateAfiRelationshipSucceeds(arn, afiService, clientId)
 
       val result = await(
         submitCreateRelationship(authorisedAsValidAgent(request, arn.value)
@@ -87,7 +87,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
     }
 
     "show not matched page as an error page if unable to delete an existing relationship" in {
-      givenCreateAfiRelationshipFails(arn, afiService, clientId)
+      givenTestOnlyCreateAfiRelationshipFails(arn, afiService, clientId)
 
       val result = await(
         submitCreateRelationship(authorisedAsValidAgent(request, arn.value)

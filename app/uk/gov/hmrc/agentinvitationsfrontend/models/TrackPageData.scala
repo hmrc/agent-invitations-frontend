@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
 case class TrackInformationSorted(
+  clientType: Option[String],
   service: String,
   clientId: String,
   clientIdType: String,
@@ -28,13 +29,6 @@ case class TrackInformationSorted(
   date: Option[LocalDate],
   expiryDate: Option[LocalDate],
   invitationId: Option[String]) {
-
-  def effectiveStatus(implicit now: LocalDate): String =
-    expiryDate match {
-      case Some(expDate) if status == "Pending" && (now.isAfter(expDate) || now.isEqual(expDate)) => "Expired"
-      case Some(_)                                                                                => status
-      case None                                                                                   => status
-    }
 
   def sortDate: Option[LocalDate] =
     if (date.isEmpty) expiryDate

@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,13 @@
       @if(trackRequests) {
         <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a>
         <p><a class="text-link-small" href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
-        <p><a class="text-link-small" href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+        <p><a class="text-link-small" href="@routes.AgentsInvitationController.showClientType()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
       } else {
         @if(hasContinueUrl) {
           <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
         } else {
           <a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-          <p><a class="text-link-small" href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+          <p><a class="text-link-small" href="@routes.AgentsInvitationController.showClientType()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
         }
       }
 

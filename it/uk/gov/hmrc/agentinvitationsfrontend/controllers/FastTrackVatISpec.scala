@@ -29,7 +29,15 @@ class FastTrackVatISpec extends BaseISpec {
           validVrn.value,
           Some(validRegistrationDate),
           fromFastTrack))
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
 
@@ -39,11 +47,19 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
 
     "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to select-service when cache is empty" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
 
@@ -59,12 +75,20 @@ class FastTrackVatISpec extends BaseISpec {
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid VAT information and selected VAT, redirect to invitation-sent" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
 
@@ -74,7 +98,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verifyAuthoriseAttempt()
+      verify2AuthoriseAttempt()
     }
   }
 
@@ -87,14 +111,20 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track is correct for VAT" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
@@ -107,12 +137,18 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some("Invalid_Reg_Date"), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some("Invalid_Reg_Date"),
+          fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
 
       val result = fastTrack(
@@ -120,7 +156,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track does not contain client type" in {
@@ -133,7 +169,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.checkDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
@@ -194,9 +230,15 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
     "display the check details page when known fact is required and provided for VAT" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
@@ -210,7 +252,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
@@ -224,7 +266,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -241,43 +283,73 @@ class FastTrackVatISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
     }
 
     "redirect to client-type when client type and known fact are not provided and YES is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -290,21 +362,35 @@ class FastTrackVatISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.knownFact().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showKnownFact().url
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -312,14 +398,20 @@ class FastTrackVatISpec extends BaseISpec {
 
     "return 303 not-matched if vrn and vat-reg-date does not match for VAT" in {
       val invitation =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
 
       testCurrentAuthorisationRequestCache.save(invitation)
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 403)
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
@@ -329,21 +421,27 @@ class FastTrackVatISpec extends BaseISpec {
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
     }
 
-    "return 303 not-enrolled if Agent attempted to invite a client for VAT" in {
+    "return 303 not-signed-up if Agent attempted to invite a client for VAT" in {
       val invitation =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
 
       testCurrentAuthorisationRequestCache.save(invitation)
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 404)
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
-        controller.submitDetails(
+        controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-enrolled")
+      redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
       verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe invitation
 
@@ -356,7 +454,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
       checkHtmlResultWithBodyText(
         result,
@@ -368,7 +466,15 @@ class FastTrackVatISpec extends BaseISpec {
   "POST /agents/more-details" should {
     val request = FakeRequest("POST", "/agents/identify-client")
     "redirect to invitation sent when client details are valid and match for VAT" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
 
@@ -390,7 +496,15 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "redisplay the page with errors when known fact is not valid for VAT" in {
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, "VRN")
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        "VRN")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val requestWithForm = request.withFormUrlEncodedBody(

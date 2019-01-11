@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@(invitationId: InvitationId, service: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
@@ -42,10 +42,6 @@
 
     <h2 class="heading-small">@Messages("request-cancelled.subheader")</h2>
 
-    <p>@Html(Messages("request-cancelled.p2", routes.AgentsInvitationController.selectService()))</p>
-
-
-
-
+    <p>@Html(Messages("request-cancelled.p2", routes.AgentsInvitationController.showClientType()))</p>
 
     }

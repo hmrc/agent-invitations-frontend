@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -81,8 +82,56 @@ class PirRelationshipConnector @Inject()(
         }
     }
 
+  def getActiveIrvRelationshipUrl(arn: Arn, clientId: Nino): URL =
+    new URL(
+      baseUrl,
+      s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
+
+  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier) =
+    monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
+      http
+        .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)
+        .map(_.headOption)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No active relationships were found for IRV")
+            None
+        }
+    }
+
   private def createAndDeleteRelationshipUrl(arn: Arn, service: String, clientId: String) =
     s"/agent-fi-relationship/relationships/agent/${arn.value}/service/$service/client/$clientId"
 
   private def craftUrl(location: String) = new URL(baseUrl, location)
+
+  /* TEST ONLY Connector method for create relationship. This method should not be used in production code */
+  def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Int] = {
+    val url = new URL(
+      baseUrl,
+      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+    val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+    http
+      .PUT[JsObject, HttpResponse](url.toString, body)
+      .map(_.status)
+      .recover {
+        case _: Upstream5xxResponse => 500
+      }
+  }
+
+  /* TEST ONLY Connector method for delete relationship. This method should not be used in production code */
+  def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Option[Boolean]] = {
+    val url = new URL(
+      baseUrl,
+      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+    http
+      .DELETE[HttpResponse](url.toString)
+      .map(_ => Some(true))
+      .recover {
+        case _: NotFoundException   => Some(false)
+        case _: Upstream5xxResponse => None
+      }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
 import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
@@ -54,54 +54,43 @@ class TestEndpointsController @Inject()(
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(delete_relationship(testRelationshipForm))
-    }
+    Future successful Ok(delete_relationship(testRelationshipForm))
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      testRelationshipForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
-          validFormData => {
-            pirRelationshipConnector
-              .deleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-              .map {
-                case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-                case _          => Redirect(agentRoutes.AgentsErrorController.notMatched())
-              }
-          }
-        )
-    }
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
+        validFormData => {
+          pirRelationshipConnector
+            .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
+              case _          => Redirect(agentRoutes.AgentsErrorController.notMatched())
+            }
+        }
+      )
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(create_relationship(testRelationshipForm))
-    }.recover {
-      case NonFatal(e) =>
-        Ok(e.getMessage)
-    }
+    Future successful Ok(create_relationship(testRelationshipForm))
   }
 
   def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      testRelationshipForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
-          validFormData => {
-            pirRelationshipConnector
-              .createRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
-              .map {
-                case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-                case _       => Redirect(agentRoutes.AgentsErrorController.notMatched())
-              }
-          }
-        )
-    }
+    testRelationshipForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
+        validFormData => {
+          pirRelationshipConnector
+            .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
+            .map {
+              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
+              case _       => Redirect(agentRoutes.AgentsErrorController.notMatched())
+            }
+        }
+      )
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
@@ -152,9 +141,10 @@ object TestEndpointsController {
   val testTrackInformationForm: Form[TrackResendForm] = {
     Form(
       mapping(
-        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "expiryDate"   -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientType" -> optional(text)
+          .verifying("Unsupported client type", clientType => supportedClientTypes.contains(clientType)),
+        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
 

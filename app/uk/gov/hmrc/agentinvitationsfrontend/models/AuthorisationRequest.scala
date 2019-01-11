@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ import scala.util.Random
 
 case class AuthorisationRequest(
   clientName: String,
+  clientType: Option[String],
   service: String,
   clientId: String,
-  itemId: String = AuthorisationRequest.randomItemId,
-  state: String = AuthorisationRequest.NEW)
+  state: String = AuthorisationRequest.NEW,
+  itemId: String = AuthorisationRequest.randomItemId)
     extends InvitationParams {
 
   def clientIdentifierType: String = service match {
@@ -33,7 +34,22 @@ case class AuthorisationRequest(
     case Services.HMRCPIR    => "ni"
   }
 
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AuthorisationRequest]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: AuthorisationRequest =>
+      (that canEqual this) &&
+        service == that.service &&
+        clientId == that.clientId
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(service, clientId)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
+
 object AuthorisationRequest {
 
   private val IdCharacterSet = "ABCDEFGHJKLMNOPRSTUWXYZ123456789"
@@ -49,4 +65,5 @@ object AuthorisationRequest {
 
   def eachHasBeenCreatedIn(requests: Set[AuthorisationRequest]): Boolean = requests.forall(_.state == CREATED)
 
+  def noneHaveBeenCreatedIn(requests: Set[AuthorisationRequest]): Boolean = requests.forall(_.state == FAILED)
 }

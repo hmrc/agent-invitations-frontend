@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ case class CheckDetailsPageConfig(currentInvitationInput: CurrentAuthorisationRe
 
   val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
 
-  val knownFactUrl: Call = routes.AgentsInvitationController.knownFact()
+  val knownFactUrl: Call = routes.AgentsInvitationController.showKnownFact()
 
   val changeDetailsUrl: Call = routes.AgentsInvitationController.submitIdentifyClient()
 

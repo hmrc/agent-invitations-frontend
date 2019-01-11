@@ -159,20 +159,18 @@ known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
-not-enrolled.itsa.header=This client has not signed up to report their income and expenses using software
-not-enrolled.itsa.description=You cannot ask for authorisation from this client until they have signed up.
-not-enrolled.itsa.button=Back to your account
-
-not-enrolled.vat.header=This client has not signed up to report their VAT returns using software
-not-enrolled.vat.description=You cannot ask for authorisation from this client until they have signed up.
+not-enrolled.p1.itsa=This client has not signed up to report their income and expenses through software.
+not-enrolled.p1.vat=This client has not signed up to report their VAT returns through software.
+not-enrolled.p2=They cannot authorise you for this service until they have signed up.
+not-enrolled.button=Back to your account
 not-enrolled.vat.button=Back to your account
 
 # Not Matched
 not-matched.header=There is a problem
-not-matched.description = The details you entered do not match to the same client.
+not-matched.description = The details you entered do not match to a client.
 not-matched.advice = Check them and try again.
 not-matched.button = Try again
-not-matched.review-link = Return to your authorisation requests
+review-auths.link = Return to your authorisation requests
 
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request
@@ -182,7 +180,20 @@ client-request-cancelled.button=Finish and sign out
 #All authorisations removed
 all-authorisations-removed.header=Authorisation request removed
 all-authorisations-removed.p=You have removed all of your new authorisation requests.
-all-authorisations-removed.button=Start a new request
+new-request.button=Start a new request
+
+#Create authorisation failed
+create-auth-failed.header=Sorry, there is a problem with the service
+create-auth-failed.p1=We could not create the following authorisation {0}.
+create-auth-failed.HMRC-MTD-IT=Report their income and expenses through software
+create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
+create-auth-failed.HMRC-MTD-VAT=Report their VAT returns through software
+create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
+create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
+create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+create-auth-failed.button.try=Try again
+create-auth-failed.button.continue=Continue
 
 # Client Pages
 # Landing Page
@@ -339,7 +350,7 @@ client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for reporting your income and expenses through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for reporting your VAT returns through software.
-client-complete.whatHappensNext.p1=Go to <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you</a> to:
+client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
 client-complete.button.mta=Manage your tax agents
@@ -483,23 +494,27 @@ recent-invitations.invitations.actions.invalidrelationship=Start new request
 
 #ResendLink page
 resend-link.header=Resend this link to your client
+resend-link.list-item-1.p1=Copy this link and email it to your client.
+resend-link.list-item-1.personal.p2=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.</span> 
+resend-link.list-item-1.business.p2=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.</span> 
 resend-link.p2=The link expires {0} days from now.
+resend-link.p3=They will need their Government Gateway login details for their {0} tax affairs to confirm who they are. They can set up an account if they do not have one.
 resend-link.returnToAsa=Return to your agent services account
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?
-confirm-cancel.subheader.itsa=If you cancel this request, you will not be able to report their income and expenses through software.
-confirm-cancel.subheader.afi=If you cancel this request, you will not be able to view their PAYE income record.
-confirm-cancel.subheader.vat=If you cancel this request, you will not be able to report their VAT returns through software.
+confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to report their income and expenses through software.
+confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
+confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to report their VAT returns through software.
 confirm-cancel.radio.yes=Yes
 confirm-cancel.radio.no=No
 error.confirmCancel.invalid=This field is required
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.itsa=You have cancelled your authorisation request to report their income and expenses through software.
-request-cancelled.p1.afi=You have cancelled your authorisation request to view their PAYE income record.
-request-cancelled.p1.vat=You have cancelled your authorisation request to report their VAT returns through software.
+request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to report their income and expenses through software.
+request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
+request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to report their VAT returns through software.
 request-cancelled.panel={0} will not be able to respond to this request.
 request-cancelled.track.button=Track your recent authorisation requests
 request-cancelled.subheader=Made a mistake?
@@ -517,12 +532,28 @@ confirm-authorisation-cancelled.radio.no=No
 #Authorisation cancelled page
 authorisation-cancelled.header=Authorisation cancelled
 authorisation-cancelled.subheader=What this means
-authorisation-cancelled.p1.itsa=You are no longer authorised by {0} to report their income and expenses through software.
-authorisation-cancelled.p1.afi=You are no longer authorised by {0} to view their PAYE income record.
-authorisation-cancelled.p1.vat=You are no longer authorised by {0} to report their VAT returns through software.
+authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to report their income and expenses through software.
+authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
+authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to report their VAT returns through software.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page
 cancel-auth-problem.header=Sorry, there is a problem with the service
 cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 cancel-auth-problem.button=Try again
+
+#Pending authorisation already exists
+problem.header=There is a problem
+pending-authorisation-exists.p=You have already added the same authorisation request for this client.
+pending-authorisation-exists.button=Return to your authorisation requests
+pending-authorisation-exists.no-requests.p=You already created an authorisation request for this client. They have not yet responded to this request.
+pending-authorisation-exists.track.button=Track your authorisation requests
+pending-authorisation-exists.new-request.link=Start a new request
+
+#Active authorisatio exists
+active-authorisation-exists.header=You are already authorised
+active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to report their income and expenses through software.
+active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
+active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to report their VAT Returns through software.
+active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
+active-authorisation-exists.return=Return to your authorisation requests

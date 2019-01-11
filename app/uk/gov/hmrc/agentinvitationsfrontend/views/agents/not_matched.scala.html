@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
   <a id="showIdentifyClientButton" href="@routes.AgentsInvitationController.showIdentifyClient()" class="button">@Messages(s"not-matched.button")</a>
 
   @if(hasJourneyCache) {
-   <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link-small" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("not-matched.review-link")</a></p>
+   <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link-small" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("review-auths.link")</a></p>
   }
 
 }
