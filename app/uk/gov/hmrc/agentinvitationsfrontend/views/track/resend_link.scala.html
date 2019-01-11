@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,17 @@
 @import org.joda.time.LocalDate
 @import org.joda.time.DateTimeZone
 @import org.joda.time.Days
-@(service: String, invitationId: String, expiryDate: String, aifExternalUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@invitationUrl = @{s"$aifExternalUrl${routes.ClientsInvitationController.start(InvitationId(invitationId)).path()}"}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+@(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @daysToExpiry = @{
-    val expirationDate: LocalDate = LocalDate.parse(expiryDate)
+    val expirationDate: LocalDate = LocalDate.parse(config.expiryDate)
     val todayDate: LocalDate = LocalDate.now(DateTimeZone.UTC)
 
     Days.daysBetween(todayDate, expirationDate).getDays.toString
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent-link.header"), service)), completedInviteGoSurvey = Some("InviteSent")) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent-link.header"), "")), completedInviteGoSurvey = Some("InviteSent")) {
 
     @back_link_referer(request)
 
@@ -44,16 +43,21 @@
   <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
 
   <ol class="list list-number margin-left-0">
-    <li class="margin-bottom-30">@Html(Messages("invitation-sent.l1", invitationUrl))</li>
+    <li class="margin-bottom-30">
+        <p>@Messages("resend-link.list-item-1.p1")</p>
+        <p>@config.fullAgentLink</p>
+        <p>@Html(Messages(s"resend-link.list-item-1.${config.clientType}.p2"))</p>
+    </li>
     <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
   </ol>
 
-  <p>@Messages("invitation-sent.p1")</p>
+  <div class="panel panel-border-wide margin-bottom-30">
+    <p>@Messages("resend-link.p2", daysToExpiry)</p>
+    <p>@Messages("resend-link.p3", config.clientType)</p>
+  </div>
 
-  <p class="panel panel-border-wide margin-bottom-30">@Messages("resend-link.p2", daysToExpiry)</p>
-
-        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
-        <p><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="resurnToAsa">@Messages(s"resend-link.returnToAsa")</a></p>
-        <p><a href="@routes.AgentsInvitationController.selectService()" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+        <a href="@config.trackLink" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
+        <p class="text-link-small"><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="resurnToAsa">@Messages(s"resend-link.returnToAsa")</a></p>
+        <p class="text-link-small"><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
 
     }

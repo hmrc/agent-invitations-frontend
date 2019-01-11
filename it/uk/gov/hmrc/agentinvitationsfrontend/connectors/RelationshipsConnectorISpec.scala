@@ -54,4 +54,5 @@ class RelationshipsConnectorISpec extends BaseISpec with ACRStubs {
     val result = await(connector.getInactiveVatRelationships)
     result shouldBe Seq.empty
   }
+
 }

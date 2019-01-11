@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(invitationId: InvitationId, service: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 

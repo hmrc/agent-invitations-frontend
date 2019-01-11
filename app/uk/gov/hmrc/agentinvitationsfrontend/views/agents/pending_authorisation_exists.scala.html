@@ -1,0 +1,43 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+
+@(authRequestsExist: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
+
+  @back_link_referer(request)
+
+  <h1 class="heading-xlarge margin-top-0">@Messages("problem.header")</h1>
+
+  @if(authRequestsExist) {
+
+   <p>@Messages("pending-authorisation-exists.p")</p>
+
+   <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("pending-authorisation-exists.button")</a>
+  }else {
+    <p>@Messages("pending-authorisation-exists.no-requests.p")</p>
+
+   <div><a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a></div>
+
+    <div class = "margin-top-30 text-link-small"><a href="@routes.AgentsInvitationController.showClientType()">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+  }
+
+}

@@ -19,7 +19,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   override protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port"                                -> wireMockPort,
+        "microservice.services.auth.port"                                     -> wireMockPort,
         "microservice.services.agent-client-authorisation.port"               -> wireMockPort,
         "microservice.services.agent-services-account.port"                   -> wireMockPort,
         "microservice.services.company-auth.login-url"                        -> wireMockHost,
@@ -27,6 +27,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "microservice.services.des.port"                                      -> wireMockPort,
         "microservice.services.agent-fi-relationship.port"                    -> wireMockPort,
         "microservice.services.citizen-details.host"                          -> wireMockHost,
+        "microservice.services.agent-client-relationships.port"               -> wireMockPort,
+        "microservice.services.agent-client-relationships.host"               -> wireMockHost,
         "microservice.services.citizen-details.port"                          -> wireMockPort,
         "microservice.services.agent-invitations-frontend.external-url"       -> wireMockBaseUrlAsString,
         "microservice.services.agent-services-account-frontend.external-url"  -> wireMockBaseUrlAsString,
@@ -139,6 +141,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitIdentifyClient = controller.submitIdentifyClient()
 
     "return 303 review-authorisation for ITSA" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenTradingName(validNino, "64 Bit")
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
@@ -146,9 +150,19 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormItsa.fill(
           UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -158,7 +172,31 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
     }
 
+    "return 303 already-authorisation-present when there is already a relationship between the agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      givenTradingName(validNino, "64 Bit")
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
+      testCurrentAuthorisationRequestCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormItsa.fill(
+          UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
+
+    }
+
     "return 303 confirm-client for IRV" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual)
@@ -166,7 +204,16 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormIrv.fill(
           UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        identifierPIR)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
@@ -177,6 +224,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 invitation-sent for VAT" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       givenClientDetails(validVrn)
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
@@ -184,15 +233,46 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form =
         controller.agentInvitationIdentifyClientFormVat.fill(
           UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
       givenAgentReference(arn, "ABCDEFGH", "business")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.invitationSent().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showInvitationSent().url
+    }
+
+    "return 303 already-authorisation-present when there is already a relationship for the agent and client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("business", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      givenClientDetails(validVrn)
+      val formData =
+        CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
+      testCurrentAuthorisationRequestCache.save(formData)
+      val form =
+        controller.agentInvitationIdentifyClientFormVat.fill(
+          UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
+
+      val result = submitIdentifyClient(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(form.data.toSeq: _*))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentsErrorController.activeRelationshipExists().url
     }
 
   }
@@ -206,7 +286,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdITSA, validNino.value, "ni", serviceITSA, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdITSA,
+        validNino.value,
+        "ni",
+        serviceITSA,
+        "NI")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
 
       val result = fastTrack(
@@ -214,21 +302,29 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
-      givenInvitationCreationSucceeds(arn, validVrn.value, invitationIdVAT, validVrn.value, "vrn", serviceVAT, identifierVAT)
+      givenInvitationCreationSucceeds(
+        arn,
+        business,
+        validVrn.value,
+        invitationIdVAT,
+        validVrn.value,
+        "vrn",
+        serviceVAT,
+        identifierVAT)
 
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
@@ -236,14 +332,22 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, identifierPIR)
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        identifierPIR)
 
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.checkDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
     }
 
   }
@@ -256,7 +360,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
@@ -267,7 +371,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
@@ -276,9 +380,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -303,7 +413,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 200 and no client name was found for PERSONAL-INCOME-RECORD" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromManual))
       givenCitizenDetailsReturns404For(validNino.value)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -320,11 +431,22 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to review-authorisation and create invitation for PERSONAL-INCOME-RECORD" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
-      givenInvitationCreationSucceeds(arn, validNino.value, invitationIdPIR, validNino.value, "ni", servicePIR, "NI")
+      givenInvitationCreationSucceeds(
+        arn,
+        personal,
+        validNino.value,
+        invitationIdPIR,
+        validNino.value,
+        "ni",
+        servicePIR,
+        "NI")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
@@ -346,12 +468,43 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       checkHtmlResultWithBodyMsgs(result, "confirm-client.no")
     }
 
+    "redirect to already-authorisation-pending if there are already authorisations pending for this client" in {
+      val journeyState = AgentMultiAuthorisationJourneyState("personal", Set.empty)
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
+
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
+      status(result) shouldBe 303
+    }
+
+    "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
+      val journeyState = AgentMultiAuthorisationJourneyState(
+        "personal",
+        Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
+      testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+
+      val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
+      val result =
+        submitConfirmClient(authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
+      redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
+      status(result) shouldBe 303
+    }
+
     behaveLikeMissingCacheScenarios(submitConfirmClient, request)
   }
 
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url

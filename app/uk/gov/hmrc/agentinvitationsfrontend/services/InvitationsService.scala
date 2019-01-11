@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
+import java.lang.ProcessBuilder.Redirect
+
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, CitizenDetailsConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
@@ -43,7 +45,8 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[InvitationId] = {
-    val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
+    val agentInvitation =
+      AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
 
     (for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -78,7 +81,8 @@ class InvitationsService @Inject()(
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =
     Future.sequence(requests.map(params => {
-      val agentInvitation = AgentInvitation(params.service, params.clientIdentifierType, params.clientId)
+      val agentInvitation =
+        AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
 
       (for {
         locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -197,6 +201,23 @@ class InvitationsService @Inject()(
                             }
                         }
     } yield result
+
+  def hasPendingInvitationsFor(
+    arn: Arn,
+    clientId: String,
+    service: String,
+    cache: AgentMultiAuthorisationJourneyStateCache)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    for {
+      hasPendingInvitations <- invitationsConnector
+                                .getAllPendingInvitationsForClient(arn, clientId, service)
+                                .map(s => s.nonEmpty)
+      hasPendingInvitationServiceInJourney <- cache.get.map(cacheItem =>
+                                               cacheItem.requests.map(_.service).contains(service))
+      hasPendingInvitationClientIdInJourney <- cache.get.map(cacheItem =>
+                                                cacheItem.requests.map(_.clientId).contains(clientId))
+    } yield hasPendingInvitations | (hasPendingInvitationServiceInJourney && hasPendingInvitationClientIdInJourney)
 
   private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
     s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"

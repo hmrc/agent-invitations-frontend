@@ -3,10 +3,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, CurrentAuthorisationRequestCache}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
@@ -52,11 +51,13 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     override def configure(): Unit = {
       bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
       bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
+      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
     }
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  lazy val requestTrackingController: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
+  lazy val requestTrackingController: AgentsRequestTrackingController =
+    app.injector.instanceOf[AgentsRequestTrackingController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -64,24 +65,33 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     super.beforeEach()
     testCurrentAuthorisationRequestCache.clear()
     testContinueUrlKeyStoreCache.clear()
+    testAgentMultiAuthorisationJourneyStateCache.clear()
   }
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
-    val invitationSent = controller.invitationSent()
+    val invitationSent = controller.showInvitationSent()
     "return 200 with the only option to continue where user left off" in {
+      givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
       testContinueUrlKeyStoreCache.save(continueUrl)
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession("invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
-            "clientType" -> "personal"),
-          arn.value))
+      val authRequest =
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+        htmlEscapedMessage(
+          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
@@ -93,19 +103,25 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(testContinueUrlKeyStoreCache.fetch).get shouldBe continueUrl
     }
 
-    "return 200 with two options; agent-services-account and a link to create new invitaiton" in {
-      val result = invitationSent(
-        authorisedAsValidAgent(
-          request.withSession(
-            "invitationLink" -> "/invitations/personal/ABCDEFGH/my-agency-name",
-            "clientType" -> "personal",
-            "sessionId"    -> "session12345"),
-          arn.value))
+    "return 200 with two options; agent-services-account and a link to create new invitation" in {
+      givenAgentReference(arn, uid, "personal")
+      val authRequest =
+        AuthorisationRequest(
+          "clienty name",
+          Some("personal"),
+          serviceITSA,
+          validNino.value,
+          AuthorisationRequest.CREATED,
+          "itemId")
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", "ABCDEFGH", "my-agency-name")}"))
+        htmlEscapedMessage(
+          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))

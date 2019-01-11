@@ -11,25 +11,24 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import play.api.test.Helpers._
 
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
-
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitService()
+    val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(None, "", "ni", validNino.value, None, fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
+        business,
         validNino.value,
         invitationIdPIR,
         validNino.value,
@@ -48,8 +47,10 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   }
 
   "POST /agents/fast-track" should {
-    val request = FakeRequest("POST",
-      "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised")
+    val request = FakeRequest(
+      "POST",
+      "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+    )
     val fastTrack = controller.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
@@ -61,7 +62,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe
-        Some("http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE UNSUPPORTED_CLIENT_ID_TYPE INVALID_CLIENT_ID_RECEIVED:NOTHING")
+        Some(
+          "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE UNSUPPORTED_CLIENT_ID_TYPE INVALID_CLIENT_ID_RECEIVED:NOTHING")
     }
 
     "return 303 and redirect to error url with mixed form data" in {
@@ -84,7 +86,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe
-        Some("http://localhost:9996/tax-history/not-authorised?issue=This field is required This field is required This field is required")
+        Some(
+          "http://localhost:9996/tax-history/not-authorised?issue=This field is required This field is required This field is required")
     }
 
     "throw an exception for not providing an error url" in {
@@ -107,23 +110,29 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val formData = CurrentAuthorisationRequest()
       testCurrentAuthorisationRequestCache.save(formData)
       an[Exception] shouldBe thrownBy {
-        await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+        await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       }
     }
 
     "Redirect to select service when there is None in the cache" in {
-      val result = await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
 
     "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "foo", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "foo",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
 
       an[IllegalArgumentException] shouldBe thrownBy {
-        await(controller.checkDetails(authorisedAsValidAgent(request, arn.value)))
+        await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       }
     }
   }
@@ -133,9 +142,15 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "show error on the page when no radio button is selected" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.submitDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.submitCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Select yes if the details are correct"))
     }
@@ -145,7 +160,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to client-type if there is no invitation in the cache" in {
-      val result = await(controller.knownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(controller.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
@@ -157,6 +172,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     "redirect to client-type when form data is invalid" in {
       givenInvitationCreationSucceeds(
         arn,
+        personal,
         validNino.value,
         invitationIdPIR,
         validNino.value,
