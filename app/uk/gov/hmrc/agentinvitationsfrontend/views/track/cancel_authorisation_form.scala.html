@@ -24,7 +24,7 @@
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
-    'id -> "cancelAuthorisation-@{invitationOrRelationship.invitationId}",
+    'id -> s"cancelAuthorisation-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
     'class -> "form js-form"
 ) {
     <input type="hidden" name="service" id="service-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
