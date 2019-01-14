@@ -24,12 +24,12 @@
 
 @form(
     action = Call("POST", routes.AgentsInvitationController.agentFastTrack().url),
-    'id -> "fastTrackInvitationCreate",
+    'id -> s"fastTrackInvitationCreate-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service" id="service" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="@{invitationOrRelationship.clientIdType}">
-    <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@{invitationOrRelationship.clientId}">
-    <input type="hidden" name="knownFact" id="knownFact" value="">
-    <button class="button--link-style" type="submit" id="resendRequest">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
+    <input type="hidden" name="service-@{invitationOrRelationship.invitationId}" id="service" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="clientIdentifierType-@{invitationOrRelationship.invitationId}" id="clientIdentifierType" value="@{invitationOrRelationship.clientIdType}">
+    <input type="hidden" name="clientIdentifier-@{invitationOrRelationship.invitationId}" id="clientIdentifier" value="@{invitationOrRelationship.clientId}">
+    <input type="hidden" name="knownFact-@{invitationOrRelationship.invitationId}" id="knownFact" value="">
+    <button class="button--link-style" type="submit" id="resendRequest-@{invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
 }
