@@ -17,38 +17,36 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.play.views.html.helpers.form
-@(invitationOrRelationship: TrackInformationSorted)(implicit messages: Messages, request: Request[_])
+@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_])
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
-    'id -> s"resendLink-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
+    'id -> s"resendLink-${index}",
     'class -> "form js-form actionButtons"
 ) {
-    <input type="hidden" name="service" id="serviceResendLink-@{
-        invitationOrRelationship.invitationId}" value="@{
+    <input type="hidden" name="service" id="serviceResendLink-@{index}" value="@{
         invitationOrRelationship.service}">
-    <input type="hidden" name="clientType" id="clientType-@{
-        invitationOrRelationship.invitationId}" value="@{
+    <input type="hidden" name="clientType" id="clientType-@{index}" value="@{
         invitationOrRelationship.clientType}">
     <input type="hidden" name="expiryDate" id="expiryDate-@{
-        invitationOrRelationship.invitationId}" value="@{
+        index}" value="@{
         invitationOrRelationship.expiryDate}">
     <div><button class="button--link-style" type="submit" id="resendLinkRequest-@{
-        invitationOrRelationship.invitationId}">@Messages("recent-invitations.invitations.actions.pending")</button></div>
+        index}">@Messages("recent-invitations.invitations.actions.pending")</button></div>
 }
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
-    'id -> s"postToConfirmCancel-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
+    'id -> s"postToConfirmCancel-$index",
     'class -> "form js-form"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{
-        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
+        index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="invitationId" id="invitationId-@{
-        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.invitationId}">
+        index}" value="@{invitationOrRelationship.invitationId}">
     <input type="hidden" name="clientName" id="clientName-@{
-        invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientName}">
+        index}" value="@{invitationOrRelationship.clientName}">
     <button class="button--link-style" type="submit" id="confirmCancelRequest-@{
-        invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
+        index}">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</button>
 }
 
