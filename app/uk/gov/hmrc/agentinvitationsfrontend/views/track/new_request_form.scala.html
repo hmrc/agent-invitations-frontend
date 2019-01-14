@@ -27,9 +27,9 @@
     'id -> s"fastTrackInvitationCreate-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service-@{invitationOrRelationship.invitationId}" id="service" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="clientIdentifierType-@{invitationOrRelationship.invitationId}" id="clientIdentifierType" value="@{invitationOrRelationship.clientIdType}">
-    <input type="hidden" name="clientIdentifier-@{invitationOrRelationship.invitationId}" id="clientIdentifier" value="@{invitationOrRelationship.clientId}">
-    <input type="hidden" name="knownFact-@{invitationOrRelationship.invitationId}" id="knownFact" value="">
+    <input type="hidden" name="service" id="service-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientIdType}">
+    <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientId}">
+    <input type="hidden" name="knownFact" id="knownFact-@{invitationOrRelationship.invitationId}" value="">
     <button class="button--link-style" type="submit" id="resendRequest-@{invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
 }
