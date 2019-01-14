@@ -17,20 +17,28 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import javax.inject.{Inject, Named, Singleton}
+import play.api.Configuration
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.otac.PlayOtacAuthConnector
 import uk.gov.hmrc.http.{HttpGet, HttpPost}
 import uk.gov.hmrc.play.http.ws.{WSGet, WSPost}
 
 @Singleton
-class FrontendAuthConnector @Inject()(@Named("auth-baseUrl") baseUrl: URL)
+class FrontendAuthConnector @Inject()(
+  @Named("auth-baseUrl") baseUrl: URL,
+  val config: Configuration,
+  val _actorSystem: ActorSystem)
     extends PlayAuthConnector with PlayOtacAuthConnector {
 
   override val serviceUrl = baseUrl.toString
 
   override val http = new HttpPost with HttpGet with WSPost with WSGet {
     override val hooks = NoneRequired
+    override def configuration: Option[Config] = Some(config.underlying)
+    override def actorSystem: ActorSystem = _actorSystem
   }
 }

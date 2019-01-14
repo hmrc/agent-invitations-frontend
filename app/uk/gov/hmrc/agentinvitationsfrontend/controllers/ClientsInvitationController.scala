@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms._
@@ -37,7 +38,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -50,14 +51,15 @@ class ClientsInvitationController @Inject()(
   auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
   val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
-  implicit val configuration: Configuration,
-  val externalUrls: ExternalUrls)
+  val withVerifiedPasscode: PasscodeVerification,
+  ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
     extends FrontendController with I18nSupport with AuthActions {
+
+  implicit val ec: ExecutionContext = ecp.get
 
   import ClientsInvitationController._
 
-  def start(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
+  def start(invitationId: InvitationId): Action[AnyContent] = Action { implicit request =>
     determineService(invitationId) match {
       case IsServiceMessageKeyValid(messageKey) =>
         Ok(landing_page(invitationId, messageKey, confirmAuthorisationForm))
@@ -68,7 +70,7 @@ class ClientsInvitationController @Inject()(
     }
   }
 
-  def submitStart(invitationId: InvitationId): Action[AnyContent] = ActionWithMdc { implicit request =>
+  def submitStart(invitationId: InvitationId): Action[AnyContent] = Action { implicit request =>
     confirmAuthorisationForm
       .bindFromRequest()
       .fold(
@@ -275,7 +277,7 @@ class ClientsInvitationController @Inject()(
     }
   }
 
-  val notSignedUp: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val notSignedUp: Action[AnyContent] = Action { implicit request =>
     request.session.get("clientService") match {
       case Some(Services.HMRCMTDVAT) =>
         Forbidden(not_signed_up(Messages("not-signed-up-vat.description"), Services.messageKeyForVAT))
@@ -286,7 +288,7 @@ class ClientsInvitationController @Inject()(
     }
   }
 
-  val notAuthorised: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val notAuthorised: Action[AnyContent] = Action { implicit request =>
     Forbidden(
       not_authorised(
         Messages("not-authorised.header"),
@@ -294,27 +296,27 @@ class ClientsInvitationController @Inject()(
         Services.messageKeyForAfi))
   }
 
-  val incorrectInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val incorrectInvitation: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     Forbidden(incorrect_invitation(serviceMessageKey))
   }
 
-  val notFoundInvitation: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val notFoundInvitation: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     NotFound(not_found_invitation(serviceMessageKey))
   }
 
-  val invitationAlreadyResponded: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val invitationAlreadyResponded: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     Forbidden(invitation_already_responded(serviceMessageKey))
   }
 
-  val invitationExpired: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val invitationExpired: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     Ok(invitation_expired(serviceMessageKey))
   }
 
-  val requestCancelled: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val requestCancelled: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     Ok(request_cancelled(serviceMessageKey))
   }

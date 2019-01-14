@@ -226,16 +226,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "business")
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceVAT,
-          validVrn.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("business"), serviceVAT, "vrn", validVrn.value, Some(validVrn.value)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
