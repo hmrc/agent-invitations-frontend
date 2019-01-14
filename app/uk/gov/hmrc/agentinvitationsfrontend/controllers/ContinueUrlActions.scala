@@ -23,9 +23,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, Hostname
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 @Singleton
@@ -33,7 +32,7 @@ class ContinueUrlActions @Inject()(
   whiteListService: HostnameWhiteListService,
   continueUrlStoreService: ContinueUrlCache) {
 
-  def extractErrorUrl[A](implicit request: Request[A]): Future[Option[ContinueUrl]] = {
+  def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[ContinueUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
 
     request.getQueryString("error") match {
@@ -58,7 +57,7 @@ class ContinueUrlActions @Inject()(
     }
   }
 
-  def extractContinueUrl[A](implicit request: Request[A]): Future[Option[ContinueUrl]] = {
+  def extractContinueUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[ContinueUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
 
     request.getQueryString("continue") match {
@@ -83,18 +82,23 @@ class ContinueUrlActions @Inject()(
     }
   }
 
-  private def isRelativeOrAbsoluteWhiteListed(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier): Future[Boolean] =
+  private def isRelativeOrAbsoluteWhiteListed(
+    continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     if (!continueUrl.isRelativeUrl) whiteListService.isAbsoluteUrlWhiteListed(continueUrl)
     else Future.successful(true)
 
-  def withMaybeContinueUrl[A](
-    block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+  def withMaybeContinueUrl[A](block: Option[ContinueUrl] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] = {
     val continueUrl: Future[Option[ContinueUrl]] = extractContinueUrl
     continueUrl.flatMap(block(_))
   }
 
-  def withMaybeErrorUrl[A](
-    block: Option[ContinueUrl] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier): Future[Result] = {
+  def withMaybeErrorUrl[A](block: Option[ContinueUrl] => Future[Result])(
+    implicit request: Request[A],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] = {
     val continueUrl: Future[Option[ContinueUrl]] = extractErrorUrl
     continueUrl.flatMap(block(_))
   }

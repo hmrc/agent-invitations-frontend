@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Forms._
@@ -40,7 +41,7 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentsInvitationController @Inject()(
@@ -56,11 +57,14 @@ class AgentsInvitationController @Inject()(
   val env: Environment,
   val authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
-  val withVerifiedPasscode: PasscodeVerification)(
+  val withVerifiedPasscode: PasscodeVerification,
+  ecp: Provider[ExecutionContext])(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags)
     extends FrontendController with I18nSupport with AuthActions {
+
+  implicit val ec: ExecutionContext = ecp.get
 
   import AgentsInvitationController._
   import continueUrlActions._
@@ -121,7 +125,7 @@ class AgentsInvitationController @Inject()(
   val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
-  val agentsRoot: Action[AnyContent] = ActionWithMdc { implicit request =>
+  val agentsRoot: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AgentsInvitationController.showClientType())
   }
 

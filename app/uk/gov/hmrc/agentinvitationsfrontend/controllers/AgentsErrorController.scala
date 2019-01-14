@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -29,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisat
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class AgentsErrorController @Inject()(
@@ -39,11 +40,14 @@ class AgentsErrorController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
+  val withVerifiedPasscode: PasscodeVerification,
+  ecp: Provider[ExecutionContext])(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags)
     extends FrontendController with I18nSupport with AuthActions {
+
+  implicit val ec: ExecutionContext = ecp.get
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
