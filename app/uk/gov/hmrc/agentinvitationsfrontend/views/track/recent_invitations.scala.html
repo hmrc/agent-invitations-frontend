@@ -51,8 +51,8 @@
                 </tr>
             </thead>
             <tbody >
-                @invitationsAndRelationships.map { invitationOrRelationship =>
-                    <tr class="row-@invitationsAndRelationships.indexOf(invitationOrRelationship)">
+                @invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
+                    <tr class="row-@index">
                         <td class="taxpayerName">
                             <span>@invitationOrRelationship.clientName.getOrElse("")</span>
                         </td>
@@ -65,9 +65,9 @@
                         </td>
                         <td class="action">
                             @{invitationOrRelationship.status match {
-                                case "Pending" => pending_form(invitationOrRelationship)
-                                case "Accepted" => if(cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship)}
-                                case _ => new_request_form(invitationOrRelationship)
+                                case "Pending" => pending_form(invitationOrRelationship, index)
+                                case "Accepted" => if(cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship, index)}
+                                case _ => new_request_form(invitationOrRelationship, index)
                                 }}
                         </td>
                     </tr>

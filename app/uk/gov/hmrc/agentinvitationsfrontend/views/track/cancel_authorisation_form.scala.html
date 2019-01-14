@@ -20,15 +20,15 @@
 
 @import org.joda.time.LocalDate
 
-@(invitationOrRelationship: TrackInformationSorted)(implicit messages: Messages, request: Request[_], now: LocalDate)
+@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
-    'id -> "cancelAuthorisation",
+    'id -> s"cancelAuthorisation-$index",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service" id="service" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="clientId" id="clientId" value="@{invitationOrRelationship.clientId}">
-    <input type="hidden" name="clientName" id="clientName" value="@{invitationOrRelationship.clientName}">
-    <button class="button--link-style" type="submit" id="resendRequest" onclick="">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
+    <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="clientId" id="clientId-@{index}" value="@{invitationOrRelationship.clientId}">
+    <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
+    <button class="button--link-style" type="submit" id="resendRequest-@{index}" onclick="">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
 }
