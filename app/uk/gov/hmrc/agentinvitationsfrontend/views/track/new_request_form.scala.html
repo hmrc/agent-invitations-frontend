@@ -20,16 +20,16 @@
 
 @import org.joda.time.LocalDate
 
-@(invitationOrRelationship: TrackInformationSorted)(implicit messages: Messages, request: Request[_], now: LocalDate)
+@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
 @form(
     action = Call("POST", routes.AgentsInvitationController.agentFastTrack().url),
-    'id -> s"fastTrackInvitationCreate-${invitationOrRelationship.invitationId.getOrElse("No-InvitationId")}",
+    'id -> s"fastTrackInvitationCreate-${index}",
     'class -> "form js-form"
 ) {
-    <input type="hidden" name="service" id="service-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.service}">
-    <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientIdType}">
-    <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{invitationOrRelationship.invitationId}" value="@{invitationOrRelationship.clientId}">
-    <input type="hidden" name="knownFact" id="knownFact-@{invitationOrRelationship.invitationId}" value="">
-    <button class="button--link-style" type="submit" id="resendRequest-@{invitationOrRelationship.invitationId}">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
+    <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{index}" value="@{invitationOrRelationship.clientIdType}">
+    <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{index}" value="@{invitationOrRelationship.clientId}">
+    <input type="hidden" name="knownFact" id="knownFact-@{index}" value="">
+    <button class="button--link-style" type="submit" id="resendRequest-@{index}">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
 }

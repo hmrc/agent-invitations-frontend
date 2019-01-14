@@ -67,7 +67,7 @@
                             @{invitationOrRelationship.status match {
                                 case "Pending" => pending_form(invitationOrRelationship, index)
                                 case "Accepted" => if(cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship, index)}
-                                case _ => new_request_form(invitationOrRelationship)
+                                case _ => new_request_form(invitationOrRelationship, index)
                                 }}
                         </td>
                     </tr>
