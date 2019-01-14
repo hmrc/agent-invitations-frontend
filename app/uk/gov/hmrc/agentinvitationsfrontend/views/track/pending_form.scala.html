@@ -21,7 +21,7 @@
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
-    'id -> "resendLink",
+    'id -> "resendLink-@{invitationOrRelationship.invitationId}",
     'class -> "form js-form actionButtons"
 ) {
     <input type="hidden" name="service" id="serviceResendLink-@{
@@ -39,7 +39,7 @@
 
 @form(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
-    'id -> "postToConfirmCancel",
+    'id -> "postToConfirmCancel-@{invitationOrRelationship.invitationId}",
     'class -> "form js-form"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{
