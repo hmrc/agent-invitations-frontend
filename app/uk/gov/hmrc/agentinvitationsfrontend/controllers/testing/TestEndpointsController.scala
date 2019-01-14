@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
+import com.google.inject.Provider
 import javax.inject.Inject
-import play.api.{Configuration, Environment, Mode}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
+import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
@@ -34,8 +35,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
-import scala.util.control.NonFatal
+import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
@@ -43,10 +43,11 @@ class TestEndpointsController @Inject()(
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification)(
-  implicit val configuration: Configuration,
-  val externalUrls: ExternalUrls)
+  val withVerifiedPasscode: PasscodeVerification,
+  ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
     extends FrontendController with I18nSupport with AuthActions {
+
+  implicit val ec: ExecutionContext = ecp.get
 
   import TestEndpointsController._
 

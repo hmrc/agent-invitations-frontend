@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.SsoConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.collection.JavaConversions._
 
@@ -34,10 +34,11 @@ class HostnameWhiteListService @Inject()(config: Configuration, ssoConnector: Ss
 
   val domainWhiteList: Set[String] = config.getStringList("continueUrl.domainWhiteList").getOrElse(emptyList()).toSet
 
-  def hasExternalDomain(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def hasExternalDomain(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     ssoConnector.validateExternalDomain(getHost(continueUrl))
 
-  def isAbsoluteUrlWhiteListed(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def isAbsoluteUrlWhiteListed(
+    continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     if (!hasInternalDomain(continueUrl)) hasExternalDomain(continueUrl)
     else Future.successful(true)
 

@@ -23,7 +23,6 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.CurrentInvitationInputItsaReady
 import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, KnownFact, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
@@ -66,7 +65,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
             val knownFact: Option[KnownFact] = None
           },
           result
-        )(hc, FakeRequest("GET", "/path")))
+        )(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -81,9 +80,6 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientIdType") shouldBe "ni"
         sentEvent.detail("clientId") shouldBe "WM123456C"
         sentEvent.detail("service") shouldBe "serviceName"
-
-        sentEvent.tags.contains("Authorization") shouldBe false
-        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
         sentEvent.tags("transactionName") shouldBe "Agent client service authorisation request created"
         sentEvent.tags("path") shouldBe "/path"
@@ -117,7 +113,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
           clientIdType,
           mtdItId.value,
           serviceName,
-          agencyName)(hc, FakeRequest("GET", "/path")))
+          agencyName)(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -133,9 +129,6 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientIdType") shouldBe "ni"
         sentEvent.detail("clientId") shouldBe "mtdItId"
         sentEvent.detail("service") shouldBe "HMRC-MTD-IT"
-
-        sentEvent.tags.contains("Authorization") shouldBe false
-        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
         sentEvent.tags("transactionName") shouldBe "agent-client-invitation-response"
         sentEvent.tags("path") shouldBe "/path"
@@ -165,7 +158,8 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         service
           .sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, nino, serviceName, agencyName)(
             hc,
-            FakeRequest("GET", "/path")))
+            FakeRequest("GET", "/path"),
+            concurrent.ExecutionContext.Implicits.global))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -181,9 +175,6 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientIdType") shouldBe "ni"
         sentEvent.detail("clientId") shouldBe "nino"
         sentEvent.detail("service") shouldBe "PERSONAL-INCOME-RECORD"
-
-        sentEvent.tags.contains("Authorization") shouldBe false
-        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
         sentEvent.tags("transactionName") shouldBe "agent-client-invitation-response"
         sentEvent.tags("path") shouldBe "/path"
@@ -217,7 +208,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
           clientIdType,
           vatRegistrationNumber,
           serviceName,
-          agencyName)(hc, FakeRequest("GET", "/path")))
+          agencyName)(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -233,9 +224,6 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("clientIdType") shouldBe "vrn"
         sentEvent.detail("clientId") shouldBe "vat"
         sentEvent.detail("service") shouldBe "HMRC-MTD-VAT"
-
-        sentEvent.tags.contains("Authorization") shouldBe false
-        sentEvent.detail("Authorization") shouldBe "dummy bearer token"
 
         sentEvent.tags("transactionName") shouldBe "agent-client-invitation-response"
         sentEvent.tags("path") shouldBe "/path"

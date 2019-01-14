@@ -29,9 +29,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PirRelationshipConnector @Inject()(
@@ -42,7 +41,9 @@ class PirRelationshipConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Int] =
+  def createRelationship(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
       val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
@@ -56,7 +57,8 @@ class PirRelationshipConnector @Inject()(
     }
 
   def deleteRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier): Future[Option[Boolean]] =
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       http
@@ -71,7 +73,7 @@ class PirRelationshipConnector @Inject()(
   val getInactiveIrvRelationshipUrl: URL =
     new URL(baseUrl, "/agent-fi-relationship/relationships/inactive")
 
-  def getInactiveIrvRelationships(implicit hc: HeaderCarrier): Future[Seq[IrvTrackRelationship]] =
+  def getInactiveIrvRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-InactiveIrvRelationships-GET") {
       http
         .GET[Seq[IrvTrackRelationship]](getInactiveIrvRelationshipUrl.toString)
@@ -87,7 +89,7 @@ class PirRelationshipConnector @Inject()(
       baseUrl,
       s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
 
-  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier) =
+  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
     monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
       http
         .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)
@@ -106,7 +108,8 @@ class PirRelationshipConnector @Inject()(
 
   /* TEST ONLY Connector method for create relationship. This method should not be used in production code */
   def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier): Future[Int] = {
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] = {
     val url = new URL(
       baseUrl,
       s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
@@ -122,7 +125,8 @@ class PirRelationshipConnector @Inject()(
 
   /* TEST ONLY Connector method for delete relationship. This method should not be used in production code */
   def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier): Future[Option[Boolean]] = {
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] = {
     val url = new URL(
       baseUrl,
       s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
