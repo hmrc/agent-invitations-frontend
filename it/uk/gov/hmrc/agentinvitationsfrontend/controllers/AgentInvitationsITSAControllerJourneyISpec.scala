@@ -213,16 +213,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
-      val authRequest =
-        AuthorisationRequest(
-          "clienty name",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
-          AuthorisationRequest.CREATED,
-          "itemId")
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -249,6 +241,17 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
       verifyAuthoriseAttempt()
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
+    }
+
+    "throw an IllegalStateException when there is nothing in the cache" in {
+      givenAgentReference(arn, uid, "personal")
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(None, serviceITSA, "ni", nino, Some(validPostcode)))
+
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      intercept[IllegalStateException] {
+        await(result)
+      }.getMessage shouldBe "no client type found in cache"
     }
 
     "throw a IllegalStateException when there is nothing in the cache" in {
