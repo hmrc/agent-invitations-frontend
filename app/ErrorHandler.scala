@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import javax.inject.{Inject, Singleton}
-
 import com.google.inject.name.Named
+import javax.inject.{Inject, Singleton}
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.http.HttpErrorHandler
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}

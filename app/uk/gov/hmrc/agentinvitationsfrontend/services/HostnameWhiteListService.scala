@@ -25,9 +25,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.SsoConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 
+import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.collection.JavaConversions._
 
 @Singleton
 class HostnameWhiteListService @Inject()(config: Configuration, ssoConnector: SsoConnector) {

@@ -15,8 +15,8 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 
 case class CheckAnswersPageConfig(consents: Seq[ClientConsent], agencyName: String, clientType: String, uid: String) {
 

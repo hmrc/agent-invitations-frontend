@@ -17,10 +17,10 @@
 import java.net.URL
 
 import akka.actor.ActorSystem
-import javax.inject.{Inject, Provider, Singleton}
 import com.google.inject.AbstractModule
 import com.google.inject.name.{Named, Names}
 import com.typesafe.config.Config
+import javax.inject.{Inject, Provider, Singleton}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.FrontendAuthConnector

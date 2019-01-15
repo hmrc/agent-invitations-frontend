@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 

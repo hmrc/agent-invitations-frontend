@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
 
 case class ReviewAuthorisationsPageConfig(authorisationRequests: AgentMultiAuthorisationJourneyState) {
 

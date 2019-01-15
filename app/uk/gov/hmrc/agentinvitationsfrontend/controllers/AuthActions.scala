@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.Logger
-import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls

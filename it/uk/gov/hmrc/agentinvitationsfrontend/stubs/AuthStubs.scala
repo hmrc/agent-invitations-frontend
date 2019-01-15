@@ -1,9 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel}
+import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.http.SessionKeys
 
 trait AuthStubs {

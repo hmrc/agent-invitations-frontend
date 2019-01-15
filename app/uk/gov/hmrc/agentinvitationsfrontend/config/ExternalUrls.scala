@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.config
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+
 import javax.inject.{Inject, Named, Singleton}
 
 @Singleton

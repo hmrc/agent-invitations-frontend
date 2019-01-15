@@ -1,12 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
+import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-
-import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
-import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
-import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ACRStubs {

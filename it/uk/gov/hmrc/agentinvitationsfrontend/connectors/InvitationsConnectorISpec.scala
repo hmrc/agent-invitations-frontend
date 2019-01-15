@@ -6,7 +6,7 @@ import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentReferenceRecord, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global

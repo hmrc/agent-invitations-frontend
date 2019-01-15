@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -39,7 +40,6 @@ import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
-import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -18,9 +18,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
 
-import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor

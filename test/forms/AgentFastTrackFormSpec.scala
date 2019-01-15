@@ -18,10 +18,10 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentFastTrackGenericFormKnownFact, agentFastTrackKnownFactForm, dateOfBirthMapping, postcodeMapping, vatRegDateMapping}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentFastTrackFormSpec extends UnitSpec {
 

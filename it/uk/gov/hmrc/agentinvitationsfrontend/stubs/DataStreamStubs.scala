@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.{CountMatchingMode, CountMatchingStrategy}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}

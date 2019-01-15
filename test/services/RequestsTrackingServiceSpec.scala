@@ -19,8 +19,8 @@ package services
 import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
-import org.mockito.Mockito.{mock, when}
 import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito.{mock, when}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual, StoredInvitation, TrackedInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
@@ -29,8 +29,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class RequestsTrackingServiceSpec extends UnitSpec {
 

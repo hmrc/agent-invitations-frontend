@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock.{put, status, _}
+import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation

@@ -3,7 +3,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.ACRStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global

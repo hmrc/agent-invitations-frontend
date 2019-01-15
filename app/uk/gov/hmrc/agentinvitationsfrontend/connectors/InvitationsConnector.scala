@@ -18,14 +18,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
 
-import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logger
 import play.api.libs.json.JsObject
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models._

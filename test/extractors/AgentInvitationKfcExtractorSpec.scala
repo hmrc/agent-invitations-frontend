@@ -17,8 +17,8 @@
 package extractors
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.models.{UserInputNinoAndPostcode, UserInputVrnAndRegDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec

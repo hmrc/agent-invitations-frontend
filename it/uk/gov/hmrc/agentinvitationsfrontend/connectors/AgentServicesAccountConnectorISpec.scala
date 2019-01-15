@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 

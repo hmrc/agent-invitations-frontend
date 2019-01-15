@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest}
+import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.SessionCache
 

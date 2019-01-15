@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentReferenceRecord
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 sealed trait ConfirmDeclinePageConfig {

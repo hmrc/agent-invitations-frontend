@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import java.lang.ProcessBuilder.Redirect
-
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.Logger

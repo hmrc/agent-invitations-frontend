@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.Inject
-
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Mode}

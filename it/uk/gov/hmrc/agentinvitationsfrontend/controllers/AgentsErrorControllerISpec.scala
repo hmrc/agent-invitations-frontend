@@ -1,10 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest, CurrentAuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

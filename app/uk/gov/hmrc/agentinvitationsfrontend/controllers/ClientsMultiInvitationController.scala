@@ -33,8 +33,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent
+import scala.concurrent.Future
 
 @Singleton
 class ClientsMultiInvitationController @Inject()(

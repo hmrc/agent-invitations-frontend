@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 
 
 class ClientErrorControllerISpec extends BaseISpec {
