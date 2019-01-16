@@ -3,7 +3,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -218,10 +218,13 @@ class FastTrackIRVISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -251,11 +254,42 @@ class FastTrackIRVISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
 
+    "redirect to already-authorisation-pending when YES is selected for IRV service and there is already a pending invitation" in {
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
+      givenAfiRelationshipNotFoundForAgent(arn, validNino)
+
+      val formData =
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+    }
+
+    "redirect to already-authorisation-present when YES is selected for IRV service and there is already a relationship" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenAfiRelationshipIsActiveForAgent(arn, validNino)
+
+      val formData =
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+    }
+
     "return 303 invitation-sent if nino that does not return citizen-details record" in {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       testCurrentAuthorisationRequestCache.currentSession.item.get shouldBe formData
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       givenCitizenDetailsReturns404For(validNino.value)
       givenInvitationCreationSucceeds(
         arn,
@@ -268,6 +302,8 @@ class FastTrackIRVISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(

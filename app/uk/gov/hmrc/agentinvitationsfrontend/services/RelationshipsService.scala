@@ -33,9 +33,7 @@ class RelationshipsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext) =
     service match {
-      case HMRCMTDIT => {
-        relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
-      }
+      case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
       case HMRCPIR    => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
     }

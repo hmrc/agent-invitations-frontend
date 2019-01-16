@@ -26,6 +26,13 @@ trait AfiRelationshipStub {
                          |   "clientId":"${clientId.value}"
                          |}]""".stripMargin)))
 
+  def givenAfiRelationshipNotFoundForAgent(arn: Arn, clientId: Nino) =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
   def givenAfiRelationshipIsActive(arn: Arn, service: String, clientId: String, fromCesa: Boolean): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-fi-relationship/relationships/service/$service/clientId/$clientId"))

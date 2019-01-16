@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -314,10 +314,13 @@ class FastTrackITSAISpec extends BaseISpec {
         "MTDITID")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -347,12 +350,46 @@ class FastTrackITSAISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
 
+    "redirect to already-authorisation-pending when YES is selected for ITSA service but there is already a pending invitation" in {
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+    }
+
+    "redirect to already-authorisation-exists when YES is selected for ITSA service but there is already a relationship for this service" in {
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+    }
+
     "return 303 not-matched if nino and postcode do not match for ITSA" in {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       testCurrentAuthorisationRequestCache.currentSession.item.get shouldBe formData
       givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
@@ -372,7 +409,10 @@ class FastTrackITSAISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       testCurrentAuthorisationRequestCache.currentSession.item.get shouldBe formData
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       givenNotEnrolledClientITSA(validNino, validPostcode)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(

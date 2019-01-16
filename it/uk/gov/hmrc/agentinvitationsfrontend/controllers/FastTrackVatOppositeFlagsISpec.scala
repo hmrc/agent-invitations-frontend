@@ -6,8 +6,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -24,6 +24,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       .configure(
         "microservice.services.auth.port"                                     -> wireMockPort,
         "microservice.services.agent-client-authorisation.port"               -> wireMockPort,
+        "microservice.services.agent-client-relationships.port"               -> wireMockPort,
         "microservice.services.agent-services-account.port"                   -> wireMockPort,
         "microservice.services.company-auth.login-url"                        -> wireMockHost,
         "microservice.services.company-auth.port"                             -> wireMockPort,
@@ -66,6 +67,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     override def configure(): Unit = {
       bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
       bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
+      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
     }
   }
 
@@ -243,6 +245,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to confirm_invitation when YES is selected for VAT service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
         business,
@@ -264,6 +268,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
           Some(validRegistrationDate),
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("business", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -272,6 +278,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "render confirm_invitations when client type is provided, known fact is not required and YES is selected for VAT service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
         personal,
@@ -285,6 +293,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
         controller.submitCheckDetails(
@@ -295,6 +304,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
         business,
@@ -309,6 +320,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -317,9 +330,12 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to client-type when client type and known fact are not provided and YES is selected for VAT service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
         controller.submitCheckDetails(
@@ -330,6 +346,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "redirect to client-type when not provided and then submit and redirect to complete" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
         personal,
@@ -345,6 +363,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
         controller.submitCheckDetails(

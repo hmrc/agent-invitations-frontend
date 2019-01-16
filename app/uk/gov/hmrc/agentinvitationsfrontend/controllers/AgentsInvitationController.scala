@@ -395,15 +395,31 @@ class AgentsInvitationController @Inject()(
           },
           data => {
             if (data.value.getOrElse(false)) {
-              cachedCurrentInvitationInput.flatMap { cii =>
-                redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
-              }
-            } else
-              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+              cachedCurrentInvitationInput.flatMap(
+                cacheItem =>
+                  maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                    arn,
+                    cacheItem.clientIdentifier,
+                    cacheItem.service).flatMap {
+                    case Some(r) => r
+                    case None =>
+                      cachedCurrentInvitationInput.flatMap { cii =>
+                        redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+                      }
+                })
+            } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
         )
     }
   }
+
+  def invitationExistsInBasket(service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+    for {
+      hasPendingInvitationServiceInJourney <- journeyStateCache.get.map(cacheItem =>
+                                               cacheItem.requests.map(_.service).contains(service))
+      hasPendingInvitationClientIdInJourney <- journeyStateCache.get.map(cacheItem =>
+                                                cacheItem.requests.map(_.clientId).contains(clientId))
+    } yield hasPendingInvitationServiceInJourney && hasPendingInvitationClientIdInJourney
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
@@ -425,74 +441,79 @@ class AgentsInvitationController @Inject()(
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(invitationWithClientDetails) =>
-          (
-            invitationWithClientDetails.clientType,
-            invitationWithClientDetails.clientIdentifier,
-            invitationWithClientDetails.service) match {
-            case (clientType, clientId, service) if clientId.nonEmpty =>
-              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                val clientName = name.getOrElse("")
-                agentConfirmationForm("error.confirm-client.required")
-                  .bindFromRequest()
-                  .fold(
-                    formWithErrors => {
-                      Future successful Ok(confirm_client(clientName, formWithErrors))
-                    },
-                    data =>
-                      if (data.choice) {
-                        val result = for {
-                          hasPendingInvitations <- invitationsService
-                                                    .hasPendingInvitationsFor(arn, clientId, service, journeyStateCache)
-                          hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(arn, clientId, service)
-                        } yield (hasPendingInvitations, hasActiveRelationship)
+        case Some(cachedItem @ CurrentInvitationInputWithNonEmptyClientId((clientType, clientId, service))) =>
+          val result: Future[Result] = {
+            invitationsService.getClientNameByService(clientId, service).flatMap { name =>
+              val clientName = name.getOrElse("")
+              agentConfirmationForm("error.confirm-client.required")
+                .bindFromRequest()
+                .fold(
+                  formWithErrors => {
+                    Future successful Ok(confirm_client(clientName, formWithErrors))
+                  },
+                  data =>
+                    if (data.choice) {
+                      maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, clientId, service).flatMap {
+                        case Some(r) => Future.successful(r)
+                        case None =>
+                          for {
+                            journeyStateOpt <- journeyStateCache.fetch
+                            currentCache = journeyStateOpt match {
+                              case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
+                              case Some(journeyState) => journeyState
+                            }
+                            result <- for {
+                                       _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
+                                             if (currentCache.clientType.nonEmpty) currentCache.clientType
+                                             else clientType.getOrElse(""),
+                                             currentCache.requests ++ Seq(
+                                               AuthorisationRequest(clientName, clientType, service, clientId))
+                                           ))
+                                       redirect <- if (clientType == personal || currentCache.clientType == "personal")
+                                                    Future successful Redirect(
+                                                      routes.AgentsInvitationController.showReviewAuthorisations())
+                                                  else if (clientType == business) {
+                                                    confirmAndRedirect(arn, cachedItem, false)
+                                                  } else
+                                                    Future successful Redirect(
+                                                      routes.AgentsInvitationController.showClientType())
+                                     } yield redirect
+                          } yield result
 
-                        result.flatMap {
-                          case (true, _) =>
-                            Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
-                          case (_, true) =>
-                            Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
-                          case (false, false) => {
-                            for {
-                              journeyStateOpt <- journeyStateCache.fetch
-                              currentCache = journeyStateOpt match {
-                                case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
-                                case Some(journeyState) => journeyState
-                              }
-                              result <- for {
-                                         _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
-                                               if (currentCache.clientType.nonEmpty) currentCache.clientType
-                                               else invitationWithClientDetails.clientType.getOrElse(""),
-                                               currentCache.requests ++ Seq(
-                                                 AuthorisationRequest(clientName, clientType, service, clientId))
-                                             ))
-                                         redirect <- if (invitationWithClientDetails.clientType == personal || currentCache.clientType == "personal")
-                                                      Future successful Redirect(
-                                                        routes.AgentsInvitationController.showReviewAuthorisations())
-                                                    else if (invitationWithClientDetails.clientType == business) {
-                                                      confirmAndRedirect(arn, invitationWithClientDetails, false)
-                                                    } else
-                                                      Future successful Redirect(
-                                                        routes.AgentsInvitationController.showClientType())
-                                       } yield redirect
-                            } yield result
-                          }
-
-                        }
-                      } else {
-                        for {
-                          _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType, service))
-                          result <- Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-                        } yield result
-                    }
-                  )
-              }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+                      }
+                    } else {
+                      for {
+                        _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType, service))
+                        result <- Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+                      } yield result
+                  }
+                )
+            }
           }
-        case None => Future successful Redirect(routes.AgentsInvitationController.showClientType())
+          result
+        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+        case None    => Future successful Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
   }
+
+  def maybeResultIfPendingInvitationsOrRelationshipExistFor(arn: Arn, clientId: String, service: String)(
+    implicit hc: HeaderCarrier): Future[Option[Result]] =
+    for {
+      existsInBasket <- invitationExistsInBasket(service, clientId)
+      hasPendingInvitations <- if (existsInBasket) Future.successful(true)
+                              else
+                                invitationsService.hasPendingInvitationsFor(arn, clientId, service)
+      result <- hasPendingInvitations match {
+                 case true =>
+                   Future.successful(Some(Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())))
+                 case false =>
+                   relationshipsService.hasActiveRelationshipFor(arn, clientId, service).map {
+                     case true  => Some(Redirect(routes.AgentsErrorController.activeRelationshipExists()))
+                     case false => None
+                   }
+               }
+    } yield result
 
   def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
@@ -599,12 +620,15 @@ class AgentsInvitationController @Inject()(
             Redirect(routes.AgentsInvitationController.showConfirmClient())
           case _ =>
             val result = for {
-              hasPendingInvitations <- invitationsService
-                                        .hasPendingInvitationsFor(
+              existsInBasket <- invitationExistsInBasket(
+                                 currentAuthorisationRequest.service,
+                                 currentAuthorisationRequest.clientIdentifier)
+              hasPendingInvitations <- if (existsInBasket) Future.successful(true)
+                                      else
+                                        invitationsService.hasPendingInvitationsFor(
                                           arn,
                                           currentAuthorisationRequest.clientIdentifier,
-                                          currentAuthorisationRequest.service,
-                                          journeyStateCache)
+                                          currentAuthorisationRequest.service)
               hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(
                                         arn,
                                         currentAuthorisationRequest.clientIdentifier,
@@ -1554,6 +1578,12 @@ object AgentsInvitationController {
           Some(currentAuthorisationRequest.copy(clientType = clientType))
         case _ => None
       }
+  }
+
+  object CurrentInvitationInputWithNonEmptyClientId {
+    def unapply(current: CurrentAuthorisationRequest): Option[(Option[String], String, String)] =
+      if (current.clientIdentifier.nonEmpty) Some((current.clientType, current.clientIdentifier, current.service))
+      else None
   }
 
 }
