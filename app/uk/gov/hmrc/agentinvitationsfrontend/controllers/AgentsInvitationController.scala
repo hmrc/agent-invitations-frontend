@@ -395,11 +395,30 @@ class AgentsInvitationController @Inject()(
           },
           data => {
             if (data.value.getOrElse(false)) {
-              cachedCurrentInvitationInput.flatMap { cii =>
-                redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+
+              val result = for {
+                cacheItem <- cachedCurrentInvitationInput
+                hasPendingInvitations <- invitationsService
+                                          .hasPendingInvitationsFor(
+                                            arn,
+                                            cacheItem.clientIdentifier,
+                                            cacheItem.service,
+                                            journeyStateCache)
+                hasActiveRelationship <- relationshipsService
+                                          .hasActiveRelationshipFor(arn, cacheItem.clientIdentifier, cacheItem.service)
+              } yield (hasPendingInvitations, hasActiveRelationship)
+
+              result.flatMap {
+                case (true, _) =>
+                  Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+                case (_, true) =>
+                  Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
+                case (false, false) =>
+                  cachedCurrentInvitationInput.flatMap { cii =>
+                    redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+                  }
               }
-            } else
-              Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+            } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
         )
     }

@@ -380,6 +380,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       givenTradingName(validNino, "64 Bit")
       givenAgentReference(arn, "ABCDEFGH", "personal")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
       val result =

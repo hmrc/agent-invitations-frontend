@@ -3,7 +3,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -294,6 +294,8 @@ class FastTrackVatISpec extends BaseISpec {
         "VRN")
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(
@@ -304,6 +306,8 @@ class FastTrackVatISpec extends BaseISpec {
           Some(validRegistrationDate),
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -322,10 +326,14 @@ class FastTrackVatISpec extends BaseISpec {
         serviceVAT,
         "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -344,10 +352,14 @@ class FastTrackVatISpec extends BaseISpec {
         serviceVAT,
         "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
@@ -357,15 +369,63 @@ class FastTrackVatISpec extends BaseISpec {
 
     "redirect to more-details when known fact is not provided and YES is selected for VAT service" in {
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val formData =
         CurrentAuthorisationRequest(personal, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val result = await(
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showKnownFact().url
+    }
+
+    "redirect to already-authorisation-pending when YES is selected for VAT service and there is already a pending invitation" in {
+      givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+
+      val formData =
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+    }
+
+    "redirect to already-authorisation-present when YES is selected for VAT service and there is already a relationship" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
+
+      val formData =
+        CurrentAuthorisationRequest(
+          business,
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate),
+          fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
+      val result = await(
+        controller.submitCheckDetails(
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
@@ -397,6 +457,10 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 not-matched if vrn and vat-reg-date does not match for VAT" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 403)
+
       val invitation =
         CurrentAuthorisationRequest(
           business,
@@ -407,7 +471,7 @@ class FastTrackVatISpec extends BaseISpec {
           fromFastTrack)
 
       testCurrentAuthorisationRequestCache.save(invitation)
-      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 403)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
@@ -422,6 +486,10 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 not-signed-up if Agent attempted to invite a client for VAT" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 404)
+
       val invitation =
         CurrentAuthorisationRequest(
           business,
@@ -432,7 +500,7 @@ class FastTrackVatISpec extends BaseISpec {
           fromFastTrack)
 
       testCurrentAuthorisationRequestCache.save(invitation)
-      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 404)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val form = agentFastTrackForm.fill(invitation)
       val result = await(
