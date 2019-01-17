@@ -85,6 +85,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
     bindProperty("survey.originTokenIdentifier.agent")
     bindProperty("survey.originTokenIdentifier.client")
+    bindProperty("invitation.expiryDuration")
     bindIntegerProperty("track-requests-show-last-days")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")

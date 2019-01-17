@@ -97,9 +97,9 @@ invitation-sent.l1=Copy this link and email it to your client:
 invitation-sent.l1.p.personal=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.</span>
 invitation-sent.l1.p.business=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.</span>
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
-invitation-sent.p1=The link expires 10 days from now.
-invitation-sent.p2.personal=They will need their Government Gateway login details for their personal tax affairs to confirm who they are. They can set up an account if they do not have one.
-invitation-sent.p2.business=They will need their Government Gateway login details for their business tax affairs to confirm who they are. They can set up an account if they do not have one.
+invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
+invitation-sent.l4.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.l4.business=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.continueToASAccount.button=Return to your agent services account
 invitation-sent.continueJourney.button=Continue
 invitation-sent.trackRequests.button=Track your recent authorisation requests
@@ -494,12 +494,6 @@ recent-invitations.invitations.actions.invalidrelationship=Start new request
 
 #ResendLink page
 resend-link.header=Resend this link to your client
-resend-link.list-item-1.p1=Copy this link and email it to your client.
-resend-link.list-item-1.personal.p2=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.</span> 
-resend-link.list-item-1.business.p2=<span>You only need to send it to them once. They can use this link to access any of your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.</span> 
-resend-link.p2=The link expires {0} days from now.
-resend-link.p3=They will need their Government Gateway login details for their {0} tax affairs to confirm who they are. They can set up an account if they do not have one.
-resend-link.returnToAsa=Return to your agent services account
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?

@@ -175,7 +175,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 200 and go to resend link page" in {
       givenAgentReference(arn, "uid", "personal")
-      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(14).toString
       val formData =
         controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some("personal"), expirationDate))
       val result =
@@ -186,10 +186,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Resend this link to your client",
         "What you need to do next",
-        "Copy this link and email it to your client.",
-        "You only need to send it to them once.",
+        "Copy this link and email it to your client:",
         "individual or sole trader tax affairs",
-        "The link expires 5 days from now.",
         "Track your recent authorisation requests",
         "Return to your agent services account",
         "Start new authorisation request"

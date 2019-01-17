@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import org.joda.time.LocalDate
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
@@ -226,9 +227,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p1"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2.personal"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l1.p.personal"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
@@ -240,7 +239,6 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
     }
 
     "throw an IllegalStateException when there is nothing in the cache" in {
