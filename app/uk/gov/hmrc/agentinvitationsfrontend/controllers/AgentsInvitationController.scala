@@ -177,8 +177,9 @@ class AgentsInvitationController @Inject()(
           basket.clientType match {
             case "personal" =>
               Future successful Ok(
-                personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), true))
-            case "business" => Future successful Ok(business_select_service(agentInvitationServiceForm, vat ++ niOrg))
+                select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), true, "personal"))
+            case "business" =>
+              Future successful Ok(select_service(agentInvitationServiceForm, vat ++ niOrg, false, "business"))
             case _ => {
               Future successful Redirect(routes.AgentsInvitationController.showClientType())
             }
@@ -189,9 +190,9 @@ class AgentsInvitationController @Inject()(
               input.clientType match {
                 case `personal` =>
                   Future successful Ok(
-                    personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), false))
+                    select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), false, "personal"))
                 case `business` =>
-                  Future successful Ok(business_select_service(agentInvitationServiceForm, vat ++ niOrg))
+                  Future successful Ok(select_service(agentInvitationServiceForm, vat ++ niOrg, false, "business"))
                 case _ => {
                   Future successful Redirect(routes.AgentsInvitationController.showClientType())
                 }
@@ -214,7 +215,7 @@ class AgentsInvitationController @Inject()(
         formWithErrors => {
           for {
             authorisationBasket <- journeyStateCache.fetch
-          } yield Ok(personal_select_service(formWithErrors, allowedServices, authorisationBasket.isDefined))
+          } yield Ok(select_service(formWithErrors, allowedServices, authorisationBasket.isDefined, "personal"))
         },
         userInput => {
           val updateAggregate = currentAuthorisationRequestCache.fetch
@@ -240,7 +241,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(business_select_service(formWithErrors, vat ++ niOrg))
+          Future successful Ok(select_service(formWithErrors, vat ++ niOrg, false, "business"))
         },
         userInput => {
           if (userInput.service == HMRCMTDVAT) {
@@ -1135,7 +1136,7 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.confirmDetails.invalid"))
   }
 
-  private val serviceService: Constraint[Option[String]] =
+  private val serviceChoice: Constraint[Option[String]] =
     radioChoice("error.service.required")
 
   def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
@@ -1260,7 +1261,7 @@ object AgentsInvitationController {
     Form(
       mapping(
         "clientType"       -> optional(text),
-        "service"          -> optional(text).verifying(serviceService),
+        "service"          -> optional(text).verifying(serviceChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
       )({ (clientType, service, _, _) =>
@@ -1274,7 +1275,7 @@ object AgentsInvitationController {
     Form(
       mapping(
         "clientType"       -> optional(text),
-        "service"          -> optional(text).verifying(serviceService),
+        "service"          -> optional(text).verifying(serviceChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
       )({ (clientType, service, _, _) =>

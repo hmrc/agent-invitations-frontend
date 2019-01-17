@@ -48,7 +48,7 @@ object Services {
 
   val HMRCNIORG = "HMRC-NI-ORG"
   val UTR = "utr"
-  val messageKeyForNiOrg = "eori"
+  val messageKeyForNiOrg = "utr"
 
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, HMRCNIORG)
   val supportedTypes = List("ni", "vrn", "utr")

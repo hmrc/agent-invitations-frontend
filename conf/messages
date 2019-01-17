@@ -60,12 +60,12 @@ error.irv-date-of-birth.required=Enter your client''s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
 
 # Personal Select Service
-personal-select-service.p1=You need to create a separate request for each type of authorisation.
-personal-select-service.hint=Select an option.
 personal-select-service.personal-income-viewer=View their PAYE income record
 personal-select-service.itsa=Report their income and expenses through software
 
 # Personal and Business
+select-service.p1=You need to create a separate request for each type of authorisation.
+select-service.hint=Select an option.
 error.service.required=You must select a service
 select-service.vat=Report their VAT returns through software
 select-service.niorg=Submit their Ireland Trade Returns
