@@ -713,14 +713,23 @@ class AgentsInvitationController @Inject()(
         .fold(
           _ => {
             Future successful Redirect(routes.AgentsInvitationController.showClientType())
-          }, {
-            case Services.HMRCMTDIT =>
-              bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
-            case Services.HMRCPIR =>
-              bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
-            case Services.HMRCMTDVAT =>
-              bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
-          }
+          },
+          data =>
+            currentAuthorisationRequestCache.get.flatMap(cacheItem =>
+              maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, cacheItem.clientIdentifier, cacheItem.service)
+                .flatMap {
+                  case Some(r) => Future.successful(r)
+                  case None => {
+                    data match {
+                      case Services.HMRCMTDIT =>
+                        bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
+                      case Services.HMRCPIR =>
+                        bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
+                      case Services.HMRCMTDVAT =>
+                        bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
+                    }
+                  }
+              })
         )
     }
   }
