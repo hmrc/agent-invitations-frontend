@@ -439,6 +439,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
         identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
+      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "business",
@@ -452,6 +454,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("business", Set.empty))
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")

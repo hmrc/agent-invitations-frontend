@@ -219,7 +219,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
-      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAfiRelationshipNotFoundForAgent(arn, validNino)
 
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
@@ -303,7 +303,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
-      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAfiRelationshipNotFoundForAgent(arn, validNino)
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
@@ -347,6 +347,8 @@ class FastTrackIRVISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenAfiRelationshipNotFoundForAgent(arn, validNino)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
@@ -360,34 +362,29 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
     "redisplay the page with errors when known fact is not valid for IRV" in {
-      givenInvitationCreationSucceeds(
-        arn,
-        personal,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        "NI")
-      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenAfiRelationshipNotFoundForAgent(arn, validNino)
 
       val requestWithForm = request.withFormUrlEncodedBody(
-        "service"              -> "HMRC-MTD-VAT",
-        "clientIdentifierType" -> "vrn",
-        "clientIdentifier"     -> validVrn.value,
+        "clientType"           -> "personal",
+        "service"              -> "PERSONAL-INCOME-RECORD",
+        "clientIdentifierType" -> "NI",
+        "clientIdentifier"     -> validNino.value,
         "knownFact.year"       -> "aaaa",
         "knownFact.month"      -> "aa",
         "knownFact.day"        -> "aa"
       )
       val formData =
-        CurrentAuthorisationRequest(business, serviceVAT, "ni", validVrn.value, None, fromFastTrack)
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Year must only include numbers")

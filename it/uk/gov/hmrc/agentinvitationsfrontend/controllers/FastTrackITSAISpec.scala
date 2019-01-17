@@ -459,6 +459,8 @@ class FastTrackITSAISpec extends BaseISpec {
         "HMRC-MTD-IT",
         "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
@@ -469,15 +471,59 @@ class FastTrackITSAISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
-    "redisplay the page with errors when the known fact is not provided for ITSA" in {
+    "redirect to already-authorisation-pending when there is already a pending invitation" in {
+      givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "clientType"           -> "personal",
+        "service"              -> "HMRC-MTD-IT",
+        "clientIdentifierType" -> "ni",
+        "clientIdentifier"     -> validNino.value,
+        "knownFact"            -> "DH14EJ")
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+    }
+
+    "redirect to already-authorisation-present when there is already a relationship" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "clientType"           -> "personal",
+        "service"              -> "HMRC-MTD-IT",
+        "clientIdentifierType" -> "ni",
+        "clientIdentifier"     -> validNino.value,
+        "knownFact"            -> "DH14EJ")
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+    }
+
+    "redisplay the page with errors when the known fact is not provided for ITSA" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+      givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, None, fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+
       val requestWithForm = request.withFormUrlEncodedBody(
         "service"              -> "HMRC-MTD-IT",
         "clientIdentifierType" -> "ni",
