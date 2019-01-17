@@ -51,7 +51,7 @@ object Services {
   val messageKeyForNiOrg = "eori"
 
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, HMRCNIORG)
-  val supportedTypes = List("ni", "vrn", "eori")
+  val supportedTypes = List("ni", "vrn", "utr")
 
   //Todo Client Types to be used later
   val personal = Some("personal")
