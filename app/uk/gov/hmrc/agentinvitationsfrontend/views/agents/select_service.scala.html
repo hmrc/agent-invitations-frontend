@@ -21,13 +21,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)], basketFlag: Boolean, clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-@back_link(s"${routes.AgentsInvitationController.showClientType()}")
+@back_link_referer(request)
 @if(agentInvitationsForm.hasErrors) {
-@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("service"))
+@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
 }
 
 @form(
@@ -37,10 +37,13 @@ action = routes.AgentsInvitationController.submitSelectService(),
 <div class="form-group">
     @inputRadioGroup(
     agentInvitationsForm("service"),
-    Seq("HMRC-MTD-VAT"-> Messages("business-select-service.yes"), "NO_SERVICE"-> Messages("business-select-service.no")),
-    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("business-select-service.header") + """</h1>"""),
+    services,
+    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
+    """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
+    """<span class="form-hint">""" + Messages("select-service.hint") + """</span>"""),
     '_groupDivClass -> "form-group soft--ends",
-    '_fieldsetAttributes -> Html("""id='choice'""")
+    '_fieldsetAttributes -> Html("""id='service'"""),
+    '_legendClass -> "margin-bottom-10"
     )
 </div>
 
@@ -56,11 +59,15 @@ action = routes.AgentsInvitationController.submitSelectService(),
     </div>
 </details>
 
-<input type="hidden" name="clientType" id="clientType" value="business">
+<input type="hidden" name="clientType" id="clientType" value="@clientType">
 <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
 <input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
 <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
+}
+
+@if(basketFlag) {
+<p class="margin-top-40"><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
 }
 
 }

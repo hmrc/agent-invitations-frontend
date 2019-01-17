@@ -75,10 +75,15 @@ class AgentsInvitationController @Inject()(
     if (featureFlags.showPersonalIncome)
       Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
     else Seq.empty
+
   private val mtdItId =
     if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("personal-select-service.itsa")) else Seq.empty
+
   private val vat =
-    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("personal-select-service.vat")) else Seq.empty
+    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+
+  private val niOrg =
+    if (featureFlags.showHmrcNiOrg) Seq(HMRCNIORG -> Messages("select-service.niorg")) else Seq.empty
 
   private val personalOption = Seq("personal" -> Messages("client-type.personal"))
   private val businessOption = Seq("business" -> Messages("client-type.business"))
@@ -86,15 +91,16 @@ class AgentsInvitationController @Inject()(
 
   private def enabledServices(isWhitelisted: Boolean): Seq[(String, String)] =
     if (isWhitelisted) {
-      personalIncomeRecord ++ mtdItId ++ vat
+      personalIncomeRecord ++ mtdItId ++ vat ++ niOrg
     } else {
-      mtdItId ++ vat
+      mtdItId ++ vat ++ niOrg
     }
 
   private val serviceToMessageKey: String => String = {
     case HMRCMTDIT  => messageKeyForITSA
     case HMRCPIR    => messageKeyForAfi
     case HMRCMTDVAT => messageKeyForVAT
+    case HMRCNIORG  => messageKeyForNiOrg
     case _          => "Service is missing"
   }
 
@@ -175,8 +181,9 @@ class AgentsInvitationController @Inject()(
           basket.clientType match {
             case "personal" =>
               Future successful Ok(
-                personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), true))
-            case "business" => Future successful Ok(business_select_service(agentInvitationServiceForm))
+                select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), true, "personal"))
+            case "business" =>
+              Future successful Ok(select_service(agentInvitationServiceForm, vat ++ niOrg, false, "business"))
             case _ => {
               Future successful Redirect(routes.AgentsInvitationController.showClientType())
             }
@@ -187,9 +194,9 @@ class AgentsInvitationController @Inject()(
               input.clientType match {
                 case `personal` =>
                   Future successful Ok(
-                    personal_select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), false))
+                    select_service(agentInvitationServiceForm, enabledServices(isWhitelisted), false, "personal"))
                 case `business` =>
-                  Future successful Ok(business_select_service(agentInvitationServiceForm))
+                  Future successful Ok(select_service(agentInvitationServiceForm, vat ++ niOrg, false, "business"))
                 case _ => {
                   Future successful Redirect(routes.AgentsInvitationController.showClientType())
                 }
@@ -212,7 +219,7 @@ class AgentsInvitationController @Inject()(
         formWithErrors => {
           for {
             authorisationBasket <- journeyStateCache.fetch
-          } yield Ok(personal_select_service(formWithErrors, allowedServices, authorisationBasket.isDefined))
+          } yield Ok(select_service(formWithErrors, allowedServices, authorisationBasket.isDefined, "personal"))
         },
         userInput => {
           val updateAggregate = currentAuthorisationRequestCache.fetch
@@ -238,7 +245,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(business_select_service(formWithErrors))
+          Future successful Ok(select_service(formWithErrors, vat ++ niOrg, false, "business"))
         },
         userInput => {
           if (userInput.service == HMRCMTDVAT) {
@@ -1096,6 +1103,9 @@ class AgentsInvitationController @Inject()(
       case HMRCMTDIT if !featureFlags.showHmrcMtdIt =>
         Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
         Future successful BadRequest
+      case HMRCNIORG if !featureFlags.showHmrcNiOrg =>
+        Logger(getClass).warn(s"Service: $HMRCNIORG feature flagged is switched off")
+        Future successful BadRequest
       case HMRCPIR if !featureFlags.showPersonalIncome =>
         Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")
         Future successful BadRequest
@@ -1137,11 +1147,8 @@ object AgentsInvitationController {
       Invalid(ValidationError("error.confirmDetails.invalid"))
   }
 
-  private val servicePersonalChoice: Constraint[Option[String]] =
+  private val serviceChoice: Constraint[Option[String]] =
     radioChoice("error.service.required")
-
-  private val serviceBusinessChoice: Constraint[Option[String]] =
-    radioChoice("error.business-service.required")
 
   def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
     if (fieldValue.isDefined)
@@ -1265,7 +1272,7 @@ object AgentsInvitationController {
     Form(
       mapping(
         "clientType"       -> optional(text),
-        "service"          -> optional(text).verifying(servicePersonalChoice),
+        "service"          -> optional(text).verifying(serviceChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
       )({ (clientType, service, _, _) =>
@@ -1279,7 +1286,7 @@ object AgentsInvitationController {
     Form(
       mapping(
         "clientType"       -> optional(text),
-        "service"          -> optional(text).verifying(serviceBusinessChoice),
+        "service"          -> optional(text).verifying(serviceChoice),
         "clientIdentifier" -> optional(normalizedText),
         "knownFact"        -> optional(text)
       )({ (clientType, service, _, _) =>

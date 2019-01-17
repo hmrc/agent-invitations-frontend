@@ -60,25 +60,22 @@ error.irv-date-of-birth.required=Enter your client''s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
 
 # Personal Select Service
-personal-select-service.header=What do you want the client to authorise you to do?
-error.service.required=You must select a service
-personal-select-service.p1=You need to create a separate request for each type of authorisation.
-personal-select-service.hint=Select an option.
 personal-select-service.personal-income-viewer=View their PAYE income record
 personal-select-service.itsa=Report their income and expenses through software
-personal-select-service.vat=Report their VAT returns through software
+
+# Personal and Business
+select-service.p1=You need to create a separate request for each type of authorisation.
+select-service.hint=Select an option.
+error.service.required=You must select a service
+select-service.vat=Report their VAT returns through software
+select-service.niorg=Submit their Ireland Trade Returns
+select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
-
-# Business Select Service
-business-select-service.header=Do you want to report this client''s VAT returns through software?
-business-select-service.yes=Yes
-business-select-service.no=No
-error.business-service.required=Select yes if you want to report this client''s VAT returns through software
 
 continue.button=Continue
 button.back=Back

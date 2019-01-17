@@ -23,6 +23,7 @@ case class FeatureFlags @Inject()(
   @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean = true,
   @Named("features.show-personal-income") showPersonalIncome: Boolean = true,
   @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean = true,
+  @Named("features.show-hmrc-ni-org") showHmrcNiOrg: Boolean = true,
   @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean = true,
   @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean = true,
   @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean = true,
