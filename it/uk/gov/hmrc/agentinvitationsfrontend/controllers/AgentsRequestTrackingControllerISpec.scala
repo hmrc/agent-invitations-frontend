@@ -17,15 +17,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  */
 
 import org.joda.time.{DateTimeZone, LocalDate}
+import org.jsoup.Jsoup
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import org.jsoup.Jsoup
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
@@ -186,7 +185,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Resend this link to your client",
         "What you need to do next",
-        "Copy this link and email it to your client:",
+        "Copy this link and email it to your client.",
         "individual or sole trader tax affairs",
         "Track your recent authorisation requests",
         "Return to your agent services account",
