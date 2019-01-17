@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, ReviewAuthorisationsPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -41,12 +41,14 @@ import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentsInvitationController @Inject()(
   @Named("agent-invitations-frontend.external-url") externalUrl: String,
   @Named("agent-services-account-frontend.external-url") asAccUrl: String,
+  @Named("invitation.expiryDuration") expiryDuration: String,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   auditService: AuditService,
@@ -100,6 +102,8 @@ class AgentsInvitationController @Inject()(
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
   private[controllers] val agentServicesAccountUrl: String =
     if (isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
+
+  private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
 
   val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
@@ -822,12 +826,19 @@ class AgentsInvitationController @Inject()(
                         arn,
                         cacheItem.clientType.getOrElse(
                           throw new IllegalStateException("no client type found in cache")))
-          _        <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
           continue <- continueUrlCache.fetch
         } yield {
           val invitationUrl: String = s"$externalUrl$agentLink"
           val clientType = if (agentLink.contains("personal")) "personal" else "business"
-          Ok(invitation_sent(invitationUrl, continue.isDefined, featureFlags.enableTrackRequests, clientType))
+          val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+          Ok(
+            invitation_sent(
+              InvitationSentPageConfig(
+                invitationUrl,
+                continue.isDefined,
+                featureFlags.enableTrackRequests,
+                clientType,
+                inferredExpiryDate)))
       })
     }
   }

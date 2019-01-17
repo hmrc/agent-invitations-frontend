@@ -16,10 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
+import org.joda.time.{DateTimeZone, Days, LocalDate}
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 case class ResendLinkPageConfig(externalUrl: String, agentLink: String, clientType: String, expiryDate: String) {
+
+  val expiryDateAsLocalDate = LocalDate.parse(expiryDate)
+
+  val daysToExpiry: String = {
+    val expirationDate: LocalDate = LocalDate.parse(expiryDate)
+    val todayDate: LocalDate = LocalDate.now(DateTimeZone.UTC)
+
+    Days.daysBetween(todayDate, expirationDate).getDays.toString
+  }
 
   def fullAgentLink: String = s"$externalUrl$agentLink"
 
@@ -28,4 +38,6 @@ case class ResendLinkPageConfig(externalUrl: String, agentLink: String, clientTy
 
   def newRequestLink: Call =
     routes.AgentsInvitationController.showClientType()
+
+  def continueLink: Call = routes.AgentsInvitationController.continueAfterInvitationSent()
 }

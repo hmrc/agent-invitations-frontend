@@ -283,7 +283,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l1.p.personal"))
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.p2.personal"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
@@ -295,7 +295,6 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest()
     }
 
     "throw a IllegalStateException when there is no link in the cache" in {

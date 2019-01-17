@@ -27,11 +27,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
 @(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@daysToExpiry = @{
-    val expirationDate: LocalDate = LocalDate.parse(config.expiryDate)
-    val todayDate: LocalDate = LocalDate.now(DateTimeZone.UTC)
-
-    Days.daysBetween(todayDate, expirationDate).getDays.toString
+@displayDate = @{
+    if(config.expiryDateAsLocalDate.getDayOfMonth < 10) config.expiryDateAsLocalDate.toString("d MMMM yyyy", messages.lang.locale)
+    else config.expiryDateAsLocalDate.toString("dd MMMM yyyy", messages.lang.locale)
 }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent-link.header"), "")), completedInviteGoSurvey = Some("InviteSent")) {
@@ -42,22 +40,17 @@
 
   <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
 
-  <ol class="list list-number margin-left-0">
-    <li class="margin-bottom-30">
-        <p>@Messages("resend-link.list-item-1.p1")</p>
-        <p>@config.fullAgentLink</p>
-        <p>@Html(Messages(s"resend-link.list-item-1.${config.clientType}.p2"))</p>
-    </li>
-    <li class="margin-bottom-30">@Messages("invitation-sent.l2")</li>
-  </ol>
-
-  <div class="panel panel-border-wide margin-bottom-30">
-    <p>@Messages("resend-link.p2", daysToExpiry)</p>
-    <p>@Messages("resend-link.p3", config.clientType)</p>
-  </div>
+    <ol class="list list-number margin-left-0">
+        <li class="margin-bottom-30"><p>@Messages("invitation-sent.l1")</p>
+            <p><span id="invitationUrl" class="word-wrap">@config.agentLink</span></p>
+            <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}"))</p></li>
+        <li>@Messages("invitation-sent.l2")</li>
+        <li>@Html(Messages("invitation-sent.l3", displayDate))</li>
+        <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
+    </ol>
 
         <a href="@config.trackLink" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
-        <p class="text-link-small"><a href="@routes.AgentsInvitationController.continueAfterInvitationSent()" id="resurnToAsa">@Messages(s"resend-link.returnToAsa")</a></p>
+        <p class="text-link-small"><a href="@config.continueLink" id="resurnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a></p>
         <p class="text-link-small"><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
 
     }
