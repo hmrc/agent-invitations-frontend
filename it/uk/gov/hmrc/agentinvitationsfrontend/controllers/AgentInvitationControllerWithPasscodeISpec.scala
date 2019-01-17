@@ -113,9 +113,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("personal-select-service.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }
@@ -133,9 +133,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("personal-select-service.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithoutBodyText(result, htmlEscapedMessage("personal-select-service.personal-income-viewer"))
       verifyAuthoriseAttempt()
     }

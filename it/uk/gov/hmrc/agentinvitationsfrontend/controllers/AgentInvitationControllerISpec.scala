@@ -128,12 +128,13 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("personal-select-service.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("personal-select-service.header"),
+        htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("personal-select-service.itsa"),
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
-        htmlEscapedMessage("personal-select-service.vat")
+        htmlEscapedMessage("select-service.vat"),
+        htmlEscapedMessage("select-service.niorg")
       )
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
@@ -148,12 +149,11 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Do you want to report this client's VAT returns through software?",
-        "Yes",
-        "No")
+        htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
+      htmlEscapedMessage("select-service.niorg")
     }
 
     "redirect to select client type page when the client type in the cache is not supported" in {
@@ -190,9 +190,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("personal-select-service.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("personal-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -213,7 +213,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
           hasMessage("business-select-service.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, hasMessage("business-select-service.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.business-service.required"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.service.required"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }

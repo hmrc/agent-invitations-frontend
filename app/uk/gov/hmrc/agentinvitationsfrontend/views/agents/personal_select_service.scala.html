@@ -23,7 +23,7 @@
 
 @(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("personal-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
  @back_link_referer(request)
  @if(agentInvitationsForm.hasErrors) {
@@ -38,7 +38,7 @@
   @inputRadioGroup(
    agentInvitationsForm("service"),
    services,
-   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("personal-select-service.header") + """</h1>""" +
+   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
                     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("personal-select-service.p1") + """</span></div>""" +
                     """<span class="form-hint">""" + Messages("personal-select-service.hint") + """</span>"""),
    '_groupDivClass -> "form-group soft--ends",

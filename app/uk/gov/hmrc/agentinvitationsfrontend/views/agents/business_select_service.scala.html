@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[UserInputNinoAndPostcode])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -37,10 +37,10 @@ action = routes.AgentsInvitationController.submitSelectService(),
 <div class="form-group">
     @inputRadioGroup(
     agentInvitationsForm("service"),
-    Seq("HMRC-MTD-VAT"-> Messages("business-select-service.yes"), "NO_SERVICE"-> Messages("business-select-service.no")),
-    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("business-select-service.header") + """</h1>"""),
+    services,
+    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("select-service.header") + """</h1>"""),
     '_groupDivClass -> "form-group soft--ends",
-    '_fieldsetAttributes -> Html("""id='choice'""")
+    '_fieldsetAttributes -> Html("""id='service'""")
     )
 </div>
 

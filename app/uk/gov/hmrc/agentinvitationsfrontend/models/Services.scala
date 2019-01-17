@@ -46,8 +46,12 @@ object Services {
   val VRN = "VRN"
   val messageKeyForVAT = "vat"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
-  val supportedTypes = List("ni", "vrn")
+  val HMRCNIORG = "HMRC-NI-ORG"
+  val UTR = "utr"
+  val messageKeyForNiOrg = "eori"
+
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, HMRCNIORG)
+  val supportedTypes = List("ni", "vrn", "eori")
 
   //Todo Client Types to be used later
   val personal = Some("personal")
@@ -59,6 +63,7 @@ object Services {
       case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
       case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
       case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, messageKeyForVAT)
+      case 'D' => ValidService(HMRCNIORG, HMRCNIORG, UTR, UTR, messageKeyForNiOrg)
       case _   => InvalidService
     }
 
@@ -67,6 +72,7 @@ object Services {
       case 'A' => messageKeyForITSA
       case 'B' => messageKeyForAfi
       case 'C' => messageKeyForVAT
+      case 'D' => messageKeyForNiOrg
       case _   => "Service is missing"
     }
 }

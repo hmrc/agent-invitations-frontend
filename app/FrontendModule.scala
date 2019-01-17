@@ -90,6 +90,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
     bindBooleanProperty("features.show-hmrc-mtd-vat")
+    bindBooleanProperty("features.show-hmrc-ni-org")
     bindBooleanProperty("features.show-kfc-mtd-it")
     bindBooleanProperty("features.show-kfc-personal-income")
     bindBooleanProperty("features.show-kfc-mtd-vat")
