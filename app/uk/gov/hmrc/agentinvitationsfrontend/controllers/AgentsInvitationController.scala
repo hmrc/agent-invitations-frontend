@@ -19,24 +19,29 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.data.Form
+import play.api.data.Forms.{boolean, mapping, of, optional, text}
+import play.api.data.{Form, Mapping}
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validVatDateFormat}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import play.api.data.format.Formats._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,7 +62,6 @@ class AgentsInvitationController @Inject()(
   val authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
   val withVerifiedPasscode: PasscodeVerification,
-  val agentInvitationControllerSupport: AgentInvitationControllerSupport,
   ecp: Provider[ExecutionContext])(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -66,8 +70,33 @@ class AgentsInvitationController @Inject()(
 
   implicit val ec: ExecutionContext = ecp.get
 
-  import agentInvitationControllerSupport._
+  import AgentInvitationControllerSupport._
   import continueUrlActions._
+  import AgentsInvitationController._
+
+  val agentInvitationIdentifyClientFormItsa: Form[UserInputNinoAndPostcode] =
+    AgentsInvitationController.agentInvitationIdentifyClientFormItsa(featureFlags)
+
+  val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
+    AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
+
+  val agentInvitationIdentifyClientFormVat: Form[UserInputVrnAndRegDate] =
+    AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
+
+  val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
+    AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
+
+  val agentInvitationPostCodeForm: Form[UserInputNinoAndPostcode] =
+    AgentsInvitationController.agentInvitationPostCodeForm(featureFlags)
+
+  val agentFastTrackPostcodeForm: Form[CurrentAuthorisationRequest] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags))
+
+  val agentFastTrackDateOfBirthForm: Form[CurrentAuthorisationRequest] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags))
+
+  val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
+    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   private val personalIncomeRecord =
     if (featureFlags.showPersonalIncome)
@@ -1118,4 +1147,324 @@ class AgentsInvitationController @Inject()(
       case None      => block(None)
       case Some(url) => continueUrlCache.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
     }
+}
+
+object AgentsInvitationController {
+
+  val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
+
+  private val vrnRegex = "[0-9]{9}"
+
+  private val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
+
+  private[controllers] val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
+    fieldValue match {
+      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
+        if (Vrn.isValid(clientId)) Valid
+        else Invalid(ValidationError("INVALID_VRN"))
+      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
+        if (Nino.isValid(clientId)) Valid
+        else Invalid(ValidationError("INVALID_NINO"))
+      case _ =>
+        Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
+    }
+  }
+
+  //Validators
+  private def validNino(
+    nonEmptyFailure: String = "error.nino.required",
+    invalidFailure: String = "enter-nino.invalid-format") =
+    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
+
+  private val validVrn =
+    ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
+
+  def validPostcode(
+    isKfcFlagOn: Boolean,
+    invalidFormatFailure: String,
+    emptyFailure: String,
+    invalidCharactersFailure: String) = Constraint[String] { input: String =>
+    if (isKfcFlagOn) {
+      if (input.isEmpty) Invalid(ValidationError(emptyFailure))
+      else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
+      else if (!input.matches(postcodeRegex)) Invalid(ValidationError(invalidFormatFailure))
+      else Valid
+    } else Valid
+  }
+
+  //Patterns
+  private val postcodeCharactersRegex = "^[a-zA-Z0-9 ]+$"
+
+  private[controllers] val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
+
+  def clientTypeFor(clientType: Option[String], service: String): Option[String] =
+    clientType.orElse(service match {
+      case "HMRC-MTD-IT"            => Some("personal")
+      case "PERSONAL-INCOME-RECORD" => Some("personal")
+      case _                        => None
+    })
+
+  //Constraints
+  private val clientTypeChoice: Constraint[Option[String]] =
+    radioChoice("error.client-type.required")
+
+  private val serviceChoice: Constraint[Option[String]] =
+    radioChoice("error.service.required")
+
+  val detailsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError("error.confirmDetails.invalid"))
+  }
+
+  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError(invalidError))
+  }
+
+  private def confirmationChoice(errorMessage: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.nonEmpty)
+      Valid
+    else
+      Invalid(ValidationError(errorMessage))
+  }
+
+  //Mappings
+  def postcodeMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
+    optionalIf(
+      featureFlags.showKfcMtdIt,
+      trimmedUppercaseText.verifying(
+        validPostcode(
+          featureFlags.showKfcMtdIt,
+          "enter-postcode.invalid-format",
+          "error.postcode.required",
+          "enter-postcode.invalid-characters"))
+    )
+
+  def dateOfBirthMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
+    optionalIf(featureFlags.showKfcPersonalIncome, dateFieldsMapping(validDobDateFormat))
+
+  def vatRegDateMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
+    optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
+
+  val trimmedUppercaseText: Mapping[String] = of[String].transform(_.trim.toUpperCase, identity)
+
+  val lowerCaseText: Mapping[String] = of[String].transform(_.trim.toLowerCase, identity)
+
+  //Forms
+  val agentInvitationSelectClientTypeForm: Form[UserInputNinoAndPostcode] = {
+    Form(
+      mapping(
+        "clientType"       -> optional(text).verifying(clientTypeChoice),
+        "service"          -> text,
+        "clientIdentifier" -> optional(normalizedText),
+        "knownFact"        -> optional(text)
+      )({ (clientType, _, _, _) =>
+        UserInputNinoAndPostcode(clientType, "", None, None)
+      })({ user =>
+        Some((user.clientType, "", None, None))
+      })
+    )
+  }
+
+  val clientTypeOnlyForm: Form[Option[String]] = Form(mapping("clientType" -> optional(text)
+    .verifying("Unsupported Client Type", clientType => supportedClientTypes.contains(clientType)))(identity)(Some(_)))
+
+  val agentInvitationServiceForm: Form[UserInputNinoAndPostcode] = {
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> optional(text).verifying(serviceChoice),
+        "clientIdentifier" -> optional(normalizedText),
+        "knownFact"        -> optional(text)
+      )({ (clientType, service, _, _) =>
+        UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
+      })({ user =>
+        Some((user.clientType, Some(user.service), None, None))
+      }))
+  }
+
+  val agentInvitationBusinessServiceForm: Form[UserInputNinoAndPostcode] = {
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> optional(text).verifying(serviceChoice),
+        "clientIdentifier" -> optional(normalizedText),
+        "knownFact"        -> optional(text)
+      )({ (clientType, service, _, _) =>
+        UserInputNinoAndPostcode(clientType, service.getOrElse(""), None, None)
+      })({ user =>
+        Some((user.clientType, Some(user.service), None, None))
+      }))
+  }
+
+  val serviceNameForm: Form[String] = Form(
+    mapping("service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)))(
+      identity)(Some(_)))
+
+  val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping("checkDetails" -> optional(boolean)
+      .verifying(detailsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
+
+  def agentInvitationIdentifyClientFormItsa(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
+        "knownFact" -> optionalIf(
+          featureFlags.showKfcMtdIt,
+          trimmedUppercaseText.verifying(
+            validPostcode(
+              featureFlags.showKfcMtdIt,
+              "enter-postcode.invalid-format",
+              "error.postcode.required",
+              "enter-postcode.invalid-characters"))
+        )
+      )({ (clientType, service, clientIdentifier, postcode) =>
+        UserInputNinoAndPostcode(clientType, service, Some(clientIdentifier.trim.toUpperCase()), postcode)
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
+      }))
+
+  def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndDob] =
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
+        "knownFact" -> optionalIf(
+          featureFlags.showKfcPersonalIncome,
+          dateFieldsMapping(validDobDateFormat)
+        )
+      )({ (clientType, service, clientIdentifier, dob) =>
+        UserInputNinoAndDob(clientType, service, Some(clientIdentifier.trim.toUpperCase()), dob)
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.dob))
+      }))
+
+  def agentInvitationIdentifyClientFormVat(featureFlags: FeatureFlags): Form[UserInputVrnAndRegDate] =
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validVrn),
+        "knownFact"        -> optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
+      )({ (clientType, service, clientIdentifier, registrationDate) =>
+        UserInputVrnAndRegDate(clientType, service, Some(clientIdentifier.trim.toUpperCase()), registrationDate)
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.registrationDate))
+      }))
+
+  def agentConfirmationForm(errorMessage: String): Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice(errorMessage))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+
+  def agentInvitationPostCodeForm(featureFlags: FeatureFlags): Form[UserInputNinoAndPostcode] =
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText,
+        "knownFact" -> optionalIf(
+          featureFlags.showKfcMtdIt,
+          trimmedUppercaseText.verifying(
+            validPostcode(
+              featureFlags.showKfcMtdIt,
+              "enter-postcode.invalid-format",
+              "error.postcode.required",
+              "enter-postcode.invalid-characters"))
+        )
+      )({ (clientType, service, nino, postcode) =>
+        UserInputNinoAndPostcode(clientType, service, Some(nino.trim.toUpperCase()), postcode)
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
+      }))
+
+  private val validateFastTrackForm: Constraint[CurrentAuthorisationRequest] =
+    Constraint[CurrentAuthorisationRequest] { formData: CurrentAuthorisationRequest =>
+      formData match {
+        case CurrentAuthorisationRequest(Some("personal") | None, HMRCMTDIT, "ni", clientId, _, _)
+            if Nino.isValid(clientId) =>
+          Valid
+        case CurrentAuthorisationRequest(Some("personal") | None, HMRCPIR, "ni", clientId, _, _)
+            if Nino.isValid(clientId) =>
+          Valid
+        case CurrentAuthorisationRequest(_, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
+        case _                                                                                          => Invalid(ValidationError("INVALID_SUBMISSION"))
+      }
+    }
+
+  def agentFastTrackKnownFactForm(
+    featureFlags: FeatureFlags,
+    knownFactMapping: Mapping[Option[String]]): Form[CurrentAuthorisationRequest] =
+    Form(
+      mapping(
+        "clientType"           -> optional(text),
+        "service"              -> text,
+        "clientIdentifierType" -> text,
+        "clientIdentifier"     -> normalizedText,
+        "knownFact"            -> knownFactMapping
+      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
+        Some(
+          (
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
+      }).verifying(validateFastTrackForm))
+
+  val agentFastTrackForm: Form[CurrentAuthorisationRequest] =
+    Form(
+      mapping(
+        "clientType" -> optional(
+          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+        "clientIdentifierType" -> text
+          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
+        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+        "knownFact"        -> optional(text)
+      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+        CurrentAuthorisationRequest(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
+        Some(
+          (
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
+      }).verifying(validateFastTrackForm))
+
+  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentAuthorisationRequest] =
+    Form(
+      mapping(
+        "clientType" -> optional(text),
+        "service"    -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+        "clientIdentifierType" -> text
+          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
+        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+        "knownFact"        -> optional(text)
+      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
+      })({ authorisationRequest =>
+        Some(
+          (
+            authorisationRequest.clientType,
+            authorisationRequest.service,
+            authorisationRequest.clientIdentifierType,
+            authorisationRequest.clientIdentifier,
+            authorisationRequest.knownFact))
+      }))
+
 }

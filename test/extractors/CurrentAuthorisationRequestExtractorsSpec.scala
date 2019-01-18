@@ -16,7 +16,7 @@
 
 package extractors
 
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, DOB, Postcode, VatRegDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
@@ -24,6 +24,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
 class CurrentAuthorisationRequestExtractorsSpec extends UnitSpec {
+
+  import AgentInvitationControllerSupport._
 
   private val serviceITSA = "HMRC-MTD-IT"
   private val servicePIR = "PERSONAL-INCOME-RECORD"
