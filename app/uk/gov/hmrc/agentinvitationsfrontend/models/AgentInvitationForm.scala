@@ -44,3 +44,10 @@ case class UserInputNinoAndDob(
   clientIdentifier: Option[String],
   dob: Option[String])
     extends AgentInvitationForm
+
+case class UserInputUtrAndPostcode(
+  clientType: Option[String],
+  service: String,
+  clientIdentifier: Option[String],
+  postcode: Option[String])
+    extends AgentInvitationForm

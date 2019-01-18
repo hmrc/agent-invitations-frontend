@@ -18,6 +18,7 @@ identify-client.header=Enter your client''s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.nino.header=What is your client''s National Insurance number?
+identify-client.utr.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
 # Nino
@@ -37,6 +38,19 @@ error.postcode.required=Enter your client''s postcode
 identify-client.vrn.label=VAT registration number
 identify-client.vrn.hint=This is the 9-digit number they received when they registered for VAT.
 identify-client.vrn.example=For example, 123456789
+
+#UTR
+identify-client.utr.label=Unique Taxpayer Reference (UTR)
+identify-client.utr.hint=Enter the last 10 digits only. For example, 12345 67890
+utr.hint.expandable=Where to find your client's UTR
+utr.hint.expandable.p1=Your client's UTR will be their:
+utr.hint.expandable.l1=company UTR for a limited company
+utr.hint.expandable.l2=Self Assessment UTR for an ordinary business partnership
+utr.hint.expandable.l3=individual Self Assessment UTR for a sole trader
+utr.hint.expandable.p2=If they have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ''Tax Reference'', ''UTR'' or ''Official Use''.
+utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on the letter HMRC sent them when they registered for Self Assessment.
+error.utr.required=Enter your client''s UTR
+enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
 identify-client.vrn.header=What is your client''s VAT registration number?
 error.vrn.required=Enter your client''s VAT registration number

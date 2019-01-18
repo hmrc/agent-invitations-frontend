@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, supportedClientTypes, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationControllerSupport @Inject()(featureFlags: FeatureFlags)
@@ -127,6 +127,8 @@ object AgentInvitationControllerSupport {
               Some(CurrentAuthorisationRequest(clientType, HMRCMTDIT, "ni", "", None))
             case HMRCPIR if !Nino.isValid(clientIdentifier) =>
               Some(CurrentAuthorisationRequest(clientType, HMRCPIR, "ni", "", None))
+            case HMRCNIORG if !Utr.isValid(clientIdentifier) =>
+              Some(CurrentAuthorisationRequest(clientType, HMRCNIORG, "utr", "", None))
             case _ => None
           }
         case _ => None
