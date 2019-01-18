@@ -27,7 +27,7 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
@@ -59,6 +59,7 @@ class AgentsRequestTrackingController @Inject()(
   val invitationsConnector: InvitationsConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
+  val support: AgentInvitationControllerSupport,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
   @Named("agent-invitations-frontend.external-url") externalUrl: String,
   ecp: Provider[ExecutionContext])(implicit val externalUrls: ExternalUrls, configuration: Configuration)
