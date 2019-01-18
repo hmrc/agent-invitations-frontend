@@ -35,7 +35,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -82,6 +82,9 @@ class AgentsInvitationController @Inject()(
 
   val agentInvitationIdentifyClientFormVat: Form[UserInputVrnAndRegDate] =
     AgentsInvitationController.agentInvitationIdentifyClientFormVat(featureFlags)
+
+  val agentInvitationIdentifyClientFormNiOrg: Form[UserInputUtrAndPostcode] =
+    AgentsInvitationController.agentInvitationIdentifyClientFormNiOrg(featureFlags)
 
   val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
@@ -251,10 +254,10 @@ class AgentsInvitationController @Inject()(
           Future successful Ok(select_service(formWithErrors, vat ++ niOrg, false, "business"))
         },
         userInput => {
-          if (userInput.service == HMRCMTDVAT) {
+          if (userInput.service == HMRCMTDVAT || userInput.service == HMRCNIORG) {
             val updateAggregate = currentAuthorisationRequestCache.fetch
               .map(_.getOrElse(CurrentAuthorisationRequest()))
-              .map(_.copy(service = HMRCMTDVAT))
+              .map(_.copy(service = userInput.service))
 
             updateAggregate.flatMap(
               updateFastTrack =>
@@ -328,6 +331,13 @@ class AgentsInvitationController @Inject()(
       UserInputNinoAndDob(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
   }
 
+  private val authorisationRequestToIdentifyClientFormNiOrg = (authorisationRequest: CurrentAuthorisationRequest) => {
+    val service = authorisationRequest.service
+    val clientId = authorisationRequest.clientIdentifier
+    agentInvitationIdentifyClientFormNiOrg.fill(
+      UserInputUtrAndPostcode(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
+  }
+
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
@@ -339,18 +349,28 @@ class AgentsInvitationController @Inject()(
                   authorisationRequestToIdentifyClientFormItsa(inviteDetails),
                   featureFlags.showKfcMtdIt,
                   inviteDetails.fromFastTrack))
+
             case HMRCMTDVAT =>
               Ok(
                 identify_client_vat(
                   authorisationRequestToIdentifyClientFormVat(inviteDetails),
                   featureFlags.showKfcMtdVat,
                   inviteDetails.fromFastTrack))
+
             case HMRCPIR =>
               Ok(
                 identify_client_irv(
                   authorisationRequestToIdentifyClientFormIrv(inviteDetails),
                   featureFlags.showKfcPersonalIncome,
                   inviteDetails.fromFastTrack))
+
+            case HMRCNIORG =>
+              Ok(
+                identify_client_niorg(
+                  authorisationRequestToIdentifyClientFormNiOrg(inviteDetails),
+                  featureFlags.showHmrcNiOrg,
+                  inviteDetails.fromFastTrack))
+
             case _ => Redirect(routes.AgentsInvitationController.showClientType())
           }
         case _ => Redirect(routes.AgentsInvitationController.showClientType())
@@ -367,6 +387,7 @@ class AgentsInvitationController @Inject()(
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
+            case HMRCNIORG  => identifyNiOrgClient(arn, isWhitelisted)
             case _          => Future successful Redirect(routes.AgentsInvitationController.showClientType())
           }
         )
@@ -835,6 +856,40 @@ class AgentsInvitationController @Inject()(
           } yield result
       )
 
+  def identifyNiOrgClient(arn: Arn, isWhitelisted: Boolean)(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier): Future[Result] =
+    agentInvitationIdentifyClientFormNiOrg
+      .bindFromRequest()
+      .fold(
+        formWithErrors => {
+          Future successful Ok(
+            identify_client_niorg(
+              formWithErrors,
+              featureFlags.showHmrcNiOrg,
+              true
+            ))
+        },
+        userInput =>
+          for {
+            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
+            invitationWithClientDetails = maybeCachedInvitation
+              .getOrElse(CurrentAuthorisationRequest())
+              .copy(
+                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifierType = "utr",
+                knownFact = userInput.postcode
+              )
+            result <- for {
+                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
+                       redirectResult <- redirectBasedOnCurrentInputState(
+                                          arn,
+                                          invitationWithClientDetails,
+                                          isWhitelisted)
+                     } yield redirectResult
+          } yield result
+      )
+
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
     implicit request: Request[_]) =
     for {
@@ -1176,6 +1231,11 @@ object AgentsInvitationController {
     invalidFailure: String = "enter-nino.invalid-format") =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
 
+  private def validUtr(
+    nonEmptyFailure: String = "error.utr.required",
+    invalidFailure: String = "enter-utr.invalid-format") =
+    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
+
   private val validVrn =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
 
@@ -1465,6 +1525,27 @@ object AgentsInvitationController {
             authorisationRequest.clientIdentifierType,
             authorisationRequest.clientIdentifier,
             authorisationRequest.knownFact))
+      }))
+
+  def agentInvitationIdentifyClientFormNiOrg(featureFlags: FeatureFlags): Form[UserInputUtrAndPostcode] =
+    Form(
+      mapping(
+        "clientType"       -> optional(text),
+        "service"          -> text,
+        "clientIdentifier" -> normalizedText.verifying(validUtr()),
+        "knownFact" -> optionalIf(
+          featureFlags.showHmrcNiOrg,
+          trimmedUppercaseText.verifying(
+            validPostcode(
+              featureFlags.showHmrcNiOrg,
+              "enter-postcode.invalid-format",
+              "error.postcode.required",
+              "enter-postcode.invalid-characters"))
+        )
+      )({ (clientType, service, clientIdentifier, postcode) =>
+        UserInputUtrAndPostcode(clientType, service, Some(clientIdentifier.trim.toUpperCase()), postcode)
+      })({ user =>
+        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
       }))
 
 }
