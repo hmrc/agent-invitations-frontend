@@ -1,12 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import javax.inject.Inject
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import play.api.test.Helpers._

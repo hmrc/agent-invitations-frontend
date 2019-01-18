@@ -16,6 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -147,9 +148,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       testCurrentAuthorisationRequestCache.save(invitation)
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

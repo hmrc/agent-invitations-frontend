@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
+import javax.inject.Inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest

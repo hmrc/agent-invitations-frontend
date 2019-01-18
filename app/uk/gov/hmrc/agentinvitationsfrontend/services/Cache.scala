@@ -29,8 +29,12 @@ trait Cache[T] {
   def save(input: T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T]
 
   def get(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] = fetch.map {
-    case Some(entry) => entry
-    case None        => throw new IllegalStateException("Cached session state expected but not found")
+    case Some(entry) => {
+      entry
+    }
+    case None => {
+      throw new IllegalStateException("Cached session state expected but not found")
+    }
   }
 
   def transform(f: T => T)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[T] =
