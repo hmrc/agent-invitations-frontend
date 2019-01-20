@@ -43,15 +43,12 @@ class ExternalUrls @Inject()(
     if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
-    val continueUrl = isAgent match {
-      case true => {
-        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
-        else s"$agentServicesAccountUrl/agent-services-account"
-      }
-      case false => {
-        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
-        else s"$businessTaxAccountUrl/business-account"
-      }
+    val continueUrl = if (isAgent) {
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
+      else s"$agentServicesAccountUrl/agent-services-account"
+    } else {
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
+      else s"$businessTaxAccountUrl/business-account"
     }
     s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }

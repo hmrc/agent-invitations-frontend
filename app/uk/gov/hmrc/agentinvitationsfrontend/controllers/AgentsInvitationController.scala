@@ -42,6 +42,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import play.api.data.format.Formats._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
@@ -150,24 +151,24 @@ class AgentsInvitationController @Inject()(
       journeyStateCache.fetchAndClear
       currentAuthorisationRequestCache.fetch.map {
         case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
-          Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
+          Ok(client_type(ClientTypeForm.form, clientTypes, agentServicesAccountUrl))
         case _ =>
           currentAuthorisationRequestCache.fetchAndClear
-          Ok(client_type(agentInvitationSelectClientTypeForm, clientTypes, agentServicesAccountUrl))
+          Ok(client_type(ClientTypeForm.form, clientTypes, agentServicesAccountUrl))
       }
     }
   }
 
   val submitClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentInvitationSelectClientTypeForm
+      ClientTypeForm.form
         .bindFromRequest()
         .fold(
           formWithErrors => Future successful Ok(client_type(formWithErrors, clientTypes, agentServicesAccountUrl)),
           userInput => {
             val updateAggregate = currentAuthorisationRequestCache.fetch
               .map(_.getOrElse(CurrentAuthorisationRequest()))
-              .map(_.copy(clientType = userInput.clientType))
+              .map(_.copy(clientType = Some(userInput)))
 
             updateAggregate.flatMap(
               updateFastTrack =>
@@ -1315,21 +1316,6 @@ object AgentsInvitationController {
   val lowerCaseText: Mapping[String] = of[String].transform(_.trim.toLowerCase, identity)
 
   //Forms
-  val agentInvitationSelectClientTypeForm: Form[UserInputNinoAndPostcode] = {
-    Form(
-      mapping(
-        "clientType"       -> optional(text).verifying(clientTypeChoice),
-        "service"          -> text,
-        "clientIdentifier" -> optional(normalizedText),
-        "knownFact"        -> optional(text)
-      )({ (clientType, _, _, _) =>
-        UserInputNinoAndPostcode(clientType, "", None, None)
-      })({ user =>
-        Some((user.clientType, "", None, None))
-      })
-    )
-  }
-
   val clientTypeOnlyForm: Form[Option[String]] = Form(mapping("clientType" -> optional(text)
     .verifying("Unsupported Client Type", clientType => supportedClientTypes.contains(clientType)))(identity)(Some(_)))
 
