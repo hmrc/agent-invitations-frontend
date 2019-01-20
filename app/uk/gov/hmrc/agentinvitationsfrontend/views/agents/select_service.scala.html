@@ -21,13 +21,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[UserInputNinoAndPostcode], services: Seq[(String, String)], basketFlag: Boolean, clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[String], services: Seq[(String, String)], basketFlag: Boolean, clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
 @back_link_referer(request)
+
 @if(agentInvitationsForm.hasErrors) {
-@errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
+    @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
 }
 
 @form(
@@ -36,7 +37,7 @@ action = routes.AgentsInvitationController.submitSelectService(),
 
 <div class="form-group">
     @inputRadioGroup(
-    agentInvitationsForm("service"),
+    agentInvitationsForm("serviceType"),
     services,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
@@ -58,10 +59,6 @@ action = routes.AgentsInvitationController.submitSelectService(),
         <p id="selectServiceGuidance">@Html(Messages("select-service.guidance", "https://www.gov.uk/guidance/client-authorisation-an-overview"))</p>
     </div>
 </details>
-
-<input type="hidden" name="clientType" id="clientType" value="@clientType">
-<input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@agentInvitationsForm("clientIdentifier").value">
-<input type="hidden" name="postcode" id="postcode" value="@agentInvitationsForm("postcode").value">
 
 <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
 }
