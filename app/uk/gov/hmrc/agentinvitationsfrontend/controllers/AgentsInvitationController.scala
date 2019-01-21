@@ -183,45 +183,39 @@ class AgentsInvitationController @Inject()(
 
   val showSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      journeyStateCache.fetch.flatMap {
-        case Some(basket) if basket.requests.nonEmpty =>
-          basket.clientType match {
-            case "personal" =>
-              Future successful Ok(
-                select_service(ServiceTypeForm.form, enabledServices(isWhitelisted), true, "personal"))
-            case "business" =>
-              Future successful Ok(select_service(ServiceTypeForm.form, vat ++ niOrg, false, "business"))
-            case _ => {
-              Future successful Redirect(routes.AgentsInvitationController.showClientType())
-            }
-          }
-        case _ =>
-          currentAuthorisationRequestCache.fetch.flatMap {
-            case Some(input) if input.clientType.nonEmpty =>
-              input.clientType match {
-                case `personal` =>
-                  Future successful Ok(
-                    select_service(ServiceTypeForm.form, enabledServices(isWhitelisted), false, "personal"))
-                case `business` =>
-                  Future successful Ok(select_service(ServiceTypeForm.form, vat ++ niOrg, false, "business"))
-                case _ => {
-                  Future successful Redirect(routes.AgentsInvitationController.showClientType())
-                }
-              }
-            case _ => {
-              Future successful Redirect(routes.AgentsInvitationController.showClientType())
-            }
-          }
-      }
+      getSelectServicePage(isWhitelisted)
     }
   }
+
+  private def getSelectServicePage(isWhitelisted: Boolean, form: Form[String] = ServiceTypeForm.form)(
+    implicit request: Request[_]): Future[Result] =
+    journeyStateCache.fetch.flatMap {
+      case Some(basket) if basket.requests.nonEmpty =>
+        basket.clientType match {
+          case "personal" => Ok(select_service(form, enabledServices(isWhitelisted), true, "personal"))
+          case "business" => Ok(select_service(form, vat ++ niOrg, false, "business"))
+          case _          => Redirect(routes.AgentsInvitationController.showClientType())
+        }
+      case _ =>
+        currentAuthorisationRequestCache.fetch.flatMap {
+          case Some(input) if input.clientType.nonEmpty =>
+            input.clientType match {
+              case Some("personal") =>
+                Ok(select_service(form, enabledServices(isWhitelisted), false, "personal"))
+              case Some("business") =>
+                Ok(select_service(form, vat ++ niOrg, false, "business"))
+              case _ => Redirect(routes.AgentsInvitationController.showClientType())
+            }
+          case _ => Redirect(routes.AgentsInvitationController.showClientType())
+        }
+    }
 
   val submitSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
         .bindFromRequest()
         .fold(
-          _ => Future successful Redirect(routes.AgentsInvitationController.showSelectService()),
+          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
           serviceType => {
 
             def updateSessionAndRedirect = {
@@ -249,10 +243,10 @@ class AgentsInvitationController @Inject()(
                     } else {
                       for {
                         _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
-                        result <- Future successful Redirect(routes.AgentsInvitationController.showClientType())
+                        result <- Redirect(routes.AgentsInvitationController.showSelectService())
                       } yield result
                     }
-                  case _ => Future successful Redirect(routes.AgentsInvitationController.showClientType())
+                  case _ => Redirect(routes.AgentsInvitationController.showClientType())
                 }
             }
           }

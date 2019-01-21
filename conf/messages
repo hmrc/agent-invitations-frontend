@@ -80,7 +80,7 @@ personal-select-service.itsa=Report their income and expenses through software
 # Personal and Business
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
-error.service.required=You must select a service
+service.type.invalid=You must select a service
 select-service.vat=Report their VAT returns through software
 select-service.niorg=Submit their Ireland Trade Returns
 select-service.header=What do you want the client to authorise you to do?

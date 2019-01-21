@@ -176,51 +176,31 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitSelectService()
 
-    "return 303 for authorised Agent with no personal selected service and show error on the page" in {
+    "show errors on the page if the form contains invalid service selection" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
       val result = submitService(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("service" -> ""),
+          request.withFormUrlEncodedBody("serviceType" -> ""),
           arn.value))
 
-      status(result) shouldBe 303
-//      checkHtmlResultWithBodyText(
-//        result,
-//        htmlEscapedMessage(
-//          "generic.title",
-//          htmlEscapedMessage("select-service.header"),
-//          htmlEscapedMessage("title.suffix.agents")))
-//      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
-//      checkHtmlResultWithBodyText(result, htmlEscapedMessage("service.type.invalid"))
-//      checkHasAgentSignOutLink(result)
-//      verifyAuthoriseAttempt()
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("service.type.invalid"))
+      checkHasAgentSignOutLink(result)
+      verifyAuthoriseAttempt()
     }
 
-    "redirect to service selection page for authorised Agent with no business selected service and show error on the page" in {
+    "redirect to select-service type if the service is not VAT or NIORG" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
       val result = submitService(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody( "service" -> ""),
-          arn.value))
-
-      status(result) shouldBe 303
-//      checkHtmlResultWithBodyText(
-//        result,
-//        htmlEscapedMessage(
-//          "generic.title",
-//          hasMessage("select-service.header"),
-//          htmlEscapedMessage("title.suffix.agents")))
-//      checkHtmlResultWithBodyText(result, hasMessage("select-service.header"))
-//      checkHtmlResultWithBodyText(result, htmlEscapedMessage("service.type.invalid"))
-//      checkHasAgentSignOutLink(result)
-//      verifyAuthoriseAttempt()
-    }
-
-    "redirect to select client type if the service is not VAT" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("service" -> "HMRC-MTD-IT"),
+          request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"),
           arn.value))
 
       status(result) shouldBe 303
@@ -231,7 +211,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
       val result = submitService(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("service" -> "HMRC-MTD-IT"),
+          request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"),
           arn.value))
 
       status(result) shouldBe 303
