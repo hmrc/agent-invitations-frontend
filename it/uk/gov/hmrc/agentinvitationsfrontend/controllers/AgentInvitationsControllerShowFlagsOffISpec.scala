@@ -4,12 +4,10 @@ import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{CurrentAuthorisationRequestCache, CurrentAuthorisationRequestKeyStoreCache}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -95,35 +93,6 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
             .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
-
-        status(result) shouldBe BAD_REQUEST
-      }
-    }
-
-    "through select-service, return 400 and prevent agents" when {
-      val request = FakeRequest("POST", "/agents/select-service")
-      val submitService = controller.submitSelectService()
-
-      "creating an ITSA invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
-        val result =
-          submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-        status(result) shouldBe BAD_REQUEST
-
-      }
-      "creating an IRV invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
-        val result =
-          submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-        status(result) shouldBe BAD_REQUEST
-
-      }
-      "creating an VAT invitation" in {
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
-        val result =
-          submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe BAD_REQUEST
       }

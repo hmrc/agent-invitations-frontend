@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -23,7 +23,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(servicePIR)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

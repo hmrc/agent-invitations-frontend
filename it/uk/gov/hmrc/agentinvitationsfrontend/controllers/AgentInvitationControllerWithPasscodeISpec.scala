@@ -22,11 +22,10 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, AgentMultiAuthorisationJourneyStateKeyStoreCache, CurrentAuthorisationRequestCache}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
@@ -153,8 +152,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
         val request =
           FakeRequest("POST", "/agents/select-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
-        val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
+        val serviceForm = ServiceTypeForm.form.fill("PERSONAL-INCOME-RECORD")
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -164,10 +162,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
         val request = FakeRequest("POST", "/agents/select-service")
-        val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "PERSONAL-INCOME-RECORD", None, None))
+        val serviceForm = ServiceTypeForm.form.fill("PERSONAL-INCOME-RECORD")
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -179,7 +176,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
         testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
-        val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, "HMRC-MTD-IT", None, None))
+        val serviceForm = ServiceTypeForm.form.fill("HMRC-MTD-IT")
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -192,8 +189,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
         testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-        val serviceForm =
-          agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, "HMRC-MTD-VAT", None, None))
+        val serviceForm = ServiceTypeForm.form.fill("HMRC-MTD-VAT")
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

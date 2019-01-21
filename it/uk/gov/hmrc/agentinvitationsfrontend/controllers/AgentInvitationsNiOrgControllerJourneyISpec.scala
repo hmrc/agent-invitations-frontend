@@ -4,6 +4,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,8 +25,8 @@ class AgentInvitationsNiOrgControllerJourneyISpec extends BaseISpec with AuthBeh
     "return 303 for authorised Agent with valid NI-ORG service, redirect to identify-client" in {
 
       Set("personal", "business").foreach { clientType =>
-        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(clientType), serviceNiOrg))
-        val serviceForm = agentInvitationIdentifyClientFormNiOrg(FeatureFlags()).fill(UserInputUtrAndPostcode(Some(clientType), serviceNiOrg, None, None))
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(clientType)))
+        val serviceForm = ServiceTypeForm.form.fill(serviceNiOrg)
         val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303

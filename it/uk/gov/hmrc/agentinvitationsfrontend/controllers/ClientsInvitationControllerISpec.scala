@@ -16,13 +16,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import play.api.mvc.{Action, AnyContent, Cookie}
+import play.api.mvc.Cookie
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationServiceForm
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model._
 
 class ClientsInvitationControllerISpec extends BaseISpec {

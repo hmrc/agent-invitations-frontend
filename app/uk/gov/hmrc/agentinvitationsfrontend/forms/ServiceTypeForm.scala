@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 object ServiceTypeForm {
   val form = Form(
     single(
-      "serviceType" -> text.verifying("UNSUPPORTED_SERVICE_TYPE", supportedServices.contains _)
+      "serviceType" -> text.verifying("service.type.invalid", supportedServices.contains _)
     )
   )
 }

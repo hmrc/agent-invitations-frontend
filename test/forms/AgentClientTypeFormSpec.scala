@@ -17,55 +17,32 @@
 package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentInvitationSelectClientTypeForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentClientTypeFormSpec extends UnitSpec {
 
-  val clientTypeEmptyMessage: String = "error.client-type.required"
+  val clientTypeEmptyMessage: String = "client.type.invalid"
   val clientTypeEmptyFormError: FormError = FormError("clientType", List(clientTypeEmptyMessage))
-  val serviceITSA = "HMRC-MTD-IT"
-  val servicePIR = "PERSONAL-INCOME-RECORD"
-  val serviceVAT = "HMRC-MTD-VAT"
-  val personal = Some("personal")
-  val business = Some("business")
 
   "ClientType Form" should {
     "return no error message for valid clientType Personal" in {
-      val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
-      val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
+      val data = Json.obj("clientType" -> "personal")
+      val clientTypeForm = ClientTypeForm.form.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType Business" in {
-      val data = Json.obj("clientType" -> "personal", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
-      val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
+      val data = Json.obj("clientType" -> "business")
+      val clientTypeForm = ClientTypeForm.form.bind(data)
       clientTypeForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for form with empty clientType" in {
-      val data = Json.obj("clientType" -> "", "service" -> "", "clientIdentifier" -> "", "knownFact" -> "")
-      val clientTypeForm = agentInvitationSelectClientTypeForm.bind(data)
+      val data = Json.obj("clientType" -> "")
+      val clientTypeForm = ClientTypeForm.form.bind(data)
       clientTypeForm.errors.contains(clientTypeEmptyFormError) shouldBe true
       clientTypeForm.errors.length shouldBe 1
-    }
-
-    "return no errors when unbinding the form" in {
-      val unboundFormITSA =
-        agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(personal, serviceITSA, Some("AE123456C"), None))
-      unboundFormITSA("clientType") shouldBe "personal"
-
-      val unboundFormAFI =
-        agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(personal, servicePIR, Some("AE123456C"), None))
-      unboundFormAFI("clientType") shouldBe "personal"
-
-      val unboundFormVAT =
-        agentInvitationSelectClientTypeForm.mapping.unbind(
-          UserInputNinoAndPostcode(business, serviceVAT, Some("101747696"), None))
-      unboundFormVAT("clientType") shouldBe "business"
     }
   }
 }

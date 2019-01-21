@@ -1,15 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
-import play.api.test.Helpers.redirectLocation
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentInvitationServiceForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import play.api.test.Helpers.{redirectLocation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ServiceTypeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.test.Helpers._
 
 class FastTrackIRVISpec extends BaseISpec {
 
@@ -35,9 +35,9 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
-        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -57,9 +57,9 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
-        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
@@ -86,7 +86,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(servicePIR)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
