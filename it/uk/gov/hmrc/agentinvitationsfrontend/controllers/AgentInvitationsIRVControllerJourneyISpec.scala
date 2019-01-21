@@ -206,7 +206,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "")
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -215,7 +216,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "invalid")
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -224,6 +226,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an no date of birth is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
@@ -239,6 +242,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid date of birth is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
         val requestWithForm = request.withFormUrlEncodedBody(
           "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
@@ -254,7 +258,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value)
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303

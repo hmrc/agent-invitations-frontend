@@ -18,11 +18,11 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ItsaClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndPostcode], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[ItsaClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
   @if(knownFactFlag) { @content }
@@ -86,7 +86,7 @@ if(knownFactFlag) {"identify-client.header"}
 
          <div class="form-group">
          @input(
-             agentInvitationsForm("knownFact"),
+             agentInvitationsForm("postcode"),
              '_label -> Messages("identify-client.postcode.label"),
              '_inputClass -> "form-control",
              '_labelTextClass -> "form-label-bold",
@@ -95,9 +95,6 @@ if(knownFactFlag) {"identify-client.header"}
          )
          </div>
      }
-
-     <input type="hidden" name="clientType" id="clientType" value="@agentInvitationsForm("clientType").value">
-     <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
      <div class="form-group">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

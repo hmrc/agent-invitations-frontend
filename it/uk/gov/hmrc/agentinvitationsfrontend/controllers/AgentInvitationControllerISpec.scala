@@ -19,8 +19,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputVrnAndRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputVrnAndRegDate, VatClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -279,7 +279,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val unsupportedForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(UserInputVrnAndRegDate(None, "UNSUPPORTED", None, None))
+        VatClientForm.form(featureFlags.showKfcMtdVat).fill(VatClient("123456789", None))
 
       intercept[Exception] {
         await(

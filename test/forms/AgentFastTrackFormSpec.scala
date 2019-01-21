@@ -18,10 +18,11 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentFastTrackForm, agentFastTrackGenericFormKnownFact, agentFastTrackKnownFactForm, dateOfBirthMapping, postcodeMapping, vatRegDateMapping}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
+import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentFastTrackFormSpec extends UnitSpec {
 
@@ -420,7 +421,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH14EJ"
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -462,7 +464,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> ""
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.postcode.required")))
         }
         "provided invalid characters in known fact for ITSA" in {
@@ -473,7 +476,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH!4EJ"
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-characters")))
         }
         "provided invalid format in known fact for ITSA" in {
@@ -484,7 +488,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "clientIdentifier"     -> "WM123456C",
             "knownFact"            -> "DH14EJXXX"
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
         }
         "provided empty known fact for IRV" in {

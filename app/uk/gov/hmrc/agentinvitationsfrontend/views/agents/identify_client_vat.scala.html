@@ -21,8 +21,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputVrnAndRegDate
-@(agentInvitationsForm : Form[UserInputVrnAndRegDate], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
+
+@(agentInvitationsForm : Form[VatClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
     @if(knownFactFlag) { @content }
@@ -94,7 +95,7 @@
 
 
          <div class="@noJsDateFieldsError">
-             @dateFieldsFreeInlineLegend(agentInvitationsForm, "knownFact",
+             @dateFieldsFreeInlineLegend(agentInvitationsForm, "registrationDate",
                  '_legend -> Messages("identify-client.vat-registration-date.label"),
                  '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
                  '_legendSpanClass -> "form-label-bold",
@@ -102,10 +103,6 @@
              )
         </div>
      }
-
-
-     <input type="hidden" name="clientType" id="clientType" value="@agentInvitationsForm("clientType").value">
-     <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
      <div class="form-group">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
