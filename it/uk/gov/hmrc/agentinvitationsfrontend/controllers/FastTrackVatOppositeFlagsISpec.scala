@@ -6,7 +6,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -372,7 +373,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
 
-      val serviceForm = agentInvitationSelectClientTypeForm.fill(UserInputNinoAndPostcode(personal, "", None, None))
+      val serviceForm = ClientTypeForm.form.fill("personal")
 
       val result2 = await(
         controller.submitClientType(

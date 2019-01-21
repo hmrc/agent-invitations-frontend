@@ -5,6 +5,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.logging.SessionId
@@ -24,7 +25,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(serviceVAT)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 

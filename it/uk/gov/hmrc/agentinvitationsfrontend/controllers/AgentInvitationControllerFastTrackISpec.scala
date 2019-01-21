@@ -1,15 +1,14 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.Inject
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
-import play.api.test.Helpers.redirectLocation
+import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -25,7 +24,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(None, "", "ni", validNino.value, None, fromFastTrack))
+        CurrentAuthorisationRequest(business, "", "ni", validNino.value, None, fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
         business,
@@ -35,12 +34,12 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "ni",
         servicePIR,
         "NI")
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(serviceVAT)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+      redirectLocation(result) shouldBe Some("/invitations/agents/more-details")
       verifyAuthoriseAttempt()
     }
 

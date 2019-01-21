@@ -1,10 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.LocalDate
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,7 +24,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, serviceITSA, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(serviceITSA)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
