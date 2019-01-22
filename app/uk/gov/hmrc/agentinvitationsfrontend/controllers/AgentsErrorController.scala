@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 
+import com.google.inject.Provider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisat
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class AgentsErrorController @Inject()(

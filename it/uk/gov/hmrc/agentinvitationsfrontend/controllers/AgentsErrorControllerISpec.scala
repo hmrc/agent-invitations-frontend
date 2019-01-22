@@ -278,7 +278,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       )
     }
 
-    "throw an Exception if there is nothing in either of the cache" in {
+    "throw an Exception if there is nothing in either of the caches" in {
       val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
 
       intercept[Exception] {
