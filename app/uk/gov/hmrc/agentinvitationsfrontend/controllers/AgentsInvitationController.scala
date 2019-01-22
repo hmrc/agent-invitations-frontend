@@ -226,21 +226,17 @@ class AgentsInvitationController @Inject()(
                     }))
             }
 
-            currentAuthorisationRequestCache.fetch.flatMap {
-              cache =>
-                cache.flatMap(_.clientType) match {
-                  case Some("personal") => updateSessionAndRedirect
-                  case Some("business") =>
-                    if (serviceType == HMRCMTDVAT || serviceType == HMRCNIORG) {
-                      updateSessionAndRedirect
-                    } else {
-                      for {
-                        _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest())
-                        result <- Redirect(routes.AgentsInvitationController.showSelectService())
-                      } yield result
-                    }
-                  case _ => Redirect(routes.AgentsInvitationController.showClientType())
-                }
+            currentAuthorisationRequestCache.fetch.flatMap { cache =>
+              cache.flatMap(_.clientType) match {
+                case Some("personal") => updateSessionAndRedirect
+                case Some("business") =>
+                  if (serviceType == HMRCMTDVAT || serviceType == HMRCNIORG) {
+                    updateSessionAndRedirect
+                  } else {
+                    Redirect(routes.AgentsInvitationController.showSelectService())
+                  }
+                case _ => Redirect(routes.AgentsInvitationController.showClientType())
+              }
             }
           }
         )
