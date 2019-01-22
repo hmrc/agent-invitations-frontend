@@ -263,7 +263,22 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       )
     }
 
-    "throw an Exception if there is nothing in the cache" in {
+    "Display the page when there is nothing in the journeyStateCache" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You are already authorised",
+        "This client has already authorised you to report their income and expenses through software.",
+        "Start a new request"
+      )
+    }
+
+    "throw an Exception if there is nothing in either of the cache" in {
       val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
 
       intercept[Exception] {
