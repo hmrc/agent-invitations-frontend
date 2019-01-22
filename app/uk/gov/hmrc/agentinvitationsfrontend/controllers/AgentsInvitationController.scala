@@ -76,9 +76,6 @@ class AgentsInvitationController @Inject()(
   import AgentsInvitationController._
   import continueUrlActions._
 
-  val agentInvitationIdentifyClientFormNiOrg: Form[UserInputUtrAndPostcode] =
-    AgentsInvitationController.agentInvitationIdentifyClientFormNiOrg(featureFlags)
-
   val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
 
@@ -258,13 +255,6 @@ class AgentsInvitationController @Inject()(
 
   }
 
-  private val authorisationRequestToIdentifyClientFormNiOrg = (authorisationRequest: CurrentAuthorisationRequest) => {
-    val service = authorisationRequest.service
-    val clientId = authorisationRequest.clientIdentifier
-    agentInvitationIdentifyClientFormNiOrg.fill(
-      UserInputUtrAndPostcode(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
-  }
-
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
@@ -294,7 +284,7 @@ class AgentsInvitationController @Inject()(
             case HMRCNIORG =>
               Ok(
                 identify_client_niorg(
-                  authorisationRequestToIdentifyClientFormNiOrg(inviteDetails),
+                  NiOrgClientForm.form(featureFlags.showHmrcNiOrg),
                   featureFlags.showHmrcNiOrg,
                   inviteDetails.fromFastTrack))
 
@@ -787,7 +777,8 @@ class AgentsInvitationController @Inject()(
   def identifyNiOrgClient(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier): Future[Result] =
-    agentInvitationIdentifyClientFormNiOrg
+    NiOrgClientForm
+      .form(featureFlags.showHmrcNiOrg)
       .bindFromRequest()
       .fold(
         formWithErrors => {
@@ -804,7 +795,7 @@ class AgentsInvitationController @Inject()(
             invitationWithClientDetails = maybeCachedInvitation
               .getOrElse(CurrentAuthorisationRequest())
               .copy(
-                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifier = userInput.clientIdentifier,
                 clientIdentifierType = "utr",
                 knownFact = userInput.postcode
               )
@@ -1153,11 +1144,6 @@ object AgentsInvitationController {
     }
   }
 
-  private def validUtr(
-    nonEmptyFailure: String = "error.utr.required",
-    invalidFailure: String = "enter-utr.invalid-format") =
-    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
-
   def clientTypeFor(clientType: Option[String], service: String): Option[String] =
     clientType.orElse(service match {
       case "HMRC-MTD-IT"            => Some("personal")
@@ -1354,26 +1340,4 @@ object AgentsInvitationController {
             authorisationRequest.clientIdentifier,
             authorisationRequest.knownFact))
       }))
-
-  def agentInvitationIdentifyClientFormNiOrg(featureFlags: FeatureFlags): Form[UserInputUtrAndPostcode] =
-    Form(
-      mapping(
-        "clientType"       -> optional(text),
-        "service"          -> text,
-        "clientIdentifier" -> normalizedText.verifying(validUtr()),
-        "knownFact" -> optionalIf(
-          featureFlags.showHmrcNiOrg,
-          trimmedUppercaseText.verifying(
-            validPostcode(
-              featureFlags.showHmrcNiOrg,
-              "enter-postcode.invalid-format",
-              "error.postcode.required",
-              "enter-postcode.invalid-characters"))
-        )
-      )({ (clientType, service, clientIdentifier, postcode) =>
-        UserInputUtrAndPostcode(clientType, service, Some(clientIdentifier.trim.toUpperCase()), postcode)
-      })({ user =>
-        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
-      }))
-
 }
