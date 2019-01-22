@@ -94,10 +94,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType"       -> "personal",
-          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "knownFact"        -> validPostcode)
+          "postcode"        -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -133,8 +131,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
         val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> "", "knownFact" -> validPostcode)
+          .withFormUrlEncodedBody("clientIdentifier" -> "", "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -143,10 +142,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> "invalid",
-          "knownFact"        -> validPostcode)
+          "postcode"        -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -155,8 +154,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an empty postcode is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
         val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "HMRC-MTD-IT", "clientIdentifier" -> validNino.value, "knownFact" -> "")
+          .withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "postcode" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -165,10 +165,10 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when a postcode with invalid format is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "knownFact"        -> "invalid")
+          "postcode"        -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -177,33 +177,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when a postcode with invalid characters is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "knownFact"        -> "invalid%")
+          "postcode"        -> "invalid%")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-postcode.invalid-characters")
         checkHasAgentSignOutLink(result)
-      }
-
-      "redirect to /agents/select-service if service is missing" in {
-        val requestWithForm = request
-          .withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value, "knownFact" -> validPostcode)
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
-
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
-      }
-
-      "redirect to /agents/select-service when there are errors in the form" in {
-        val requestWithForm = request
-          .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
-
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
       }
     }
   }

@@ -18,11 +18,11 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndDob
+@import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[UserInputNinoAndDob], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[IrvClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
 @if(knownFactFlag) { @content }
@@ -39,7 +39,7 @@
 }
 
 @noJsDateFieldsError = @{
-    if(agentInvitationsForm("knownFact.day").hasErrors || agentInvitationsForm("knownFact.month").hasErrors || agentInvitationsForm("knownFact.year").hasErrors)
+    if(agentInvitationsForm("dob.day").hasErrors || agentInvitationsForm("dob.month").hasErrors || agentInvitationsForm("dob.year").hasErrors)
         "nojs-date-fields-error"
 }
 
@@ -88,7 +88,7 @@
             </div>
 
             <div class="@noJsDateFieldsError">
-            @dateFieldsFreeInlineLegend(agentInvitationsForm, "knownFact",
+            @dateFieldsFreeInlineLegend(agentInvitationsForm, "dob",
                 '_legend -> Messages("identify-client.irv-date-of-birth.label"),
                 '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
                 '_legendSpanClass -> "form-label-bold",
@@ -96,9 +96,6 @@
             )
             </div>
         }
-
-        <input type="hidden" name="clientType" id="clientType" value="@agentInvitationsForm("clientType").value">
-        <input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
