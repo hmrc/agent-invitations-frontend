@@ -436,7 +436,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact.month"      -> "01",
             "knownFact.day"        -> "01"
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
@@ -502,7 +503,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact.month"      -> "",
             "knownFact.day"        -> ""
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
           fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.irv-date-of-birth.required")))
         }
         "provided invalid known fact for IRV" in {
@@ -515,7 +517,8 @@ class AgentFastTrackFormSpec extends UnitSpec {
             "knownFact.month"      -> "aa",
             "knownFact.day"        -> "aa"
           )
-          val fastTrackForm = agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags)).bind(data)
+          val fastTrackForm =
+            agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
           fastTrackForm.errors shouldBe Seq(
             FormError("knownFact.year", List("error.year.invalid-format")),
             FormError("knownFact.month", List("error.month.invalid-format")),

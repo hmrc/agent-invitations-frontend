@@ -30,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ItsaClientForm, ServiceTypeForm, VatClientForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
@@ -76,9 +76,6 @@ class AgentsInvitationController @Inject()(
   import AgentsInvitationController._
   import continueUrlActions._
 
-  val agentInvitationIdentifyClientFormIrv: Form[UserInputNinoAndDob] =
-    AgentsInvitationController.agentInvitationIdentifyClientFormIrv(featureFlags)
-
   val agentInvitationIdentifyClientFormNiOrg: Form[UserInputUtrAndPostcode] =
     AgentsInvitationController.agentInvitationIdentifyClientFormNiOrg(featureFlags)
 
@@ -92,7 +89,8 @@ class AgentsInvitationController @Inject()(
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt))
 
   val agentFastTrackDateOfBirthForm: Form[CurrentAuthorisationRequest] =
-    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags))
+    AgentsInvitationController
+      .agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome))
 
   val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
@@ -264,13 +262,6 @@ class AgentsInvitationController @Inject()(
 
   }
 
-  private val authorisationRequestToIdentifyClientFormIrv = (authorisationRequest: CurrentAuthorisationRequest) => {
-    val service = authorisationRequest.service
-    val clientId = authorisationRequest.clientIdentifier
-    agentInvitationIdentifyClientFormIrv.fill(
-      UserInputNinoAndDob(authorisationRequest.clientType, service, Some(clientId), authorisationRequest.knownFact))
-  }
-
   private val authorisationRequestToIdentifyClientFormNiOrg = (authorisationRequest: CurrentAuthorisationRequest) => {
     val service = authorisationRequest.service
     val clientId = authorisationRequest.clientIdentifier
@@ -300,7 +291,7 @@ class AgentsInvitationController @Inject()(
             case HMRCPIR =>
               Ok(
                 identify_client_irv(
-                  authorisationRequestToIdentifyClientFormIrv(inviteDetails),
+                  IrvClientForm.form(featureFlags.showKfcPersonalIncome),
                   featureFlags.showKfcPersonalIncome,
                   inviteDetails.fromFastTrack))
 
@@ -765,7 +756,8 @@ class AgentsInvitationController @Inject()(
   def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier): Future[Result] =
-    agentInvitationIdentifyClientFormIrv
+    IrvClientForm
+      .form(featureFlags.showKfcPersonalIncome)
       .bindFromRequest()
       .fold(
         formWithErrors => {
@@ -782,7 +774,7 @@ class AgentsInvitationController @Inject()(
             invitationWithClientDetails = maybeCachedInvitation
               .getOrElse(CurrentAuthorisationRequest())
               .copy(
-                clientIdentifier = userInput.clientIdentifier.getOrElse(""),
+                clientIdentifier = userInput.clientIdentifier,
                 clientIdentifierType = "ni",
                 knownFact = userInput.dob
               )
@@ -1205,9 +1197,6 @@ object AgentsInvitationController {
       Invalid(ValidationError(errorMessage))
   }
 
-  def dateOfBirthMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
-    optionalIf(featureFlags.showKfcPersonalIncome, dateFieldsMapping(validDobDateFormat))
-
   def vatRegDateMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
     optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
 
@@ -1260,22 +1249,6 @@ object AgentsInvitationController {
         UserInputNinoAndPostcode(clientType, service, Some(clientIdentifier.trim.toUpperCase()), postcode)
       })({ user =>
         Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.postcode))
-      }))
-
-  def agentInvitationIdentifyClientFormIrv(featureFlags: FeatureFlags): Form[UserInputNinoAndDob] =
-    Form(
-      mapping(
-        "clientType"       -> optional(text),
-        "service"          -> text,
-        "clientIdentifier" -> normalizedText.verifying(validNino()),
-        "knownFact" -> optionalIf(
-          featureFlags.showKfcPersonalIncome,
-          dateFieldsMapping(validDobDateFormat)
-        )
-      )({ (clientType, service, clientIdentifier, dob) =>
-        UserInputNinoAndDob(clientType, service, Some(clientIdentifier.trim.toUpperCase()), dob)
-      })({ user =>
-        Some((user.clientType, user.service, user.clientIdentifier.getOrElse(""), user.dob))
       }))
 
   def agentConfirmationForm(errorMessage: String): Form[Confirmation] =

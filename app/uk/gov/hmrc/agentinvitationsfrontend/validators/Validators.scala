@@ -20,7 +20,7 @@ import play.api.data.Forms.of
 import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.validateDate
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.domain.Nino
@@ -68,4 +68,9 @@ object Validators {
   def validNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
 
+  def dateOfBirthMapping(showKfcPersonalIncome: Boolean): Mapping[Option[String]] =
+    optionalIf(
+      showKfcPersonalIncome,
+      dateFieldsMapping(validDobDateFormat)
+    )
 }

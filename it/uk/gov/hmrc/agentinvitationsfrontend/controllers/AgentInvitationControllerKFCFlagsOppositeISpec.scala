@@ -7,7 +7,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{ItsaClientForm, VatClientForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -116,8 +116,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a date of birth entry field if service is IRV" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
 
-      val form =
-        controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
       val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -194,9 +192,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormIrv.fill(
-          UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
+      val form = IrvClientForm.form(true).fill(IrvClient(validNino.nino, None))
       givenInvitationCreationSucceeds(
         arn,
         personal,
