@@ -23,6 +23,7 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
@@ -47,12 +48,12 @@ object Validators {
     } else Valid
   }
 
-  def postcodeMapping(showKfcMtdIt: Boolean): Mapping[Option[String]] =
+  def postcodeMapping(featureEnabled: Boolean): Mapping[Option[String]] =
     optionalIf(
-      showKfcMtdIt,
+      featureEnabled,
       trimmedUppercaseText.verifying(
         validPostcode(
-          showKfcMtdIt,
+          featureEnabled,
           "enter-postcode.invalid-format",
           "error.postcode.required",
           "enter-postcode.invalid-characters"))
@@ -73,4 +74,8 @@ object Validators {
       showKfcPersonalIncome,
       dateFieldsMapping(validDobDateFormat)
     )
+
+  def validUtr(nonEmptyFailure: String = "error.utr.required", invalidFailure: String = "enter-utr.invalid-format") =
+    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
+
 }

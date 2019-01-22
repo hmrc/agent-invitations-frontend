@@ -4,7 +4,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ItsaClientForm, ServiceTypeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -256,9 +256,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are no requests in basket" in {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
-      val ninoForm =
-        agentInvitationIdentifyClientFormItsa(featureFlags).fill(
-          UserInputNinoAndPostcode(personal, serviceITSA, None, None))
+      val ninoForm = ItsaClientForm.form(featureFlags.showKfcMtdIt).fill(ItsaClient("", None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
@@ -276,9 +274,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
-      val ninoForm =
-        agentInvitationIdentifyClientFormItsa(featureFlags).fill(
-          UserInputNinoAndPostcode(personal, serviceITSA, None, None))
+      val ninoForm = ItsaClientForm.form(featureFlags.showKfcMtdIt).fill(ItsaClient("", None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
 
