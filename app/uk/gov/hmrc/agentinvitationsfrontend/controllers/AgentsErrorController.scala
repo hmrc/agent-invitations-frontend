@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
+
+import com.google.inject.Provider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
@@ -75,9 +76,12 @@ class AgentsErrorController @Inject()(
   val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        cacheItem        <- journeyStateCache.get
+        journeyStateCacheNonEmpty <- journeyStateCache.fetch.map {
+                                      case Some(cache) => cache.requests.nonEmpty
+                                      case None        => false
+                                    }
         currentCacheItem <- currentAuthorisationRequestCache.get
-      } yield Ok(active_authorisation_exists(cacheItem.requests.nonEmpty, currentCacheItem.service))
+      } yield Ok(active_authorisation_exists(journeyStateCacheNonEmpty, currentCacheItem.service))
     }
   }
 
