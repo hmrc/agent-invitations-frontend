@@ -24,6 +24,11 @@ GET         /agents/review-authorisations                       @uk.gov.hmrc.age
 GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showDelete(itemId: String)
 POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDelete(itemId: String)
 
+# Agent Endpoints - Cancel Authorisation
+GET         /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.showClientType
+POST        /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.submitClientType
+GET         /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.showSelectService
+POST        /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.submitSelectService
 
 # Error Agent Endpoints
 GET         /agents/not-signed-up                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notSignedUp

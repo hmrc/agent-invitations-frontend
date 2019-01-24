@@ -23,12 +23,11 @@ import play.api.data.Forms.{boolean, mapping, of, optional, text}
 import play.api.data.format.Formats._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
-import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.dateFieldsMapping
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -38,12 +37,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
@@ -59,16 +57,16 @@ class AgentsInvitationController @Inject()(
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   continueUrlCache: ContinueUrlCache,
-  val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
-  val authConnector: AuthConnector,
+  authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
-  val withVerifiedPasscode: PasscodeVerification,
+  withVerifiedPasscode: PasscodeVerification,
   ecp: Provider[ExecutionContext])(
-  implicit val configuration: Configuration,
-  val externalUrls: ExternalUrls,
-  featureFlags: FeatureFlags)
-    extends FrontendController with I18nSupport with AuthActions {
+  implicit configuration: Configuration,
+  externalUrls: ExternalUrls,
+  featureFlags: FeatureFlags,
+  messagesApi: play.api.i18n.MessagesApi)
+    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
 
   implicit val ec: ExecutionContext = ecp.get
 
@@ -88,39 +86,6 @@ class AgentsInvitationController @Inject()(
 
   val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
     AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
-
-  private val personalIncomeRecord =
-    if (featureFlags.showPersonalIncome)
-      Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
-    else Seq.empty
-
-  private val mtdItId =
-    if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("personal-select-service.itsa")) else Seq.empty
-
-  private val vat =
-    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
-
-  private val niOrg =
-    if (featureFlags.showHmrcNiOrg) Seq(HMRCNIORG -> Messages("select-service.niorg")) else Seq.empty
-
-  private val personalOption = Seq("personal" -> Messages("client-type.personal"))
-  private val businessOption = Seq("business" -> Messages("client-type.business"))
-  private val clientTypes = personalOption ++ businessOption
-
-  private def enabledServices(isWhitelisted: Boolean): Seq[(String, String)] =
-    if (isWhitelisted) {
-      personalIncomeRecord ++ mtdItId ++ vat ++ niOrg
-    } else {
-      mtdItId ++ vat ++ niOrg
-    }
-
-  private val serviceToMessageKey: String => String = {
-    case HMRCMTDIT  => messageKeyForITSA
-    case HMRCPIR    => messageKeyForAfi
-    case HMRCMTDVAT => messageKeyForVAT
-    case HMRCNIORG  => messageKeyForNiOrg
-    case _          => "Service is missing"
-  }
 
   private[controllers] val isDevEnv =
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
@@ -179,7 +144,8 @@ class AgentsInvitationController @Inject()(
     journeyStateCache.fetch.flatMap {
       case Some(basket) if basket.requests.nonEmpty =>
         basket.clientType match {
-          case "personal" => Ok(select_service(form, enabledServices(isWhitelisted), true, "personal"))
+          case "personal" =>
+            Ok(select_service(form, enabledPersonalServicesForInvitation(isWhitelisted), true, "personal"))
           case "business" => Ok(select_service(form, vat ++ niOrg, false, "business"))
           case _          => Redirect(routes.AgentsInvitationController.showClientType())
         }
@@ -188,7 +154,7 @@ class AgentsInvitationController @Inject()(
           case Some(input) if input.clientType.nonEmpty =>
             input.clientType match {
               case Some("personal") =>
-                Ok(select_service(form, enabledServices(isWhitelisted), false, "personal"))
+                Ok(select_service(form, enabledPersonalServicesForInvitation(isWhitelisted), false, "personal"))
               case Some("business") =>
                 Ok(select_service(form, vat ++ niOrg, false, "business"))
               case _ => Redirect(routes.AgentsInvitationController.showClientType())
@@ -1103,7 +1069,7 @@ class AgentsInvitationController @Inject()(
     }
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
-    enabledServices(isWhitelisted).exists(_._1 == service)
+    enabledPersonalServicesForInvitation(isWhitelisted).exists(_._1 == service)
 
   private def withMaybeContinueUrlCached[A](
     block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
