@@ -66,26 +66,6 @@ class BaseController @Inject()(
       mtdItId ++ vat ++ niOrg
     }
 
-  val BUSINESS_PAYE = "BUSINESS-PAYE"
-  val BUSINESS_CORP = "BUSINESS-CORPORATION"
-  val BUSINESS_VAT_RECLAIM = "BUSINESS-VAT-RECLAIM"
-  val BUSINESS_VAT = "BUSINESS-VAT"
-
-  val businessPaye = Seq(BUSINESS_PAYE -> Messages("cancel-authorisation-select-service.businessPaye"))
-  val businessCorp = Seq(BUSINESS_CORP -> Messages("cancel-authorisation-select-service.businessCorp"))
-  val businessVatReclaim = Seq(
-    BUSINESS_VAT_RECLAIM             -> Messages("cancel-authorisation-select-service.businessVatReclaim"))
-  val businessVat = Seq(BUSINESS_VAT -> Messages("cancel-authorisation-select-service.businessVat"))
-
-  def enabledBusinessServices: Seq[(String, String)] =
-    businessPaye ++ businessCorp ++ businessVatReclaim ++ businessVat
-
-  val supportedServicesForCancelAuthorisation = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT) ++ List(
-    BUSINESS_PAYE,
-    BUSINESS_CORP,
-    BUSINESS_VAT_RECLAIM,
-    BUSINESS_VAT)
-
   val serviceToMessageKey: String => String = {
     case HMRCMTDIT  => messageKeyForITSA
     case HMRCPIR    => messageKeyForAfi
