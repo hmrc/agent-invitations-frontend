@@ -17,14 +17,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.Configuration
 import play.api.data.Form
-import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{CancelAuthorisationServiceTypeForm, ClientTypeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CancelAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.services.CancelAuthorisationCache
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{client_type, select_service}
@@ -41,15 +40,6 @@ class AgentCancelAuthorisationController @Inject()(
   configuration: Configuration)
     extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
 
-  val businessPaye = Seq(BUSINESS_PAYE -> Messages("cancel-authorisation-select-service.businessPaye"))
-  val businessCorp = Seq(BUSINESS_CORP -> Messages("cancel-authorisation-select-service.businessCorp"))
-  val businessVatReclaim = Seq(
-    BUSINESS_VAT_RECLAIM             -> Messages("cancel-authorisation-select-service.businessVatReclaim"))
-  val businessVat = Seq(BUSINESS_VAT -> Messages("cancel-authorisation-select-service.businessVat"))
-
-  def enabledBusinessServicesForCancelAuthorisation: Seq[(String, String)] =
-    businessPaye ++ businessCorp ++ businessVatReclaim ++ businessVat
-
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       Ok(client_type(ClientTypeForm.form, clientTypes))
@@ -57,7 +47,7 @@ class AgentCancelAuthorisationController @Inject()(
   }
 
   def submitClientType: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { (_, _) =>
       ClientTypeForm.form
         .bindFromRequest()
         .fold(

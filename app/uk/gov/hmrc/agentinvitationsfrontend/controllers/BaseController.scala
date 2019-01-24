@@ -59,6 +59,8 @@ class BaseController @Inject()(
       mtdItId ++ vat
     }
 
+  def enabledBusinessServicesForCancelAuthorisation: Seq[(String, String)] = vat ++ niOrg
+
   def enabledPersonalServicesForInvitation(isWhitelisted: Boolean): Seq[(String, String)] =
     if (isWhitelisted) {
       personalIncomeRecord ++ mtdItId ++ vat ++ niOrg
