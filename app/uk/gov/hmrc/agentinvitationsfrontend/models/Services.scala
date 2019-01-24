@@ -76,14 +76,5 @@ object Services {
       case _   => "Service is missing"
     }
 
-  val BUSINESS_PAYE = "BUSINESS-PAYE"
-  val BUSINESS_CORP = "BUSINESS-CORPORATION"
-  val BUSINESS_VAT_RECLAIM = "BUSINESS-VAT-RECLAIM"
-  val BUSINESS_VAT = "BUSINESS-VAT"
-
-  val supportedServicesForCancelAuthorisation = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT) ++ List(
-    BUSINESS_PAYE,
-    BUSINESS_CORP,
-    BUSINESS_VAT_RECLAIM,
-    BUSINESS_VAT)
+  val supportedServicesForCancelAuthorisation = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
 }

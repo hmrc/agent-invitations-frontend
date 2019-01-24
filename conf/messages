@@ -157,10 +157,6 @@ cancel-authorisation.client-type.p1=If you need to cancel your authorisation for
 cancel-authorisation.select-service.header=Identify your client
 cancel-authorisation.select-service.p1=To help us find your client, first select a service that you deal with on their behalf. We will use this information to check for any other services you provide to them.
 cancel-authorisation.select-service.hint=Select an option.
-cancel-authorisation-select-service.businessPaye=Reporting their employer PAYE updates through software
-cancel-authorisation-select-service.businessCorp=Reporting their Corporation Tax through software
-cancel-authorisation-select-service.businessVatReclaim=Applying for their EU VAT refunds
-cancel-authorisation-select-service.businessVat=Reporting their VAT returns through software
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
