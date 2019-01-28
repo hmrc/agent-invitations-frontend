@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
@@ -41,38 +40,6 @@ case class DOB(value: String) extends KnownFact
 
 object DOB {
   implicit val format: Format[DOB] = Json.format[DOB]
-}
-
-case class CurrentAuthorisationRequest(
-  clientType: Option[String],
-  service: String,
-  clientIdentifierType: String,
-  clientIdentifier: String,
-  knownFact: Option[String],
-  fromFastTrack: Boolean = false)
-
-object CurrentAuthorisationRequest {
-
-  val fromFastTrack: Boolean = true
-  val fromManual: Boolean = false
-
-  def apply(): CurrentAuthorisationRequest = CurrentAuthorisationRequest(None, "", "", "", None, fromManual)
-
-  def apply(clientType: Option[String]): CurrentAuthorisationRequest =
-    CurrentAuthorisationRequest(clientType, "", "", "", None, fromManual)
-
-  def apply(clientType: Option[String], service: String): CurrentAuthorisationRequest =
-    CurrentAuthorisationRequest(clientType, service, "", "", None, fromManual)
-
-  implicit val format = Json.format[CurrentAuthorisationRequest]
-
-  implicit val reads: Reads[CurrentAuthorisationRequest] = {
-    ((JsPath \ "clientType").readNullable[String] and
-      (JsPath \ "service").read[String] and
-      (JsPath \ "clientIdentifierType").read[String] and
-      (JsPath \ "clientIdentifier").read[String] and
-      (JsPath \ "knownFact").readNullable[String])((a, b, c, d, e) => CurrentAuthorisationRequest(a, b, c, d, e))
-  }
 }
 
 sealed trait Invitation {
@@ -106,9 +73,9 @@ object Invitation {
     override def reads(json: JsValue): JsResult[Invitation] = {
       val t = (json \ "type").as[String]
       t match {
-        case "ItsaInvitation" => JsSuccess((json \ "value").as[ItsaInvitation])
-        case "PirInvitation"  => JsSuccess((json \ "value").as[PirInvitation])
-        case "VatInvitation"  => JsSuccess((json \ "value").as[VatInvitation])
+        case "ItsaInvitation" => JsSuccess((json \ "data").as[ItsaInvitation])
+        case "PirInvitation"  => JsSuccess((json \ "data").as[PirInvitation])
+        case "VatInvitation"  => JsSuccess((json \ "data").as[VatInvitation])
         case _                => JsError(s"invalid json type for parsing invitation object, type=$t")
       }
     }
@@ -132,9 +99,9 @@ object Invitation {
       }
 
       o match {
-        case p: ItsaInvitation => Json.obj("type" -> "ItsaInvitation", "value" -> toJson(p))
-        case p: PirInvitation  => Json.obj("type" -> "PirInvitation", "value" -> toJson(p))
-        case p: VatInvitation  => Json.obj("type" -> "VatInvitation", "value" -> toJson(p))
+        case p: ItsaInvitation => Json.obj("type" -> "ItsaInvitation", "data" -> toJson(p))
+        case p: PirInvitation  => Json.obj("type" -> "PirInvitation", "data" -> toJson(p))
+        case p: VatInvitation  => Json.obj("type" -> "VatInvitation", "data" -> toJson(p))
         case _                 => throw new RuntimeException(s"invalid invitation type: $o")
       }
     }
