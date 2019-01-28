@@ -905,15 +905,15 @@ class AgentsInvitationController @Inject()(
   private[controllers] def knownFactCheckVat(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackVatInvitation: VatInvitation,
+    vatInvitation: VatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    fastTrackVatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
+    vatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
       case Some(vatRegDate) =>
         invitationsService
-          .checkVatRegistrationDateMatches(fastTrackVatInvitation.clientIdentifier, vatRegDate) flatMap {
+          .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, vatRegDate) flatMap {
           case Some(true) =>
             redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-              createInvitation(arn, fastTrackVatInvitation)
+              createInvitation(arn, vatInvitation)
             }
           case Some(false) =>
             currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
@@ -928,24 +928,24 @@ class AgentsInvitationController @Inject()(
         }
       case None =>
         redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-          createInvitation(arn, fastTrackVatInvitation)
+          createInvitation(arn, vatInvitation)
         }
     }
 
   private[controllers] def knownFactCheckItsa(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackItsaInvitation: ItsaInvitation,
+    itsaInvitation: ItsaInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    fastTrackItsaInvitation.postcode match {
+    itsaInvitation.postcode match {
       case Some(postcode) =>
         for {
           hasPostcode <- invitationsService
-                          .checkPostcodeMatches(fastTrackItsaInvitation.clientIdentifier, postcode.value)
+                          .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
           result <- hasPostcode match {
                      case Some(true) =>
                        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                         createInvitation(arn, fastTrackItsaInvitation)
+                         createInvitation(arn, itsaInvitation)
                        }
                      case Some(false) =>
                        currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
@@ -953,7 +953,7 @@ class AgentsInvitationController @Inject()(
                          auditService.sendAgentInvitationSubmitted(
                            arn,
                            "",
-                           fastTrackItsaInvitation,
+                           itsaInvitation,
                            "Fail",
                            Some("POSTCODE_DOES_NOT_MATCH"))
                          Redirect(routes.AgentsErrorController.notMatched())
@@ -965,7 +965,7 @@ class AgentsInvitationController @Inject()(
                          auditService.sendAgentInvitationSubmitted(
                            arn,
                            "",
-                           fastTrackItsaInvitation,
+                           itsaInvitation,
                            "Fail",
                            Some("CLIENT_REGISTRATION_NOT_FOUND"))
                          Redirect(routes.AgentsInvitationController.notSignedUp())
@@ -974,24 +974,24 @@ class AgentsInvitationController @Inject()(
         } yield result
       case None =>
         redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-          createInvitation(arn, fastTrackItsaInvitation)
+          createInvitation(arn, itsaInvitation)
         }
     }
 
   private[controllers] def knownFactCheckIrv(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackPirInvitation: PirInvitation,
+    pirInvitation: PirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
-      fastTrackPirInvitation.dob match {
+      pirInvitation.dob match {
         case Some(dob) =>
           invitationsService
-            .checkCitizenRecordMatches(fastTrackPirInvitation.clientIdentifier, LocalDate.parse(dob.value))
+            .checkCitizenRecordMatches(pirInvitation.clientIdentifier, LocalDate.parse(dob.value))
             .flatMap {
               case Some(true) =>
                 redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                  createInvitation(arn, fastTrackPirInvitation)
+                  createInvitation(arn, pirInvitation)
                 }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
@@ -1007,7 +1007,7 @@ class AgentsInvitationController @Inject()(
       }
     } else {
       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-        createInvitation(arn, fastTrackPirInvitation)
+        createInvitation(arn, pirInvitation)
       }
     }
 
