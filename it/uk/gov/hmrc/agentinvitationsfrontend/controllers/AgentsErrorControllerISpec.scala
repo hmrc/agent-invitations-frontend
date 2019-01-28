@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest, CurrentAuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -13,6 +13,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   lazy val controller: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
+
+  val itsaInvitation = ItsaInvitation(validNino, Some(Postcode(validPostcode)))
+  val pirInvitation = PirInvitation(validNino, Some(DOB(dateOfBirth)))
+  val vatInvitation = VatInvitation(business, validVrn, Some(VatRegDate(validRegistrationDate)))
 
   "GET /agents/not-matched" should {
     val request = FakeRequest("GET", "/agents/not-matched")
@@ -55,7 +59,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("Gareth Gates", Some("personal"), serviceITSA, mtdItId.value))))
+          Set(AuthorisationRequest("Gareth Gates", itsaInvitation))))
 
       val result = notMatched(authorisedAsValidAgent(request, arn.value))
 
@@ -80,23 +84,17 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       val clientDetail1 =
         AuthorisationRequest(
           "Gareth Gates Sr",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
+          itsaInvitation,
           state = AuthorisationRequest.FAILED)
       val clientDetail2 =
         AuthorisationRequest(
           "Malcolm Pirson",
-          Some("personal"),
-          servicePIR,
-          validNino.value,
+          pirInvitation,
           state = AuthorisationRequest.FAILED)
       val clientDetail3 =
         AuthorisationRequest(
           "Sara Vaterloo",
-          Some("business"),
-          serviceVAT,
-          validVrn.value,
+          vatInvitation,
           state = AuthorisationRequest.FAILED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
@@ -134,23 +132,17 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       val clientDetail1 =
         AuthorisationRequest(
           "Gareth Gates Sr",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
+          itsaInvitation,
           state = AuthorisationRequest.FAILED)
       val clientDetail2 =
         AuthorisationRequest(
           "Malcolm Pirson",
-          Some("personal"),
-          servicePIR,
-          validNino.value,
+          pirInvitation,
           state = AuthorisationRequest.CREATED)
       val clientDetail3 =
         AuthorisationRequest(
           "Sara Vaterloo",
-          Some("business"),
-          serviceVAT,
-          validVrn.value,
+          vatInvitation,
           state = AuthorisationRequest.FAILED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
@@ -178,23 +170,17 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       val clientDetail1 =
         AuthorisationRequest(
           "Gareth Gates Sr",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
+          itsaInvitation,
           state = AuthorisationRequest.FAILED)
       val clientDetail2 =
         AuthorisationRequest(
           "Malcolm Pirson",
-          Some("personal"),
-          servicePIR,
-          validNino.value,
+          pirInvitation,
           state = AuthorisationRequest.CREATED)
       val clientDetail3 =
         AuthorisationRequest(
           "Sara Vaterloo",
-          Some("business"),
-          serviceVAT,
-          validVrn.value,
+          vatInvitation,
           state = AuthorisationRequest.CREATED)
 
       testAgentMultiAuthorisationJourneyStateCache.save(
@@ -243,9 +229,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       val clientDetail1 =
         AuthorisationRequest(
           "Gareth Gates Sr",
-          Some("personal"),
-          serviceITSA,
-          validNino.value,
+          itsaInvitation,
           state = AuthorisationRequest.FAILED)
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))

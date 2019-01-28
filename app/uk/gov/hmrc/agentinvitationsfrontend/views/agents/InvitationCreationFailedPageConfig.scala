@@ -22,7 +22,7 @@ trait InvitationCreationFailedPageConfig {
   def failedRequests: Set[AuthorisationRequest]
   def isAll: Boolean
 
-  val hasSingleRequest: Boolean = failedRequests.map(_.service).size == 1
+  val hasSingleRequest: Boolean = failedRequests.map(_.invitation.service).size == 1
 }
 
 case class SomeInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])

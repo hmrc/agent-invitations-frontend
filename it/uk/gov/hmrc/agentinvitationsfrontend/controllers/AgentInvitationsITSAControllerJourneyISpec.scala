@@ -77,7 +77,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       "redirect to confirm-client when a valid NINO and postcode are submitted" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", personal, serviceITSA, validNino.value, "itemid")))
+          Set(AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
@@ -105,7 +105,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       "redirect to client-type when a valid NINO and postcode are submitted but cache is empty" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", personal, serviceITSA, validNino.value, "itemid")))
+          Set(AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenInvitationCreationSucceeds(
           arn,
@@ -270,7 +270,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are requests in basket" in {
-      val authRequest = AuthorisationRequest("name", personal, serviceITSA, nino)
+      val authRequest = AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest)))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
@@ -391,7 +391,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "redirect to already-invitations-pending when YES is selected but there are already invitations for this client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "personal",
-        Set(AuthorisationRequest("clientName", personal, serviceITSA, validNino.value, "itemid")))
+        Set(AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))
@@ -407,7 +407,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "redirect to already-invitations-pending when YES is selected but there are already invitations in the basket for this client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "personal",
-        Set(AuthorisationRequest("clientName", personal, serviceITSA, validNino.value, "itemid")))
+        Set(AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromManual))

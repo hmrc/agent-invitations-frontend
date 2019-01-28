@@ -53,7 +53,7 @@
             @config.clientNameOf(authorisationRequest)
             </dt>
             <dd class="cya-answer" id="client-service">
-            @Messages(s"review-authorisations.table.${authorisationRequest.service}")
+            @Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}")
             </dd>
             <dd class="app-check-your-answers__change">
                 <a href="@routes.AgentsInvitationController.showDelete(authorisationRequest.itemId)">

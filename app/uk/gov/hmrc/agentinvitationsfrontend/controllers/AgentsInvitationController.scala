@@ -332,8 +332,10 @@ class AgentsInvitationController @Inject()(
     for {
       hasPendingInvitationServiceInJourney <- journeyStateCache.fetch.map {
                                                case Some(cache)
-                                                   if cache.requests.map(_.service).contains(service) && cache.requests
-                                                     .map(_.clientId)
+                                                   if cache.requests
+                                                     .map(_.invitation.service)
+                                                     .contains(service) && cache.requests
+                                                     .map(_.invitation.clientId)
                                                      .contains(clientId) =>
                                                  true
                                                case _ => false
@@ -360,7 +362,8 @@ class AgentsInvitationController @Inject()(
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(cachedItem @ CurrentInvitationInputWithNonEmptyClientId((clientType, clientId, service))) =>
+        case Some(
+            cachedItem @ CurrentInvitationInputWithNonEmptyClientId((clientType, clientId, service, knownFact))) =>
           val result: Future[Result] = {
             invitationsService.getClientNameByService(clientId, service).flatMap { name =>
               val clientName = name.getOrElse("")
@@ -385,8 +388,9 @@ class AgentsInvitationController @Inject()(
                                        _ <- journeyStateCache.save(AgentMultiAuthorisationJourneyState(
                                              if (currentCache.clientType.nonEmpty) currentCache.clientType
                                              else clientType.getOrElse(""),
-                                             currentCache.requests ++ Seq(
-                                               AuthorisationRequest(clientName, clientType, service, clientId))
+                                             currentCache.requests ++ Seq(AuthorisationRequest(
+                                               clientName,
+                                               Invitation(clientType, service, clientId, knownFact)))
                                            ))
                                        redirect <- if (clientType == personal || currentCache.clientType == "personal")
                                                     Future successful Redirect(
@@ -579,12 +583,15 @@ class AgentsInvitationController @Inject()(
                   _ <- journeyStateCache.save(
                         AgentMultiAuthorisationJourneyState(
                           currentAuthorisationRequest.clientType.getOrElse(""),
-                          currentCache.requests ++ Set(
-                            AuthorisationRequest(
-                              clientName.getOrElse(""),
+                          currentCache.requests ++ Set(AuthorisationRequest(
+                            clientName.getOrElse(""),
+                            Invitation(
                               currentAuthorisationRequest.clientType,
                               currentAuthorisationRequest.service,
-                              currentAuthorisationRequest.clientIdentifier))
+                              currentAuthorisationRequest.clientIdentifier,
+                              currentAuthorisationRequest.knownFact
+                            )
+                          ))
                         ))
                   result <- currentAuthorisationRequest.clientType match {
                              case `personal` =>
@@ -772,10 +779,10 @@ class AgentsInvitationController @Inject()(
           } yield result
       )
 
-  private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, fti: FastTrackInvitation[T])(
+  private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, invitation: Invitation)(
     implicit request: Request[_]) =
     for {
-      _ <- invitationsService.createInvitation(arn, fti, featureFlags)
+      _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
@@ -898,7 +905,7 @@ class AgentsInvitationController @Inject()(
   private[controllers] def knownFactCheckVat(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackVatInvitation: FastTrackVatInvitation,
+    fastTrackVatInvitation: VatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     fastTrackVatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
       case Some(vatRegDate) =>
@@ -928,7 +935,7 @@ class AgentsInvitationController @Inject()(
   private[controllers] def knownFactCheckItsa(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackItsaInvitation: FastTrackItsaInvitation,
+    fastTrackItsaInvitation: ItsaInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     fastTrackItsaInvitation.postcode match {
       case Some(postcode) =>
@@ -974,7 +981,7 @@ class AgentsInvitationController @Inject()(
   private[controllers] def knownFactCheckIrv(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
-    fastTrackPirInvitation: FastTrackPirInvitation,
+    fastTrackPirInvitation: PirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]) =
     if (featureFlags.showKfcPersonalIncome) {
       fastTrackPirInvitation.dob match {

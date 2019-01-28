@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import java.lang.ProcessBuilder.Redirect
-
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.Logger
@@ -41,12 +39,12 @@ class InvitationsService @Inject()(
   auditService: AuditService)
     extends GetClientName {
 
-  def createInvitation(arn: Arn, params: InvitationParams, featureFlags: FeatureFlags)(
+  def createInvitation(arn: Arn, invitation: Invitation, featureFlags: FeatureFlags)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[InvitationId] = {
     val agentInvitation =
-      AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
+      AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
 
     (for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -55,19 +53,19 @@ class InvitationsService @Inject()(
                        throw new Exception("Invitation location expected; but missing.")
                      })
     } yield invitation)
-      .map(invitation => {
-        val id = invitation.selfUrl.toString.split("/").toStream.last
-        if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
-              | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
-              | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-          auditService.sendAgentInvitationSubmitted(arn, id, params, "Success")
-        } else auditService.sendAgentInvitationSubmitted(arn, id, params, "Not Required")
+      .map(storedInvitation => {
+        val id = storedInvitation.selfUrl.toString.split("/").toStream.last
+        if ((storedInvitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
+              | (storedInvitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
+              | (storedInvitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+          auditService.sendAgentInvitationSubmitted(arn, id, invitation, "Success")
+        } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, "Not Required")
         InvitationId(id)
       })
       .recoverWith {
         case NonFatal(e) =>
           Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", params, "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }
@@ -80,9 +78,13 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =
-    Future.sequence(requests.map(params => {
+    Future.sequence(requests.map(authRequest => {
       val agentInvitation =
-        AgentInvitation(params.clientType, params.service, params.clientIdentifierType, params.clientId)
+        AgentInvitation(
+          authRequest.invitation.clientType,
+          authRequest.invitation.service,
+          authRequest.invitation.clientIdentifierType,
+          authRequest.invitation.clientId)
 
       (for {
         locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
@@ -96,15 +98,15 @@ class InvitationsService @Inject()(
           if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
                 | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
                 | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-            auditService.sendAgentInvitationSubmitted(arn, id, params, "Success")
-          } else auditService.sendAgentInvitationSubmitted(arn, id, params, "Not Required")
-          params.copy(state = AuthorisationRequest.CREATED)
+            auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "Success")
+          } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "Not Required")
+          authRequest.copy(state = AuthorisationRequest.CREATED)
         })
         .recover {
           case NonFatal(e) =>
             Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-            auditService.sendAgentInvitationSubmitted(arn, "", params, "Fail", Option(e.getMessage))
-            params.copy(state = AuthorisationRequest.FAILED)
+            auditService.sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "Fail", Option(e.getMessage))
+            authRequest.copy(state = AuthorisationRequest.FAILED)
         }
     }))
 

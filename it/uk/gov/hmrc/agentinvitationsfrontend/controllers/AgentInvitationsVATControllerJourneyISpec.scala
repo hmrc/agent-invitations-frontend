@@ -281,7 +281,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
-      val authRequest: AuthorisationRequest = AuthorisationRequest("name", business, serviceVAT, validVrn.value)
+      val authRequest: AuthorisationRequest = AuthorisationRequest( "clientName", VatInvitation(business, validVrn, Some(VatRegDate(validRegistrationDate))))
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
@@ -429,7 +429,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", personal, serviceVAT, validVrn.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", VatInvitation(personal, validVrn, Some(VatRegDate(validRegistrationDate))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(
@@ -451,7 +451,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", Some("business"), serviceVAT, validVrn9755.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", VatInvitation(business, validVrn9755, Some(VatRegDate(validRegistrationDate))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(

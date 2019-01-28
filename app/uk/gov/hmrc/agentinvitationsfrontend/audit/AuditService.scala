@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.audit
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.models.InvitationParams
+import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
@@ -40,7 +40,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
   def sendAgentInvitationSubmitted(
     arn: Arn,
     invitationId: String,
-    params: InvitationParams,
+    invitation: Invitation,
     result: String,
     failure: Option[String] = None)(
     implicit hc: HeaderCarrier,
@@ -53,9 +53,9 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "factCheck"            -> result,
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientIdType"         -> params.clientIdentifierType,
-        "clientId"             -> params.clientId,
-        "service"              -> params.service
+        "clientIdType"         -> invitation.clientIdentifierType,
+        "clientId"             -> invitation.clientId,
+        "service"              -> invitation.service
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
 
