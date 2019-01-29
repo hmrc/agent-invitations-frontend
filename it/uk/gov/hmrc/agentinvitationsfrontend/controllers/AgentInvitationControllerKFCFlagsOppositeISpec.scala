@@ -1,7 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
-import javax.inject.Inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
@@ -470,7 +469,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "personal",
-        Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))), "itemId")))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))

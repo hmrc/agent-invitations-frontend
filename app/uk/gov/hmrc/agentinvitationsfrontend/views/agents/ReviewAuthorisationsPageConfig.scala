@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 case class ReviewAuthorisationsPageConfig(authorisationRequests: AgentMultiAuthorisationJourneyState) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest) =
-    if (authorisationRequest.service == "PERSONAL-INCOME-RECORD") "" else authorisationRequest.clientName
+    if (authorisationRequest.invitation.service == "PERSONAL-INCOME-RECORD") "" else authorisationRequest.clientName
 
   val numberOfItems: Int = authorisationRequests.requests.size
 

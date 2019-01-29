@@ -6,6 +6,7 @@ import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -153,7 +154,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to already-authorisation-pending when a valid NINO is submitted but it already exists in the basket" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
+          Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
         testCurrentAuthorisationRequestCache.save(
@@ -176,7 +177,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to already-authorisation-present when a valid NINO is submitted but client already has relationship with agent for this service" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", Some("personal"), servicePIR, "AB123456B", "itemId")))
+          Set(AuthorisationRequest( "clientName", PirInvitation(Nino("AB123456B"), Some(DOB(dateOfBirth))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
