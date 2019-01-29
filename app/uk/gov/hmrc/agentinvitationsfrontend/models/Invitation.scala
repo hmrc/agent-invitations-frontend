@@ -80,8 +80,8 @@ object Invitation {
       }
     }
 
-    override def writes(o: Invitation): JsValue = {
-      def toJson(invitation: Invitation) = {
+    override def writes(invitation: Invitation): JsValue = {
+      val toJson = {
         val json = Json.parse(s""" {
                                  |"clientType": "${invitation.clientType.getOrElse(
                                    throw new RuntimeException("missing clientType from the invitation"))}",
@@ -90,20 +90,17 @@ object Invitation {
                                  |"clientIdentifierType": "${invitation.clientIdentifierType}"
                                  |}""".stripMargin)
 
-        invitation match {
-          case p: ItsaInvitation => json.as[JsObject] + ("postcode" -> Json.toJson(p.postcode))
-          case p: PirInvitation  => json.as[JsObject] + ("dob" -> Json.toJson(p.dob))
-          case p: VatInvitation  => json.as[JsObject] + ("vatRegDate" -> Json.toJson(p.vatRegDate))
+        val knownFact: (String, JsValue) = invitation match {
+          case p: ItsaInvitation => "postcode" -> Json.toJson(p.postcode)
+          case p: PirInvitation  => "dob" -> Json.toJson(p.dob)
+          case p: VatInvitation  => "vatRegDate" -> Json.toJson(p.vatRegDate)
           case _                 => throw new RuntimeException(s"unknown invitation type")
         }
+
+        json.as[JsObject] + knownFact
       }
 
-      o match {
-        case p: ItsaInvitation => Json.obj("type" -> "ItsaInvitation", "data" -> toJson(p))
-        case p: PirInvitation  => Json.obj("type" -> "PirInvitation", "data" -> toJson(p))
-        case p: VatInvitation  => Json.obj("type" -> "VatInvitation", "data" -> toJson(p))
-        case _                 => throw new RuntimeException(s"invalid invitation type: $o")
-      }
+      Json.obj("type" -> invitation.getClass.getSimpleName, "data" -> toJson)
     }
   }
 }
