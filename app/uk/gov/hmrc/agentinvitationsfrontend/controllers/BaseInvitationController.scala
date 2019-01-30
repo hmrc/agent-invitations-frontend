@@ -80,14 +80,13 @@ class BaseInvitationController @Inject()(
       hasPendingInvitations <- if (existsInBasket) Future.successful(true)
                               else
                                 invitationsService.hasPendingInvitationsFor(arn, clientId, service)
-      result <- hasPendingInvitations match {
-                 case true =>
-                   Future.successful(Some(Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())))
-                 case false =>
-                   relationshipsService.hasActiveRelationshipFor(arn, clientId, service).map {
-                     case true  => Some(Redirect(routes.AgentsErrorController.activeRelationshipExists()))
-                     case false => None
-                   }
+      result <- if (hasPendingInvitations) {
+                 toFuture(Some(Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())))
+               } else {
+                 relationshipsService.hasActiveRelationshipFor(arn, clientId, service).map {
+                   case true  => Some(Redirect(routes.AgentsErrorController.activeRelationshipExists()))
+                   case false => None
+                 }
                }
     } yield result
 
@@ -149,7 +148,7 @@ class BaseInvitationController @Inject()(
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
     enabledPersonalServicesForInvitation(isWhitelisted).exists(_._1 == service)
 
-  def knownFactCheckVat(
+  private def knownFactCheckVat(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     vatInvitation: VatInvitation,
@@ -179,7 +178,7 @@ class BaseInvitationController @Inject()(
         }
     }
 
-  def knownFactCheckItsa(
+  private def knownFactCheckItsa(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     itsaInvitation: ItsaInvitation,
@@ -225,7 +224,7 @@ class BaseInvitationController @Inject()(
         }
     }
 
-  def knownFactCheckIrv(
+  private def knownFactCheckIrv(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     pirInvitation: PirInvitation,

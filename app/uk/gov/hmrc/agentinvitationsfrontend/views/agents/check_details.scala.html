@@ -123,14 +123,14 @@
 
         <p>@Messages("check-details.change.p1")</p>
 
-        <a href="@pageConfig.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+        <a href="@pageConfig.clientTypeUrl" class="button" id="continueMoreInfo-clientType" role="button">@Messages("continue.button")</a>
     }else {
         @if(pageConfig.needKnownFact) {
             <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl">@Messages("check-details.change.link")</a></div>
 
             <p>@Messages("check-details.change.p1")</p>
 
-            <a href="@pageConfig.knownFactUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+            <a href="@pageConfig.knownFactUrl" class="button" id="continueMoreInfo-knownFact" role="button">@Messages("continue.button")</a>
         } else {
 
             @form(
