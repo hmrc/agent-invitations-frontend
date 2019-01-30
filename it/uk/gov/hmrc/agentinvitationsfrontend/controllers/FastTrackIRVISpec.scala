@@ -113,7 +113,7 @@ class FastTrackIRVISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 and redirect to error url if service calling fast-track for PIR contains invalid nino" in {
@@ -176,7 +176,7 @@ class FastTrackIRVISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
 
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
@@ -193,7 +193,7 @@ class FastTrackIRVISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
@@ -227,7 +227,7 @@ class FastTrackIRVISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -249,7 +249,7 @@ class FastTrackIRVISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -264,7 +264,7 @@ class FastTrackIRVISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
@@ -279,7 +279,7 @@ class FastTrackIRVISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
@@ -308,7 +308,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303

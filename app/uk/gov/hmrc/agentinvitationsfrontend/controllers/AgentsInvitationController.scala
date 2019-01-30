@@ -247,60 +247,6 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  val showCheckDetails: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetch.map {
-        case Some(currentInvitation) =>
-          Ok(
-            check_details(
-              checkDetailsForm,
-              currentInvitation,
-              featureFlags,
-              serviceToMessageKey(currentInvitation.service),
-              CheckDetailsPageConfig(currentInvitation, featureFlags)))
-        case None => Redirect(routes.AgentsInvitationController.showClientType())
-      }
-    }
-  }
-
-  val submitCheckDetails: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      val cachedCurrentInvitationInput =
-        currentAuthorisationRequestCache.fetch.map(_.getOrElse(CurrentAuthorisationRequest()))
-      checkDetailsForm
-        .bindFromRequest()
-        .fold(
-          formWithErrors => {
-            cachedCurrentInvitationInput.flatMap { cii =>
-              Future successful Ok(
-                check_details(
-                  formWithErrors,
-                  cii,
-                  featureFlags,
-                  serviceToMessageKey(cii.service),
-                  CheckDetailsPageConfig(cii, featureFlags)))
-            }
-          },
-          data => {
-            if (data.value.getOrElse(false)) {
-              cachedCurrentInvitationInput.flatMap(
-                cacheItem =>
-                  maybeResultIfPendingInvitationsOrRelationshipExistFor(
-                    arn,
-                    cacheItem.clientIdentifier,
-                    cacheItem.service).flatMap {
-                    case Some(r) => r
-                    case None =>
-                      cachedCurrentInvitationInput.flatMap { cii =>
-                        redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
-                      }
-                })
-            } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-          }
-        )
-    }
-  }
-
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {

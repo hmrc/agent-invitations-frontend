@@ -125,7 +125,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
@@ -138,7 +138,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
@@ -157,7 +157,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track does not contain client type" in {
@@ -170,7 +170,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
@@ -239,7 +239,7 @@ class FastTrackVatISpec extends BaseISpec {
           Some(validRegistrationDate),
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
@@ -253,7 +253,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Company or partnership"))
@@ -267,7 +267,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -310,7 +310,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -336,7 +336,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -362,7 +362,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -379,7 +379,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showKnownFact().url
@@ -401,7 +401,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
@@ -423,7 +423,7 @@ class FastTrackVatISpec extends BaseISpec {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
@@ -451,7 +451,7 @@ class FastTrackVatISpec extends BaseISpec {
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -474,9 +474,8 @@ class FastTrackVatISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(invitation)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
-      val form = agentFastTrackForm.fill(invitation)
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
@@ -503,9 +502,8 @@ class FastTrackVatISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(invitation)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
 
-      val form = agentFastTrackForm.fill(invitation)
       val result = await(
-        controller.submitCheckDetails(
+        fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303

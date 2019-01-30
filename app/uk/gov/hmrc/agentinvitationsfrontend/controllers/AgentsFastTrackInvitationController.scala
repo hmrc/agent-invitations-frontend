@@ -26,16 +26,19 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.checkDetailsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, FastTrackErrors, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.known_fact
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, known_fact}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -141,7 +144,7 @@ class AgentsFastTrackInvitationController @Inject()(
               currentAuthorisationRequestCache.save(authorisationRequest).flatMap { _ =>
                 withMaybeContinueUrlCached {
                   ifShouldShowService(authorisationRequest, featureFlags, isWhitelisted) {
-                    Future successful Redirect(routes.AgentsInvitationController.showCheckDetails())
+                    Future successful Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
                   }
                 }
               }
@@ -151,6 +154,60 @@ class AgentsFastTrackInvitationController @Inject()(
         Logger(getClass).warn("Fast-Track feature flag is switched off")
         Future successful BadRequest
       }
+    }
+  }
+
+  val showCheckDetails: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequestCache.fetch.map {
+        case Some(currentInvitation) =>
+          Ok(
+            check_details(
+              checkDetailsForm,
+              currentInvitation,
+              featureFlags,
+              serviceToMessageKey(currentInvitation.service),
+              CheckDetailsPageConfig(currentInvitation, featureFlags)))
+        case None => Redirect(routes.AgentsInvitationController.showClientType())
+      }
+    }
+  }
+
+  val submitCheckDetails: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      val cachedCurrentInvitationInput =
+        currentAuthorisationRequestCache.fetch.map(_.getOrElse(CurrentAuthorisationRequest()))
+      checkDetailsForm
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
+            cachedCurrentInvitationInput.flatMap { cii =>
+              Future successful Ok(
+                check_details(
+                  formWithErrors,
+                  cii,
+                  featureFlags,
+                  serviceToMessageKey(cii.service),
+                  CheckDetailsPageConfig(cii, featureFlags)))
+            }
+          },
+          data => {
+            if (data.value.getOrElse(false)) {
+              cachedCurrentInvitationInput.flatMap(
+                cacheItem =>
+                  maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                    arn,
+                    cacheItem.clientIdentifier,
+                    cacheItem.service).flatMap {
+                    case Some(r) => r
+                    case None =>
+                      cachedCurrentInvitationInput.flatMap { cii =>
+                        redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+                      }
+                })
+            } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+          }
+        )
     }
   }
 
