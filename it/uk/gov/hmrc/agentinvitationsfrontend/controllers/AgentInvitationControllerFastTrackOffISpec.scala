@@ -45,7 +45,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       )
       .overrides(new TestGuiceModule)
 
-  lazy val fastTrackontroller: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -61,7 +61,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
   "Show Fast Track flag is switched off" should {
     val request = FakeRequest("POST", "/agents/fast-track")
-    val fastTrack = fastTrackontroller.agentFastTrack()
+    val fastTrack = fastTrackController.agentFastTrack()
 
     "through fast-track, return 400 and prevent agents" when {
 
