@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -50,7 +51,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       "POST",
       "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
     )
-    val fastTrack = controller.agentFastTrack()
+    val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
       val formData = CurrentAuthorisationRequest(personal, "INVALID_SERVICE").copy(fromFastTrack = fromFastTrack)
@@ -109,12 +110,12 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val formData = CurrentAuthorisationRequest()
       testCurrentAuthorisationRequestCache.save(formData)
       an[Exception] shouldBe thrownBy {
-        await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+        await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       }
     }
 
     "Redirect to select service when there is None in the cache" in {
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
@@ -131,7 +132,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
 
       an[IllegalArgumentException] shouldBe thrownBy {
-        await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+        await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       }
     }
   }
@@ -149,7 +150,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
           Some(validRegistrationDate),
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.submitCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.submitCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Select yes if the details are correct"))
     }
@@ -159,7 +160,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to client-type if there is no invitation in the cache" in {
-      val result = await(controller.showKnownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
@@ -184,7 +185,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }

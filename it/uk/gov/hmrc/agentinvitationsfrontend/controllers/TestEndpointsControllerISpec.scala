@@ -4,7 +4,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 class TestEndpointsControllerISpec extends BaseISpec {
 

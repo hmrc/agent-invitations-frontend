@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package models
 
 import play.api.libs.json.{JsSuccess, Json}
@@ -13,28 +29,31 @@ class InvitationSpec extends UnitSpec {
     "read and write ItsaInvitation as expected" in {
 
       val itsaInvitation = ItsaInvitation(Nino("AB123456C"), Some(Postcode("AB12 3EF")))
-      val jsValue = Json.parse("""{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456C","clientIdentifierType":"ni","postcode":{"value":"AB12 3EF"}}}""")
+      val jsValue = Json.parse(
+        """{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456C","clientIdentifierType":"ni","postcode":{"value":"AB12 3EF"}}}""")
 
       Invitation.format.writes(itsaInvitation) shouldBe jsValue
-      Invitation.format.reads(jsValue)  shouldBe JsSuccess(itsaInvitation)
+      Invitation.format.reads(jsValue) shouldBe JsSuccess(itsaInvitation)
     }
 
     "read and write PirInvitation as expected" in {
 
       val pirInvitation = PirInvitation(Nino("AB123456C"), Some(DOB("10-10-2030")))
-      val jsValue = Json.parse("""{"type":"PirInvitation","data":{"clientType":"personal","service":"PERSONAL-INCOME-RECORD","clientIdentifier":"AB123456C","clientIdentifierType":"ni","dob":{"value":"10-10-2030"}}}""")
+      val jsValue = Json.parse(
+        """{"type":"PirInvitation","data":{"clientType":"personal","service":"PERSONAL-INCOME-RECORD","clientIdentifier":"AB123456C","clientIdentifierType":"ni","dob":{"value":"10-10-2030"}}}""")
 
       Invitation.format.writes(pirInvitation) shouldBe jsValue
-      Invitation.format.reads(jsValue)  shouldBe JsSuccess(pirInvitation)
+      Invitation.format.reads(jsValue) shouldBe JsSuccess(pirInvitation)
     }
 
     "read and write VatInvitation as expected" in {
 
       val vatInvitation = VatInvitation(Some("personal"), Vrn("329611751"), Some(VatRegDate("10-10-2030")))
-      val jsValue = Json.parse("""{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"329611751","clientIdentifierType":"vrn","vatRegDate":{"value":"10-10-2030"}}}""")
+      val jsValue = Json.parse(
+        """{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"329611751","clientIdentifierType":"vrn","vatRegDate":{"value":"10-10-2030"}}}""")
 
       Invitation.format.writes(vatInvitation) shouldBe jsValue
-      Invitation.format.reads(jsValue)  shouldBe JsSuccess(vatInvitation)
+      Invitation.format.reads(jsValue) shouldBe JsSuccess(vatInvitation)
     }
   }
 

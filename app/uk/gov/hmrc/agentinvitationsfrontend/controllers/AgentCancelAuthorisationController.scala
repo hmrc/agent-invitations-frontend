@@ -17,12 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.Configuration
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{CancelAuthorisationServiceTypeForm, ClientTypeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ServiceTypeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CancelAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.services.CancelAuthorisationCache
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
@@ -69,7 +68,7 @@ class AgentCancelAuthorisationController @Inject()(
 
   def showSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      getSelectServicePage(isWhitelisted, CancelAuthorisationServiceTypeForm.form)
+      getSelectServicePage(isWhitelisted, ServiceTypeForm.form)
     }
   }
 
@@ -82,7 +81,7 @@ class AgentCancelAuthorisationController @Inject()(
 
   def submitSelectService: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      CancelAuthorisationServiceTypeForm.form
+      ServiceTypeForm.form
         .bindFromRequest()
         .fold(
           formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),

@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 

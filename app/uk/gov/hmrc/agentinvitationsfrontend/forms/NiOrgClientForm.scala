@@ -18,9 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Form
 import play.api.data.Forms.mapping
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.normalizedText
 import uk.gov.hmrc.agentinvitationsfrontend.models.NiOrgClient
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{postcodeMapping, validUtr}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, postcodeMapping, validUtr}
 
 object NiOrgClientForm {
 
