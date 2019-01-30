@@ -5,7 +5,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
@@ -72,6 +73,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -263,7 +265,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   "POST /agents/fast-track" should {
     val request = FakeRequest("POST", "/agents/fast-track")
-    val fastTrack = controller.agentFastTrack()
+    val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details when service and valid nino are provided and kfc flag is off for ITSA service" in {
 

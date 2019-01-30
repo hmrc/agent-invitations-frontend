@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ServiceTypeForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, CurrentAuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class FastTrackVatISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -107,7 +108,7 @@ class FastTrackVatISpec extends BaseISpec {
       "POST",
       "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
     )
-    val fastTrack = controller.agentFastTrack()
+    val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details if service calling fast-track is correct for VAT" in {
       val formData =
@@ -381,7 +382,7 @@ class FastTrackVatISpec extends BaseISpec {
         controller.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showKnownFact().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showKnownFact().url
     }
 
     "redirect to already-authorisation-pending when YES is selected for VAT service and there is already a pending invitation" in {
@@ -522,7 +523,7 @@ class FastTrackVatISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showKnownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
       checkHtmlResultWithBodyText(
         result,
@@ -561,7 +562,7 @@ class FastTrackVatISpec extends BaseISpec {
         CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
-      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -583,7 +584,7 @@ class FastTrackVatISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(formData)
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("business", Set.empty))
 
-      val result = await(controller.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Year must only include numbers")
       checkHtmlResultWithBodyText(result, "Month must only include numbers")

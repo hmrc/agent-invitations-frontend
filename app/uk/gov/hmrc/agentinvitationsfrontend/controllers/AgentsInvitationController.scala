@@ -39,7 +39,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 
@@ -66,26 +66,19 @@ class AgentsInvitationController @Inject()(
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   messagesApi: play.api.i18n.MessagesApi)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+    extends BaseInvitationController(
+      withVerifiedPasscode,
+      authConnector,
+      invitationsService,
+      relationshipsService,
+      journeyStateCache,
+      currentAuthorisationRequestCache,
+      auditService) {
 
   implicit val ec: ExecutionContext = ecp.get
 
   import AgentInvitationControllerSupport._
   import AgentsInvitationController._
-  import continueUrlActions._
-
-  val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
-    AgentsInvitationController.agentFastTrackGenericFormKnownFact(featureFlags)
-
-  val agentFastTrackPostcodeForm: Form[CurrentAuthorisationRequest] =
-    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt))
-
-  val agentFastTrackDateOfBirthForm: Form[CurrentAuthorisationRequest] =
-    AgentsInvitationController
-      .agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome))
-
-  val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
-    AgentsInvitationController.agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
 
   private[controllers] val isDevEnv =
     if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
@@ -203,21 +196,6 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  private val authorisationRequestToIdentifyKnownFact = (authorisationRequest: CurrentAuthorisationRequest) => {
-    val service = authorisationRequest.service
-    val clientId = authorisationRequest.clientIdentifier
-    val clientIdType = authorisationRequest.clientIdentifierType
-    agentInvitationIdentifyKnownFactForm.fill(
-      CurrentAuthorisationRequest(
-        authorisationRequest.clientType,
-        service,
-        clientIdType,
-        clientId,
-        authorisationRequest.knownFact)
-    )
-
-  }
-
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
@@ -328,20 +306,6 @@ class AgentsInvitationController @Inject()(
     }
   }
 
-  def invitationExistsInBasket(service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
-    for {
-      hasPendingInvitationServiceInJourney <- journeyStateCache.fetch.map {
-                                               case Some(cache)
-                                                   if cache.requests
-                                                     .map(_.invitation.service)
-                                                     .contains(service) && cache.requests
-                                                     .map(_.invitation.clientId)
-                                                     .contains(clientId) =>
-                                                 true
-                                               case _ => false
-                                             }
-    } yield hasPendingInvitationServiceInJourney
-
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
@@ -419,24 +383,6 @@ class AgentsInvitationController @Inject()(
       }
     }
   }
-
-  def maybeResultIfPendingInvitationsOrRelationshipExistFor(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier): Future[Option[Result]] =
-    for {
-      existsInBasket <- invitationExistsInBasket(service, clientId)
-      hasPendingInvitations <- if (existsInBasket) Future.successful(true)
-                              else
-                                invitationsService.hasPendingInvitationsFor(arn, clientId, service)
-      result <- hasPendingInvitations match {
-                 case true =>
-                   Future.successful(Some(Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())))
-                 case false =>
-                   relationshipsService.hasActiveRelationshipFor(arn, clientId, service).map {
-                     case true  => Some(Redirect(routes.AgentsErrorController.activeRelationshipExists()))
-                     case false => None
-                   }
-               }
-    } yield result
 
   def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
@@ -527,139 +473,6 @@ class AgentsInvitationController @Inject()(
         )
     }
   }
-
-  private[controllers] def redirectOrShowConfirmClient(
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    featureFlags: FeatureFlags)(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, _) =>
-      if (currentAuthorisationRequest.fromFastTrack) body
-      else {
-        currentAuthorisationRequest.service match {
-          case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
-            Redirect(routes.AgentsInvitationController.showConfirmClient())
-          case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
-            Redirect(routes.AgentsInvitationController.showConfirmClient())
-          case HMRCPIR if featureFlags.enableIrvToConfirm =>
-            Redirect(routes.AgentsInvitationController.showConfirmClient())
-          case _ =>
-            val result = for {
-              existsInBasket <- invitationExistsInBasket(
-                                 currentAuthorisationRequest.service,
-                                 currentAuthorisationRequest.clientIdentifier)
-              hasPendingInvitations <- if (existsInBasket) Future.successful(true)
-                                      else
-                                        invitationsService.hasPendingInvitationsFor(
-                                          arn,
-                                          currentAuthorisationRequest.clientIdentifier,
-                                          currentAuthorisationRequest.service)
-              hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(
-                                        arn,
-                                        currentAuthorisationRequest.clientIdentifier,
-                                        currentAuthorisationRequest.service)
-            } yield (hasPendingInvitations, hasActiveRelationship)
-
-            result.flatMap {
-              case (true, _)
-                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
-                Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
-
-              case (_, true)
-                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
-                Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
-              case _ => {
-                for {
-                  clientName <- invitationsService.getClientNameByService(
-                                 currentAuthorisationRequest.clientIdentifier,
-                                 currentAuthorisationRequest.service)
-                  journeyStateOpt <- journeyStateCache.fetch
-                  currentCache = journeyStateOpt match {
-                    case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
-                    case Some(journeyState) => journeyState
-                  }
-                  _ <- journeyStateCache.save(
-                        AgentMultiAuthorisationJourneyState(
-                          currentAuthorisationRequest.clientType.getOrElse(""),
-                          currentCache.requests ++ Set(AuthorisationRequest(
-                            clientName.getOrElse(""),
-                            Invitation(
-                              currentAuthorisationRequest.clientType,
-                              currentAuthorisationRequest.service,
-                              currentAuthorisationRequest.clientIdentifier,
-                              currentAuthorisationRequest.knownFact
-                            )
-                          ))
-                        ))
-                  result <- currentAuthorisationRequest.clientType match {
-                             case `personal` =>
-                               Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                             case `business` => body
-                             case _          => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
-                           }
-                } yield result
-              }
-            }
-        }
-      }
-    }
-
-  val showKnownFact: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetch.map {
-        case Some(currentInvitation)
-            if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
-          Ok(
-            known_fact(
-              authorisationRequestToIdentifyKnownFact(currentInvitation),
-              serviceToMessageKey(currentInvitation.service)))
-        case Some(_) => throw new Exception("no content in cache")
-        case None    => Redirect(routes.AgentsInvitationController.showClientType())
-      }
-    }
-  }
-
-  val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      serviceNameForm
-        .bindFromRequest()
-        .fold(
-          _ => {
-            Future successful Redirect(routes.AgentsInvitationController.showClientType())
-          },
-          data =>
-            currentAuthorisationRequestCache.get.flatMap(cacheItem =>
-              maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, cacheItem.clientIdentifier, cacheItem.service)
-                .flatMap {
-                  case Some(r) => Future.successful(r)
-                  case None => {
-                    data match {
-                      case Services.HMRCMTDIT =>
-                        bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
-                      case Services.HMRCPIR =>
-                        bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
-                      case Services.HMRCMTDVAT =>
-                        bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
-                    }
-                  }
-              })
-        )
-    }
-  }
-
-  def bindKnownFactForm(
-    knownFactForm: Form[CurrentAuthorisationRequest],
-    arn: Arn,
-    isWhitelisted: Boolean,
-    serviceMessageKey: String)(implicit request: Request[AnyContent]): Future[Result] =
-    knownFactForm
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Future successful Ok(known_fact(formWithErrors, serviceMessageKey)),
-        data => redirectBasedOnCurrentInputState(arn, data.copy(fromFastTrack = true), isWhitelisted)
-      )
 
   def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[AnyContent],
@@ -779,12 +592,6 @@ class AgentsInvitationController @Inject()(
           } yield result
       )
 
-  private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, invitation: Invitation)(
-    implicit request: Request[_]) =
-    for {
-      _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
-    } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
-
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.get.flatMap(cacheItem =>
@@ -868,229 +675,6 @@ class AgentsInvitationController @Inject()(
         Logger(getClass).warn(s"Something has gone wrong. Redirected back to check current state.")
         redirectBasedOnCurrentInputState(arn, currentAuthorisationRequest, isWhitelisted)
     }
-
-  val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      if (featureFlags.enableFastTrack) {
-        agentFastTrackForm
-          .bindFromRequest()
-          .fold(
-            formErrors => {
-              withMaybeErrorUrlCached {
-                case Some(continue) =>
-                  Future successful Redirect(
-                    continue.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-                case None =>
-                  throw new IllegalStateException("No Error Url Provided")
-              }
-            },
-            currentAuthorisationRequest => {
-              val authorisationRequest = currentAuthorisationRequest.copy(fromFastTrack = true)
-              currentAuthorisationRequestCache.save(authorisationRequest).flatMap { _ =>
-                withMaybeContinueUrlCached {
-                  ifShouldShowService(authorisationRequest, featureFlags, isWhitelisted) {
-                    Future successful Redirect(routes.AgentsInvitationController.showCheckDetails())
-                  }
-                }
-              }
-            }
-          )
-      } else {
-        Logger(getClass).warn("Fast-Track feature flag is switched off")
-        Future successful BadRequest
-      }
-    }
-  }
-
-  private[controllers] def knownFactCheckVat(
-    arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    vatInvitation: VatInvitation,
-    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    vatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
-      case Some(vatRegDate) =>
-        invitationsService
-          .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, vatRegDate) flatMap {
-          case Some(true) =>
-            redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-              createInvitation(arn, vatInvitation)
-            }
-          case Some(false) =>
-            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
-              Redirect(routes.AgentsErrorController.notMatched())
-            }
-          case None =>
-            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
-              Redirect(routes.AgentsInvitationController.notSignedUp())
-            }
-        }
-      case None =>
-        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-          createInvitation(arn, vatInvitation)
-        }
-    }
-
-  private[controllers] def knownFactCheckItsa(
-    arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    itsaInvitation: ItsaInvitation,
-    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    itsaInvitation.postcode match {
-      case Some(postcode) =>
-        for {
-          hasPostcode <- invitationsService
-                          .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
-          result <- hasPostcode match {
-                     case Some(true) =>
-                       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                         createInvitation(arn, itsaInvitation)
-                       }
-                     case Some(false) =>
-                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                         Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-                         auditService.sendAgentInvitationSubmitted(
-                           arn,
-                           "",
-                           itsaInvitation,
-                           "Fail",
-                           Some("POSTCODE_DOES_NOT_MATCH"))
-                         Redirect(routes.AgentsErrorController.notMatched())
-                       }
-                     case None =>
-                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                         Logger(getClass).warn(
-                           s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-                         auditService.sendAgentInvitationSubmitted(
-                           arn,
-                           "",
-                           itsaInvitation,
-                           "Fail",
-                           Some("CLIENT_REGISTRATION_NOT_FOUND"))
-                         Redirect(routes.AgentsInvitationController.notSignedUp())
-                       }
-                   }
-        } yield result
-      case None =>
-        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-          createInvitation(arn, itsaInvitation)
-        }
-    }
-
-  private[controllers] def knownFactCheckIrv(
-    arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    pirInvitation: PirInvitation,
-    isWhitelisted: Boolean)(implicit request: Request[_]) =
-    if (featureFlags.showKfcPersonalIncome) {
-      pirInvitation.dob match {
-        case Some(dob) =>
-          invitationsService
-            .checkCitizenRecordMatches(pirInvitation.clientIdentifier, LocalDate.parse(dob.value))
-            .flatMap {
-              case Some(true) =>
-                redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                  createInvitation(arn, pirInvitation)
-                }
-              case Some(false) =>
-                Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Future successful Redirect(routes.AgentsErrorController.notMatched())
-              case None =>
-                Logger(getClass).warn(
-                  s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Future successful Redirect(routes.AgentsErrorController.notMatched())
-            }
-        case None =>
-          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
-          Future successful Redirect(routes.AgentsErrorController.notMatched())
-      }
-    } else {
-      redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-        createInvitation(arn, pirInvitation)
-      }
-    }
-
-  def redirectBasedOnCurrentInputState(
-    arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    currentAuthorisationRequest match {
-      case CurrentInvitationInputVatReady(completeVatInvitation) =>
-        knownFactCheckVat(arn, currentAuthorisationRequest, completeVatInvitation, isWhitelisted)
-
-      case CurrentInvitationInputItsaReady(completeItsaInvitation) =>
-        knownFactCheckItsa(arn, currentAuthorisationRequest, completeItsaInvitation, isWhitelisted)
-
-      case CurrentInvitationInputPirReady(completePirInvitation) =>
-        knownFactCheckIrv(arn, currentAuthorisationRequest, completePirInvitation, isWhitelisted)
-
-      case CurrentInvitationInputNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showClientType())
-
-      case CurrentInvitationInputNeedsKnownFact(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showKnownFact())
-
-      case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
-        invitationNeedsClientIdentifier.service match {
-          case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-          case _ =>
-            Future successful Redirect(routes.AgentsInvitationController.showClientType())
-        }
-
-      case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showClientType())
-
-      case CurrentInvitationInputNeedService(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showSelectService())
-
-      case _ =>
-        Logger(getClass).warn("Resetting due to mix data in session")
-        currentAuthorisationRequestCache
-          .save(CurrentAuthorisationRequest())
-          .map(_ => Redirect(routes.AgentsInvitationController.showClientType()))
-    }
-
-  private def ifShouldShowService(
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    featureFlags: FeatureFlags,
-    isWhitelisted: Boolean)(body: => Future[Result]): Future[Result] =
-    currentAuthorisationRequest.service match {
-      case HMRCPIR if !isWhitelisted =>
-        Logger(getClass).warn(s"User is not whitelisted to create $HMRCPIR invitation")
-        Future successful BadRequest
-      case HMRCMTDVAT if !featureFlags.showHmrcMtdVat =>
-        Logger(getClass).warn(s"Service: $HMRCMTDVAT feature flagged is switched off")
-        Future successful BadRequest
-      case HMRCMTDIT if !featureFlags.showHmrcMtdIt =>
-        Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
-        Future successful BadRequest
-      case HMRCNIORG if !featureFlags.showHmrcNiOrg =>
-        Logger(getClass).warn(s"Service: $HMRCNIORG feature flagged is switched off")
-        Future successful BadRequest
-      case HMRCPIR if !featureFlags.showPersonalIncome =>
-        Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")
-        Future successful BadRequest
-      case _ => body
-    }
-
-  private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
-    enabledPersonalServicesForInvitation(isWhitelisted).exists(_._1 == service)
-
-  private def withMaybeContinueUrlCached[A](
-    block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    withMaybeContinueUrl {
-      case None      => block
-      case Some(url) => continueUrlCache.save(url).flatMap(_ => block)
-    }
-
-  private def withMaybeErrorUrlCached[A](
-    block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    withMaybeErrorUrl {
-      case None      => block(None)
-      case Some(url) => continueUrlCache.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
-    }
 }
 
 object AgentsInvitationController {
@@ -1166,83 +750,4 @@ object AgentsInvitationController {
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
-
-  private val validateFastTrackForm: Constraint[CurrentAuthorisationRequest] =
-    Constraint[CurrentAuthorisationRequest] { formData: CurrentAuthorisationRequest =>
-      formData match {
-        case CurrentAuthorisationRequest(Some("personal") | None, HMRCMTDIT, "ni", clientId, _, _)
-            if Nino.isValid(clientId) =>
-          Valid
-        case CurrentAuthorisationRequest(Some("personal") | None, HMRCPIR, "ni", clientId, _, _)
-            if Nino.isValid(clientId) =>
-          Valid
-        case CurrentAuthorisationRequest(_, HMRCMTDVAT, "vrn", clientId, _, _) if Vrn.isValid(clientId) => Valid
-        case _                                                                                          => Invalid(ValidationError("INVALID_SUBMISSION"))
-      }
-    }
-
-  def agentFastTrackKnownFactForm(
-    featureFlags: FeatureFlags,
-    knownFactMapping: Mapping[Option[String]]): Form[CurrentAuthorisationRequest] =
-    Form(
-      mapping(
-        "clientType"           -> optional(text),
-        "service"              -> text,
-        "clientIdentifierType" -> text,
-        "clientIdentifier"     -> normalizedText,
-        "knownFact"            -> knownFactMapping
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
-      })({ authorisationRequest =>
-        Some(
-          (
-            authorisationRequest.clientType,
-            authorisationRequest.service,
-            authorisationRequest.clientIdentifierType,
-            authorisationRequest.clientIdentifier,
-            authorisationRequest.knownFact))
-      }).verifying(validateFastTrackForm))
-
-  val agentFastTrackForm: Form[CurrentAuthorisationRequest] =
-    Form(
-      mapping(
-        "clientType" -> optional(
-          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
-        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
-        "clientIdentifierType" -> text
-          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
-        "clientIdentifier" -> normalizedText.verifying(validateClientId),
-        "knownFact"        -> optional(text)
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
-      })({ authorisationRequest =>
-        Some(
-          (
-            authorisationRequest.clientType,
-            authorisationRequest.service,
-            authorisationRequest.clientIdentifierType,
-            authorisationRequest.clientIdentifier,
-            authorisationRequest.knownFact))
-      }).verifying(validateFastTrackForm))
-
-  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentAuthorisationRequest] =
-    Form(
-      mapping(
-        "clientType" -> optional(text),
-        "service"    -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
-        "clientIdentifierType" -> text
-          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
-        "clientIdentifier" -> normalizedText.verifying(validateClientId),
-        "knownFact"        -> optional(text)
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
-      })({ authorisationRequest =>
-        Some(
-          (
-            authorisationRequest.clientType,
-            authorisationRequest.service,
-            authorisationRequest.clientIdentifierType,
-            authorisationRequest.clientIdentifier,
-            authorisationRequest.knownFact))
-      }))
 }

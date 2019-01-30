@@ -18,6 +18,7 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.Json
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._

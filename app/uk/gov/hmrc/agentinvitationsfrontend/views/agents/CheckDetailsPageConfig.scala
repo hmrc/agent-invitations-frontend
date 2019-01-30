@@ -37,7 +37,7 @@ case class CheckDetailsPageConfig(currentInvitationInput: CurrentAuthorisationRe
 
   val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
 
-  val knownFactUrl: Call = routes.AgentsInvitationController.showKnownFact()
+  val knownFactUrl: Call = routes.AgentsFastTrackInvitationController.showKnownFact()
 
   val changeDetailsUrl: Call = routes.AgentsInvitationController.submitIdentifyClient()
 

@@ -25,14 +25,13 @@ import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[CurrentAuthorisationRequestKeyStoreCache])
-trait CurrentAuthorisationRequestCache extends Cache[CurrentAuthorisationRequest]
+@ImplementedBy(classOf[FastTrackRequestCacheImpl])
+trait FastTrackRequestCache extends Cache[CurrentAuthorisationRequest]
 
 @Singleton
-class CurrentAuthorisationRequestKeyStoreCache @Inject()(session: SessionCache)
-    extends CurrentAuthorisationRequestCache {
+class FastTrackRequestCacheImpl @Inject()(session: SessionCache) extends CurrentAuthorisationRequestCache {
 
-  val id = "current-journey-aggregate-input"
+  val id = "fast-track-aggregate-input"
 
   def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentAuthorisationRequest]] =
     session.fetchAndGetEntry[CurrentAuthorisationRequest](id)
