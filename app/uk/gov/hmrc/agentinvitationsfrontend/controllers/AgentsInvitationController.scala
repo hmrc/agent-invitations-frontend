@@ -19,16 +19,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.data.Forms.{boolean, mapping, of, optional, text}
-import play.api.data.format.Formats._
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
-import play.api.data.{Form, Mapping}
+import play.api.data.Form
+import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.dateFieldsMapping
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -37,9 +33,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 
@@ -679,65 +674,9 @@ class AgentsInvitationController @Inject()(
 
 object AgentsInvitationController {
 
-  val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
-
-  private val vrnRegex = "[0-9]{9}"
-
-  private val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
-
-  private[controllers] val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
-    fieldValue match {
-      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
-        if (Vrn.isValid(clientId)) Valid
-        else Invalid(ValidationError("INVALID_VRN"))
-      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
-        if (Nino.isValid(clientId)) Valid
-        else Invalid(ValidationError("INVALID_NINO"))
-      case _ =>
-        Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
-    }
-  }
-
-  def clientTypeFor(clientType: Option[String], service: String): Option[String] =
-    clientType.orElse(service match {
-      case "HMRC-MTD-IT"            => Some("personal")
-      case "PERSONAL-INCOME-RECORD" => Some("personal")
-      case _                        => None
-    })
-
-  val detailsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
-    if (fieldValue.isDefined)
-      Valid
-    else
-      Invalid(ValidationError("error.confirmDetails.invalid"))
-  }
-
-  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
-    if (fieldValue.isDefined)
-      Valid
-    else
-      Invalid(ValidationError(invalidError))
-  }
-
-  private def confirmationChoice(errorMessage: String): Constraint[String] = Constraint[String] { fieldValue: String =>
-    if (fieldValue.trim.nonEmpty)
-      Valid
-    else
-      Invalid(ValidationError(errorMessage))
-  }
-
-  def vatRegDateMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
-    optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
-
-  val lowerCaseText: Mapping[String] = of[String].transform(_.trim.toLowerCase, identity)
-
   //Forms
   val clientTypeOnlyForm: Form[Option[String]] = Form(mapping("clientType" -> optional(text)
     .verifying("Unsupported Client Type", clientType => supportedClientTypes.contains(clientType)))(identity)(Some(_)))
-
-  val serviceNameForm: Form[String] = Form(
-    mapping("service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)))(
-      identity)(Some(_)))
 
   val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping("checkDetails" -> optional(boolean)

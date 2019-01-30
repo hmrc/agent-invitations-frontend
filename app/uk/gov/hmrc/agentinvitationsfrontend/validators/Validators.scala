@@ -21,19 +21,26 @@ import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, ValidateHelper}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
   val lowerCaseText: Mapping[String] = of[String].transform(_.trim.toLowerCase, identity)
+
   val trimmedUppercaseText: Mapping[String] = of[String].transform(_.trim.toUpperCase, identity)
 
   //Patterns
   val postcodeCharactersRegex = "^[a-zA-Z0-9 ]+$"
 
   val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
+
+  val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
+
+  val vrnRegex = "[0-9]{9}"
+
+  val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
 
   def validPostcode(
     isKfcFlagOn: Boolean,
@@ -78,4 +85,40 @@ object Validators {
   def validUtr(nonEmptyFailure: String = "error.utr.required", invalidFailure: String = "enter-utr.invalid-format") =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
 
+  val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
+    fieldValue match {
+      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
+        if (Vrn.isValid(clientId)) Valid
+        else Invalid(ValidationError("INVALID_VRN"))
+      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
+        if (Nino.isValid(clientId)) Valid
+        else Invalid(ValidationError("INVALID_NINO"))
+      case _ =>
+        Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
+    }
+  }
+
+  val detailsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError("error.confirmDetails.invalid"))
+  }
+
+  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError(invalidError))
+  }
+
+  def confirmationChoice(errorMessage: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+    if (fieldValue.trim.nonEmpty)
+      Valid
+    else
+      Invalid(ValidationError(errorMessage))
+  }
+
+  def vatRegDateMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
+    optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
 }

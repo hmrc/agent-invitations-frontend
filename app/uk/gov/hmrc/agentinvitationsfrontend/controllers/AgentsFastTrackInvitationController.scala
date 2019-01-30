@@ -25,12 +25,11 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, FastTrackErrors, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{dateOfBirthMapping, postcodeMapping}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.known_fact
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -66,8 +65,6 @@ class AgentsFastTrackInvitationController @Inject()(
       auditService) {
 
   implicit val ec: ExecutionContext = ecp.get
-
-  import continueUrlActions._
 
   val agentFastTrackPostcodeForm: Form[CurrentAuthorisationRequest] =
     agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt))
@@ -186,14 +183,14 @@ class AgentsFastTrackInvitationController @Inject()(
 
   private def withMaybeErrorUrlCached[A](
     block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    withMaybeErrorUrl {
+    continueUrlActions.withMaybeErrorUrl {
       case None      => block(None)
       case Some(url) => continueUrlCache.cacheAndFetchErrorUrl(url).flatMap(urlOps => block(urlOps))
     }
 
   private def withMaybeContinueUrlCached[A](
     block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    withMaybeContinueUrl {
+    continueUrlActions.withMaybeContinueUrl {
       case None      => block
       case Some(url) => continueUrlCache.save(url).flatMap(_ => block)
     }
@@ -279,4 +276,15 @@ object AgentsFastTrackInvitationController {
             authorisationRequest.clientIdentifier,
             authorisationRequest.knownFact))
       }))
+
+  def clientTypeFor(clientType: Option[String], service: String): Option[String] =
+    clientType.orElse(service match {
+      case "HMRC-MTD-IT"            => Some("personal")
+      case "PERSONAL-INCOME-RECORD" => Some("personal")
+      case _                        => None
+    })
+
+  val serviceNameForm: Form[String] = Form(
+    mapping("service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)))(
+      identity)(Some(_)))
 }
