@@ -64,9 +64,8 @@ class AgentsFastTrackInvitationController @Inject()(
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,
-      auditService) {
-
-  implicit val ec: ExecutionContext = ecp.get
+      auditService,
+      ecp) {
 
   val agentFastTrackPostcodeForm: Form[Option[String]] =
     knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))

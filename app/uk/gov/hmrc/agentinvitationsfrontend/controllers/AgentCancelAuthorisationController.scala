@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
@@ -28,6 +29,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{client_type, select_service}
 import uk.gov.hmrc.auth.core.AuthConnector
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
 class AgentCancelAuthorisationController @Inject()(
   withVerifiedPasscode: PasscodeVerification,
@@ -36,8 +39,9 @@ class AgentCancelAuthorisationController @Inject()(
   featureFlags: FeatureFlags)(
   implicit externalUrls: ExternalUrls,
   messagesApi: play.api.i18n.MessagesApi,
-  configuration: Configuration)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+  configuration: Configuration,
+  ecp: Provider[ExecutionContext])
+    extends BaseController(withVerifiedPasscode, authConnector, featureFlags, ecp) {
 
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>

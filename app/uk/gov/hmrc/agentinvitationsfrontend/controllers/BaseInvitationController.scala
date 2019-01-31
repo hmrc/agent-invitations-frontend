@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.mvc.{Request, Result}
@@ -32,23 +33,23 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
-class BaseInvitationController @Inject()(
+abstract class BaseInvitationController(
   override val withVerifiedPasscode: PasscodeVerification,
   override val authConnector: AuthConnector,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
-  auditService: AuditService
+  auditService: AuditService,
+  ecp: Provider[ExecutionContext]
 )(
   implicit override val externalUrls: ExternalUrls,
   configuration: Configuration,
   featureFlags: FeatureFlags,
   messagesApi: play.api.i18n.MessagesApi)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) with AuthActions {
+    extends BaseController(withVerifiedPasscode, authConnector, featureFlags, ecp) {
 
   def ifShouldShowService(
     currentAuthorisationRequest: CurrentAuthorisationRequest,

@@ -55,8 +55,6 @@ class ClientsInvitationController @Inject()(
   ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
     extends FrontendController with I18nSupport with AuthActions {
 
-  implicit val ec: ExecutionContext = ecp.get
-
   import ClientsInvitationController._
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action { implicit request =>

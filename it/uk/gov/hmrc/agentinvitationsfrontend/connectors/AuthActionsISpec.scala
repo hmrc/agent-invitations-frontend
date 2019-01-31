@@ -36,7 +36,7 @@ class AuthActionsISpec extends BaseISpec {
       })
 
     override def externalUrls: ExternalUrls =
-      new ExternalUrls("", "", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "")
+      new ExternalUrls("", "", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "", "")
   }
 
   "withAuthorisedAsAgent" should {

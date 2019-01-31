@@ -65,8 +65,6 @@ class AgentsRequestTrackingController @Inject()(
   ecp: Provider[ExecutionContext])(implicit val externalUrls: ExternalUrls, configuration: Configuration)
     extends FrontendController with I18nSupport with AuthActions {
 
-  implicit val ec: ExecutionContext = ecp.get
-
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {
       withAuthorisedAsAgent { (arn, isWhitelisted) =>

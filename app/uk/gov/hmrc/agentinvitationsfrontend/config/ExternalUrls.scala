@@ -34,7 +34,8 @@ class ExternalUrls @Inject()(
   @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
   @Named("agent-subscription-frontend.external-url") val subscriptionURL: String,
   @Named("agent-client-management-frontend.external-url") val agentClientManagementUrl: String,
-  @Named("privacy-policy.external-url") val privacypolicyUrl: String
+  @Named("privacy-policy.external-url") val privacypolicyUrl: String,
+  @Named("agent-invitations-frontend.external-url") val agentInvitationsExternalUrl: String
 ) {
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
