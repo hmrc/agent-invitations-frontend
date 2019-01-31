@@ -393,18 +393,25 @@ class CurrentAuthorisationRequestExtractorsSpec extends UnitSpec {
           Some(invalidClientIdVatBasedInvitation)
       }
 
-      "the service is PERSONAL-INCOME-RECORD but there is no knownfact: date-of-birth" in {
-        val invalidClientIdVatBasedInvitation =
-          CurrentAuthorisationRequest(personal, servicePIR, "ni", nino.value, None, true)
-        CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe
-          Some(invalidClientIdVatBasedInvitation)
-      }
-
       "the service is HMRC-MTD-VAT but there is an invalid vat-reg-date" in {
         val invalidClientIdVatBasedInvitation =
           CurrentAuthorisationRequest(business, serviceVAT, "vrn", vrn.value, Some("Invalid_Date"), true)
         CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdVatBasedInvitation) shouldBe Some(
           invalidClientIdVatBasedInvitation.copy(knownFact = None))
+      }
+
+      "the service is PERSONAL-INCOME-RECORD but there is no knownfact: date-of-birth" in {
+        val invalidClientIdPirBasedInvitation =
+          CurrentAuthorisationRequest(personal, servicePIR, "ni", nino.value, None, true)
+        CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdPirBasedInvitation) shouldBe
+          Some(invalidClientIdPirBasedInvitation)
+      }
+
+      "the service is PERSONAL-INCOME-RECORD but there is an invalid date-of-birth" in {
+        val invalidClientIdPirBasedInvitation =
+          CurrentAuthorisationRequest(personal, servicePIR, "ni", nino.value, Some("Invalid_Date"), true)
+        CurrentInvitationInputNeedsKnownFact.unapply(invalidClientIdPirBasedInvitation) shouldBe
+          Some(invalidClientIdPirBasedInvitation.copy(knownFact = None))
       }
     }
 
@@ -421,22 +428,26 @@ class CurrentAuthorisationRequestExtractorsSpec extends UnitSpec {
     }
   }
 
-  "The CurrentInvitationInputNeedService extractor" should {
+  "The CurrentInvitationInputNeedsService extractor" should {
     "return Some" when {
       "service is missing" in {
         val missingServiceInvitation =
           CurrentAuthorisationRequest(personal, "", "", "", None)
-        CurrentInvitationInputNeedService.unapply(missingServiceInvitation) shouldBe Some(missingServiceInvitation)
+        CurrentInvitationInputNeedsService.unapply(missingServiceInvitation) shouldBe Some(missingServiceInvitation)
       }
     }
 
+    "return None" when {
+      "service is not missing" in {
+        val noClientTypeInvitation =
+          CurrentAuthorisationRequest(personal, serviceITSA, "", "", None)
+        CurrentInvitationInputNeedsService.unapply(noClientTypeInvitation) shouldBe None
+      }
+    }
+  }
+
 //    TODO Bring back when mandatory
-//    "return None" when {
-//      "there is no client-type" in {
-//        val noClientTypeInvitation =
-//          CurrentInvitationInput(None, "", "", "", None)
-//        CurrentInvitationInputNeedService.unapply(noClientTypeInvitation) shouldBe None
-//      }
+
 //
 //      "there is invalid client-type" in {
 //        val invalidClientTypeInvitation =
@@ -450,5 +461,22 @@ class CurrentAuthorisationRequestExtractorsSpec extends UnitSpec {
 //        CurrentInvitationInputNeedService.unapply(invalidClientTypeInvitation) shouldBe None
 //      }
 //    }
+
+  "The CurrentInvitationInputNeedsClientType extractor" should {
+    "return Some" when {
+      "clientType is empty" in {
+        val missingClientTypeInvitation =
+          CurrentAuthorisationRequest(None, "", "", "", None)
+        CurrentInvitationInputNeedsClientType.unapply(missingClientTypeInvitation) shouldBe Some(
+          missingClientTypeInvitation)
+      }
+    }
+    "return None" when {
+      "clientType is not empty" in {
+        val missingClientTypeInvitation =
+          CurrentAuthorisationRequest(personal, "", "", "", None)
+        CurrentInvitationInputNeedsClientType.unapply(missingClientTypeInvitation) shouldBe None
+      }
+    }
   }
 }

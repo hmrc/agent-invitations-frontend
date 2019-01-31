@@ -127,7 +127,6 @@ object AgentInvitationControllerSupport {
               Some(CurrentAuthorisationRequest(clientType, HMRCNIORG, "utr", "", None))
             case _ => None
           }
-        case _ => None
       }
   }
 
@@ -170,7 +169,7 @@ object AgentInvitationControllerSupport {
       }
   }
 
-  object CurrentInvitationInputNeedService {
+  object CurrentInvitationInputNeedsService {
     def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
       currentAuthorisationRequest match {
         case CurrentAuthorisationRequest(clientType, service, _, _, _, _) if service.isEmpty =>

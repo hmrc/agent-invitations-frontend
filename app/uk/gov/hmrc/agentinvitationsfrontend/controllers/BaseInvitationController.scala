@@ -135,7 +135,7 @@ class BaseInvitationController @Inject()(
       case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
         Future successful Redirect(routes.AgentsInvitationController.showClientType())
 
-      case CurrentInvitationInputNeedService(_) =>
+      case CurrentInvitationInputNeedsService(_) =>
         Future successful Redirect(routes.AgentsInvitationController.showSelectService())
 
       case _ =>
