@@ -169,7 +169,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
   "POST /agents/more-details" should {
     val request = FakeRequest("POST", "/agents/identify-client")
 
-    "redirect to client-type when form data is invalid" in {
+    "return form with errors when form data is invalid" in {
       givenInvitationCreationSucceeds(
         arn,
         personal,
@@ -186,8 +186,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "This field is required")
     }
   }
 }

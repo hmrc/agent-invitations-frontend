@@ -18,27 +18,26 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
-import play.api.data.Forms.{mapping, optional, text}
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
+import play.api.data.Forms.{boolean, mapping, optional, single, text}
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.checkDetailsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, FastTrackErrors, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, FastTrackErrors}
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, known_fact}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -69,27 +68,26 @@ class AgentsFastTrackInvitationController @Inject()(
 
   implicit val ec: ExecutionContext = ecp.get
 
-  val agentFastTrackPostcodeForm: Form[CurrentAuthorisationRequest] =
-    agentFastTrackKnownFactForm(featureFlags, postcodeMapping(featureFlags.showKfcMtdIt))
+  val agentFastTrackPostcodeForm: Form[Option[String]] =
+    knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))
 
-  val agentFastTrackDateOfBirthForm: Form[CurrentAuthorisationRequest] =
-    agentFastTrackKnownFactForm(featureFlags, dateOfBirthMapping(featureFlags.showKfcPersonalIncome))
+  val agentFastTrackDateOfBirthForm: Form[Option[String]] =
+    knownFactsForm(dateOfBirthMapping(featureFlags.showKfcPersonalIncome))
 
-  val agentFastTrackVatRegDateForm: Form[CurrentAuthorisationRequest] =
-    agentFastTrackKnownFactForm(featureFlags, vatRegDateMapping(featureFlags))
-
-  val agentInvitationIdentifyKnownFactForm: Form[CurrentAuthorisationRequest] =
-    agentFastTrackGenericFormKnownFact(featureFlags)
+  val agentFastTrackVatRegDateForm: Form[Option[String]] =
+    knownFactsForm(vatRegDateMapping(featureFlags))
 
   val showKnownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       currentAuthorisationRequestCache.fetch.map {
         case Some(currentInvitation)
-            if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty =>
+            if currentInvitation.clientIdentifier.nonEmpty && currentInvitation.clientIdentifierType.nonEmpty && currentInvitation.service.nonEmpty =>
           Ok(
             known_fact(
-              authorisationRequestToIdentifyKnownFact(currentInvitation),
+              getKnownFactFormForService(currentInvitation.service),
+              currentInvitation.service,
               serviceToMessageKey(currentInvitation.service)))
+
         case Some(_) => throw new Exception("no content in cache")
         case None    => Redirect(routes.AgentsInvitationController.showClientType())
       }
@@ -98,31 +96,43 @@ class AgentsFastTrackInvitationController @Inject()(
 
   val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      serviceNameForm
-        .bindFromRequest()
-        .fold(
-          _ => {
-            Future successful Redirect(routes.AgentsInvitationController.showClientType())
-          },
-          data =>
-            currentAuthorisationRequestCache.get.flatMap(cacheItem =>
-              maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, cacheItem.clientIdentifier, cacheItem.service)
-                .flatMap {
-                  case Some(r) => Future.successful(r)
-                  case None => {
-                    data match {
-                      case Services.HMRCMTDIT =>
-                        bindKnownFactForm(agentFastTrackPostcodeForm, arn, isWhitelisted, "itsa")
-                      case Services.HMRCPIR =>
-                        bindKnownFactForm(agentFastTrackDateOfBirthForm, arn, isWhitelisted, "afi")
-                      case Services.HMRCMTDVAT =>
-                        bindKnownFactForm(agentFastTrackVatRegDateForm, arn, isWhitelisted, "vat")
-                    }
-                  }
-              })
-        )
+      currentAuthorisationRequestCache.get.flatMap(
+        currentAuthorisationRequest => {
+          getKnownFactFormForService(currentAuthorisationRequest.service)
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                Ok(
+                  known_fact(
+                    formWithErrors,
+                    currentAuthorisationRequest.service,
+                    serviceToMessageKey(currentAuthorisationRequest.service))),
+              knownFact =>
+                maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                  arn,
+                  currentAuthorisationRequest.clientIdentifier,
+                  currentAuthorisationRequest.service)
+                  .flatMap {
+                    case Some(r) => r
+                    case None =>
+                      val updatedCache = currentAuthorisationRequest.copy(knownFact = knownFact, fromFastTrack = true)
+                      currentAuthorisationRequestCache
+                        .save(updatedCache)
+                        .flatMap(_ => redirectBasedOnCurrentInputState(arn, updatedCache, isWhitelisted))
+                }
+            )
+        }
+      )
     }
   }
+
+  private def getKnownFactFormForService(service: String) =
+    service match {
+      case HMRCMTDIT  => agentFastTrackPostcodeForm
+      case HMRCPIR    => agentFastTrackDateOfBirthForm
+      case HMRCMTDVAT => agentFastTrackVatRegDateForm
+      case p          => throw new Exception(s"invalid service in the cache during fast track journey: $p")
+    }
 
   val agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
@@ -211,33 +221,6 @@ class AgentsFastTrackInvitationController @Inject()(
     }
   }
 
-  private val authorisationRequestToIdentifyKnownFact = (authorisationRequest: CurrentAuthorisationRequest) => {
-    val service = authorisationRequest.service
-    val clientId = authorisationRequest.clientIdentifier
-    val clientIdType = authorisationRequest.clientIdentifierType
-    agentInvitationIdentifyKnownFactForm.fill(
-      CurrentAuthorisationRequest(
-        authorisationRequest.clientType,
-        service,
-        clientIdType,
-        clientId,
-        authorisationRequest.knownFact)
-    )
-
-  }
-
-  def bindKnownFactForm(
-    knownFactForm: Form[CurrentAuthorisationRequest],
-    arn: Arn,
-    isWhitelisted: Boolean,
-    serviceMessageKey: String)(implicit request: Request[AnyContent]): Future[Result] =
-    knownFactForm
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Future successful Ok(known_fact(formWithErrors, serviceMessageKey)),
-        data => redirectBasedOnCurrentInputState(arn, data.copy(fromFastTrack = true), isWhitelisted)
-      )
-
   private def withMaybeErrorUrlCached[A](
     block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
     continueUrlActions.withMaybeErrorUrl {
@@ -255,6 +238,9 @@ class AgentsFastTrackInvitationController @Inject()(
 
 object AgentsFastTrackInvitationController {
 
+  def knownFactsForm(knownFactsMapping: Mapping[Option[String]]) =
+    Form(single("knownFact" -> knownFactsMapping))
+
   val validateFastTrackForm: Constraint[CurrentAuthorisationRequest] =
     Constraint[CurrentAuthorisationRequest] { formData: CurrentAuthorisationRequest =>
       formData match {
@@ -268,28 +254,6 @@ object AgentsFastTrackInvitationController {
         case _                                                                                          => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
-
-  def agentFastTrackKnownFactForm(
-    featureFlags: FeatureFlags,
-    knownFactMapping: Mapping[Option[String]]): Form[CurrentAuthorisationRequest] =
-    Form(
-      mapping(
-        "clientType"           -> optional(text),
-        "service"              -> text,
-        "clientIdentifierType" -> text,
-        "clientIdentifier"     -> normalizedText,
-        "knownFact"            -> knownFactMapping
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
-      })({ authorisationRequest =>
-        Some(
-          (
-            authorisationRequest.clientType,
-            authorisationRequest.service,
-            authorisationRequest.clientIdentifierType,
-            authorisationRequest.clientIdentifier,
-            authorisationRequest.knownFact))
-      }).verifying(validateFastTrackForm))
 
   val agentFastTrackForm: Form[CurrentAuthorisationRequest] =
     Form(
@@ -313,27 +277,6 @@ object AgentsFastTrackInvitationController {
             authorisationRequest.knownFact))
       }).verifying(validateFastTrackForm))
 
-  def agentFastTrackGenericFormKnownFact(featureFlags: FeatureFlags): Form[CurrentAuthorisationRequest] =
-    Form(
-      mapping(
-        "clientType" -> optional(text),
-        "service"    -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
-        "clientIdentifierType" -> text
-          .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
-        "clientIdentifier" -> normalizedText.verifying(validateClientId),
-        "knownFact"        -> optional(text)
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
-      })({ authorisationRequest =>
-        Some(
-          (
-            authorisationRequest.clientType,
-            authorisationRequest.service,
-            authorisationRequest.clientIdentifierType,
-            authorisationRequest.clientIdentifier,
-            authorisationRequest.knownFact))
-      }))
-
   def clientTypeFor(clientType: Option[String], service: String): Option[String] =
     clientType.orElse(service match {
       case "HMRC-MTD-IT"            => Some("personal")
@@ -341,7 +284,7 @@ object AgentsFastTrackInvitationController {
       case _                        => None
     })
 
-  val serviceNameForm: Form[String] = Form(
-    mapping("service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)))(
-      identity)(Some(_)))
+  val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping("checkDetails" -> optional(boolean)
+      .verifying(detailsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
 }

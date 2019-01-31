@@ -620,14 +620,6 @@ class AgentsInvitationController @Inject()(
 
 object AgentsInvitationController {
 
-  //Forms
-  val clientTypeOnlyForm: Form[Option[String]] = Form(mapping("clientType" -> optional(text)
-    .verifying("Unsupported Client Type", clientType => supportedClientTypes.contains(clientType)))(identity)(Some(_)))
-
-  val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
-    mapping("checkDetails" -> optional(boolean)
-      .verifying(detailsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
-
   def agentConfirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
       mapping(
