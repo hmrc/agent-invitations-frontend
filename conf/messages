@@ -149,6 +149,7 @@ review-authorisations.subheader=Do you need to add another authorisation for thi
 review-authorisations.radio.yes=Yes
 review-authorisations.radio.no=No
 review-authorisations.different-names=The client''s name may be recorded differently in each service.
+review-authorisations.no-client-name=Client''s name is not available
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
 
 #Cancel Authorisations

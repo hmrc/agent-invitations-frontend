@@ -123,6 +123,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "Sara Vaterloo",
         "Do you need to add another authorisation for this client?"
       )
+      checkHtmlResultWithBodyMsgs(result, "review-authorisations.no-client-name")
       checkHtmlResultWithNotBodyText(result, "Malcolm Pirson")
       verifyAuthoriseAttempt()
     }
@@ -220,6 +221,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "NI")
       givenInvitationCreationFailsForService(
         arn,
+        Some("personal"),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
