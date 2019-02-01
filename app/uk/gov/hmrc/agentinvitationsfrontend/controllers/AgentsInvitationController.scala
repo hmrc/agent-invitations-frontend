@@ -333,7 +333,7 @@ class AgentsInvitationController @Inject()(
           case Some(journeyState) if journeyState.requests.nonEmpty =>
             Ok(
               review_authorisations(
-                ReviewAuthorisationsPageConfig(journeyState),
+                ReviewAuthorisationsPageConfig(journeyState, featureFlags.enableIrvToConfirm),
                 agentConfirmationForm("error.review-authorisation.required")))
           case Some(_) => Redirect(routes.AgentsInvitationController.allAuthorisationsRemoved())
           case None    => Redirect(routes.AgentsInvitationController.showClientType())
@@ -350,7 +350,10 @@ class AgentsInvitationController @Inject()(
           .fold(
             formWithErrors =>
               Future.successful(
-                Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState), formWithErrors))),
+                Ok(
+                  review_authorisations(
+                    ReviewAuthorisationsPageConfig(journeyState, featureFlags.enableIrvToConfirm),
+                    formWithErrors))),
             input => {
               if (input.choice) {
                 currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType))) map (

@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
@@ -32,7 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
-import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.track.{ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
@@ -78,10 +79,11 @@ class AgentsRequestTrackingController @Inject()(
                                           trackRequestsShowLastDays)
         } yield
           Ok(
-            recent_invitations(
-              invitationsAndRelationships,
-              trackRequestsShowLastDays,
-              featureFlags.enableTrackCancelAuth))
+            track(
+              TrackPageConfig(
+                invitationsAndRelationships,
+                trackRequestsShowLastDays,
+                featureFlags.enableTrackCancelAuth)))
       }
     } else {
       Logger(getClass).warn("Feature flag to enable track page is off")

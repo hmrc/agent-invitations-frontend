@@ -224,6 +224,7 @@ trait ACAStubs {
 
   def givenInvitationCreationFailsForService(
                                        arn: Arn,
+                                       clientType: Option[String],
                                        clientId: String,
                                        invitationId: InvitationId,
                                        suppliedClientId: String,
@@ -235,6 +236,7 @@ trait ACAStubs {
         .withRequestBody(
           equalToJson(s"""
                          |{
+                         |   "clientType": "${clientType.getOrElse("")}",
                          |   "service": "$service",
                          |   "clientIdType": "$suppliedClientType",
                          |   "clientId":"$suppliedClientId"

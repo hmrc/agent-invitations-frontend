@@ -19,10 +19,9 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class ReviewAuthorisationsPageConfig(authorisationRequests: AgentMultiAuthorisationJourneyState) {
-
-  def clientNameOf(authorisationRequest: AuthorisationRequest) =
-    if (authorisationRequest.invitation.service == "PERSONAL-INCOME-RECORD") "" else authorisationRequest.clientName
+case class ReviewAuthorisationsPageConfig(
+  authorisationRequests: AgentMultiAuthorisationJourneyState,
+  showPIRName: Boolean) {
 
   val numberOfItems: Int = authorisationRequests.requests.size
 
