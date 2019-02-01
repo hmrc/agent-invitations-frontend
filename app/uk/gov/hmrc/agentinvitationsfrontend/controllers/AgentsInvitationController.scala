@@ -53,12 +53,12 @@ class AgentsInvitationController @Inject()(
   val env: Environment,
   authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
-  withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(
+  withVerifiedPasscode: PasscodeVerification)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi)
+  messagesApi: play.api.i18n.MessagesApi,
+  ec: ExecutionContext)
     extends BaseInvitationController(
       withVerifiedPasscode,
       authConnector,
@@ -66,8 +66,7 @@ class AgentsInvitationController @Inject()(
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,
-      auditService,
-      ecp) {
+      auditService) {
 
   import AgentInvitationControllerSupport._
   import AgentsInvitationController._

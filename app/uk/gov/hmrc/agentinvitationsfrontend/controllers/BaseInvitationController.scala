@@ -42,14 +42,14 @@ abstract class BaseInvitationController(
   relationshipsService: RelationshipsService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
-  auditService: AuditService,
-  ecp: Provider[ExecutionContext]
+  auditService: AuditService
 )(
   implicit override val externalUrls: ExternalUrls,
   configuration: Configuration,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags, ecp) {
+  messagesApi: play.api.i18n.MessagesApi,
+  ec: ExecutionContext)
+    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
 
   def ifShouldShowService(
     currentAuthorisationRequest: CurrentAuthorisationRequest,

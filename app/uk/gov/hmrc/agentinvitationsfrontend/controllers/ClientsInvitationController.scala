@@ -51,8 +51,10 @@ class ClientsInvitationController @Inject()(
   auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
   val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
+  val withVerifiedPasscode: PasscodeVerification)(
+  implicit val configuration: Configuration,
+  val externalUrls: ExternalUrls,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController._

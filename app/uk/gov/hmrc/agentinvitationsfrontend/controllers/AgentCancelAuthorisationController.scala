@@ -40,8 +40,8 @@ class AgentCancelAuthorisationController @Inject()(
   implicit externalUrls: ExternalUrls,
   messagesApi: play.api.i18n.MessagesApi,
   configuration: Configuration,
-  ecp: Provider[ExecutionContext])
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags, ecp) {
+  ec: ExecutionContext)
+    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
 
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>

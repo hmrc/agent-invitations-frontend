@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import play.api.Configuration
 import play.api.i18n.{I18nSupport, Messages}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.logging.LoggingDetails
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext
@@ -30,15 +28,12 @@ import scala.concurrent.ExecutionContext
 abstract class BaseController(
   val withVerifiedPasscode: PasscodeVerification,
   val authConnector: AuthConnector,
-  featureFlags: FeatureFlags,
-  ecp: Provider[ExecutionContext])(
+  featureFlags: FeatureFlags)(
   implicit val externalUrls: ExternalUrls,
   val messagesApi: play.api.i18n.MessagesApi,
-  val configuration: Configuration)
+  val configuration: Configuration,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  // Put here to override deprecated definition from FrontendController to avoid deprecation warnings noise
-  override implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext = ecp.get
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))

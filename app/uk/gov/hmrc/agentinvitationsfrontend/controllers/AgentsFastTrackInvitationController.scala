@@ -51,12 +51,12 @@ class AgentsFastTrackInvitationController @Inject()(
   authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
   withVerifiedPasscode: PasscodeVerification,
-  auditService: AuditService,
-  ecp: Provider[ExecutionContext])(
+  auditService: AuditService)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi)
+  messagesApi: play.api.i18n.MessagesApi,
+  ec: ExecutionContext)
     extends BaseInvitationController(
       withVerifiedPasscode,
       authConnector,
@@ -64,8 +64,7 @@ class AgentsFastTrackInvitationController @Inject()(
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,
-      auditService,
-      ecp) {
+      auditService) {
 
   val agentFastTrackPostcodeForm: Form[Option[String]] =
     knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))
