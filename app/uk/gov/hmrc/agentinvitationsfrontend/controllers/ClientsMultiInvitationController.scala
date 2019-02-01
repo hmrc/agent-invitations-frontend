@@ -45,7 +45,8 @@ class ClientsMultiInvitationController @Inject()(
   val authConnector: AuthConnector,
   val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
-  val externalUrls: ExternalUrls)
+  val externalUrls: ExternalUrls,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   import ClientsInvitationController.confirmDeclineForm

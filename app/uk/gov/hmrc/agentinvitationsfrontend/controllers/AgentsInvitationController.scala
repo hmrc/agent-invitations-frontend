@@ -43,8 +43,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentsInvitationController @Inject()(
-  @Named("agent-invitations-frontend.external-url") externalUrl: String,
-  @Named("agent-services-account-frontend.external-url") asAccUrl: String,
   @Named("invitation.expiryDuration") expiryDuration: String,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
@@ -55,12 +53,12 @@ class AgentsInvitationController @Inject()(
   val env: Environment,
   authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
-  withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(
+  withVerifiedPasscode: PasscodeVerification)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi)
+  messagesApi: play.api.i18n.MessagesApi,
+  ec: ExecutionContext)
     extends BaseInvitationController(
       withVerifiedPasscode,
       authConnector,
@@ -70,17 +68,12 @@ class AgentsInvitationController @Inject()(
       currentAuthorisationRequestCache,
       auditService) {
 
-  implicit val ec: ExecutionContext = ecp.get
-
   import AgentInvitationControllerSupport._
   import AgentsInvitationController._
 
-  private[controllers] val isDevEnv =
-    if (env.mode.equals(Mode.Test)) false else configuration.getString("run.mode").forall(Mode.Dev.toString.equals)
-  private[controllers] val agentServicesAccountUrl: String =
-    if (isDevEnv) s"http://localhost:9401/agent-services-account" else "/agent-services-account"
-
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
+
+  val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
 
   val agentsRoot: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AgentsInvitationController.showClientType())
@@ -543,7 +536,7 @@ class AgentsInvitationController @Inject()(
                           throw new IllegalStateException("no client type found in cache")))
           continue <- continueUrlCache.fetch
         } yield {
-          val invitationUrl: String = s"$externalUrl$agentLink"
+          val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val clientType = if (agentLink.contains("personal")) "personal" else "business"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
           Ok(

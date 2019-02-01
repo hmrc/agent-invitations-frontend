@@ -61,11 +61,11 @@ class AgentsRequestTrackingController @Inject()(
   val pirRelationshipConnector: PirRelationshipConnector,
   val support: AgentInvitationControllerSupport,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
-  @Named("agent-invitations-frontend.external-url") externalUrl: String,
-  ecp: Provider[ExecutionContext])(implicit val externalUrls: ExternalUrls, configuration: Configuration)
+  @Named("agent-invitations-frontend.external-url") externalUrl: String)(
+  implicit val externalUrls: ExternalUrls,
+  configuration: Configuration,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.{I18nSupport, Messages}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -24,14 +23,16 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-@Singleton
-class BaseController @Inject()(
+import scala.concurrent.ExecutionContext
+
+abstract class BaseController(
   val withVerifiedPasscode: PasscodeVerification,
   val authConnector: AuthConnector,
   featureFlags: FeatureFlags)(
   implicit val externalUrls: ExternalUrls,
   val messagesApi: play.api.i18n.MessagesApi,
-  val configuration: Configuration)
+  val configuration: Configuration,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
