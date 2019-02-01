@@ -5,7 +5,8 @@ import uk.gov.hmrc.SbtAutoBuildPlugin
 import com.geirsson.coursiersmall.{Repository => R}
 
 scalafixResolvers in ThisBuild += new R.Maven("https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases")
-scalafixDependencies in ThisBuild := Seq("uk.gov.hmrc" % "scalafix-rules_2.11" % "0.2.0")
+// always use the latest version of scalafix-rules available
+scalafixDependencies in ThisBuild := Seq("uk.gov.hmrc" % "scalafix-rules_2.11" % "0.6.0")
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
