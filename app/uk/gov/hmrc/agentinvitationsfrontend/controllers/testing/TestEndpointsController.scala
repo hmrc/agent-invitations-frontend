@@ -43,11 +43,11 @@ class TestEndpointsController @Inject()(
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
+  val withVerifiedPasscode: PasscodeVerification)(
+  implicit val configuration: Configuration,
+  val externalUrls: ExternalUrls,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   import TestEndpointsController._
 

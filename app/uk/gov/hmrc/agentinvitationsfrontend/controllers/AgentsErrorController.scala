@@ -41,14 +41,12 @@ class AgentsErrorController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(
+  val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
-  featureFlags: FeatureFlags)
+  featureFlags: FeatureFlags,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>

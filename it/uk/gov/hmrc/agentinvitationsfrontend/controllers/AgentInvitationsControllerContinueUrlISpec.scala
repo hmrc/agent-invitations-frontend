@@ -138,7 +138,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     "redirect to agent-services-account if no continue-url is stored in cache" in {
       val result = continueAfter(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe "/agent-services-account"
+      redirectLocation(result).get shouldBe s"$wireMockBaseUrlAsString/agent-services-account"
       await(testContinueUrlKeyStoreCache.fetch) shouldBe None
     }
   }
