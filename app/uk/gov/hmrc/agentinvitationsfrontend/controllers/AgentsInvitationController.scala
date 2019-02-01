@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
@@ -25,6 +26,7 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -45,6 +47,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AgentsInvitationController @Inject()(
   @Named("invitation.expiryDuration") expiryDuration: String,
   invitationsService: InvitationsService,
+  invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   auditService: AuditService,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
@@ -63,6 +66,7 @@ class AgentsInvitationController @Inject()(
       withVerifiedPasscode,
       authConnector,
       invitationsService,
+      invitationsConnector,
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,

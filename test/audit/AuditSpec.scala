@@ -58,6 +58,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
           arn,
           invitationId,
           PirInvitation(Nino("WM123456C"), None),
+          "uid",
           result
         )(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))
 

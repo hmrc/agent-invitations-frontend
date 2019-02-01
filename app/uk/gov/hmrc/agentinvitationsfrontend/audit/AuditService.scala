@@ -41,6 +41,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     arn: Arn,
     invitationId: String,
     invitation: Invitation,
+    uid: String,
     result: String,
     failure: Option[String] = None)(
     implicit hc: HeaderCarrier,
@@ -53,9 +54,11 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "factCheck"            -> result,
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
+        "clientType"           -> invitation.clientType.getOrElse(""),
         "clientIdType"         -> invitation.clientIdentifierType,
         "clientId"             -> invitation.clientId,
-        "service"              -> invitation.service
+        "service"              -> invitation.service,
+        "uid"                  -> uid
       ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
     )
 

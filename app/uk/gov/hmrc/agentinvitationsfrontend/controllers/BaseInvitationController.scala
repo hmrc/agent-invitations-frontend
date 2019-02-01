@@ -18,11 +18,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCNIORG, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -39,6 +41,7 @@ abstract class BaseInvitationController(
   override val withVerifiedPasscode: PasscodeVerification,
   override val authConnector: AuthConnector,
   invitationsService: InvitationsService,
+  invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
@@ -186,6 +189,9 @@ abstract class BaseInvitationController(
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     itsaInvitation.postcode match {
       case Some(postcode) =>
+        invitationsConnector
+          .getAgentReferenceRecord(arn)
+          .flatMap(r =>
         for {
           hasPostcode <- invitationsService
                           .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
@@ -201,6 +207,7 @@ abstract class BaseInvitationController(
                            arn,
                            "",
                            itsaInvitation,
+                           r.uid,
                            "Fail",
                            Some("POSTCODE_DOES_NOT_MATCH"))
                          Redirect(routes.AgentsErrorController.notMatched())
@@ -213,12 +220,14 @@ abstract class BaseInvitationController(
                            arn,
                            "",
                            itsaInvitation,
+                           r.uid,
                            "Fail",
                            Some("CLIENT_REGISTRATION_NOT_FOUND"))
                          Redirect(routes.AgentsInvitationController.notSignedUp())
                        }
                    }
         } yield result
+          )
       case None =>
         redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
           createInvitation(arn, itsaInvitation)

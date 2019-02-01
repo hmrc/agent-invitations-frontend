@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.{boolean, mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
@@ -25,6 +26,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CurrentAuthorisationRequest, FastTrackErrors}
@@ -44,6 +46,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentsFastTrackInvitationController @Inject()(
   invitationsService: InvitationsService,
+  invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
@@ -61,6 +64,7 @@ class AgentsFastTrackInvitationController @Inject()(
       withVerifiedPasscode,
       authConnector,
       invitationsService,
+      invitationsConnector,
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,
