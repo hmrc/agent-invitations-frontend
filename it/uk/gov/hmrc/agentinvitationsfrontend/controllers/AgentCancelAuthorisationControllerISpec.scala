@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
-import uk.gov.hmrc.agentinvitationsfrontend.models.CancelAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -47,13 +47,13 @@ class AgentCancelAuthorisationControllerISpec extends BaseISpec with AuthBehavio
       val timeout = 2.seconds
       redirectLocation(result)(timeout).get shouldBe routes.AgentCancelAuthorisationController.showSelectService().url
 
-      await(testCancelAuthorisationRequestCache.fetch).get shouldBe CancelAuthorisationRequest(Some("personal"), None)
+      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest(Some("personal"))
     }
   }
 
   "GET /cancel-authorisation/select-service" should {
     "return 200 with expected page content" in {
-      testCancelAuthorisationRequestCache.save(CancelAuthorisationRequest(Some("personal"), None))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("personal")))
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
 
@@ -75,20 +75,20 @@ class AgentCancelAuthorisationControllerISpec extends BaseISpec with AuthBehavio
   "POST /cancel-authorisation/select-service" should {
 
     "return redirect after storing service_type in the cache" in {
-      testCancelAuthorisationRequestCache.save(CancelAuthorisationRequest(Some("personal"), None))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("personal")))
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
       val submitSelectService = controller.submitSelectService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
       val timeout = 2.seconds
-      redirectLocation(result)(timeout).get shouldBe routes.AgentCancelAuthorisationController.showClientType().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentCancelAuthorisationController.showIdentifyClient().url
 
-      await(testCancelAuthorisationRequestCache.fetch).get shouldBe CancelAuthorisationRequest(Some("personal"), Some("HMRC-MTD-IT"))
+      await(testCurrentAuthorisationRequestCache.fetch).get.service shouldBe "HMRC-MTD-IT"
     }
 
     "handle forms with invalid service_types" in {
-      testCancelAuthorisationRequestCache.save(CancelAuthorisationRequest(Some("personal"), None))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("personal")))
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
       val submitSelectService = controller.submitSelectService()
 

@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
 
-@(agentForm: Form[String], services: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentForm: Form[String], services: Seq[(String, String)], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -41,25 +41,13 @@ action = routes.AgentCancelAuthorisationController.submitSelectService(),
     agentForm("serviceType"),
     services,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>""" +
-    """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("cancel-authorisation.select-service.p1") + """</span></div>""" +
+    """<div class="margin-bottom-40"><span>""" + Messages("cancel-authorisation.select-service.p1") + """</span></div>""" +
     """<span class="form-hint">""" + Messages("cancel-authorisation.select-service.hint") + """</span>"""),
     '_groupDivClass -> "form-group soft--ends",
     '_fieldsetAttributes -> Html("""id='service'"""),
     '_legendClass -> "margin-bottom-10"
     )
 </div>
-
-<details id="selectServiceHelper">
-    <summary id="selectServiceSummary">
-    <span id="selectServiceAlt" class="summary">
-     @Messages("select-service.alternative")
-   </span>
-    </summary>
-    <div class="panel panel-border-narrow">
-        <p id="selectServiceSuggestion">@Messages("select-service.alt-suggestion")</p>
-        <p id="selectServiceGuidance">@Html(Messages("select-service.guidance", "https://www.gov.uk/guidance/client-authorisation-an-overview"))</p>
-    </div>
-</details>
 
 <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
 }

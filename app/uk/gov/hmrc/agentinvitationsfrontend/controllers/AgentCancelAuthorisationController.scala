@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
-import play.api.mvc.{Action, AnyContent, Request}
+import play.api.mvc.{Action, AnyContent, Call, Request}
+import play.twirl.api.HtmlFormat
+import play.twirl.api.HtmlFormat.Appendable
+import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ServiceTypeForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.CancelAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.CancelAuthorisationCache
-import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{client_type, select_service}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.ExecutionContext
@@ -35,73 +35,57 @@ import scala.concurrent.ExecutionContext
 class AgentCancelAuthorisationController @Inject()(
   withVerifiedPasscode: PasscodeVerification,
   authConnector: AuthConnector,
-  val cancelAuthorisationCache: CancelAuthorisationCache,
-  featureFlags: FeatureFlags)(
-  implicit externalUrls: ExternalUrls,
+  invitationsService: InvitationsService,
+  relationshipsService: RelationshipsService,
+  journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
+  val currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  auditService: AuditService)(
+  implicit featureFlags: FeatureFlags,
+  externalUrls: ExternalUrls,
   messagesApi: play.api.i18n.MessagesApi,
   configuration: Configuration,
   ec: ExecutionContext)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+    extends BaseInvitationController(
+      withVerifiedPasscode,
+      authConnector,
+      invitationsService,
+      relationshipsService,
+      journeyStateCache,
+      currentAuthorisationRequestCache,
+      auditService) {
 
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Ok(client_type(ClientTypeForm.form, clientTypes))
-    }
+    handleGetClientType
   }
 
   def submitClientType: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      ClientTypeForm.form
-        .bindFromRequest()
-        .fold(
-          formWithErrors => Ok(client_type(formWithErrors, clientTypes)),
-          userInput => {
-            val updateAggregate = cancelAuthorisationCache.fetch
-              .map(_.getOrElse(CancelAuthorisationRequest()))
-              .map(_.copy(clientType = Some(userInput)))
-
-            updateAggregate.flatMap(
-              update =>
-                cancelAuthorisationCache
-                  .save(update)
-                  .map(_ => Redirect(routes.AgentCancelAuthorisationController.showSelectService())))
-          }
-        )
-    }
+    handleSubmitClientType
   }
 
   def showSelectService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, isWhitelisted) =>
-      getSelectServicePage(isWhitelisted, ServiceTypeForm.form)
-    }
+    handleGetSelectServicePage
   }
-
-  private def getSelectServicePage(isWhitelisted: Boolean, form: Form[String])(implicit request: Request[_]) =
-    cancelAuthorisationCache.fetch.flatMap(_.flatMap(_.clientType)).flatMap {
-      case Some("personal") => Ok(select_service(form, enabledPersonalServicesForCancelAuth(isWhitelisted)))
-      case Some("business") => Ok(select_service(form, enabledBusinessServicesForCancelAuthorisation))
-      case _                => Redirect(routes.AgentCancelAuthorisationController.showClientType().url)
-    }
 
   def submitSelectService: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, isWhitelisted) =>
-      ServiceTypeForm.form
-        .bindFromRequest()
-        .fold(
-          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
-          userInput => {
-            val updateAggregate = cancelAuthorisationCache.fetch
-              .map(_.getOrElse(CancelAuthorisationRequest()))
-              .map(_.copy(service = Some(userInput)))
-
-            updateAggregate.flatMap(
-              update =>
-                cancelAuthorisationCache
-                  .save(update)
-                  .map(_ => Redirect(routes.AgentCancelAuthorisationController.showClientType())))
-          }
-        )
-    }
+    handleSubmitSelectService
   }
 
+  def showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
+    handleShowIdentifyClient
+  }
+
+  override def clientTypeCall: Call = routes.AgentCancelAuthorisationController.showClientType()
+
+  override def clientTypePage(form: Form[String])(implicit request: Request[_]): HtmlFormat.Appendable =
+    cancelAuthorisation.client_type(form, clientTypes)
+
+  override def selectServiceCall: Call = routes.AgentCancelAuthorisationController.showSelectService()
+
+  override def selectServicePage(
+    form: Form[String] = ServiceTypeForm.form,
+    enabledServices: Seq[(String, String)],
+    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
+    cancelAuthorisation.select_service(form, enabledServices, false)
+
+  override def identifyClientCall: Call = routes.AgentCancelAuthorisationController.showIdentifyClient()
 }
