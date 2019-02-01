@@ -2,6 +2,10 @@ import play.core.PlayVersion
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
+import com.geirsson.coursiersmall.{Repository => R}
+
+scalafixResolvers in ThisBuild += new R.Maven("https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases")
+scalafixDependencies in ThisBuild := Seq("uk.gov.hmrc" % "scalafix-rules_2.11" % "0.2.0")
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -17,7 +21,7 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.6.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.8.0",
   "uk.gov.hmrc" %% "govuk-template" % "5.23.0",
   "uk.gov.hmrc" %% "play-ui" % "7.22.0",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.13.0",
@@ -30,7 +34,7 @@ lazy val compileDeps = Seq(
 
 def testDeps(scope: String) = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.3.0" % scope,
-  "com.github.tomakehurst" % "wiremock" % "2.20.0" % scope,
+  "com.github.tomakehurst" % "wiremock" % "2.21.0" % scope,
   "org.scalatest" %% "scalatest" % "3.0.5" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "org.jsoup" % "jsoup" % "1.11.3" % scope,
@@ -68,6 +72,14 @@ lazy val root = (project in file("."))
     parallelExecution in IntegrationTest := false,
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     scalafmtOnCompile in IntegrationTest := true
+  )
+  .settings(addCompilerPlugin(scalafixSemanticdb))
+  .settings(
+    scalacOptions ++= List(
+      "-Yrangepos",
+      "-Xplugin-require:semanticdb",
+      "-P:semanticdb:synthetics:on"
+    )
   )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
 
