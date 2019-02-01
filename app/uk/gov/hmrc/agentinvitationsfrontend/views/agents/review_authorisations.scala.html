@@ -23,10 +23,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup}
 @(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@clientNameOf(authorisationRequest: AuthorisationRequest) = @{
-    if(authorisationRequest.invitation.service == "PERSONAL-INCOME-RECORD" && !config.showPIRName) Messages("review-authorisations.no-client-name")
-    else authorisationRequest.clientName
-}
+
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title",  Messages("review-authorisations.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("review-authorisations.heading"), ""))) {
 
@@ -50,7 +47,7 @@
     @for(authorisationRequest <- config.authorisationRequests.requests) {
         <div>
             <dt class="bold">
-            @clientNameOf(authorisationRequest)
+            @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))
             </dt>
             <dd class="cya-answer" id="client-service">
             @Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}")
@@ -58,7 +55,7 @@
             <dd class="app-check-your-answers__change">
                 <a href="@routes.AgentsInvitationController.showDelete(authorisationRequest.itemId)">
                     @Messages("review-authorisations.table.remove")
-                    <span class="govuk-visually-hidden"> @clientNameOf(authorisationRequest)</span>
+                    <span class="govuk-visually-hidden"> @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))</span>
                 </a>
             </dd>
         </div>
