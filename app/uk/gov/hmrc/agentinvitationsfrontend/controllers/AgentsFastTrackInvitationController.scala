@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.{boolean, mapping, optional, single, text}

@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
-import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
-import play.api.mvc.{Request, Result}
+import play.api.data.Form
+import play.api.mvc.{Call, Request, Result}
 import play.api.{Configuration, Logger}
+import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
+import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCNIORG, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
@@ -50,6 +52,144 @@ abstract class BaseInvitationController(
   messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
     extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+
+  val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+
+  protected def handleGetClientType(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (_, _) =>
+      journeyStateCache.fetchAndClear.flatMap { _ =>
+        currentAuthorisationRequestCache.fetch.flatMap {
+          case Some(data) if data.clientType.isEmpty && data.fromFastTrack => Ok(clientTypePage())
+          case _                                                           => currentAuthorisationRequestCache.fetchAndClear.map(_ => Ok(clientTypePage()))
+        }
+      }
+    }
+
+  protected def handleSubmitClientType(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      ClientTypeForm.form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Ok(clientTypePage(formWithErrors)),
+          userInput => {
+            val updateAggregate = currentAuthorisationRequestCache.fetch
+              .map(_.getOrElse(CurrentAuthorisationRequest()))
+              .map(_.copy(clientType = Some(userInput)))
+
+            updateAggregate.flatMap(
+              toUpdate =>
+                currentAuthorisationRequestCache
+                  .save(toUpdate)
+                  .flatMap(_ => redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)))
+          }
+        )
+    }
+
+  protected def handleGetSelectServicePage(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (_, isWhitelisted) =>
+      getSelectServicePage(isWhitelisted)
+    }
+
+  private def getSelectServicePage(isWhitelisted: Boolean, form: Form[String] = ServiceTypeForm.form)(
+    implicit request: Request[_]): Future[Result] =
+    journeyStateCache.fetch.flatMap {
+      case Some(basket) if basket.requests.nonEmpty =>
+        basket.clientType match {
+          case "personal" =>
+            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), true))
+          case "business" => Ok(selectServicePage(form, vat ++ niOrg, false))
+          case _          => Redirect(clientTypeCall)
+        }
+      case _ =>
+        currentAuthorisationRequestCache.fetch.flatMap {
+          case Some(input) if input.clientType.nonEmpty =>
+            input.clientType match {
+              case Some("personal") =>
+                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), false))
+              case Some("business") =>
+                Ok(selectServicePage(form, vat ++ niOrg, false))
+              case _ => Redirect(clientTypeCall)
+            }
+          case _ => Redirect(clientTypeCall)
+        }
+    }
+
+  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      ServiceTypeForm.form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
+          serviceType => {
+            def updateSessionAndRedirect = {
+              val updateAggregate = currentAuthorisationRequestCache.fetch
+                .map(_.getOrElse(CurrentAuthorisationRequest()))
+                .map(_.copy(service = serviceType))
+
+              updateAggregate.flatMap(
+                toUpdate =>
+                  currentAuthorisationRequestCache
+                    .save(toUpdate)
+                    .flatMap(_ =>
+                      ifShouldShowService(toUpdate, featureFlags, isWhitelisted) {
+                        redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)
+                    }))
+            }
+
+            currentAuthorisationRequestCache.fetch.flatMap { cache =>
+              cache.flatMap(_.clientType) match {
+                case Some("personal") => updateSessionAndRedirect
+                case Some("business") =>
+                  if (serviceType == HMRCMTDVAT || serviceType == HMRCNIORG) {
+                    updateSessionAndRedirect
+                  } else {
+                    Redirect(selectServiceCall)
+                  }
+                case _ => Redirect(clientTypeCall)
+              }
+            }
+          }
+        )
+    }
+
+  protected def handleShowIdentifyClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequestCache.fetch.map {
+        case Some(inviteDetails) if inviteDetails.service.nonEmpty =>
+          inviteDetails.service match {
+            case HMRCMTDIT =>
+              Ok(
+                identify_client_itsa(
+                  ItsaClientForm.form(featureFlags.showKfcMtdIt),
+                  featureFlags.showKfcMtdIt,
+                  inviteDetails.fromFastTrack))
+
+            case HMRCMTDVAT =>
+              Ok(
+                identify_client_vat(
+                  VatClientForm.form(featureFlags.showKfcMtdVat),
+                  featureFlags.showKfcMtdVat,
+                  inviteDetails.fromFastTrack))
+
+            case HMRCPIR =>
+              Ok(
+                identify_client_irv(
+                  IrvClientForm.form(featureFlags.showKfcPersonalIncome),
+                  featureFlags.showKfcPersonalIncome,
+                  inviteDetails.fromFastTrack))
+
+            case HMRCNIORG =>
+              Ok(
+                identify_client_niorg(
+                  NiOrgClientForm.form(featureFlags.showHmrcNiOrg),
+                  featureFlags.showHmrcNiOrg,
+                  inviteDetails.fromFastTrack))
+
+            case _ => Redirect(clientTypeCall)
+          }
+        case _ => Redirect(clientTypeCall)
+      }
+    }
 
   def ifShouldShowService(
     currentAuthorisationRequest: CurrentAuthorisationRequest,
@@ -120,30 +260,30 @@ abstract class BaseInvitationController(
         knownFactCheckIrv(arn, currentAuthorisationRequest, completePirInvitation, isWhitelisted)
 
       case CurrentInvitationInputNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showClientType())
+        Redirect(clientTypeCall)
 
       case CurrentInvitationInputNeedsKnownFact(_) =>
-        Future successful Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
+        Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
 
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
           case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+            Redirect(identifyClientCall)
           case _ =>
-            Future successful Redirect(routes.AgentsInvitationController.showClientType())
+            Redirect(clientTypeCall)
         }
 
       case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showClientType())
+        Redirect(clientTypeCall)
 
       case CurrentInvitationInputNeedsService(_) =>
-        Future successful Redirect(routes.AgentsInvitationController.showSelectService())
+        Redirect(selectServiceCall)
 
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")
         currentAuthorisationRequestCache
           .save(CurrentAuthorisationRequest())
-          .map(_ => Redirect(routes.AgentsInvitationController.showClientType()))
+          .map(_ => Redirect(clientTypeCall))
     }
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
@@ -326,7 +466,7 @@ abstract class BaseInvitationController(
                              case Some("personal") =>
                                Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                              case Some("business") => body
-                             case _                => Future.successful(Redirect(routes.AgentsInvitationController.showClientType()))
+                             case _                => Future.successful(Redirect(clientTypeCall))
                            }
                 } yield result
               }
@@ -341,4 +481,16 @@ abstract class BaseInvitationController(
       _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
+  def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
+  def clientTypePage(form: Form[String] = ClientTypeForm.form)(implicit request: Request[_]): Appendable =
+    client_type(form, clientTypes, agentServicesAccountUrl)
+
+  def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
+  def selectServicePage(
+    form: Form[String] = ServiceTypeForm.form,
+    enabledServices: Seq[(String, String)],
+    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
+    select_service(form, enabledServices, basketFlag)
+
+  def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 }
