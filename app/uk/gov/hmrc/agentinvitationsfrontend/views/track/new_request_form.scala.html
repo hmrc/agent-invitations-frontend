@@ -23,7 +23,7 @@
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
 @form(
-    action = Call("POST", routes.AgentsInvitationController.agentFastTrack().url),
+    action = Call("POST", routes.AgentsFastTrackInvitationController.agentFastTrack().url),
     'id -> s"fastTrackInvitationCreate-${index}",
     'class -> "form js-form"
 ) {

@@ -32,7 +32,7 @@ trait CurrentAuthorisationRequestCache extends Cache[CurrentAuthorisationRequest
 class CurrentAuthorisationRequestKeyStoreCache @Inject()(session: SessionCache)
     extends CurrentAuthorisationRequestCache {
 
-  val id = "fast-track-aggregate-input"
+  val id = "current-journey-aggregate-input"
 
   def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[CurrentAuthorisationRequest]] =
     session.fetchAndGetEntry[CurrentAuthorisationRequest](id)

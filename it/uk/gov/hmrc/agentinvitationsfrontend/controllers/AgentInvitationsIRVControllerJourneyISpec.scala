@@ -3,9 +3,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -23,7 +24,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(personal, servicePIR, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(servicePIR)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -87,12 +88,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType"       -> "personal",
-            "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year"   -> "1980",
-            "knownFact.month"  -> "07",
-            "knownFact.day"    -> "07"
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
           )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -121,9 +120,9 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             "clientType"       -> "personal",
             "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year"   -> "1980",
-            "knownFact.month"  -> "07",
-            "knownFact.day"    -> "07"
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
           )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -141,12 +140,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType"       -> "personal",
-            "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year"   -> "1980",
-            "knownFact.month"  -> "07",
-            "knownFact.day"    -> "07"
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
           )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -157,7 +154,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to already-authorisation-pending when a valid NINO is submitted but it already exists in the basket" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
+          Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
         testCurrentAuthorisationRequestCache.save(
@@ -166,12 +163,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType"       -> "personal",
-            "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year"   -> "1980",
-            "knownFact.month"  -> "07",
-            "knownFact.day"    -> "07"
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
           )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -182,7 +177,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to already-authorisation-present when a valid NINO is submitted but client already has relationship with agent for this service" in {
         val journeyState = AgentMultiAuthorisationJourneyState(
           "personal",
-          Set(AuthorisationRequest("clientName", Some("personal"), servicePIR, "AB123456B", "itemId")))
+          Set(AuthorisationRequest( "clientName", PirInvitation(Nino("AB123456B"), Some(DOB(dateOfBirth))))))
         testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth)))
@@ -192,12 +187,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenAfiRelationshipIsActiveForAgent(arn, validNino)
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientType"       -> "personal",
-            "service"          -> servicePIR,
             "clientIdentifier" -> validNino.value,
-            "knownFact.year"   -> "1980",
-            "knownFact.month"  -> "07",
-            "knownFact.day"    -> "07"
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
           )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -206,7 +199,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "")
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -215,7 +209,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> servicePIR, "clientIdentifier" -> "invalid")
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -224,12 +219,12 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an no date of birth is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
-          "knownFact.year"   -> "",
-          "knownFact.month"  -> "",
-          "knownFact.day"    -> ""
+          "dob.year"   -> "",
+          "dob.month"  -> "",
+          "dob.day"    -> ""
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -239,12 +234,12 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid date of birth is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> servicePIR,
           "clientIdentifier" -> validNino.value,
-          "knownFact.year"   -> "9999",
-          "knownFact.month"  -> "99",
-          "knownFact.day"    -> "99"
+          "dob.year"   -> "9999",
+          "dob.month"  -> "99",
+          "dob.day"    -> "99"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -254,7 +249,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        val requestWithForm = request.withFormUrlEncodedBody("service" -> "", "clientIdentifier" -> validNino.value)
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal))
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -304,5 +300,4 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }.getMessage shouldBe "Cached session state expected but not found"
     }
   }
-
 }

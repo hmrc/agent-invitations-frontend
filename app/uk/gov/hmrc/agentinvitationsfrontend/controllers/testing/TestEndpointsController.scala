@@ -25,7 +25,6 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
@@ -34,6 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relations
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,11 +43,11 @@ class TestEndpointsController @Inject()(
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(implicit val configuration: Configuration, val externalUrls: ExternalUrls)
+  val withVerifiedPasscode: PasscodeVerification)(
+  implicit val configuration: Configuration,
+  val externalUrls: ExternalUrls,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   import TestEndpointsController._
 

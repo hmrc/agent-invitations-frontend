@@ -149,6 +149,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet2"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.p1"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1.p2"))
+      checkHtmlResultWithBodyText(resultITSA, "If you appoint someone overseas to act for you, we will need to share your data outside of the UK.")
+      checkHtmlResultWithBodyText(resultITSA, "https://www.gov.uk/government/publications/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you")
       checkHasClientSignOutUrl(resultITSA)
     }
 

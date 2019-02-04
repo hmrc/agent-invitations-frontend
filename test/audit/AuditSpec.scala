@@ -23,7 +23,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.{FastTrackInvitation, KnownFact, UserInputNinoAndPostcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{PirInvitation, UserInputNinoAndPostcode}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -57,13 +57,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         service.sendAgentInvitationSubmitted(
           arn,
           invitationId,
-          new FastTrackInvitation[Nino] {
-            val clientType: Option[String] = agentInvitaitonUserInput.clientType
-            val service: String = agentInvitaitonUserInput.service
-            val clientIdentifier: Nino = Nino("WM123456C")
-            val clientIdentifierType: String = "ni"
-            val knownFact: Option[KnownFact] = None
-          },
+          PirInvitation(Nino("WM123456C"), None),
           result
         )(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))
 
@@ -79,7 +73,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         sentEvent.detail("agentReferenceNumber") shouldBe "HX2345"
         sentEvent.detail("clientIdType") shouldBe "ni"
         sentEvent.detail("clientId") shouldBe "WM123456C"
-        sentEvent.detail("service") shouldBe "serviceName"
+        sentEvent.detail("service") shouldBe "PERSONAL-INCOME-RECORD"
 
         sentEvent.tags("transactionName") shouldBe "Agent client service authorisation request created"
         sentEvent.tags("path") shouldBe "/path"

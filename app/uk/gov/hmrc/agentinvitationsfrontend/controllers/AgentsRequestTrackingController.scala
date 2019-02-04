@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
@@ -27,18 +28,18 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{normalizedText, validateClientId}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
-import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.track.{ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,11 +62,11 @@ class AgentsRequestTrackingController @Inject()(
   val pirRelationshipConnector: PirRelationshipConnector,
   val support: AgentInvitationControllerSupport,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
-  @Named("agent-invitations-frontend.external-url") externalUrl: String,
-  ecp: Provider[ExecutionContext])(implicit val externalUrls: ExternalUrls, configuration: Configuration)
+  @Named("agent-invitations-frontend.external-url") externalUrl: String)(
+  implicit val externalUrls: ExternalUrls,
+  configuration: Configuration,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {
@@ -78,10 +79,11 @@ class AgentsRequestTrackingController @Inject()(
                                           trackRequestsShowLastDays)
         } yield
           Ok(
-            recent_invitations(
-              invitationsAndRelationships,
-              trackRequestsShowLastDays,
-              featureFlags.enableTrackCancelAuth))
+            track(
+              TrackPageConfig(
+                invitationsAndRelationships,
+                trackRequestsShowLastDays,
+                featureFlags.enableTrackCancelAuth)))
       }
     } else {
       Logger(getClass).warn("Feature flag to enable track page is off")

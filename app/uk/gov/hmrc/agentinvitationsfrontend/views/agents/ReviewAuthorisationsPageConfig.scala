@@ -15,14 +15,22 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
+import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentMultiAuthorisationJourneyState, AuthorisationRequest}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 
-case class ReviewAuthorisationsPageConfig(authorisationRequests: AgentMultiAuthorisationJourneyState) {
+case class ReviewAuthorisationsPageConfig(
+  authorisationRequests: AgentMultiAuthorisationJourneyState,
+  featureFlags: FeatureFlags) {
 
-  def clientNameOf(authorisationRequest: AuthorisationRequest) =
-    if (authorisationRequest.service == "PERSONAL-INCOME-RECORD") "" else authorisationRequest.clientName
+  def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String) =
+    authorisationRequest.invitation.service match {
+      case "HMRC-MTD-IT" if !featureFlags.enableMtdItToConfirm          => noNameMessage
+      case "PERSONAL-INCOME-RECORD" if !featureFlags.enableIrvToConfirm => noNameMessage
+      case "HMRC-MTD-VAT" if !featureFlags.enableMtdVatToConfirm        => noNameMessage
+      case _                                                            => authorisationRequest.clientName
+    }
 
   val numberOfItems: Int = authorisationRequests.requests.size
 

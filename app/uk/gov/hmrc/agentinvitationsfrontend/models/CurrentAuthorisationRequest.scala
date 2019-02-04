@@ -17,17 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Json, Reads}
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-
-trait KnownFact {
-  val value: String
-}
-
-case class Postcode(value: String) extends KnownFact
-case class VatRegDate(value: String) extends KnownFact
-case class DOB(value: String) extends KnownFact
+import play.api.libs.json._
 
 case class CurrentAuthorisationRequest(
   clientType: Option[String],
@@ -43,8 +33,10 @@ object CurrentAuthorisationRequest {
   val fromManual: Boolean = false
 
   def apply(): CurrentAuthorisationRequest = CurrentAuthorisationRequest(None, "", "", "", None, fromManual)
+
   def apply(clientType: Option[String]): CurrentAuthorisationRequest =
     CurrentAuthorisationRequest(clientType, "", "", "", None, fromManual)
+
   def apply(clientType: Option[String], service: String): CurrentAuthorisationRequest =
     CurrentAuthorisationRequest(clientType, service, "", "", None, fromManual)
 
@@ -57,36 +49,4 @@ object CurrentAuthorisationRequest {
       (JsPath \ "clientIdentifier").read[String] and
       (JsPath \ "knownFact").readNullable[String])((a, b, c, d, e) => CurrentAuthorisationRequest(a, b, c, d, e))
   }
-}
-
-trait FastTrackInvitation[T <: TaxIdentifier] extends InvitationParams {
-  def clientType: Option[String]
-  def service: String
-  def clientIdentifier: T
-  def clientIdentifierType: String
-  def knownFact: Option[KnownFact]
-
-  def clientId: String = clientIdentifier.value
-}
-
-case class FastTrackItsaInvitation(clientIdentifier: Nino, postcode: Option[Postcode])
-    extends FastTrackInvitation[Nino] {
-  val clientType = Services.personal
-  val service = Services.HMRCMTDIT
-  val clientIdentifierType = "ni"
-  val knownFact = postcode
-}
-
-case class FastTrackPirInvitation(clientIdentifier: Nino, dob: Option[DOB]) extends FastTrackInvitation[Nino] {
-  val clientType = Services.personal
-  val service = Services.HMRCPIR
-  val clientIdentifierType = "ni"
-  val knownFact = dob
-}
-
-case class FastTrackVatInvitation(clientType: Option[String], clientIdentifier: Vrn, vatRegDate: Option[VatRegDate])
-    extends FastTrackInvitation[Vrn] {
-  val service = Services.HMRCMTDVAT
-  val clientIdentifierType = "vrn"
-  val knownFact = vatRegDate
 }

@@ -14,16 +14,25 @@ GET         /agents/client-type                                 @uk.gov.hmrc.age
 POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitClientType
 GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showConfirmClient
 POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitConfirmClient
-POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentFastTrack
-GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showCheckDetails
-POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitCheckDetails
-GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showKnownFact
-POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitKnownFact
 POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitReviewAuthorisations
 GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showReviewAuthorisations
 GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showDelete(itemId: String)
 POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDelete(itemId: String)
 
+# Fast Track Journey
+POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrack
+GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showKnownFact
+POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFact
+GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showCheckDetails
+POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitCheckDetails
+
+# Agent Endpoints - Agent led de-auth routes
+GET         /agents/cancel-authorisation                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.agentLedDeAuthRoot
+GET         /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showClientType
+POST        /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitClientType
+GET         /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showSelectService
+POST        /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitSelectService
+GET         /agents/cancel-authorisation/identify-client        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showIdentifyClient
 
 # Error Agent Endpoints
 GET         /agents/not-signed-up                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notSignedUp

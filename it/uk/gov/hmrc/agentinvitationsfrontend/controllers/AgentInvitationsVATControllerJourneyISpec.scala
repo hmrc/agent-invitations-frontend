@@ -5,6 +5,7 @@ import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ServiceTypeForm, VatClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.logging.SessionId
@@ -24,7 +25,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
-      val serviceForm = agentInvitationServiceForm.fill(UserInputNinoAndPostcode(business, serviceVAT, None, None))
+      val serviceForm = ServiceTypeForm.form.fill(serviceVAT)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
@@ -94,12 +95,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
             Some(validRegistrationDate)
           ))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType"       -> "business",
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year"   -> "2007",
-          "knownFact.month"  -> "7",
-          "knownFact.day"    -> "7"
+          "registrationDate.year"   -> "2007",
+          "registrationDate.month"  -> "7",
+          "registrationDate.day"    -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -123,12 +122,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType"       -> "business",
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year"   -> "2007",
-          "knownFact.month"  -> "7",
-          "knownFact.day"    -> "7"
+          "registrationDate.year"   -> "2007",
+          "registrationDate.month"  -> "7",
+          "registrationDate.day"    -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -137,10 +134,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty VRN is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "",
-          "knownFact"        -> validRegistrationDate)
+          "registrationDate"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -149,10 +146,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid VRN is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> "invalid",
-          "knownFact"        -> validRegistrationDate)
+          "registrationDate"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -161,12 +158,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty registrationDate is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year"   -> "2008",
-          "knownFact.month"  -> "",
-          "knownFact.day"    -> "12"
+          "registrationDate.year"   -> "2008",
+          "registrationDate.month"  -> "",
+          "registrationDate.day"    -> "12"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -176,12 +173,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid registrationDate is submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year"   -> "2007",
-          "knownFact.month"  -> "17",
-          "knownFact.day"    -> "07"
+          "registrationDate.year"   -> "2007",
+          "registrationDate.month"  -> "17",
+          "registrationDate.day"    -> "07"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -191,12 +188,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when invalid registrationDate fields are submitted" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "HMRC-MTD-VAT",
           "clientIdentifier" -> validVrn.value,
-          "knownFact.year"   -> "INVALID",
-          "knownFact.month"  -> "INVALID",
-          "knownFact.day"    -> "INVALID"
+          "registrationDate.year"   -> "INVALID",
+          "registrationDate.month"  -> "INVALID",
+          "registrationDate.day"    -> "INVALID"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -208,10 +205,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to /agents/select-service if service is missing" in {
+        testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "service"          -> "",
           "clientIdentifier" -> validVrn.value,
-          "knownFact"        -> validRegistrationDate)
+          "registrationDate"        -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -270,11 +267,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with no requests in basket" in {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("business", Set.empty))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
-      val vrnForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(
-          UserInputVrnAndRegDate(business, serviceVAT, None, None))
+      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       val result =
-        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -286,15 +281,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
-      val authRequest: AuthorisationRequest = AuthorisationRequest("name", business, serviceVAT, validVrn.value)
+      val authRequest: AuthorisationRequest = AuthorisationRequest( "clientName", VatInvitation(business, validVrn, Some(VatRegDate(validRegistrationDate))))
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("business", Set(authRequest)))
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
-      val vrnForm =
-        agentInvitationIdentifyClientFormVat(featureFlags).fill(
-          UserInputVrnAndRegDate(business, serviceVAT, None, None))
+      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       val result =
-        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(vrnForm.data.toSeq: _*), arn.value))
+        notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -436,7 +429,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", personal, serviceVAT, validVrn.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", VatInvitation(personal, validVrn, Some(VatRegDate(validRegistrationDate))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(
@@ -458,7 +451,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "business",
-        Set(AuthorisationRequest("clientName", Some("business"), serviceVAT, validVrn9755.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", VatInvitation(business, validVrn9755, Some(VatRegDate(validRegistrationDate))))))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(

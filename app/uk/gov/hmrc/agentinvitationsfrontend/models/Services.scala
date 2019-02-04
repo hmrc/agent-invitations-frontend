@@ -75,4 +75,6 @@ object Services {
       case 'D' => messageKeyForNiOrg
       case _   => "Service is missing"
     }
+
+  val supportedServicesForCancelAuthorisation = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
 }

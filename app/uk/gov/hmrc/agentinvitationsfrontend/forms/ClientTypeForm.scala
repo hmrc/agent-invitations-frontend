@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.forms
 
-trait InvitationParams {
-  def clientType: Option[String]
-  def service: String
-  def clientIdentifierType: String
-  def clientId: String
+import play.api.data.Forms._
+import play.api.data._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
+
+object ClientTypeForm {
+  val form = Form(
+    single(
+      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
+    )
+  )
 }

@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-@(knownFactForm: Form[CurrentAuthorisationRequest], serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(knownFactForm: Form[Option[String]], service: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
@@ -32,29 +32,28 @@
 
 @flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
 
-@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
+@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${service}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.heading"), serviceMessageKey))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${service}.heading"), serviceMessageKey))) {
 
- @back_link(s"${routes.AgentsInvitationController.showCheckDetails()}")
+ @back_link(s"${routes.AgentsFastTrackInvitationController.showCheckDetails()}")
 
  @if(knownFactForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
  }
 
-
  @form(
-  action = routes.AgentsInvitationController.submitKnownFact(),
+  action = routes.AgentsFastTrackInvitationController.submitKnownFact(),
   'class -> "form js-form") {
 
-  @if(knownFactForm("service").value.getOrElse("") == "HMRC-MTD-IT") {
+  @if(service == "HMRC-MTD-IT") {
    <div class="form-group">
    @input(
     knownFactForm("knownFact"),
     '_label -> Html(pageHeading),
     '_inputClass -> "form-control",
-    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper"),
+    '_inputHint -> Messages(s"known-fact.${service}.helper"),
     '_labelClass -> "soft--ends"
    )
    </div>
@@ -62,15 +61,10 @@
    <div class="@noJsDateFieldsError">
    @dateFieldsFreeInlineLegend(knownFactForm, "knownFact",
     '_legend -> Html(pageHeading),
-    '_inputHint -> Messages(s"known-fact.${knownFactForm("service").value.getOrElse("")}.helper")
+    '_inputHint -> Messages(s"known-fact.${service}.helper")
    )
    </div>
   }
-
-  <input type="hidden" name="clientType" id="clientType" value="@knownFactForm("clientType").value">
-  <input type="hidden" name="service" id="service" value="@knownFactForm("service").value.getOrElse("")">
-  <input type="hidden" name="clientIdentifier" id="clientIdentifier" value="@knownFactForm("clientIdentifier").value.getOrElse("")">
-  <input type="hidden" name="clientIdentifierType" id="clientIdentifierType" value="@knownFactForm("clientIdentifierType").value.getOrElse("")">
 
   <div class="form-group">
    <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

@@ -18,14 +18,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, supportedClientTypes, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.postcodeRegex
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationControllerSupport @Inject()(featureFlags: FeatureFlags)
 
 object AgentInvitationControllerSupport {
-
-  import AgentsInvitationController._
 
   //Extractors
   object ClientForMtdItWithFlagOn {
@@ -73,45 +72,42 @@ object AgentInvitationControllerSupport {
   }
 
   object CurrentInvitationInputItsaReady {
-    def unapply(arg: CurrentAuthorisationRequest)(
-      implicit featureFlags: FeatureFlags): Option[FastTrackItsaInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[ItsaInvitation] =
       arg match {
         case CurrentAuthorisationRequest(_, HMRCMTDIT, "ni", clientIdentifier, postcodeOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcMtdIt || postcodeOpt.exists(
               _.matches(postcodeRegex))) =>
           Some(
-            FastTrackItsaInvitation(
+            ItsaInvitation(
               Nino(clientIdentifier),
-              if (featureFlags.showKfcMtdIt) postcodeOpt.map(Postcode) else None))
+              if (featureFlags.showKfcMtdIt) postcodeOpt.map(Postcode(_)) else None))
         case _ => None
       }
   }
 
   object CurrentInvitationInputPirReady {
-    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[FastTrackPirInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[PirInvitation] =
       arg match {
         case CurrentAuthorisationRequest(_, HMRCPIR, "ni", clientIdentifier, dobOpt, _)
             if Nino.isValid(clientIdentifier) && (!featureFlags.showKfcPersonalIncome || dobOpt.exists(
               DateFieldHelper.validateDate)) =>
           Some(
-            FastTrackPirInvitation(
-              Nino(clientIdentifier),
-              if (featureFlags.showKfcPersonalIncome) dobOpt.map(DOB) else None))
+            PirInvitation(Nino(clientIdentifier), if (featureFlags.showKfcPersonalIncome) dobOpt.map(DOB(_)) else None))
         case _ => None
       }
   }
 
   object CurrentInvitationInputVatReady {
-    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[FastTrackVatInvitation] =
+    def unapply(arg: CurrentAuthorisationRequest)(implicit featureFlags: FeatureFlags): Option[VatInvitation] =
       arg match {
         case CurrentAuthorisationRequest(clientType, HMRCMTDVAT, "vrn", clientIdentifier, vatRegDateOpt, _)
             if clientType.isDefined && Vrn.isValid(clientIdentifier) && (!featureFlags.showKfcMtdVat || vatRegDateOpt
               .exists(DateFieldHelper.validateDate)) =>
           Some(
-            FastTrackVatInvitation(
+            VatInvitation(
               clientType,
               Vrn(clientIdentifier),
-              if (featureFlags.showKfcMtdVat) vatRegDateOpt.map(VatRegDate) else None))
+              if (featureFlags.showKfcMtdVat) vatRegDateOpt.map(VatRegDate(_)) else None))
         case _ => None
       }
   }
@@ -131,7 +127,6 @@ object AgentInvitationControllerSupport {
               Some(CurrentAuthorisationRequest(clientType, HMRCNIORG, "utr", "", None))
             case _ => None
           }
-        case _ => None
       }
   }
 
@@ -174,7 +169,7 @@ object AgentInvitationControllerSupport {
       }
   }
 
-  object CurrentInvitationInputNeedService {
+  object CurrentInvitationInputNeedsService {
     def unapply(currentAuthorisationRequest: CurrentAuthorisationRequest): Option[CurrentAuthorisationRequest] =
       currentAuthorisationRequest match {
         case CurrentAuthorisationRequest(clientType, service, _, _, _, _) if service.isEmpty =>
@@ -185,8 +180,9 @@ object AgentInvitationControllerSupport {
   }
 
   object CurrentInvitationInputWithNonEmptyClientId {
-    def unapply(current: CurrentAuthorisationRequest): Option[(Option[String], String, String)] =
-      if (current.clientIdentifier.nonEmpty) Some((current.clientType, current.clientIdentifier, current.service))
+    def unapply(current: CurrentAuthorisationRequest): Option[(Option[String], String, String, Option[String])] =
+      if (current.clientIdentifier.nonEmpty)
+        Some((current.clientType, current.clientIdentifier, current.service, current.knownFact))
       else None
   }
 }

@@ -1,12 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
-import javax.inject.Inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.{agentConfirmationForm, agentFastTrackForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -72,6 +73,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -81,9 +83,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a postcode entry field if service is ITSA" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, serviceITSA))
 
-      val form =
-        controller.agentInvitationIdentifyClientFormItsa.fill(
-          UserInputNinoAndPostcode(personal, serviceITSA, None, None))
       val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -101,8 +100,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a vat registration date entry field if service is VAT" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
 
-      val form =
-        controller.agentInvitationIdentifyClientFormVat.fill(UserInputVrnAndRegDate(business, serviceVAT, None, None))
       val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -120,8 +117,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "not show a date of birth entry field if service is IRV" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(personal, servicePIR))
 
-      val form =
-        controller.agentInvitationIdentifyClientFormIrv.fill(UserInputNinoAndDob(personal, servicePIR, None, None))
       val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
@@ -148,9 +143,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormItsa.fill(
-          UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
+      val form = ItsaClientForm.form(true).fill(ItsaClient(validNino.nino, None))
       givenInvitationCreationSucceeds(
         arn,
         personal,
@@ -180,9 +173,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormItsa.fill(
-          UserInputNinoAndPostcode(personal, serviceITSA, Some(validNino.nino), None))
+      val form = ItsaClientForm.form(true).fill(ItsaClient(validNino.nino, None))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
 
@@ -202,9 +193,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormIrv.fill(
-          UserInputNinoAndDob(personal, servicePIR, Some(validNino.nino), None))
+      val form = IrvClientForm.form(true).fill(IrvClient(validNino.nino, None))
       givenInvitationCreationSucceeds(
         arn,
         personal,
@@ -231,9 +220,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormVat.fill(
-          UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
+      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       givenInvitationCreationSucceeds(
         arn,
         business,
@@ -262,9 +249,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(business, serviceVAT, "", "", None, fromManual)
       testCurrentAuthorisationRequestCache.save(formData)
-      val form =
-        controller.agentInvitationIdentifyClientFormVat.fill(
-          UserInputVrnAndRegDate(business, serviceVAT, Some(validVrn.value), None))
+      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
 
@@ -280,7 +265,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   "POST /agents/fast-track" should {
     val request = FakeRequest("POST", "/agents/fast-track")
-    val fastTrack = controller.agentFastTrack()
+    val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details when service and valid nino are provided and kfc flag is off for ITSA service" in {
 
@@ -303,7 +288,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details when service and valid vrn are provided and kfc flag is true for VAT service" in {
@@ -325,7 +310,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track is correct for IRV and kfc flag is on" in {
@@ -348,7 +333,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
   }
@@ -361,7 +346,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
@@ -372,7 +357,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
@@ -389,7 +374,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
           Some(validRegistrationDate),
           fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(controller.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -486,7 +471,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
       val journeyState = AgentMultiAuthorisationJourneyState(
         "personal",
-        Set(AuthorisationRequest("clientName", personal, servicePIR, validNino.value, "itemId")))
+        Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))), "itemId")))
       testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromManual))

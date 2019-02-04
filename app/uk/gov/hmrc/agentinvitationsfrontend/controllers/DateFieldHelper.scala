@@ -55,10 +55,6 @@ object DateFieldHelper {
       }
   }
 
-  val validVatDateFormat: Constraint[String] =
-    ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
-      vatRegistrationDate => validateDate(vatRegistrationDate))
-
   val validDobDateFormat: Constraint[String] =
     ValidateHelper.validateField("error.irv-date-of-birth.required", "enter-irv-date-of-birth.invalid-format")(
       vatRegistrationDate => validateDate(vatRegistrationDate))

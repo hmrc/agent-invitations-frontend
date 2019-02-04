@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
+
+import com.google.inject.Provider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
@@ -40,14 +41,12 @@ class AgentsErrorController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification,
-  ecp: Provider[ExecutionContext])(
+  val withVerifiedPasscode: PasscodeVerification)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
-  featureFlags: FeatureFlags)
+  featureFlags: FeatureFlags,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  implicit val ec: ExecutionContext = ecp.get
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
@@ -75,9 +74,12 @@ class AgentsErrorController @Inject()(
   val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        cacheItem        <- journeyStateCache.get
+        journeyStateCacheNonEmpty <- journeyStateCache.fetch.map {
+                                      case Some(cache) => cache.requests.nonEmpty
+                                      case None        => false
+                                    }
         currentCacheItem <- currentAuthorisationRequestCache.get
-      } yield Ok(active_authorisation_exists(cacheItem.requests.nonEmpty, currentCacheItem.service))
+      } yield Ok(active_authorisation_exists(journeyStateCacheNonEmpty, currentCacheItem.service))
     }
   }
 

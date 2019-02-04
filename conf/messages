@@ -80,7 +80,7 @@ personal-select-service.itsa=Report their income and expenses through software
 # Personal and Business
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
-error.service.required=You must select a service
+service.type.invalid=You must select a service
 select-service.vat=Report their VAT returns through software
 select-service.niorg=Submit their Ireland Trade Returns
 select-service.header=What do you want the client to authorise you to do?
@@ -149,7 +149,15 @@ review-authorisations.subheader=Do you need to add another authorisation for thi
 review-authorisations.radio.yes=Yes
 review-authorisations.radio.no=No
 review-authorisations.different-names=The client''s name may be recorded differently in each service.
+review-authorisations.no-client-name=Client''s name is not available
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
+
+#Cancel Authorisations
+cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
+cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
+cancel-authorisation.select-service.header=Identify your client
+cancel-authorisation.select-service.p1=To help us find your client, first select a service that you deal with on their behalf. We will use this information to check for any other services you provide to them.
+cancel-authorisation.select-service.hint=Select an option.
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
@@ -284,7 +292,7 @@ confirm-terms.subheading1.p1=By giving your consent, you agree that HMRC will sh
 confirm-terms.subheading2=How to withdraw your consent
 confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new window or tab)</a>.
 confirm-terms.subheading3=Our privacy policy
-confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>.
+confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>. If you appoint someone overseas to act for you, we will need to share your data outside of the UK.
 confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent''s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 confirm-terms.radio1=Yes

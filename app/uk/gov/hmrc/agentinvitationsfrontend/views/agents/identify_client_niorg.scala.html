@@ -21,8 +21,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputUtrAndPostcode
-@(agentInvitationsForm : Form[UserInputUtrAndPostcode], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.NiOrgClient
+@(agentInvitationsForm : Form[NiOrgClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
 @if(knownFactFlag) { @content }
@@ -104,7 +104,7 @@ action = routes.AgentsInvitationController.submitIdentifyClient,
 
 <div class="form-group">
     @input(
-    agentInvitationsForm("knownFact"),
+    agentInvitationsForm("postcode"),
     '_label -> Messages("identify-client.postcode.label"),
     '_inputClass -> "form-control",
     '_labelTextClass -> "form-label-bold",
@@ -113,9 +113,6 @@ action = routes.AgentsInvitationController.submitIdentifyClient,
     )
 </div>
 }
-
-<input type="hidden" name="clientType" id="clientType" value="@agentInvitationsForm("clientType").value">
-<input type="hidden" name="service" id="service" value="@agentInvitationsForm("service").value">
 
 <div class="form-group">
     <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

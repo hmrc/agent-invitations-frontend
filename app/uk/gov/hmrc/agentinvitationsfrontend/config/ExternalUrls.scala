@@ -34,7 +34,8 @@ class ExternalUrls @Inject()(
   @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
   @Named("agent-subscription-frontend.external-url") val subscriptionURL: String,
   @Named("agent-client-management-frontend.external-url") val agentClientManagementUrl: String,
-  @Named("privacy-policy.external-url") val privacypolicyUrl: String
+  @Named("privacy-policy.external-url") val privacypolicyUrl: String,
+  @Named("agent-invitations-frontend.external-url") val agentInvitationsExternalUrl: String
 ) {
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
@@ -43,15 +44,12 @@ class ExternalUrls @Inject()(
     if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
-    val continueUrl = isAgent match {
-      case true => {
-        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
-        else s"$agentServicesAccountUrl/agent-services-account"
-      }
-      case false => {
-        if (goToSurvey.getOrElse(false) == true) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
-        else s"$businessTaxAccountUrl/business-account"
-      }
+    val continueUrl = if (isAgent) {
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
+      else s"$agentServicesAccountUrl/agent-services-account"
+    } else {
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
+      else s"$businessTaxAccountUrl/business-account"
     }
     s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
