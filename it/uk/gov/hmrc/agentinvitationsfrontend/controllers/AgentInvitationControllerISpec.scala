@@ -236,7 +236,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "throw exception when there is no content in the cache" in {

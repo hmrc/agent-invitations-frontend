@@ -24,8 +24,10 @@ import play.twirl.api.HtmlFormat
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.auth.core.AuthConnector
 
@@ -80,6 +82,22 @@ class AgentLedDeAuthController @Inject()(
     handleShowIdentifyClient
   }
 
+  def submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
+    handleSubmitIdentifyClient
+  }
+
+  def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
+    Ok("this page is not yet implemented")
+  }
+
+  def showConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
+    handleShowConfirmClient
+  }
+
+  def submitConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
+    Ok("this page is not yet implemented")
+  }
+
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
   override def clientTypePage(form: Form[String])(implicit request: Request[_]): HtmlFormat.Appendable =
@@ -94,4 +112,13 @@ class AgentLedDeAuthController @Inject()(
     cancelAuthorisation.select_service(form, enabledServices, false)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
+  override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
+
+  override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
+
+  override def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
+    cancelAuthorisation.confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
+
+  override def showReviewAuthorisationsCall: Call = routes.AgentLedDeAuthController.showReviewAuthorisations()
+
 }

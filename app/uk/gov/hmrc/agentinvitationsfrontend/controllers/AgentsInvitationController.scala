@@ -24,7 +24,6 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
@@ -34,7 +33,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, Invi
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.duration.Duration
@@ -99,35 +97,11 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(car) =>
-          car.service match {
-            case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
-            case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
-            case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case HMRCNIORG  => identifyNiOrgClient(arn, isWhitelisted)
-            case _          => Redirect(routes.AgentsInvitationController.showSelectService())
-          }
-        case _ => Redirect(agentsRootUrl)
-      }
-    }
+    handleSubmitIdentifyClient
   }
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(data) =>
-          (data.clientIdentifier, data.service) match {
-            case (clientId, service) if clientId.nonEmpty =>
-              invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Ok(confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
-              }
-            case _ => Redirect(routes.AgentsInvitationController.showIdentifyClient())
-          }
-        case _ => Redirect(agentsRootUrl)
-      }
-    }
+    handleShowConfirmClient
   }
 
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
@@ -164,8 +138,7 @@ class AgentsInvitationController @Inject()(
                                                Invitation(clientType, service, clientId, knownFact)))
                                            ))
                                        redirect <- if (clientType == personal || currentCache.clientType == "personal")
-                                                    toFuture(Redirect(
-                                                      routes.AgentsInvitationController.showReviewAuthorisations()))
+                                                    toFuture(Redirect(showReviewAuthorisationsCall))
                                                   else if (clientType == business) {
                                                     confirmAndRedirect(arn, cachedItem, false)
                                                   } else
@@ -271,132 +244,14 @@ class AgentsInvitationController @Inject()(
               journeyStateCache
                 .transform(item => item.copy(requests = item.requests.filterNot(_.itemId == itemId)))
                 .map { _ =>
-                  Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+                  Redirect(showReviewAuthorisationsCall)
                 }
             } else {
-              Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+              Redirect(showReviewAuthorisationsCall)
           }
         )
     }
   }
-
-  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[AnyContent],
-    hc: HeaderCarrier): Future[Result] =
-    ItsaClientForm
-      .form(featureFlags.showKfcMtdIt)
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt, true)),
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "ni",
-                knownFact = userInput.postcode
-              )
-            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-          } yield redirectResult
-      )
-
-  def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[AnyContent],
-    hc: HeaderCarrier): Future[Result] =
-    VatClientForm
-      .form(featureFlags.showKfcMtdVat)
-      .bindFromRequest()
-      .fold(
-        formWithErrors => {
-          Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
-        },
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "vrn",
-                knownFact = userInput.registrationDate
-              )
-            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-          } yield redirectResult
-      )
-
-  def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[AnyContent],
-    hc: HeaderCarrier): Future[Result] =
-    IrvClientForm
-      .form(featureFlags.showKfcPersonalIncome)
-      .bindFromRequest()
-      .fold(
-        formWithErrors => {
-          Ok(
-            identify_client_irv(
-              formWithErrors,
-              featureFlags.showKfcPersonalIncome,
-              true
-            ))
-        },
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "ni",
-                knownFact = userInput.dob
-              )
-            result <- for {
-                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                       redirectResult <- redirectBasedOnCurrentInputState(
-                                          arn,
-                                          invitationWithClientDetails,
-                                          isWhitelisted)
-                     } yield redirectResult
-          } yield result
-      )
-
-  def identifyNiOrgClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[AnyContent],
-    hc: HeaderCarrier): Future[Result] =
-    NiOrgClientForm
-      .form(featureFlags.showHmrcNiOrg)
-      .bindFromRequest()
-      .fold(
-        formWithErrors => {
-          Ok(
-            identify_client_niorg(
-              formWithErrors,
-              featureFlags.showHmrcNiOrg,
-              true
-            ))
-        },
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "utr",
-                knownFact = userInput.postcode
-              )
-            result <- for {
-                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                       redirectResult <- redirectBasedOnCurrentInputState(
-                                          arn,
-                                          invitationWithClientDetails,
-                                          isWhitelisted)
-                     } yield redirectResult
-          } yield result
-      )
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>

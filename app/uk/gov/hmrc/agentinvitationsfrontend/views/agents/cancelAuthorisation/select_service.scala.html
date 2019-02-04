@@ -41,7 +41,6 @@ action = routes.AgentLedDeAuthController.submitSelectService(),
     agentForm("serviceType"),
     services,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>""" +
-    """<div class="margin-bottom-40"><span>""" + Messages("cancel-authorisation.select-service.p1") + """</span></div>""" +
     """<span class="form-hint">""" + Messages("cancel-authorisation.select-service.hint") + """</span>"""),
     '_groupDivClass -> "form-group soft--ends",
     '_fieldsetAttributes -> Html("""id='service'"""),
