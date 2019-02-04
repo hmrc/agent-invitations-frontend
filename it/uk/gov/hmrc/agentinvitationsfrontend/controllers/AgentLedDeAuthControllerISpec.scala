@@ -10,9 +10,9 @@ import uk.gov.hmrc.http.logging.SessionId
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class AgentCancelAuthorisationControllerISpec extends BaseISpec with AuthBehaviours {
+class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
-  lazy val controller: AgentCancelAuthorisationController = app.injector.instanceOf[AgentCancelAuthorisationController]
+  lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -45,7 +45,7 @@ class AgentCancelAuthorisationControllerISpec extends BaseISpec with AuthBehavio
       val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
       status(result) shouldBe 303
       val timeout = 2.seconds
-      redirectLocation(result)(timeout).get shouldBe routes.AgentCancelAuthorisationController.showSelectService().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe CurrentAuthorisationRequest(Some("personal"))
     }
@@ -82,7 +82,7 @@ class AgentCancelAuthorisationControllerISpec extends BaseISpec with AuthBehavio
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
       val timeout = 2.seconds
-      redirectLocation(result)(timeout).get shouldBe routes.AgentCancelAuthorisationController.showIdentifyClient().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
       await(testCurrentAuthorisationRequestCache.fetch).get.service shouldBe "HMRC-MTD-IT"
     }

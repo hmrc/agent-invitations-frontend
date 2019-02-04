@@ -32,7 +32,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AgentCancelAuthorisationController @Inject()(
+class AgentLedDeAuthController @Inject()(
   withVerifiedPasscode: PasscodeVerification,
   authConnector: AuthConnector,
   invitationsService: InvitationsService,
@@ -54,7 +54,7 @@ class AgentCancelAuthorisationController @Inject()(
       currentAuthorisationRequestCache,
       auditService) {
 
-  val agentsLedDeAuthRootUrl: Call = routes.AgentCancelAuthorisationController.showClientType()
+  val agentsLedDeAuthRootUrl: Call = routes.AgentLedDeAuthController.showClientType()
 
   val agentLedDeAuthRoot: Action[AnyContent] = Action { implicit request =>
     Redirect(agentsLedDeAuthRootUrl)
@@ -85,7 +85,7 @@ class AgentCancelAuthorisationController @Inject()(
   override def clientTypePage(form: Form[String])(implicit request: Request[_]): HtmlFormat.Appendable =
     cancelAuthorisation.client_type(form, clientTypes)
 
-  override def selectServiceCall: Call = routes.AgentCancelAuthorisationController.showSelectService()
+  override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
   override def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
@@ -93,5 +93,5 @@ class AgentCancelAuthorisationController @Inject()(
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     cancelAuthorisation.select_service(form, enabledServices, false)
 
-  override def identifyClientCall: Call = routes.AgentCancelAuthorisationController.showIdentifyClient()
+  override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 }
