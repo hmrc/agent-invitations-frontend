@@ -26,7 +26,8 @@ POST        /agents/more-details                                @uk.gov.hmrc.age
 GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showCheckDetails
 POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitCheckDetails
 
-# Agent Endpoints - Cancel Authorisation
+# Agent Endpoints - Agent led de-auth routes
+GET         /agents/cancel-authorisation                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.agentLedDeAuthRoot
 GET         /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.showClientType
 POST        /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.submitClientType
 GET         /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentCancelAuthorisationController.showSelectService

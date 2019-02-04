@@ -260,24 +260,24 @@ abstract class BaseInvitationController(
         knownFactCheckIrv(arn, currentAuthorisationRequest, completePirInvitation, isWhitelisted)
 
       case CurrentInvitationInputNeedsClientType(_) =>
-        Future successful Redirect(clientTypeCall)
+        Redirect(clientTypeCall)
 
       case CurrentInvitationInputNeedsKnownFact(_) =>
-        Future successful Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
+        Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
 
       case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
         invitationNeedsClientIdentifier.service match {
           case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Future successful Redirect(identifyClientCall)
+            Redirect(identifyClientCall)
           case _ =>
-            Future successful Redirect(clientTypeCall)
+            Redirect(clientTypeCall)
         }
 
       case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
-        Future successful Redirect(clientTypeCall)
+        Redirect(clientTypeCall)
 
       case CurrentInvitationInputNeedsService(_) =>
-        Future successful Redirect(selectServiceCall)
+        Redirect(selectServiceCall)
 
       case _ =>
         Logger(getClass).warn("Resetting due to mix data in session")

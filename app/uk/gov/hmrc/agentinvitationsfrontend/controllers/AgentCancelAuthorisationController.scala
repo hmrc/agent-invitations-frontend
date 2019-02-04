@@ -54,6 +54,12 @@ class AgentCancelAuthorisationController @Inject()(
       currentAuthorisationRequestCache,
       auditService) {
 
+  val agentsLedDeAuthRootUrl: Call = routes.AgentCancelAuthorisationController.showClientType()
+
+  val agentLedDeAuthRoot: Action[AnyContent] = Action { implicit request =>
+    Redirect(agentsLedDeAuthRootUrl)
+  }
+
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
     handleGetClientType
   }
@@ -74,7 +80,7 @@ class AgentCancelAuthorisationController @Inject()(
     handleShowIdentifyClient
   }
 
-  override def clientTypeCall: Call = routes.AgentCancelAuthorisationController.showClientType()
+  override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
   override def clientTypePage(form: Form[String])(implicit request: Request[_]): HtmlFormat.Appendable =
     cancelAuthorisation.client_type(form, clientTypes)

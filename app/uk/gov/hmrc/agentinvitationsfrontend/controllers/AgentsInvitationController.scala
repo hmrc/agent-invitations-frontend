@@ -72,8 +72,10 @@ class AgentsInvitationController @Inject()(
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
 
+  val agentsRootUrl: Call = routes.AgentsInvitationController.showClientType()
+
   val agentsRoot: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AgentsInvitationController.showClientType())
+    Redirect(agentsRootUrl)
   }
 
   val showClientType: Action[AnyContent] = Action.async { implicit request =>
@@ -107,7 +109,7 @@ class AgentsInvitationController @Inject()(
             case HMRCNIORG  => identifyNiOrgClient(arn, isWhitelisted)
             case _          => Redirect(routes.AgentsInvitationController.showSelectService())
           }
-        case _ => Redirect(routes.AgentsInvitationController.showClientType())
+        case _ => Redirect(agentsRootUrl)
       }
     }
   }
@@ -119,12 +121,11 @@ class AgentsInvitationController @Inject()(
           (data.clientIdentifier, data.service) match {
             case (clientId, service) if clientId.nonEmpty =>
               invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Future successful Ok(
-                  confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
+                Ok(confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required")))
               }
-            case _ => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+            case _ => Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
-        case _ => Future successful Redirect(routes.AgentsInvitationController.showClientType())
+        case _ => Redirect(agentsRootUrl)
       }
     }
   }
@@ -141,7 +142,7 @@ class AgentsInvitationController @Inject()(
                 .bindFromRequest()
                 .fold(
                   formWithErrors => {
-                    Future successful Ok(confirm_client(clientName, formWithErrors))
+                    Ok(confirm_client(clientName, formWithErrors))
                   },
                   data =>
                     if (data.choice) {
@@ -163,13 +164,12 @@ class AgentsInvitationController @Inject()(
                                                Invitation(clientType, service, clientId, knownFact)))
                                            ))
                                        redirect <- if (clientType == personal || currentCache.clientType == "personal")
-                                                    Future successful Redirect(
-                                                      routes.AgentsInvitationController.showReviewAuthorisations())
+                                                    toFuture(Redirect(
+                                                      routes.AgentsInvitationController.showReviewAuthorisations()))
                                                   else if (clientType == business) {
                                                     confirmAndRedirect(arn, cachedItem, false)
                                                   } else
-                                                    Future successful Redirect(
-                                                      routes.AgentsInvitationController.showClientType())
+                                                    toFuture(Redirect(agentsRootUrl))
                                      } yield redirect
                           } yield result
 
@@ -177,15 +177,15 @@ class AgentsInvitationController @Inject()(
                     } else {
                       for {
                         _      <- currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType, service))
-                        result <- Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
+                        result <- Redirect(routes.AgentsInvitationController.showIdentifyClient())
                       } yield result
                   }
                 )
             }
           }
           result
-        case Some(_) => Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
-        case None    => Future successful Redirect(routes.AgentsInvitationController.showClientType())
+        case Some(_) => Redirect(routes.AgentsInvitationController.showIdentifyClient())
+        case None    => Redirect(agentsRootUrl)
       }
     }
   }
@@ -201,7 +201,7 @@ class AgentsInvitationController @Inject()(
                 ReviewAuthorisationsPageConfig(journeyState),
                 agentConfirmationForm("error.review-authorisation.required")))
           case Some(_) => Redirect(routes.AgentsInvitationController.allAuthorisationsRemoved())
-          case None    => Redirect(routes.AgentsInvitationController.showClientType())
+          case None    => Redirect(agentsRootUrl)
         }
       } yield result
     }
@@ -230,10 +230,10 @@ class AgentsInvitationController @Inject()(
                                           featureFlags)
                   _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
                   result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
-                             Future successful Redirect(routes.AgentsInvitationController.showInvitationSent())
+                             Redirect(routes.AgentsInvitationController.showInvitationSent())
                            else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
-                             Future successful Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
-                           else Future successful Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
+                             Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
+                           else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
                 } yield result
               }
             }
@@ -263,7 +263,7 @@ class AgentsInvitationController @Inject()(
                 val deleteItem =
                   journeyState.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
                 Ok(delete(DeletePageConfig(deleteItem), formWithErrors))
-              case None => Redirect(routes.AgentsInvitationController.showClientType())
+              case None => Redirect(agentsRootUrl)
             }
           },
           input =>
@@ -274,7 +274,7 @@ class AgentsInvitationController @Inject()(
                   Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                 }
             } else {
-              Future successful Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
+              Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
           }
         )
     }
@@ -311,7 +311,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
+          Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true))
         },
         userInput =>
           for {
@@ -336,7 +336,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(
+          Ok(
             identify_client_irv(
               formWithErrors,
               featureFlags.showKfcPersonalIncome,
@@ -371,7 +371,7 @@ class AgentsInvitationController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => {
-          Future successful Ok(
+          Ok(
             identify_client_niorg(
               formWithErrors,
               featureFlags.showHmrcNiOrg,
@@ -451,7 +451,7 @@ class AgentsInvitationController @Inject()(
 
   val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Future successful Ok(all_authorisations_removed())
+      Ok(all_authorisations_removed())
     }
   }
 
