@@ -203,6 +203,32 @@ abstract class BaseISpec
 
   def verifyAgentClientInvitationSubmittedEvent(
                                                  arn: String,
+                                                 clientType: String,
+                                                 clientId: String,
+                                                 clientIdType: String,
+                                                 result: String,
+                                                 service: String,
+                                                 uid: String): Unit =
+    verifyAuditRequestSent(
+      1,
+      AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
+      detail = Map(
+        "factCheck"            -> result,
+        "agentReferenceNumber" -> arn,
+        "clientType"           -> clientType,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "service"              -> service,
+        "uid"                  -> uid
+      ),
+      tags = Map(
+        "transactionName" -> "Agent client service authorisation request created"
+      )
+    )
+
+  def verifyAgentClientInvitationSubmittedEventFailed(
+                                                 arn: String,
+                                                 clientType: String,
                                                  clientId: String,
                                                  clientIdType: String,
                                                  result: String,
@@ -213,6 +239,7 @@ abstract class BaseISpec
       detail = Map(
         "factCheck"            -> result,
         "agentReferenceNumber" -> arn,
+        "clientType"           -> clientType,
         "clientIdType"         -> clientIdType,
         "clientId"             -> clientId,
         "service"              -> service

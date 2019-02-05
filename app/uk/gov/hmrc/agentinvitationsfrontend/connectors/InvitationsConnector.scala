@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-
 import javax.inject.{Inject, Named, Singleton}
+
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import org.joda.time.format.ISODateTimeFormat
@@ -58,6 +58,9 @@ class InvitationsConnector @Inject()(
 
   private[connectors] def getAgentReferenceRecordUrl(uid: String): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
+
+  private[connectors] def getAgentReferenceRecordUrl(arn: Arn): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/${arn.value}")
 
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(
@@ -107,9 +110,17 @@ class InvitationsConnector @Inject()(
 
   def getAgentReferenceRecord(
     uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AgentReferenceRecord]] =
-    monitor("ConsumedAPI-Client-Get-AgentReferenceRecord-GET") {
+    monitor("ConsumedAPI-Client-Get-AgentReferenceRecordByUid-GET") {
       http.GET[Option[AgentReferenceRecord]](getAgentReferenceRecordUrl(uid).toString).recover {
         case _: NotFoundException => None
+      }
+    }
+
+  def getAgentReferenceRecord(
+    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentReferenceRecord] =
+    monitor("ConsumedAPI-Client-Get-AgentReferenceRecordByArn-GET") {
+      http.GET[AgentReferenceRecord](getAgentReferenceRecordUrl(arn).toString).recover {
+        case _: NotFoundException => throw new Exception("Agent reference record not found")
       }
     }
 

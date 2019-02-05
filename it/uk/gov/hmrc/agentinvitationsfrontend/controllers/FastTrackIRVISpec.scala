@@ -35,6 +35,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
@@ -86,6 +87,7 @@ class FastTrackIRVISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val serviceForm = ServiceTypeForm.form.fill(servicePIR)
       val result =
@@ -221,6 +223,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
@@ -305,6 +308,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val form = agentFastTrackForm.fill(formData)
       val result = await(
@@ -350,6 +354,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",

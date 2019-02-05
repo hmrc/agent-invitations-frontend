@@ -17,12 +17,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -43,6 +44,7 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[InvitationId] = {
+
     val agentInvitation =
       AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
 
@@ -58,14 +60,17 @@ class InvitationsService @Inject()(
         if ((storedInvitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
               | (storedInvitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
               | (storedInvitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-          auditService.sendAgentInvitationSubmitted(arn, id, invitation, "Success")
-        } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, "Not Required")
+          invitationsConnector
+            .getAgentReferenceRecord(storedInvitation.arn)
+            .map(agentRefRecord =>
+              auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
+        } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, "", "Not Required")
         InvitationId(id)
       })
       .recoverWith {
         case NonFatal(e) =>
           Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }
@@ -98,14 +103,19 @@ class InvitationsService @Inject()(
           if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
                 | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
                 | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-            auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "Success")
-          } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "Not Required")
+            invitationsConnector
+              .getAgentReferenceRecord(invitation.arn)
+              .map(agentRefRecord =>
+                auditService
+                  .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
+          } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "", "Not Required")
           authRequest.copy(state = AuthorisationRequest.CREATED)
         })
         .recover {
           case NonFatal(e) =>
             Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-            auditService.sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "Fail", Option(e.getMessage))
+            auditService
+              .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage))
             authRequest.copy(state = AuthorisationRequest.FAILED)
         }
     }))

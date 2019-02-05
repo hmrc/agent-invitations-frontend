@@ -41,6 +41,7 @@ class FastTrackVatISpec extends BaseISpec {
         identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val clientTypeForm = ClientTypeForm.form.fill("business")
       val result =
@@ -92,6 +93,7 @@ class FastTrackVatISpec extends BaseISpec {
         identifierVAT)
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val serviceForm = ServiceTypeForm.form.fill(serviceVAT)
       val result =
@@ -297,6 +299,7 @@ class FastTrackVatISpec extends BaseISpec {
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val formData =
         CurrentAuthorisationRequest(
@@ -546,6 +549,7 @@ class FastTrackVatISpec extends BaseISpec {
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "business",

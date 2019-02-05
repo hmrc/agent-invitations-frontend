@@ -92,6 +92,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
           "NI")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
+        givenAgentReferenceRecordExistsForArn(arn, "uid")
 
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientIdentifier" -> validNino.value,

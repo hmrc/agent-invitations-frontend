@@ -23,6 +23,7 @@ import play.api.{Configuration, Logger}
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
@@ -42,6 +43,7 @@ abstract class BaseInvitationController(
   override val withVerifiedPasscode: PasscodeVerification,
   override val authConnector: AuthConnector,
   invitationsService: InvitationsService,
+  invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
@@ -482,6 +484,7 @@ abstract class BaseInvitationController(
                            arn,
                            "",
                            itsaInvitation,
+                           "",
                            "Fail",
                            Some("POSTCODE_DOES_NOT_MATCH"))
                          Redirect(routes.AgentsErrorController.notMatched())
@@ -494,6 +497,7 @@ abstract class BaseInvitationController(
                            arn,
                            "",
                            itsaInvitation,
+                           "",
                            "Fail",
                            Some("CLIENT_REGISTRATION_NOT_FOUND"))
                          Redirect(routes.AgentsInvitationController.notSignedUp())

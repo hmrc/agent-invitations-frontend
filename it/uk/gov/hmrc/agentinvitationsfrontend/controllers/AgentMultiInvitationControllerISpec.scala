@@ -182,6 +182,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         serviceVAT,
         identifierVAT)
       givenAgentReference(arn, uid, "personal")
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))

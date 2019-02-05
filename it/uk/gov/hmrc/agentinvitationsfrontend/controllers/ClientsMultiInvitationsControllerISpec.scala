@@ -40,7 +40,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /:clientType/:uid/:agentName  (warm up page)" should {
 
     "show the warm up page even if the user is not authenticated for personal taxes" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.warmUp("personal", uid, normalisedAgentName)(FakeRequest())
@@ -55,7 +55,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show the warm up page even if the user is not authenticated for business taxes" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.warmUp("business", uid, normalisedAgentName)(FakeRequest())
@@ -70,7 +70,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "show a signout url on the landing page if the user is authenticated" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result =
@@ -80,7 +80,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to not found if there is no agent reference record found" in {
-      givenAgentReferenceRecordNotFound(uid)
+      givenAgentReferenceRecordNotFoundForUid(uid)
 
       val result = controller.warmUp("personal", uid, normalisedAgentName)(FakeRequest())
       status(result) shouldBe 303
@@ -88,7 +88,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to not found if the normalised agent name does not match database version" in {
-      givenAgentReferenceRecordNotFound(uid)
+      givenAgentReferenceRecordNotFoundForUid(uid)
 
       val result = controller.warmUp("personal", uid, "other-agent-name")(FakeRequest())
       status(result) shouldBe 303
@@ -96,7 +96,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an AgencyNameNotFound exception if agencyName is not found" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameNotFoundClientStub(arn)
 
       an[AgencyNameNotFound] shouldBe thrownBy {
@@ -108,7 +108,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   "GET /accept-tax-agent-invitation/consent/:clientType/:uid (multi consent)" should {
     "show the multi consent page with separate consent for each service for personal" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -129,7 +129,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "show the multi consent page with separate consent for each service for business" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmTerms("business", uid)(authorisedAsAnyOrganisationClient(FakeRequest()))
@@ -150,7 +150,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "show the multi consents page but don't show services in which the invitation expiry date has passed" in {
       givenAllInvitationIdsByStatusReturnsSomeExpired(uid, "Pending")
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -171,7 +171,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "redirect to not found invitation if there are no invitations found" in {
       givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -370,7 +370,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
   "GET /accept-tax-agent-invitation/confirm-decline/:clientType/:uid (multi confirm decline)" should {
     "show the confirm decline page" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
@@ -385,7 +385,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to notFound if there are no invitationIds found" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatusReturnsNotFound(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
@@ -396,7 +396,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an AgencyNameNotFound exception if agencyName is not found" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameNotFoundClientStub(arn)
 
@@ -406,7 +406,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "throw an exception if the agency record is not found" in {
-      givenAgentReferenceRecordNotFound(uid)
+      givenAgentReferenceRecordNotFoundForUid(uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
@@ -468,7 +468,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           ClientConsentsJourneyState(
             Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
             Some("my agency name"))))
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
@@ -479,7 +479,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to wrong-account-type when submitting to decline invitations" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenGetAgencyNameClientStub(arn)
 
@@ -497,7 +497,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
             Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
             Some("my agency name"))))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllPendingInvitationIdsReturnsFakePending(uid)
       givenGetAgencyNameClientStub(arn)
 
@@ -746,7 +746,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
@@ -773,7 +773,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatusReturnsSomeDuplicated(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
@@ -795,7 +795,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
             Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true)),
             Some("My Agency Name"))))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
@@ -811,7 +811,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Illegal State Exception if there is nothing in the cache" in {
       await(testClientConsentsJourneyStateCache.clear())
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
@@ -824,7 +824,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "redirect to notFound if there are no invitationIds found" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatusReturnsNotFound(uid, "Rejected")
       givenGetAgencyNameClientStub(arn)
 
@@ -853,7 +853,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     }
 
     "Throw an AgencyNameNotFound exception if agencyName is not found" in {
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Rejected")
       givenGetAgencyNameNotFoundClientStub(arn)
 
@@ -875,7 +875,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -900,7 +900,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -925,7 +925,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -951,7 +951,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
@@ -976,7 +976,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      givenAgentReferenceRecordExists(arn, uid)
+      givenAgentReferenceRecordExistsForUid(arn, uid)
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenInvitationByIdSuccess(InvitationId("AG1UGUKTPNJ7W"), "ABCDEF123456789")
       givenInvitationByIdSuccess(InvitationId("B9SCS2T4NZBAX"), "AB123456A")
