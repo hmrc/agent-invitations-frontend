@@ -605,9 +605,9 @@ abstract class BaseInvitationController(
                         ))
                   result <- currentAuthorisationRequest.clientType match {
                              case Some("personal") =>
-                               Future successful Redirect(showReviewAuthorisationsCall)
+                               toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
                              case Some("business") => body
-                             case _                => Future.successful(Redirect(clientTypeCall))
+                             case _                => toFuture(Redirect(clientTypeCall))
                            }
                 } yield result
               }
@@ -639,6 +639,4 @@ abstract class BaseInvitationController(
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
   def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
     confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
-
-  def showReviewAuthorisationsCall: Call = routes.AgentsInvitationController.showReviewAuthorisations()
 }

@@ -138,7 +138,8 @@ class AgentsInvitationController @Inject()(
                                                Invitation(clientType, service, clientId, knownFact)))
                                            ))
                                        redirect <- if (clientType == personal || currentCache.clientType == "personal")
-                                                    toFuture(Redirect(showReviewAuthorisationsCall))
+                                                    toFuture(Redirect(
+                                                      routes.AgentsInvitationController.showReviewAuthorisations()))
                                                   else if (clientType == business) {
                                                     confirmAndRedirect(arn, cachedItem, false)
                                                   } else
@@ -244,10 +245,10 @@ class AgentsInvitationController @Inject()(
               journeyStateCache
                 .transform(item => item.copy(requests = item.requests.filterNot(_.itemId == itemId)))
                 .map { _ =>
-                  Redirect(showReviewAuthorisationsCall)
+                  Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
                 }
             } else {
-              Redirect(showReviewAuthorisationsCall)
+              Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
           }
         )
     }
