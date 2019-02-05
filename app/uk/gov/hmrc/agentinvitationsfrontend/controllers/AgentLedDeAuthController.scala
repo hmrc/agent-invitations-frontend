@@ -19,19 +19,21 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
-import play.api.mvc.{Action, AnyContent, Call, Request}
+import play.api.mvc._
 import play.twirl.api.HtmlFormat
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.auth.core.AuthConnector
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentLedDeAuthController @Inject()(
@@ -86,17 +88,101 @@ class AgentLedDeAuthController @Inject()(
     handleSubmitIdentifyClient
   }
 
-  def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
-    Ok("this page is not yet implemented")
-  }
-
   def showConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
     handleShowConfirmClient
   }
 
   def submitConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
-    Ok("this page is not yet implemented")
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequestCache.fetch.flatMap {
+        case Some(cache) =>
+          //TODO: Fix this , its a duplicated call to getClientNameByService, we could cache the clientName instead of calling the endpoint twice
+          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap { name =>
+            val clientName = name.getOrElse("")
+            agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
+              .bindFromRequest()
+              .fold(
+                formWithErrors => Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors)),
+                data => {
+                  if (data.choice) {
+                    Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+                  } else {
+                    Redirect(routes.AgentLedDeAuthController.showClientType())
+                  }
+                }
+              )
+          }
+        case None => Redirect(agentsLedDeAuthRootUrl)
+      }
+    }
   }
+
+  def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequestCache.fetch.flatMap {
+        case Some(cache) =>
+          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap { name =>
+            val clientName = name.getOrElse("")
+            Ok(
+              cancelAuthorisation.confirm_cancel(
+                cache.service,
+                clientName,
+                agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")))
+          }
+        case None => Redirect(routes.AgentLedDeAuthController.showClientType())
+      }
+    }
+  }
+
+  def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequestCache.fetch.flatMap {
+        case Some(cache) =>
+          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap { name =>
+            val clientName = name.getOrElse("")
+            agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
+              .bindFromRequest()
+              .fold(
+                formWithErrors => {
+                  Ok(cancelAuthorisation.confirm_cancel(cache.service, clientName, formWithErrors))
+                },
+                data => {
+                  if (data.choice) {
+                    Redirect(routes.AgentLedDeAuthController.showCancelled())
+                  } else {
+                    Redirect(routes.AgentLedDeAuthController.showClientType())
+                  }
+                }
+              )
+          }
+        case None => Redirect(routes.AgentLedDeAuthController.showClientType())
+      }
+    }
+  }
+
+  def showCancelled: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      Ok("success")
+    }
+  }
+
+  override def redirectOrShowConfirmClient(
+    currentAuthorisationRequest: CurrentAuthorisationRequest,
+    featureFlags: FeatureFlags)(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (_, _) =>
+      currentAuthorisationRequest.service match {
+        case HMRCMTDIT if featureFlags.enableMtdItToConfirm   => Redirect(confirmClientCall)
+        case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm => Redirect(confirmClientCall)
+        case HMRCPIR if featureFlags.enableIrvToConfirm       => Redirect(confirmClientCall)
+        case _                                                =>
+          //TODO: Fix this loose check
+          currentAuthorisationRequest.clientType match {
+            case Some("personal") => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            case Some("business") => Redirect(confirmClientCall)
+            case _                => Redirect(clientTypeCall)
+          }
+      }
+    }
 
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
@@ -118,7 +204,4 @@ class AgentLedDeAuthController @Inject()(
 
   override def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
     cancelAuthorisation.confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
-
-  override def showReviewAuthorisationsCall: Call = routes.AgentLedDeAuthController.showReviewAuthorisations()
-
 }

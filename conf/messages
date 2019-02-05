@@ -161,6 +161,11 @@ cancel-authorisation.confirm-client.header=Is this the client you want to cancel
 cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
+cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
+cancel-authorisation.confirm-cancel.p1=If you cancel your authorisation, you will not be able to {0}.
+cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
+cancel-authorisation.confirm-cancel.no=No - I need to start over again
+cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
