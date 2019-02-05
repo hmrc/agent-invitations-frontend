@@ -182,6 +182,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         serviceVAT,
         identifierVAT)
       givenAgentReference(arn, uid, "personal")
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
@@ -192,6 +193,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     "Redirect to all create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationFails(arn)
       givenAgentReference(arn, uid, "personal")
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
@@ -229,6 +231,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         serviceVAT,
         identifierVAT)
       givenAgentReference(arn, uid, "personal")
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))

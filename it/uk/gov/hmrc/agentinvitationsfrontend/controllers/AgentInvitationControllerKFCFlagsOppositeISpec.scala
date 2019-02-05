@@ -233,6 +233,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = submitIdentifyClient(
         authorisedAsValidAgent(request, arn.value)

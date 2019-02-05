@@ -60,7 +60,7 @@ class InvitationsConnector @Inject()(
     new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
 
   private[connectors] def getAgentReferenceRecordUrl(arn: Arn): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/$arn")
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/${arn.value}")
 
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(

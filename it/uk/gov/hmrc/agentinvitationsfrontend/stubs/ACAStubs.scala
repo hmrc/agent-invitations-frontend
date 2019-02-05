@@ -21,7 +21,7 @@ trait ACAStubs {
             .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")
             .withHeader("sessionId", "Session12345")))
 
-  def givenAgentReferenceRecordExists(arn: Arn, uid: String): Unit =
+  def givenAgentReferenceRecordExistsForUid(arn: Arn, uid: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/agencies/references/uid/$uid"))
         .willReturn(
@@ -34,9 +34,28 @@ trait ACAStubs {
                          |  "normalisedAgentNames" : ["99-with-flake"]
                          |}""".stripMargin)))
 
-  def givenAgentReferenceRecordNotFound(uid: String): Unit =
+  def givenAgentReferenceRecordNotFoundForUid(uid: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/agencies/references/uid/$uid"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenAgentReferenceRecordExistsForArn(arn: Arn, uid: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/references/arn/${arn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "arn" : "${arn.value}",
+                         |  "uid" : "$uid",
+                         |  "normalisedAgentNames" : ["99-with-flake"]
+                         |}""".stripMargin)))
+
+  def givenAgentReferenceRecordNotFoundForArn(arn: Arn): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/references/arn/${arn.value}"))
         .willReturn(aResponse()
           .withStatus(404)))
 

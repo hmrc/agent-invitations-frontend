@@ -34,6 +34,7 @@ class FastTrackITSAISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
@@ -85,6 +86,7 @@ class FastTrackITSAISpec extends BaseISpec {
         "NI")
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val serviceForm = ServiceTypeForm.form.fill(serviceITSA)
       val result =
@@ -318,6 +320,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
@@ -392,6 +395,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -414,6 +418,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenNotEnrolledClientITSA(validNino, validPostcode)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -461,6 +466,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
