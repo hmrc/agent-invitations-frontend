@@ -83,8 +83,6 @@ abstract class BaseISpec
 
   protected lazy val testCurrentAuthorisationRequestCache = new TestCurrentAuthorisationRequestCache
 
-  protected lazy val testCancelAuthorisationRequestCache = new TestCancelAuthorisationCache
-
   protected lazy val testAgentMultiAuthorisationJourneyStateCache = new TestAgentMultiAuthorisationJourneyStateCache
 
   protected lazy val testClientConsentsJourneyStateCache = new TestClientConsentsJourneyStateCache
@@ -120,7 +118,6 @@ abstract class BaseISpec
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testCurrentAuthorisationRequestCache.clear()
-    testCancelAuthorisationRequestCache.clear()
     testContinueUrlKeyStoreCache.clear()
     testAgentMultiAuthorisationJourneyStateCache.clear()
     testClientConsentsJourneyStateCache.clear()
@@ -129,7 +126,6 @@ abstract class BaseISpec
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
-      bind(classOf[CancelAuthorisationCache]).toInstance(testCancelAuthorisationRequestCache)
       bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
       bind(classOf[ClientConsentsJourneyStateCache]).toInstance(testClientConsentsJourneyStateCache)
       bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)

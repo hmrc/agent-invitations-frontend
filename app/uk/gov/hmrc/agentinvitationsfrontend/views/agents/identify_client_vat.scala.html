@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 
-@(agentInvitationsForm : Form[VatClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[VatClient], knownFactFlag: Boolean, fromFastTrack: Boolean, submitFormCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
     @if(knownFactFlag) { @content }
@@ -65,8 +65,7 @@
 
 
  @form(
-  action = routes.AgentsInvitationController.submitIdentifyClient,
-  'class -> "form js-form") {
+  action = submitFormCall, 'class -> "form js-form") {
 
      @featureSwitchOff("features.show-kfc-mtd-vat") {
          <div class="form-group margin-top-30">

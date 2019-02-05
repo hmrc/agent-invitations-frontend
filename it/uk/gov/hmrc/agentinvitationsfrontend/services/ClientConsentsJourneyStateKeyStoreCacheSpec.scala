@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CancelAuthorisationRequest, ClientConsent, ClientConsentsJourneyState}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier

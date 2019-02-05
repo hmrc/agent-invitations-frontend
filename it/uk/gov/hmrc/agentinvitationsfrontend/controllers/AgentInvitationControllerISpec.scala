@@ -133,8 +133,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("personal-select-service.itsa"),
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat"),
-        htmlEscapedMessage("select-service.niorg")
+        htmlEscapedMessage("select-service.vat")
       )
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
@@ -151,7 +150,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
-      htmlEscapedMessage("select-service.niorg")
     }
 
     "redirect to select client type page when the client type in the cache is not supported" in {
@@ -238,7 +236,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         CurrentAuthorisationRequest(Some("UNSUPPORTED_CLIENT_TYPE"), "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "throw exception when there is no content in the cache" in {

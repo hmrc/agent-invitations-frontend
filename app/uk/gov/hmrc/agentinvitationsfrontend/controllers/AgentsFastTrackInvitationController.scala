@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 
 import play.api.data.{Form, Mapping}
@@ -68,7 +67,8 @@ class AgentsFastTrackInvitationController @Inject()(
       relationshipsService,
       journeyStateCache,
       currentAuthorisationRequestCache,
-      auditService) {
+      auditService
+    ) {
 
   val agentFastTrackPostcodeForm: Form[Option[String]] =
     knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))
