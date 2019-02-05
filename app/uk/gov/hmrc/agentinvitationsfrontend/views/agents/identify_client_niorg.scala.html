@@ -22,7 +22,7 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.NiOrgClient
-@(agentInvitationsForm : Form[NiOrgClient], knownFactFlag: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[NiOrgClient], knownFactFlag: Boolean, fromFastTrack: Boolean, submitFormCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
 @if(knownFactFlag) { @content }
@@ -56,8 +56,7 @@ else if(!knownFactFlag) {"identify-client.utr.header"}
 <p>@Messages("identify-client.utr.p1")</p>}
 
 @form(
-action = routes.AgentsInvitationController.submitIdentifyClient,
-'class -> "form js-form") {
+action = submitFormCall, 'class -> "form js-form") {
 
 @featureSwitchOff() {
 <div class="form-group margin-top-30">

@@ -33,6 +33,11 @@ POST        /agents/cancel-authorisation/client-type            @uk.gov.hmrc.age
 GET         /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showSelectService
 POST        /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitSelectService
 GET         /agents/cancel-authorisation/identify-client        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showIdentifyClient
+POST        /agents/cancel-authorisation/identify-client        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitIdentifyClient
+GET         /agents/cancel-authorisation/confirm-client         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showConfirmClient
+POST        /agents/cancel-authorisation/confirm-client         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitConfirmClient
+GET         /agents/cancel-authorisation/review-authorisations  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showReviewAuthorisations
+
 
 # Error Agent Endpoints
 GET         /agents/not-signed-up                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notSignedUp

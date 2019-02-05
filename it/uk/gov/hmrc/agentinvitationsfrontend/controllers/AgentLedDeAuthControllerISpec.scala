@@ -66,7 +66,6 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
           htmlEscapedMessage("cancel-authorisation.select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
-        hasMessage("cancel-authorisation.select-service.p1"),
         hasMessage("cancel-authorisation.select-service.hint")
       )
     }
@@ -102,7 +101,6 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
           htmlEscapedMessage("cancel-authorisation.select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
-        hasMessage("cancel-authorisation.select-service.p1"),
         hasMessage("cancel-authorisation.select-service.hint"),
         hasMessage("service.type.invalid")
       )

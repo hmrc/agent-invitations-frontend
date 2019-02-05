@@ -155,9 +155,12 @@ error.review-authorisation.required=Select yes if you want to add another author
 #Cancel Authorisations
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
-cancel-authorisation.select-service.header=Identify your client
-cancel-authorisation.select-service.p1=To help us find your client, first select a service that you deal with on their behalf. We will use this information to check for any other services you provide to them.
+cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.select-service.hint=Select an option.
+cancel-authorisation.confirm-client.header=Is this the client you want to cancel your authorisation for?
+cancel-authorisation.confirm-client.yes=Yes - this is the client
+cancel-authorisation.confirm-client.no=No - I need to start over again
+cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
