@@ -469,45 +469,41 @@ abstract class BaseInvitationController(
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     itsaInvitation.postcode match {
       case Some(postcode) =>
-        invitationsConnector
-          .getAgentReferenceRecord(arn)
-          .flatMap(r =>
-            for {
-              hasPostcode <- invitationsService
-                              .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
-              result <- hasPostcode match {
-                         case Some(true) =>
-                           redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                             createInvitation(arn, itsaInvitation)
-                           }
-                         case Some(false) =>
-                           currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                             Logger(getClass).warn(
-                               s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-                             auditService.sendAgentInvitationSubmitted(
-                               arn,
-                               "",
-                               itsaInvitation,
-                               r.uid,
-                               "Fail",
-                               Some("POSTCODE_DOES_NOT_MATCH"))
-                             Redirect(routes.AgentsErrorController.notMatched())
-                           }
-                         case None =>
-                           currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                             Logger(getClass).warn(
-                               s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-                             auditService.sendAgentInvitationSubmitted(
-                               arn,
-                               "",
-                               itsaInvitation,
-                               r.uid,
-                               "Fail",
-                               Some("CLIENT_REGISTRATION_NOT_FOUND"))
-                             Redirect(routes.AgentsInvitationController.notSignedUp())
-                           }
+        for {
+          hasPostcode <- invitationsService
+                          .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
+          result <- hasPostcode match {
+                     case Some(true) =>
+                       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                         createInvitation(arn, itsaInvitation)
                        }
-            } yield result)
+                     case Some(false) =>
+                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
+                         Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
+                         auditService.sendAgentInvitationSubmitted(
+                           arn,
+                           "",
+                           itsaInvitation,
+                           "",
+                           "Fail",
+                           Some("POSTCODE_DOES_NOT_MATCH"))
+                         Redirect(routes.AgentsErrorController.notMatched())
+                       }
+                     case None =>
+                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
+                         Logger(getClass).warn(
+                           s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
+                         auditService.sendAgentInvitationSubmitted(
+                           arn,
+                           "",
+                           itsaInvitation,
+                           "",
+                           "Fail",
+                           Some("CLIENT_REGISTRATION_NOT_FOUND"))
+                         Redirect(routes.AgentsInvitationController.notSignedUp())
+                       }
+                   }
+        } yield result
       case None =>
         redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
           createInvitation(arn, itsaInvitation)

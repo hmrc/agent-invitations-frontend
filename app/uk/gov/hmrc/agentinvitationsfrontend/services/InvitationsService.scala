@@ -48,32 +48,31 @@ class InvitationsService @Inject()(
     val agentInvitation =
       AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
 
-    invitationsConnector
-      .getAgentReferenceRecord(arn)
-      .flatMap(
-        r =>
-          (for {
-            locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-            invitation: StoredInvitation <- invitationsConnector
-                                             .getInvitation(locationOpt.getOrElse {
-                                               throw new Exception("Invitation location expected; but missing.")
-                                             })
-          } yield invitation)
-            .map(storedInvitation => {
-              val id = storedInvitation.selfUrl.toString.split("/").toStream.last
-              if ((storedInvitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
-                    | (storedInvitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
-                    | (storedInvitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-                auditService.sendAgentInvitationSubmitted(arn, id, invitation, r.uid, "Success")
-              } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, r.uid, "Not Required")
-              InvitationId(id)
-            })
-            .recoverWith {
-              case NonFatal(e) =>
-                Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-                auditService.sendAgentInvitationSubmitted(arn, "", invitation, r.uid, "Fail", Option(e.getMessage))
-                Future.failed(e)
-          })
+    (for {
+      locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
+      invitation: StoredInvitation <- invitationsConnector
+                                       .getInvitation(locationOpt.getOrElse {
+                                         throw new Exception("Invitation location expected; but missing.")
+                                       })
+    } yield invitation)
+      .map(storedInvitation => {
+        val id = storedInvitation.selfUrl.toString.split("/").toStream.last
+        if ((storedInvitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
+              | (storedInvitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
+              | (storedInvitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+          invitationsConnector
+            .getAgentReferenceRecord(storedInvitation.arn)
+            .map(agentRefRecord =>
+              auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
+        } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, "", "Not Required")
+        InvitationId(id)
+      })
+      .recoverWith {
+        case NonFatal(e) =>
+          Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage))
+          Future.failed(e)
+      }
   }
 
   def createMultipleInvitations(
@@ -92,32 +91,33 @@ class InvitationsService @Inject()(
           authRequest.invitation.clientIdentifierType,
           authRequest.invitation.clientId)
 
-      invitationsConnector
-        .getAgentReferenceRecord(arn)
-        .flatMap(r =>
-          (for {
-            locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-            invitation <- invitationsConnector
-                           .getInvitation(locationOpt.getOrElse {
-                             throw new Exception("Invitation location expected; but missing.")
-                           })
-          } yield invitation)
-            .map(invitation => {
-              val id = invitation.selfUrl.toString.split("/").toStream.last
-              if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
-                    | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
-                    | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-                auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, r.uid, "Success")
-              } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, r.uid, "Not Required")
-              authRequest.copy(state = AuthorisationRequest.CREATED)
-            })
-            .recover {
-              case NonFatal(e) =>
-                Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+      (for {
+        locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
+        invitation <- invitationsConnector
+                       .getInvitation(locationOpt.getOrElse {
+                         throw new Exception("Invitation location expected; but missing.")
+                       })
+      } yield invitation)
+        .map(invitation => {
+          val id = invitation.selfUrl.toString.split("/").toStream.last
+          if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
+                | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
+                | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
+            invitationsConnector
+              .getAgentReferenceRecord(invitation.arn)
+              .map(agentRefRecord =>
                 auditService
-                  .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, r.uid, "Fail", Option(e.getMessage))
-                authRequest.copy(state = AuthorisationRequest.FAILED)
-          })
+                  .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
+          } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "", "Not Required")
+          authRequest.copy(state = AuthorisationRequest.CREATED)
+        })
+        .recover {
+          case NonFatal(e) =>
+            Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+            auditService
+              .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage))
+            authRequest.copy(state = AuthorisationRequest.FAILED)
+        }
     }))
 
   def createAgentLink(arn: Arn, clientType: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =

@@ -405,7 +405,7 @@ class FastTrackITSAISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA, "uid")
+      verifyAgentClientInvitationSubmittedEventFailed(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA)
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe formData
     }
 
@@ -428,7 +428,7 @@ class FastTrackITSAISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
 
       verifyAuthoriseAttempt()
-      verifyAgentClientInvitationSubmittedEvent(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA, "uid")
+      verifyAgentClientInvitationSubmittedEventFailed(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA)
       await(testCurrentAuthorisationRequestCache.fetch).get shouldBe formData
     }
   }
