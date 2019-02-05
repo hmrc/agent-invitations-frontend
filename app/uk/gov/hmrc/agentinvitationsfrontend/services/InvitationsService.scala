@@ -50,10 +50,10 @@ class InvitationsService @Inject()(
 
     (for {
       locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation: StoredInvitation <- invitationsConnector
-                                       .getInvitation(locationOpt.getOrElse {
-                                         throw new Exception("Invitation location expected; but missing.")
-                                       })
+      invitation <- invitationsConnector
+                     .getInvitation(locationOpt.getOrElse {
+                       throw new Exception("Invitation location expected; but missing.")
+                     })
     } yield invitation)
       .map(storedInvitation => {
         val id = storedInvitation.selfUrl.toString.split("/").toStream.last

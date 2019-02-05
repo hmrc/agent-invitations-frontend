@@ -487,7 +487,6 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       givenAgentReference(arn, "ABCDEFGH", "business")
       givenClientDetails(validVrn)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
-      givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
