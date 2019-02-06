@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCNIORG, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
@@ -93,24 +93,29 @@ abstract class BaseInvitationController(
       getSelectServicePage(isWhitelisted)
     }
 
-  private def getSelectServicePage(isWhitelisted: Boolean, form: Form[String] = ServiceTypeForm.form)(
+  private def getSelectServicePage(
+    isWhitelisted: Boolean,
+    form: Form[String] = ServiceTypeForm.form,
+    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
     implicit request: Request[_]): Future[Result] =
     journeyStateCache.fetch.flatMap {
       case Some(basket) if basket.requests.nonEmpty =>
         basket.clientType match {
           case "personal" =>
-            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), true))
-          case "business" => Ok(selectServicePage(form, vat ++ niOrg, false))
-          case _          => Redirect(clientTypeCall)
+            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = true))
+          case "business" => {
+            Ok(business_select_service(businessForm, basketFlag = true))
+          }
+          case _ => Redirect(clientTypeCall)
         }
       case _ =>
         currentAuthorisationRequestCache.fetch.flatMap {
           case Some(input) if input.clientType.nonEmpty =>
             input.clientType match {
               case Some("personal") =>
-                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), false))
+                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = false))
               case Some("business") =>
-                Ok(selectServicePage(form, vat ++ niOrg, false))
+                Ok(business_select_service(businessForm, basketFlag = false))
               case _ => Redirect(clientTypeCall)
             }
           case _ => Redirect(clientTypeCall)
@@ -143,7 +148,7 @@ abstract class BaseInvitationController(
               cache.flatMap(_.clientType) match {
                 case Some("personal") => updateSessionAndRedirect
                 case Some("business") =>
-                  if (serviceType == HMRCMTDVAT || serviceType == HMRCNIORG) {
+                  if (serviceType == HMRCMTDVAT) {
                     updateSessionAndRedirect
                   } else {
                     Redirect(selectServiceCall)
@@ -151,6 +156,31 @@ abstract class BaseInvitationController(
                 case _ => Redirect(clientTypeCall)
               }
             }
+          }
+        )
+    }
+
+  protected def handleSubmitSelectServiceBusiness(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      agentConfirmationForm("error.business-service.required")
+        .bindFromRequest()
+        .fold(
+          formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
+          data => {
+            if (data.choice) {
+              val updateAggregate = currentAuthorisationRequestCache.fetch
+                .map(_.getOrElse(CurrentAuthorisationRequest()))
+                .map(_.copy(service = HMRCMTDVAT))
+
+              updateAggregate.flatMap(
+                toUpdate =>
+                  currentAuthorisationRequestCache
+                    .save(toUpdate)
+                    .flatMap(_ =>
+                      ifShouldShowService(toUpdate, featureFlags, isWhitelisted) {
+                        redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)
+                    }))
+            } else Future successful Redirect(clientTypeCall)
           }
         )
     }
@@ -184,14 +214,6 @@ abstract class BaseInvitationController(
                   inviteDetails.fromFastTrack,
                   submitIdentifyClientCall))
 
-            case HMRCNIORG =>
-              Ok(
-                identify_client_niorg(
-                  NiOrgClientForm.form(featureFlags.showHmrcNiOrg),
-                  featureFlags.showHmrcNiOrg,
-                  inviteDetails.fromFastTrack,
-                  submitIdentifyClientCall))
-
             case _ => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
@@ -206,7 +228,6 @@ abstract class BaseInvitationController(
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case HMRCNIORG  => identifyNiOrgClient(arn, isWhitelisted)
             case _          => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
@@ -305,35 +326,6 @@ abstract class BaseInvitationController(
           } yield result
       )
 
-  def identifyNiOrgClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[_],
-    hc: HeaderCarrier): Future[Result] =
-    NiOrgClientForm
-      .form(featureFlags.showHmrcNiOrg)
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          Ok(identify_client_niorg(formWithErrors, featureFlags.showHmrcNiOrg, true, submitIdentifyClientCall)),
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "utr",
-                knownFact = userInput.postcode
-              )
-            result <- for {
-                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                       redirectResult <- redirectBasedOnCurrentInputState(
-                                          arn,
-                                          invitationWithClientDetails,
-                                          isWhitelisted)
-                     } yield redirectResult
-          } yield result
-      )
-
   def ifShouldShowService(
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     featureFlags: FeatureFlags,
@@ -347,9 +339,6 @@ abstract class BaseInvitationController(
         Future successful BadRequest
       case HMRCMTDIT if !featureFlags.showHmrcMtdIt =>
         Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
-        Future successful BadRequest
-      case HMRCNIORG if !featureFlags.showHmrcNiOrg =>
-        Logger(getClass).warn(s"Service: $HMRCNIORG feature flagged is switched off")
         Future successful BadRequest
       case HMRCPIR if !featureFlags.showPersonalIncome =>
         Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")

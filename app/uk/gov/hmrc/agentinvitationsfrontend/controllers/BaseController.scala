@@ -50,9 +50,6 @@ abstract class BaseController(
   val vat =
     if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
 
-  val niOrg =
-    if (featureFlags.showHmrcNiOrg) Seq(HMRCNIORG -> Messages("select-service.niorg")) else Seq.empty
-
   def enabledPersonalServicesForCancelAuth(isWhitelisted: Boolean): Seq[(String, String)] =
     if (isWhitelisted) {
       personalIncomeRecord ++ mtdItId ++ vat
@@ -60,20 +57,19 @@ abstract class BaseController(
       mtdItId ++ vat
     }
 
-  def enabledBusinessServicesForCancelAuthorisation: Seq[(String, String)] = vat ++ niOrg
+  def enabledBusinessServicesForCancelAuthorisation: Seq[(String, String)] = vat
 
   def enabledPersonalServicesForInvitation(isWhitelisted: Boolean): Seq[(String, String)] =
     if (isWhitelisted) {
-      personalIncomeRecord ++ mtdItId ++ vat ++ niOrg
+      personalIncomeRecord ++ mtdItId ++ vat
     } else {
-      mtdItId ++ vat ++ niOrg
+      mtdItId ++ vat
     }
 
   val serviceToMessageKey: String => String = {
     case HMRCMTDIT  => messageKeyForITSA
     case HMRCPIR    => messageKeyForAfi
     case HMRCMTDVAT => messageKeyForVAT
-    case HMRCNIORG  => messageKeyForNiOrg
     case _          => "Service is missing"
   }
 

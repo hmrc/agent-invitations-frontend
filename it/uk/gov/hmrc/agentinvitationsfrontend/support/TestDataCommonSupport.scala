@@ -44,8 +44,4 @@ trait TestDataCommonSupport {
   val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
 
   val hash = "12345678"
-
-  val serviceNiOrg = "HMRC-NI-ORG"
-  val utr = "3957820631"
-
 }

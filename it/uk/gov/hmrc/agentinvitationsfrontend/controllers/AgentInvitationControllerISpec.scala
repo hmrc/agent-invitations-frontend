@@ -146,7 +146,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       testCurrentAuthorisationRequestCache.save(invitation)
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.yes"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.no"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -194,7 +196,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       verifyAuthoriseAttempt()
     }
 
-    "redirect to select-service type if the service is not VAT or NIORG" in {
+    "redirect to select-service type if the service is not VAT" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
       val result = submitService(
         authorisedAsValidAgent(

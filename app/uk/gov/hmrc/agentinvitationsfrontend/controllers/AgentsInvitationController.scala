@@ -97,6 +97,10 @@ class AgentsInvitationController @Inject()(
     handleSubmitSelectService
   }
 
+  val submitSelectServiceBusiness: Action[AnyContent] = Action.async { implicit request =>
+    handleSubmitSelectServiceBusiness
+  }
+
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     handleShowIdentifyClient
   }
