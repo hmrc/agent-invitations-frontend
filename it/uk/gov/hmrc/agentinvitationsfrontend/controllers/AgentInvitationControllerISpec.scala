@@ -195,30 +195,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
-
-    "redirect to select-service type if the service is not VAT" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"),
-          arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
-    }
-
-    "redirect to select service if the service in the form is not supported" in {
-      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-      val result = submitService(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"),
-          arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
-    }
-
-    behave like anAuthorisedAgentEndpoint(request, submitService)
   }
 
   "GET /agents/identify-client" should {
@@ -227,10 +203,12 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
-    "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+    "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("UNSUPPORTED_SERVICE"), "UNSUPPORTED_SERVICE"))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {

@@ -160,7 +160,14 @@ abstract class BaseInvitationController(
         }
     }
 
-  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]) =
+    currentAuthorisationRequestCache.get.flatMap {
+      case CurrentAuthorisationRequest(Some("personal"), _, _, _, _, _) => handleSubmitSelectServicePersonal
+      case CurrentAuthorisationRequest(Some("business"), _, _, _, _, _) => handleSubmitSelectServiceBusiness
+      case _                                                            => Redirect(clientTypeCall)
+    }
+
+  protected def handleSubmitSelectServicePersonal(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
         .bindFromRequest()
