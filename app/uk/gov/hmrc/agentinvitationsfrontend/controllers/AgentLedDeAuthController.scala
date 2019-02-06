@@ -55,7 +55,7 @@ class AgentLedDeAuthController @Inject()(
   auditService: AuditService)(
   implicit featureFlags: FeatureFlags,
   externalUrls: ExternalUrls,
-  messagesApi: play.api.i18n.MessagesApi,
+  val messagesApi: play.api.i18n.MessagesApi,
   configuration: Configuration,
   ec: ExecutionContext)
     extends BaseInvitationController(

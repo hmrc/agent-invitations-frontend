@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
 import play.api.data.Form
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Call, Request, Result}
 import play.api.{Configuration, Logger}
 import play.twirl.api.HtmlFormat.Appendable
@@ -27,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
@@ -36,6 +37,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,9 +54,45 @@ abstract class BaseInvitationController(
   implicit override val externalUrls: ExternalUrls,
   configuration: Configuration,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi,
+  messages: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+    extends FrontendController with I18nSupport with AuthActions {
+
+  val personalOption = Seq("personal" -> Messages("client-type.personal"))
+  val businessOption = Seq("business" -> Messages("client-type.business"))
+  val clientTypes = personalOption ++ businessOption
+
+  val personalIncomeRecord =
+    if (featureFlags.showPersonalIncome)
+      Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
+    else Seq.empty
+
+  val mtdItId =
+    if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("personal-select-service.itsa")) else Seq.empty
+
+  val vat =
+    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+
+  def enabledPersonalServicesForCancelAuth(isWhitelisted: Boolean): Seq[(String, String)] =
+    if (isWhitelisted) {
+      personalIncomeRecord ++ mtdItId ++ vat
+    } else {
+      mtdItId ++ vat
+    }
+
+  def enabledPersonalServicesForInvitation(isWhitelisted: Boolean): Seq[(String, String)] =
+    if (isWhitelisted) {
+      personalIncomeRecord ++ mtdItId ++ vat
+    } else {
+      mtdItId ++ vat
+    }
+
+  val serviceToMessageKey: String => String = {
+    case HMRCMTDIT  => messageKeyForITSA
+    case HMRCPIR    => messageKeyForAfi
+    case HMRCMTDVAT => messageKeyForVAT
+    case _          => "Service is missing"
+  }
 
   val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
 
@@ -616,10 +654,12 @@ abstract class BaseInvitationController(
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
+
   def clientTypePage(form: Form[String] = ClientTypeForm.form)(implicit request: Request[_]): Appendable =
     client_type(form, clientTypes, agentServicesAccountUrl)
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
+
   def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Seq[(String, String)],
@@ -627,9 +667,12 @@ abstract class BaseInvitationController(
     select_service(form, enabledServices, basketFlag)
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
+
   def submitIdentifyClientCall: Call = routes.AgentsInvitationController.submitIdentifyClient()
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
+
   def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
     confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
+
 }
