@@ -24,17 +24,6 @@
 
 @(service: String, clientName: String, choiceForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@serviceMessage =  @{ service match {
-                            case "PERSONAL-INCOME-RECORD" =>
-                                "view the PAYE income record for this client"
-                            case "HMRC-MTD-IT" =>
-                                s"report income and expenses for $clientName"
-                            case "HMRC-MTD-VAT" =>
-                                s"report VAT Returns for $clientName"
-                            case _ => ""
-                        }
-                    }
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
 @back_link(s"${routes.AgentsInvitationController.showConfirmClient()}")
@@ -48,7 +37,7 @@
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> Messages("cancel-authorisation.confirm-cancel.no")),
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-cancel.header") + s"""</h1>""" +
-    """<p>""" + Messages("cancel-authorisation.confirm-cancel.p1", serviceMessage) + """</p>"""),
+    """<p>""" + Messages(s"cancel-authorisation.confirm-cancel.p1.$service", clientName) + """</p>"""),
   '_groupDivClass -> "form-group soft--ends",
   '_fieldsetAttributes -> Html("""id='choice'""")
  )
