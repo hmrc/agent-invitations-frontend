@@ -187,13 +187,11 @@ class AgentLedDeAuthController @Inject()(
           val result = for {
             clientName <- invitationsService.getClientNameByService(clientId, service)
             agencyName <- invitationsService.getAgencyName(arn)
-          } yield (clientName, agencyName)
+          } yield (clientName.getOrElse(""), agencyName)
 
           result.map {
-            case (Some(clientName), agencyName) =>
+            case (clientName, agencyName) =>
               Ok(cancelAuthorisation.authorisation_cancelled(service, clientName, agencyName, agentServicesAccountUrl))
-            case (None, agencyName) =>
-              Ok(cancelAuthorisation.authorisation_cancelled(service, "", agencyName, agentServicesAccountUrl))
           }
 
         case None => Redirect(agentsLedDeAuthRootUrl)
