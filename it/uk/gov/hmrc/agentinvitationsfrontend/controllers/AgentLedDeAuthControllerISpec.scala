@@ -1,5 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
 import akka.util.Timeout
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
@@ -313,6 +316,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode)))
 
+        givenCancelledAuthorisationItsa(arn, validNino, 204)
+
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
@@ -337,6 +342,32 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showClientType().url)
       }
+    }
+  }
+
+  "GET  /agents/cancel-authorisation/cancelled" should {
+
+    val request = FakeRequest("GET", "/agents/cancel-authorisation/cancelled")
+    val showCancelled = controller.showCancelled()
+
+    "display the page correctly" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode)))
+      givenGetAgencyNameClientStub(arn)
+      givenTradingName(validNino, "Some Client Company")
+
+      val result = showCancelled(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result,
+        "cancel-authorisation.cancelled.header",
+         "cancel-authorisation.cancelled.subheader",
+         "cancel-authorisation.cancelled.print"
+      )
+
+      val today = java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM YYYY").withZone(ZoneOffset.UTC))
+
+      checkHtmlResultWithBodyText(result, today)
+      checkHtmlResultWithBodyText(result, "My Agency is no longer authorised by Some Client Company to report their income or expenses through software.")
     }
   }
 }

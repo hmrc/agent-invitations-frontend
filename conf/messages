@@ -156,7 +156,7 @@ review-authorisations.different-names=The client''s name may be recorded differe
 review-authorisations.no-client-name=Client''s name is not available
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
 
-#Cancel Authorisations
+# Agent led de-auth
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
@@ -166,10 +166,19 @@ cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
-cancel-authorisation.confirm-cancel.p1=If you cancel your authorisation, you will not be able to {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to report income and expenses for {0}.
+cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel your authorisation, you will not be able to view the PAYE income record for this client.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisation, you will not be able to report VAT Returns for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
+cancel-authorisation.cancelled.header=Authorisation cancelled
+cancel-authorisation.cancelled.subheader=What this means
+cancel-authorisation.cancelled.return-to-account-services.button=Return to agent services account
+cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to report their income or expenses through software.
+cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
+cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to report their VAT Returns through software.
+cancel-authorisation.cancelled.print=Print this page
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?

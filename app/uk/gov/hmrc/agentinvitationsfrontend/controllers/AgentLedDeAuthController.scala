@@ -26,6 +26,7 @@ import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
@@ -33,7 +34,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,6 +48,8 @@ class AgentLedDeAuthController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
+  relationshipsConnector: RelationshipsConnector,
+  pirRelationshipConnector: PirRelationshipConnector,
   journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
   val currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
   auditService: AuditService)(
@@ -112,7 +118,7 @@ class AgentLedDeAuthController @Inject()(
                   if (data.choice) {
                     Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
                   } else {
-                    Redirect(routes.AgentLedDeAuthController.showClientType())
+                    Redirect(agentsLedDeAuthRootUrl)
                   }
                 }
               )
@@ -134,42 +140,72 @@ class AgentLedDeAuthController @Inject()(
                 clientName,
                 agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")))
           }
-        case None => Redirect(routes.AgentLedDeAuthController.showClientType())
+        case None => Redirect(agentsLedDeAuthRootUrl)
       }
     }
   }
 
   def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { (arn, _) =>
       currentAuthorisationRequestCache.fetch.flatMap {
         case Some(cache) =>
-          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap { name =>
+          val service = cache.service
+          val clientId = cache.clientIdentifier
+          invitationsService.getClientNameByService(clientId, service).flatMap { name =>
             val clientName = name.getOrElse("")
             agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
               .bindFromRequest()
               .fold(
                 formWithErrors => {
-                  Ok(cancelAuthorisation.confirm_cancel(cache.service, clientName, formWithErrors))
+                  Ok(cancelAuthorisation.confirm_cancel(service, clientName, formWithErrors))
                 },
                 data => {
                   if (data.choice) {
-                    Redirect(routes.AgentLedDeAuthController.showCancelled())
+                    deleteRelationshipForService(service, arn, clientId).map {
+                      case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
+                      case Some(false) => NotFound //TODO: should be fixed in Sprint 36
+                      case _           => InternalServerError //TODO: should be fixed in Sprint 36
+                    }
                   } else {
-                    Redirect(routes.AgentLedDeAuthController.showClientType())
+                    Redirect(agentsLedDeAuthRootUrl)
                   }
                 }
               )
           }
-        case None => Redirect(routes.AgentLedDeAuthController.showClientType())
+        case None => Redirect(agentsLedDeAuthRootUrl)
       }
     }
   }
 
   def showCancelled: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
-      Ok("success")
+    withAuthorisedAsAgent { (arn, _) =>
+      currentAuthorisationRequestCache.fetch.flatMap {
+        case Some(cache) =>
+          val service = cache.service
+          val clientId = cache.clientIdentifier
+
+          val result = for {
+            clientName <- invitationsService.getClientNameByService(clientId, service)
+            agencyName <- invitationsService.getAgencyName(arn)
+          } yield (clientName.getOrElse(""), agencyName)
+
+          result.map {
+            case (clientName, agencyName) =>
+              Ok(cancelAuthorisation.authorisation_cancelled(service, clientName, agencyName, agentServicesAccountUrl))
+          }
+
+        case None => Redirect(agentsLedDeAuthRootUrl)
+      }
     }
   }
+
+  private def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
+    service match {
+      case HMRCMTDIT  => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
+      case HMRCPIR    => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
+      case HMRCMTDVAT => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
+      case e          => throw new Error(s"Unsupported service for deleting relationship: $e")
+    }
 
   override def redirectOrShowConfirmClient(
     currentAuthorisationRequest: CurrentAuthorisationRequest,
