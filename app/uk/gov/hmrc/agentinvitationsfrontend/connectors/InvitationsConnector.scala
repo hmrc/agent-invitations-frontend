@@ -117,9 +117,9 @@ class InvitationsConnector @Inject()(
     }
 
   def getAgentReferenceRecord(
-    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentReferenceRecord] =
+    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SimplifiedAgentReferenceRecord] =
     monitor("ConsumedAPI-Client-Get-AgentReferenceRecordByArn-GET") {
-      http.GET[AgentReferenceRecord](getAgentReferenceRecordUrl(arn).toString).recover {
+      http.GET[SimplifiedAgentReferenceRecord](getAgentReferenceRecordUrl(arn).toString).recover {
         case _: NotFoundException => throw new Exception("Agent reference record not found")
       }
     }
