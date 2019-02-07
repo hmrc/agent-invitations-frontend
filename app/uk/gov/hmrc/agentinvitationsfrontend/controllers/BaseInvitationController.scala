@@ -141,10 +141,8 @@ abstract class BaseInvitationController(
         basket.clientType match {
           case "personal" =>
             Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = true))
-          case "business" => {
-            Ok(businessSelectServicePage(businessForm, basketFlag = true))
-          }
-          case _ => Redirect(clientTypeCall)
+          case "business" => Ok(businessSelectServicePage(businessForm, basketFlag = true))
+          case _          => Redirect(clientTypeCall)
         }
       case _ =>
         currentAuthorisationRequestCache.fetch.flatMap {
@@ -161,10 +159,12 @@ abstract class BaseInvitationController(
     }
 
   protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]) =
-    currentAuthorisationRequestCache.get.flatMap {
-      case CurrentAuthorisationRequest(Some("personal"), _, _, _, _, _) => handleSubmitSelectServicePersonal
-      case CurrentAuthorisationRequest(Some("business"), _, _, _, _, _) => handleSubmitSelectServiceBusiness
-      case _                                                            => Redirect(clientTypeCall)
+    currentAuthorisationRequestCache.fetch.flatMap { car =>
+      car.flatMap(_.clientType) match {
+        case Some("personal") => handleSubmitSelectServicePersonal
+        case Some("business") => handleSubmitSelectServiceBusiness
+        case _                => Redirect(clientTypeCall)
+      }
     }
 
   protected def handleSubmitSelectServicePersonal(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =

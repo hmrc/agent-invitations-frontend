@@ -240,11 +240,6 @@ class AgentLedDeAuthController @Inject()(
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     cancelAuthorisation.select_service(form, enabledServices, false)
 
-  override def businessSelectServicePage(
-    form: Form[Confirmation] = agentConfirmationForm("error.business-service.required"),
-    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    business_select_service(form, false, submitServiceCall)
-
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 
   override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
