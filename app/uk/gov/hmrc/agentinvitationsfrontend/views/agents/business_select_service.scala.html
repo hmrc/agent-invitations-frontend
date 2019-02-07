@@ -21,11 +21,11 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@(choiceForm: Form[Confirmation], basketFlag: Boolean, submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(choiceForm: Form[Confirmation], basketFlag: Boolean, submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link_referer(request)
+    @back_link(backLink)
 
     @if(choiceForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("service"))

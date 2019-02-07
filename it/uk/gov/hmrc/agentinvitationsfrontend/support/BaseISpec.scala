@@ -155,6 +155,11 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, continueUrl)
   }
 
+  def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {
+    val element = s"""<a id="identifiersBackLink" href="$backLinkUrl" class="link-back">Back</a>"""
+    checkHtmlResultWithBodyText(result,element)
+  }
+
   def checkHasAgentSignOutLink(result: Future[Result]) = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString

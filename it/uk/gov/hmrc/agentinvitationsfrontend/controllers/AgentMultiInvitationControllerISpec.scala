@@ -146,7 +146,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
   "POST /agents/review-authorisations" should {
     val request = FakeRequest("POST", "/agents/review-authorisation")
     "Redirect to select service if YES is selected on the review-authorisations page" in new AgentAuthorisationFullCacheScenario {
-
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
@@ -184,6 +184,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       givenAgentReference(arn, uid, "personal")
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
+
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
@@ -193,6 +195,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     "Redirect to all create authorisation failed error page if NO is selected and all invitation creations fail" in new AgentAuthorisationFullCacheScenario {
       givenInvitationCreationFails(arn)
       givenAgentReference(arn, uid, "personal")
+
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
@@ -230,7 +234,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         serviceVAT,
         identifierVAT)
       givenAgentReference(arn, uid, "personal")
-
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
@@ -239,6 +243,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Throw an Exception if there is nothing in the cache" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
@@ -248,7 +253,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Redisplay the page with errors if no option is chosen" in new AgentAuthorisationFullCacheScenario {
-
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
       val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to add another authorisation for this client")
@@ -354,6 +359,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
           "itemId")
       testAgentMultiAuthorisationJourneyStateCache.save(
         AgentMultiAuthorisationJourneyState("personal", Set(authRequest1)))
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceITSA))
 
       val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value))
 
@@ -367,7 +373,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
     "Display the pending authorisation already exists error page version when there are no authorisation requests left in the basket" in {
       testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
-
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(clientType = Some("personal"), service = serviceVAT))
       val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200

@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@(agentInvitationsForm : Form[ItsaClient], knownFactFlag: Boolean, fromFastTrack: Boolean, submitFormCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[ItsaClient], knownFactFlag: Boolean, submitFormCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @featureSwitchOn()(content: Html) = {
   @if(knownFactFlag) { @content }
@@ -40,12 +40,7 @@ if(knownFactFlag) {"identify-client.header"}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"$titleSwitch"), "itsa"))) {
 
-    @if(fromFastTrack){
-        @back_link_referer(request)
-    }else {
-        @back_link(s"${routes.AgentsInvitationController.showSelectService()}")
-    }
-
+    @back_link(backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors){
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
