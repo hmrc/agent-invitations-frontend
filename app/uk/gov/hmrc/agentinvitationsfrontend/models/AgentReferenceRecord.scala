@@ -30,3 +30,13 @@ case class AgentReferenceRecord(
 object AgentReferenceRecord {
   implicit val formats: Format[AgentReferenceRecord] = Json.format[AgentReferenceRecord]
 }
+
+case class SimplifiedAgentReferenceRecord(
+  uid: String,
+  arn: Arn,
+  normalisedAgentName: String
+)
+
+object SimplifiedAgentReferenceRecord {
+  implicit val formats: Format[SimplifiedAgentReferenceRecord] = Json.format[SimplifiedAgentReferenceRecord]
+}
