@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@(choiceForm: Form[Confirmation], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(choiceForm: Form[Confirmation], basketFlag: Boolean, submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -32,7 +32,7 @@
     }
 
     @form(
-        action = routes.AgentsInvitationController.submitSelectService(),
+        action = submitCall,
         'class -> "form js-form") {
         <div class="form-group">
         @inputRadioGroup(

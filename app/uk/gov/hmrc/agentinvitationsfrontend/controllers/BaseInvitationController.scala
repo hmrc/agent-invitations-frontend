@@ -142,7 +142,7 @@ abstract class BaseInvitationController(
           case "personal" =>
             Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = true))
           case "business" => {
-            Ok(business_select_service(businessForm, basketFlag = true))
+            Ok(businessSelectServicePage(businessForm, basketFlag = true))
           }
           case _ => Redirect(clientTypeCall)
         }
@@ -153,7 +153,7 @@ abstract class BaseInvitationController(
               case Some("personal") =>
                 Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = false))
               case Some("business") =>
-                Ok(business_select_service(businessForm, basketFlag = false))
+                Ok(businessSelectServicePage(businessForm, basketFlag = false))
               case _ => Redirect(clientTypeCall)
             }
           case _ => Redirect(clientTypeCall)
@@ -667,11 +667,18 @@ abstract class BaseInvitationController(
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
+  def submitServiceCall: Call = routes.AgentsInvitationController.submitSelectService()
+
   def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Seq[(String, String)],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     select_service(form, enabledServices, basketFlag)
+
+  def businessSelectServicePage(
+    form: Form[Confirmation] = agentConfirmationForm("error.business-service.required"),
+    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
+    business_select_service(form, basketFlag, submitServiceCall)
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 
