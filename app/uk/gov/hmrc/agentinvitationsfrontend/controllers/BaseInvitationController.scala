@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
 import play.api.data.Form
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Call, Request, Result}
 import play.api.{Configuration, Logger}
 import play.twirl.api.HtmlFormat.Appendable
@@ -27,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCNIORG, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
@@ -36,6 +37,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,9 +54,45 @@ abstract class BaseInvitationController(
   implicit override val externalUrls: ExternalUrls,
   configuration: Configuration,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi,
+  messages: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends BaseController(withVerifiedPasscode, authConnector, featureFlags) {
+    extends FrontendController with I18nSupport with AuthActions {
+
+  val personalOption = Seq("personal" -> Messages("client-type.personal"))
+  val businessOption = Seq("business" -> Messages("client-type.business"))
+  val clientTypes = personalOption ++ businessOption
+
+  val personalIncomeRecord =
+    if (featureFlags.showPersonalIncome)
+      Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
+    else Seq.empty
+
+  val mtdItId =
+    if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("personal-select-service.itsa")) else Seq.empty
+
+  val vat =
+    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
+
+  def enabledPersonalServicesForCancelAuth(isWhitelisted: Boolean): Seq[(String, String)] =
+    if (isWhitelisted) {
+      personalIncomeRecord ++ mtdItId ++ vat
+    } else {
+      mtdItId ++ vat
+    }
+
+  def enabledPersonalServicesForInvitation(isWhitelisted: Boolean): Seq[(String, String)] =
+    if (isWhitelisted) {
+      personalIncomeRecord ++ mtdItId ++ vat
+    } else {
+      mtdItId ++ vat
+    }
+
+  val serviceToMessageKey: String => String = {
+    case HMRCMTDIT  => messageKeyForITSA
+    case HMRCPIR    => messageKeyForAfi
+    case HMRCMTDVAT => messageKeyForVAT
+    case _          => "Service is missing"
+  }
 
   val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
 
@@ -93,14 +131,17 @@ abstract class BaseInvitationController(
       getSelectServicePage(isWhitelisted)
     }
 
-  private def getSelectServicePage(isWhitelisted: Boolean, form: Form[String] = ServiceTypeForm.form)(
+  private def getSelectServicePage(
+    isWhitelisted: Boolean,
+    form: Form[String] = ServiceTypeForm.form,
+    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
     implicit request: Request[_]): Future[Result] =
     journeyStateCache.fetch.flatMap {
       case Some(basket) if basket.requests.nonEmpty =>
         basket.clientType match {
           case "personal" =>
-            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), true))
-          case "business" => Ok(selectServicePage(form, vat ++ niOrg, false))
+            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = true))
+          case "business" => Ok(businessSelectServicePage(businessForm, basketFlag = true))
           case _          => Redirect(clientTypeCall)
         }
       case _ =>
@@ -108,16 +149,25 @@ abstract class BaseInvitationController(
           case Some(input) if input.clientType.nonEmpty =>
             input.clientType match {
               case Some("personal") =>
-                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), false))
+                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = false))
               case Some("business") =>
-                Ok(selectServicePage(form, vat ++ niOrg, false))
+                Ok(businessSelectServicePage(businessForm, basketFlag = false))
               case _ => Redirect(clientTypeCall)
             }
           case _ => Redirect(clientTypeCall)
         }
     }
 
-  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]) =
+    currentAuthorisationRequestCache.fetch.flatMap { car =>
+      car.flatMap(_.clientType) match {
+        case Some("personal") => handleSubmitSelectServicePersonal
+        case Some("business") => handleSubmitSelectServiceBusiness
+        case _                => Redirect(clientTypeCall)
+      }
+    }
+
+  protected def handleSubmitSelectServicePersonal(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
         .bindFromRequest()
@@ -143,7 +193,7 @@ abstract class BaseInvitationController(
               cache.flatMap(_.clientType) match {
                 case Some("personal") => updateSessionAndRedirect
                 case Some("business") =>
-                  if (serviceType == HMRCMTDVAT || serviceType == HMRCNIORG) {
+                  if (serviceType == HMRCMTDVAT) {
                     updateSessionAndRedirect
                   } else {
                     Redirect(selectServiceCall)
@@ -151,6 +201,31 @@ abstract class BaseInvitationController(
                 case _ => Redirect(clientTypeCall)
               }
             }
+          }
+        )
+    }
+
+  protected def handleSubmitSelectServiceBusiness(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      agentConfirmationForm("error.business-service.required")
+        .bindFromRequest()
+        .fold(
+          formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
+          data => {
+            if (data.choice) {
+              val updateAggregate = currentAuthorisationRequestCache.fetch
+                .map(_.getOrElse(CurrentAuthorisationRequest()))
+                .map(_.copy(service = HMRCMTDVAT))
+
+              updateAggregate.flatMap(
+                toUpdate =>
+                  currentAuthorisationRequestCache
+                    .save(toUpdate)
+                    .flatMap(_ =>
+                      ifShouldShowService(toUpdate, featureFlags, isWhitelisted) {
+                        redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)
+                    }))
+            } else Future successful Redirect(clientTypeCall)
           }
         )
     }
@@ -184,14 +259,6 @@ abstract class BaseInvitationController(
                   inviteDetails.fromFastTrack,
                   submitIdentifyClientCall))
 
-            case HMRCNIORG =>
-              Ok(
-                identify_client_niorg(
-                  NiOrgClientForm.form(featureFlags.showHmrcNiOrg),
-                  featureFlags.showHmrcNiOrg,
-                  inviteDetails.fromFastTrack,
-                  submitIdentifyClientCall))
-
             case _ => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
@@ -206,7 +273,6 @@ abstract class BaseInvitationController(
             case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
             case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
             case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case HMRCNIORG  => identifyNiOrgClient(arn, isWhitelisted)
             case _          => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
@@ -305,35 +371,6 @@ abstract class BaseInvitationController(
           } yield result
       )
 
-  def identifyNiOrgClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[_],
-    hc: HeaderCarrier): Future[Result] =
-    NiOrgClientForm
-      .form(featureFlags.showHmrcNiOrg)
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          Ok(identify_client_niorg(formWithErrors, featureFlags.showHmrcNiOrg, true, submitIdentifyClientCall)),
-        userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "utr",
-                knownFact = userInput.postcode
-              )
-            result <- for {
-                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                       redirectResult <- redirectBasedOnCurrentInputState(
-                                          arn,
-                                          invitationWithClientDetails,
-                                          isWhitelisted)
-                     } yield redirectResult
-          } yield result
-      )
-
   def ifShouldShowService(
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     featureFlags: FeatureFlags,
@@ -347,9 +384,6 @@ abstract class BaseInvitationController(
         Future successful BadRequest
       case HMRCMTDIT if !featureFlags.showHmrcMtdIt =>
         Logger(getClass).warn(s"Service: $HMRCMTDIT feature flagged is switched off")
-        Future successful BadRequest
-      case HMRCNIORG if !featureFlags.showHmrcNiOrg =>
-        Logger(getClass).warn(s"Service: $HMRCNIORG feature flagged is switched off")
         Future successful BadRequest
       case HMRCPIR if !featureFlags.showPersonalIncome =>
         Logger(getClass).warn(s"Service: $HMRCPIR feature flagged is switched off")
@@ -627,20 +661,32 @@ abstract class BaseInvitationController(
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
+
   def clientTypePage(form: Form[String] = ClientTypeForm.form)(implicit request: Request[_]): Appendable =
     client_type(form, clientTypes, agentServicesAccountUrl)
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
+
+  def submitServiceCall: Call = routes.AgentsInvitationController.submitSelectService()
+
   def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Seq[(String, String)],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     select_service(form, enabledServices, basketFlag)
 
+  def businessSelectServicePage(
+    form: Form[Confirmation] = agentConfirmationForm("error.business-service.required"),
+    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
+    business_select_service(form, basketFlag, submitServiceCall)
+
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
+
   def submitIdentifyClientCall: Call = routes.AgentsInvitationController.submitIdentifyClient()
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
+
   def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
     confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
+
 }

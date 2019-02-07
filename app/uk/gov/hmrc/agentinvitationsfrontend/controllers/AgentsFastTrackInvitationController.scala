@@ -57,7 +57,7 @@ class AgentsFastTrackInvitationController @Inject()(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  messagesApi: play.api.i18n.MessagesApi,
+  val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
     extends BaseInvitationController(
       withVerifiedPasscode,

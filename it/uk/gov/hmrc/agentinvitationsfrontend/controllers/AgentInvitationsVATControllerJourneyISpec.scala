@@ -23,15 +23,35 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitSelectService()
 
-    "return 303 for authorised Agent with valid VAT service, redirect to identify-client" in {
+    "return 303 for authorised Agent with valid VAT service when YES is selected, redirect to identify-client" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
-      val serviceForm = ServiceTypeForm.form.fill(serviceVAT)
+      val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
       val result =
-        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
       verifyAuthoriseAttempt()
+    }
+
+    "return 303 for an authorised Agent when NO is selected, redirect to select-client-type" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business, serviceVAT))
+      val confirmForm = agentConfirmationForm("error").fill(Confirmation(false))
+
+      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
+      verifyAuthoriseAttempt()
+    }
+
+    "return 303 for authorised Agent with valid VAT service when there is no valid clientType in cache, redirect to client-type" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("foo"), serviceVAT))
+      val result =
+        submitService(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
     }
   }
 

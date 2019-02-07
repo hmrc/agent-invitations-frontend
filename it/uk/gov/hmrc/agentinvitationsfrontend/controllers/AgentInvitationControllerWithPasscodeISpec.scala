@@ -22,8 +22,9 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentAuthorisationRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.logging.SessionId
@@ -189,9 +190,9 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
         testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(business))
-        val serviceForm = ServiceTypeForm.form.fill("HMRC-MTD-VAT")
+        val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
         val result = controller.submitSelectService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"

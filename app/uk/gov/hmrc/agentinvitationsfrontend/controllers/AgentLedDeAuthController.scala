@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDV
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{business_select_service, cancelAuthorisation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
@@ -55,7 +55,7 @@ class AgentLedDeAuthController @Inject()(
   auditService: AuditService)(
   implicit featureFlags: FeatureFlags,
   externalUrls: ExternalUrls,
-  messagesApi: play.api.i18n.MessagesApi,
+  val messagesApi: play.api.i18n.MessagesApi,
   configuration: Configuration,
   ec: ExecutionContext)
     extends BaseInvitationController(
@@ -232,6 +232,8 @@ class AgentLedDeAuthController @Inject()(
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
+  override def submitServiceCall: Call = routes.AgentLedDeAuthController.submitSelectService()
+
   override def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Seq[(String, String)],
@@ -239,6 +241,7 @@ class AgentLedDeAuthController @Inject()(
     cancelAuthorisation.select_service(form, enabledServices, false)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
+
   override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
