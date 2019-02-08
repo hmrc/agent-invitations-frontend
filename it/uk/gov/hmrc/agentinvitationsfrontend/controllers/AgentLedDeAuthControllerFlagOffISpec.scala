@@ -73,7 +73,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val selectClientType = controller.showClientType()
 
       val result = selectClientType(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -84,7 +84,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val submitClientType = controller.submitClientType()
 
       val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -95,7 +95,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val showSelectService = controller.showSelectService()
 
       val result = showSelectService(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -106,7 +106,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val submitSelectService = controller.submitSelectService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -117,7 +117,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val showIdentifyClient = controller.showIdentifyClient()
 
       val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -137,7 +137,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
 
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 401
+        status(result) shouldBe 501
       }
   }
 
@@ -148,7 +148,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val showConfirmClient = controller.showConfirmClient()
 
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -163,7 +163,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
 
         val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 401
+        status(result) shouldBe 501
       }
   }
 
@@ -174,7 +174,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val showConfirmCancel = controller.showConfirmCancel()
 
       val result = showConfirmCancel(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 
@@ -189,7 +189,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
 
         val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 401
+        status(result) shouldBe 501
       }
   }
 
@@ -200,7 +200,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val showCancelled = controller.showCancelled()
 
       val result = showCancelled(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 401
+      status(result) shouldBe 501
     }
   }
 

@@ -79,7 +79,7 @@ class AgentLedDeAuthController @Inject()(
     if (featureFlags.showAgentLedDeAuth) result
     else {
       Logger(getClass).warn("Agent led de authorisation feature is disabled.")
-      Future successful Unauthorized
+      Future successful NotImplemented
     }
 
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
