@@ -497,15 +497,11 @@ abstract class BaseInvitationController(
               createInvitation(arn, vatInvitation)
             }
           case Some(false) =>
-            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Date Does Not Match.")
-              Redirect(routes.AgentsErrorController.notMatched())
-            }
+            Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
+            Redirect(routes.AgentsErrorController.notMatched())
           case None =>
-            currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-              Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
-              Redirect(routes.AgentsInvitationController.notSignedUp())
-            }
+            Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
+            Redirect(routes.AgentsInvitationController.notSignedUp())
         }
       case None =>
         redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
@@ -529,30 +525,26 @@ abstract class BaseInvitationController(
                          createInvitation(arn, itsaInvitation)
                        }
                      case Some(false) =>
-                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                         Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-                         auditService.sendAgentInvitationSubmitted(
-                           arn,
-                           "",
-                           itsaInvitation,
-                           "",
-                           "Fail",
-                           Some("POSTCODE_DOES_NOT_MATCH"))
-                         Redirect(routes.AgentsErrorController.notMatched())
-                       }
+                       Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
+                       auditService.sendAgentInvitationSubmitted(
+                         arn,
+                         "",
+                         itsaInvitation,
+                         "",
+                         "Fail",
+                         Some("POSTCODE_DOES_NOT_MATCH"))
+                       toFuture(Redirect(routes.AgentsErrorController.notMatched()))
                      case None =>
-                       currentAuthorisationRequestCache.save(currentAuthorisationRequest).map { _ =>
-                         Logger(getClass).warn(
-                           s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-                         auditService.sendAgentInvitationSubmitted(
-                           arn,
-                           "",
-                           itsaInvitation,
-                           "",
-                           "Fail",
-                           Some("CLIENT_REGISTRATION_NOT_FOUND"))
-                         Redirect(routes.AgentsInvitationController.notSignedUp())
-                       }
+                       Logger(getClass).warn(
+                         s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
+                       auditService.sendAgentInvitationSubmitted(
+                         arn,
+                         "",
+                         itsaInvitation,
+                         "",
+                         "Fail",
+                         Some("CLIENT_REGISTRATION_NOT_FOUND"))
+                       toFuture(Redirect(routes.AgentsInvitationController.notSignedUp()))
                    }
         } yield result
       case None =>
@@ -565,7 +557,7 @@ abstract class BaseInvitationController(
     arn: Arn,
     currentAuthorisationRequest: CurrentAuthorisationRequest,
     pirInvitation: PirInvitation,
-    isWhitelisted: Boolean)(implicit request: Request[_]) =
+    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     if (featureFlags.showKfcPersonalIncome) {
       pirInvitation.dob match {
         case Some(dob) =>
@@ -578,15 +570,15 @@ abstract class BaseInvitationController(
                 }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Future successful Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(routes.AgentsErrorController.notMatched())
               case None =>
                 Logger(getClass).warn(
                   s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Future successful Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(routes.AgentsErrorController.notMatched())
             }
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
-          Future successful Redirect(routes.AgentsErrorController.notMatched())
+          Redirect(routes.AgentsErrorController.notMatched())
       }
     } else {
       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
@@ -599,7 +591,12 @@ abstract class BaseInvitationController(
     withAuthorisedAsAgent { (arn, _) =>
       if (currentAuthorisationRequest.fromFastTrack) body
       else {
-        currentAuthorisationRequest.service match {
+        val clientType = currentAuthorisationRequest.clientType
+        val service = currentAuthorisationRequest.service
+        val clientIdentifier = currentAuthorisationRequest.clientIdentifier
+        val knownFact = currentAuthorisationRequest.knownFact
+
+        service match {
           case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
             Redirect(confirmClientCall)
           case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
@@ -608,38 +605,28 @@ abstract class BaseInvitationController(
             Redirect(confirmClientCall)
           case _ =>
             val result = for {
-              existsInBasket <- invitationExistsInBasket(
-                                 currentAuthorisationRequest.service,
-                                 currentAuthorisationRequest.clientIdentifier)
+              existsInBasket <- invitationExistsInBasket(service, clientIdentifier)
               hasPendingInvitations <- if (existsInBasket) Future.successful(true)
                                       else
-                                        invitationsService.hasPendingInvitationsFor(
-                                          arn,
-                                          currentAuthorisationRequest.clientIdentifier,
-                                          currentAuthorisationRequest.service)
-              hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(
-                                        arn,
-                                        currentAuthorisationRequest.clientIdentifier,
-                                        currentAuthorisationRequest.service)
+                                        invitationsService.hasPendingInvitationsFor(arn, clientIdentifier, service)
+              hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(arn, clientIdentifier, service)
             } yield (hasPendingInvitations, hasActiveRelationship)
 
             result.flatMap {
               case (true, _)
-                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
+                  if (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
+                    (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
+                    (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
                 Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
 
               case (_, true)
-                  if (currentAuthorisationRequest.service == Services.HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (currentAuthorisationRequest.service == Services.HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
+                  if (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
+                    (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
+                    (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
                 Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
               case _ => {
                 for {
-                  clientName <- invitationsService.getClientNameByService(
-                                 currentAuthorisationRequest.clientIdentifier,
-                                 currentAuthorisationRequest.service)
+                  clientName      <- invitationsService.getClientNameByService(clientIdentifier, service)
                   journeyStateOpt <- journeyStateCache.fetch
                   currentCache = journeyStateOpt match {
                     case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
@@ -647,18 +634,13 @@ abstract class BaseInvitationController(
                   }
                   _ <- journeyStateCache.save(
                         AgentMultiAuthorisationJourneyState(
-                          currentAuthorisationRequest.clientType.getOrElse(""),
-                          currentCache.requests ++ Set(AuthorisationRequest(
-                            clientName.getOrElse(""),
-                            Invitation(
-                              currentAuthorisationRequest.clientType,
-                              currentAuthorisationRequest.service,
-                              currentAuthorisationRequest.clientIdentifier,
-                              currentAuthorisationRequest.knownFact
-                            )
-                          ))
+                          clientType.getOrElse(""),
+                          currentCache.requests ++ Set(
+                            AuthorisationRequest(
+                              clientName.getOrElse(""),
+                              Invitation(clientType, service, clientIdentifier, knownFact)))
                         ))
-                  result <- currentAuthorisationRequest.clientType match {
+                  result <- clientType match {
                              case Some("personal") =>
                                toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
                              case Some("business") => body
