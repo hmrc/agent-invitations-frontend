@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation

@@ -73,6 +73,7 @@ abstract class BaseISpec
         "features.redirect-to-confirm-personal-income"                        -> false,
         "features.redirect-to-confirm-mtd-it"                                 -> true,
         "features.redirect-to-confirm-mtd-vat"                                -> true,
+        "features.show-agent-led-de-auth"                                     -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
       )
