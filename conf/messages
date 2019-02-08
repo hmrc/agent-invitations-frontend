@@ -179,6 +179,8 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1}
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to report their VAT Returns through software.
 cancel-authorisation.cancelled.print=Print this page
+cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
+cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?

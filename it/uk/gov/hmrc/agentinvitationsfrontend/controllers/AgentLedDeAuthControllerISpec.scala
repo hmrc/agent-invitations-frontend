@@ -62,7 +62,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
   }
 
   "GET /cancel-authorisation/select-service" should {
-    "return 200 with expected page content" in {
+    "return 200 with expected page content when the clientType is personal" in {
       testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("personal")))
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
@@ -80,6 +80,26 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
+
+    "return 200 with expected page content when the clientType is business" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("business")))
+      val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
+      val showSelectService = controller.showSelectService()
+
+      val result = showSelectService(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        hasMessage(
+          "generic.title",
+          htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")),
+        htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
+        hasMessage("business-select-service.yes"),
+        hasMessage("business-select-service.no")
+      )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
+    }
   }
 
   "POST /cancel-authorisation/select-service" should {
@@ -94,6 +114,18 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
       await(testCurrentAuthorisationRequestCache.fetch).get.service shouldBe "HMRC-MTD-IT"
+    }
+
+    "handle the confirmation form if the client_type is business" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("business")))
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
+      val submitSelectService = controller.submitSelectService()
+
+      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
+
+      await(testCurrentAuthorisationRequestCache.fetch).get.service shouldBe "HMRC-MTD-VAT"
     }
 
     "handle forms with invalid service_types" in {
