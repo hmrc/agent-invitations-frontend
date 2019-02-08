@@ -62,6 +62,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("client-type.header"),
         hasMessage("client-type.p1")
       )
+      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
       await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
@@ -135,6 +136,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
       )
+      checkResultContainsBackLink(result, "/invitations/agents/client-type")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

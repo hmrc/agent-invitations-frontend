@@ -92,6 +92,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         "identify-client.nino.label",
         "identify-client.nino.hint")
 
+      checkResultContainsBackLink(resultFuture, "/invitations/agents/select-service")
+
       val result = await(resultFuture)
       bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.label")
       bodyOf(result) should not include htmlEscapedMessage("identify-client.postcode.hint")

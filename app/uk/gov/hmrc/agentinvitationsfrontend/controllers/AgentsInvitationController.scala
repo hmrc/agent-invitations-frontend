@@ -120,9 +120,7 @@ class AgentsInvitationController @Inject()(
               agentConfirmationForm("error.confirm-client.required")
                 .bindFromRequest()
                 .fold(
-                  formWithErrors => {
-                    Ok(confirm_client(clientName, formWithErrors))
-                  },
+                  formWithErrors => Ok(confirm_client(clientName, formWithErrors, identifyClientCall.url)),
                   data =>
                     if (data.choice) {
                       maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, clientId, service).flatMap {
@@ -173,12 +171,14 @@ class AgentsInvitationController @Inject()(
     withAuthorisedAsAgent { (arn, _) =>
       for {
         journeyStateOpt <- journeyStateCache.fetch
+        cacheOpt        <- currentAuthorisationRequestCache.fetch
         result = journeyStateOpt match {
           case Some(journeyState) if journeyState.requests.nonEmpty =>
             Ok(
               review_authorisations(
                 ReviewAuthorisationsPageConfig(journeyState, featureFlags),
-                agentConfirmationForm("error.review-authorisation.required")))
+                agentConfirmationForm("error.review-authorisation.required"),
+                backLinkForReviewAuthorisationsPage(cacheOpt.map(_.service).getOrElse(""))))
           case Some(_) => Redirect(routes.AgentsInvitationController.allAuthorisationsRemoved())
           case None    => Redirect(agentsRootUrl)
         }
@@ -188,35 +188,47 @@ class AgentsInvitationController @Inject()(
 
   def submitReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      journeyStateCache.get.flatMap { journeyState =>
-        agentConfirmationForm("error.review-authorisation.required")
-          .bindFromRequest()
-          .fold(
-            formWithErrors =>
-              Future.successful(
-                Ok(review_authorisations(ReviewAuthorisationsPageConfig(journeyState, featureFlags), formWithErrors))),
-            input => {
-              if (input.choice) {
-                currentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some(journeyState.clientType))) map (
-                  _ => Redirect(routes.AgentsInvitationController.showSelectService()))
-              } else {
-                for {
-                  processedRequests <- invitationsService
-                                        .createMultipleInvitations(
-                                          arn,
-                                          journeyState.clientType,
-                                          journeyState.requests,
-                                          featureFlags)
-                  _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
-                  result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
-                             Redirect(routes.AgentsInvitationController.showInvitationSent())
-                           else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
-                             Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
-                           else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
-                } yield result
+      val result = for {
+        journeyState        <- journeyStateCache.get
+        currentJourneyCache <- currentAuthorisationRequestCache.get
+      } yield (journeyState, currentJourneyCache)
+
+      result.flatMap {
+        case (journeyState, currentJourneyCache) =>
+          agentConfirmationForm("error.review-authorisation.required")
+            .bindFromRequest()
+            .fold(
+              formWithErrors => {
+                Future.successful(
+                  Ok(
+                    review_authorisations(
+                      ReviewAuthorisationsPageConfig(journeyState, featureFlags),
+                      formWithErrors,
+                      backLinkForReviewAuthorisationsPage(currentJourneyCache.service))))
+              },
+              input => {
+                if (input.choice) {
+                  currentAuthorisationRequestCache
+                    .save(CurrentAuthorisationRequest(Some(journeyState.clientType))) map (_ =>
+                    Redirect(routes.AgentsInvitationController.showSelectService()))
+                } else {
+                  for {
+                    processedRequests <- invitationsService
+                                          .createMultipleInvitations(
+                                            arn,
+                                            journeyState.clientType,
+                                            journeyState.requests,
+                                            featureFlags)
+                    _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
+                    result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
+                               Redirect(routes.AgentsInvitationController.showInvitationSent())
+                             else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
+                               Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
+                             else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
+                  } yield result
+                }
               }
-            }
-          )
+            )
       }
     }
   }
@@ -323,7 +335,14 @@ class AgentsInvitationController @Inject()(
                       case Some(cache) => cache
                       case None        => AgentMultiAuthorisationJourneyState("", Set.empty)
                     }
-      } yield Ok(pending_authorisation_exists(cacheItem.requests.nonEmpty))
+        currentJourneyCache <- currentAuthorisationRequestCache.get
+      } yield {
+        val backLinkUrl =
+          if (currentJourneyCache.fromFastTrack)
+            routes.AgentsFastTrackInvitationController.showKnownFact().url
+          else routes.AgentsInvitationController.showConfirmClient().url
+        Ok(pending_authorisation_exists(cacheItem.requests.nonEmpty, backLinkUrl))
+      }
     }
   }
 

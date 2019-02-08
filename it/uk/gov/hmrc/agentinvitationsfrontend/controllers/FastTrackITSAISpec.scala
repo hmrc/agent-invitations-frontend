@@ -231,6 +231,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
       checkHtmlResultWithBodyText(result, "DH1 4EJ")
+      checkResultContainsBackLink(result, "/invitations/agents/fast-track")
     }
 
     "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
@@ -447,6 +448,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("This is the postcode of your client's registered address"))
+      checkResultContainsBackLink(result, "/invitations/agents/check-details")
     }
   }
 

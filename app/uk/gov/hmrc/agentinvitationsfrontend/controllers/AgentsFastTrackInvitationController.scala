@@ -70,6 +70,8 @@ class AgentsFastTrackInvitationController @Inject()(
       auditService
     ) {
 
+  val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
+
   val agentFastTrackPostcodeForm: Form[Option[String]] =
     knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))
 
@@ -179,7 +181,9 @@ class AgentsFastTrackInvitationController @Inject()(
               currentInvitation,
               featureFlags,
               serviceToMessageKey(currentInvitation.service),
-              CheckDetailsPageConfig(currentInvitation, featureFlags)))
+              CheckDetailsPageConfig(currentInvitation, featureFlags),
+              agentFastTrackRoot.url
+            ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
       }
     }
@@ -200,7 +204,9 @@ class AgentsFastTrackInvitationController @Inject()(
                   cii,
                   featureFlags,
                   serviceToMessageKey(cii.service),
-                  CheckDetailsPageConfig(cii, featureFlags)))
+                  CheckDetailsPageConfig(cii, featureFlags),
+                  agentFastTrackRoot.url
+                ))
             }
           },
           data => {

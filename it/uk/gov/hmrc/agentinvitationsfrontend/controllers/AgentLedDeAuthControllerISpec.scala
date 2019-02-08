@@ -42,6 +42,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("cancel-authorisation.client-type.header"),
         hasMessage("cancel-authorisation.client-type.p1")
       )
+      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
     }
   }
 
@@ -77,6 +78,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
         hasMessage("cancel-authorisation.select-service.hint")
       )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
   }
 
@@ -143,6 +145,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             htmlEscapedMessage("identify-client.vat-registration-date.label")
           )
         }
+
+        checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/select-service")
       }
     }
 
@@ -247,6 +251,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.no")
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
     }
   }
 
@@ -302,6 +307,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-cancel.header")
       checkHtmlResultWithBodyText(result, "If you cancel your authorisation, you will not be able to report income and expenses for some trading name")
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
   }
 

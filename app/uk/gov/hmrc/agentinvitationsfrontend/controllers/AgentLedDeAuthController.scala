@@ -113,7 +113,8 @@ class AgentLedDeAuthController @Inject()(
             agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
               .bindFromRequest()
               .fold(
-                formWithErrors => Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors)),
+                formWithErrors =>
+                  Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
                 data => {
                   if (data.choice) {
                     Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
@@ -138,7 +139,8 @@ class AgentLedDeAuthController @Inject()(
               cancelAuthorisation.confirm_cancel(
                 cache.service,
                 clientName,
-                agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")))
+                agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required"),
+                backLinkForConfirmCancelPage(cache.service)))
           }
         case None => Redirect(agentsLedDeAuthRootUrl)
       }
@@ -157,7 +159,7 @@ class AgentLedDeAuthController @Inject()(
               .bindFromRequest()
               .fold(
                 formWithErrors => {
-                  Ok(cancelAuthorisation.confirm_cancel(service, clientName, formWithErrors))
+                  Ok(cancelAuthorisation.confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(cache.service)))
                 },
                 data => {
                   if (data.choice) {
@@ -227,7 +229,8 @@ class AgentLedDeAuthController @Inject()(
 
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
-  override def clientTypePage(form: Form[String])(implicit request: Request[_]): HtmlFormat.Appendable =
+  override def clientTypePage(form: Form[String], backLinkUrl: String)(
+    implicit request: Request[_]): HtmlFormat.Appendable =
     cancelAuthorisation.client_type(form, clientTypes)
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
@@ -246,6 +249,8 @@ class AgentLedDeAuthController @Inject()(
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
 
-  override def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
+  override def showConfirmClientPage(name: Option[String], backLinkUrl: String)(
+    implicit request: Request[_]): Appendable =
+    cancelAuthorisation
+      .confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)
 }

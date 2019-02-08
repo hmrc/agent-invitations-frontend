@@ -73,14 +73,7 @@ abstract class BaseInvitationController(
   val vat =
     if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
 
-  def enabledPersonalServicesForCancelAuth(isWhitelisted: Boolean): Seq[(String, String)] =
-    if (isWhitelisted) {
-      personalIncomeRecord ++ mtdItId ++ vat
-    } else {
-      mtdItId ++ vat
-    }
-
-  def enabledPersonalServicesForInvitation(isWhitelisted: Boolean): Seq[(String, String)] =
+  def enabledPersonalServices(isWhitelisted: Boolean): Seq[(String, String)] =
     if (isWhitelisted) {
       personalIncomeRecord ++ mtdItId ++ vat
     } else {
@@ -100,8 +93,9 @@ abstract class BaseInvitationController(
     withAuthorisedAsAgent { (_, _) =>
       journeyStateCache.fetchAndClear.flatMap { _ =>
         currentAuthorisationRequestCache.fetch.flatMap {
-          case Some(data) if data.clientType.isEmpty && data.fromFastTrack => Ok(clientTypePage())
-          case _                                                           => currentAuthorisationRequestCache.fetchAndClear.map(_ => Ok(clientTypePage()))
+          case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
+            Ok(clientTypePage(backLinkUrl = routes.AgentsFastTrackInvitationController.showCheckDetails().url))
+          case _ => currentAuthorisationRequestCache.fetchAndClear.map(_ => Ok(clientTypePage()))
         }
       }
     }
@@ -140,8 +134,8 @@ abstract class BaseInvitationController(
       case Some(basket) if basket.requests.nonEmpty =>
         basket.clientType match {
           case "personal" =>
-            Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = true))
-          case "business" => Ok(businessSelectServicePage(businessForm, basketFlag = true))
+            Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = true))
+          case "business" => Ok(businessSelectServicePage(businessForm, basketFlag = true, clientTypeCall.url))
           case _          => Redirect(clientTypeCall)
         }
       case _ =>
@@ -149,16 +143,16 @@ abstract class BaseInvitationController(
           case Some(input) if input.clientType.nonEmpty =>
             input.clientType match {
               case Some("personal") =>
-                Ok(selectServicePage(form, enabledPersonalServicesForInvitation(isWhitelisted), basketFlag = false))
+                Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = false))
               case Some("business") =>
-                Ok(businessSelectServicePage(businessForm, basketFlag = false))
+                Ok(businessSelectServicePage(businessForm, basketFlag = false, clientTypeCall.url))
               case _ => Redirect(clientTypeCall)
             }
           case _ => Redirect(clientTypeCall)
         }
     }
 
-  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]) =
+  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     currentAuthorisationRequestCache.fetch.flatMap { car =>
       car.flatMap(_.clientType) match {
         case Some("personal") => handleSubmitSelectServicePersonal
@@ -240,24 +234,25 @@ abstract class BaseInvitationController(
                 identify_client_itsa(
                   ItsaClientForm.form(featureFlags.showKfcMtdIt),
                   featureFlags.showKfcMtdIt,
-                  inviteDetails.fromFastTrack,
-                  submitIdentifyClientCall))
+                  submitIdentifyClientCall,
+                  selectServiceCall.url))
 
             case HMRCMTDVAT =>
               Ok(
                 identify_client_vat(
                   VatClientForm.form(featureFlags.showKfcMtdVat),
                   featureFlags.showKfcMtdVat,
-                  inviteDetails.fromFastTrack,
-                  submitIdentifyClientCall))
+                  submitIdentifyClientCall,
+                  selectServiceCall.url))
 
             case HMRCPIR =>
               Ok(
                 identify_client_irv(
                   IrvClientForm.form(featureFlags.showKfcPersonalIncome),
                   featureFlags.showKfcPersonalIncome,
-                  inviteDetails.fromFastTrack,
-                  submitIdentifyClientCall))
+                  submitIdentifyClientCall,
+                  selectServiceCall.url
+                ))
 
             case _ => Redirect(selectServiceCall)
           }
@@ -286,7 +281,7 @@ abstract class BaseInvitationController(
           (data.clientIdentifier, data.service) match {
             case (clientId, service) if clientId.nonEmpty =>
               invitationsService.getClientNameByService(clientId, service).flatMap { name =>
-                Ok(showConfirmClientPage(name))
+                Ok(showConfirmClientPage(name, identifyClientCall.url))
               }
             case _ => Redirect(identifyClientCall)
           }
@@ -302,7 +297,12 @@ abstract class BaseInvitationController(
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Ok(identify_client_itsa(formWithErrors, featureFlags.showKfcMtdIt, true, submitIdentifyClientCall)),
+          Ok(
+            identify_client_itsa(
+              formWithErrors,
+              featureFlags.showKfcMtdIt,
+              submitIdentifyClientCall,
+              selectServiceCall.url)),
         userInput =>
           for {
             maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
@@ -326,7 +326,12 @@ abstract class BaseInvitationController(
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Ok(identify_client_vat(formWithErrors, featureFlags.showKfcMtdVat, true, submitIdentifyClientCall)),
+          Ok(
+            identify_client_vat(
+              formWithErrors,
+              featureFlags.showKfcMtdVat,
+              submitIdentifyClientCall,
+              selectServiceCall.url)),
         userInput =>
           for {
             maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
@@ -350,7 +355,12 @@ abstract class BaseInvitationController(
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Ok(identify_client_irv(formWithErrors, featureFlags.showKfcPersonalIncome, true, submitIdentifyClientCall)),
+          Ok(
+            identify_client_irv(
+              formWithErrors,
+              featureFlags.showKfcPersonalIncome,
+              submitIdentifyClientCall,
+              selectServiceCall.url)),
         userInput =>
           for {
             maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
@@ -464,7 +474,7 @@ abstract class BaseInvitationController(
     }
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
-    enabledPersonalServicesForInvitation(isWhitelisted).exists(_._1 == service)
+    enabledPersonalServices(isWhitelisted).exists(_._1 == service)
 
   private def knownFactCheckVat(
     arn: Arn,
@@ -662,8 +672,9 @@ abstract class BaseInvitationController(
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
 
-  def clientTypePage(form: Form[String] = ClientTypeForm.form)(implicit request: Request[_]): Appendable =
-    client_type(form, clientTypes, agentServicesAccountUrl)
+  def clientTypePage(form: Form[String] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
+    implicit request: Request[_]): Appendable =
+    client_type(form, clientTypes, agentServicesAccountUrl, backLinkUrl)
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
@@ -677,8 +688,9 @@ abstract class BaseInvitationController(
 
   def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("error.business-service.required"),
-    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    business_select_service(form, basketFlag, submitServiceCall)
+    basketFlag: Boolean,
+    backLinkUrl: String)(implicit request: Request[_]): Appendable =
+    business_select_service(form, basketFlag, submitServiceCall, backLinkUrl)
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 
@@ -686,7 +698,12 @@ abstract class BaseInvitationController(
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
 
-  def showConfirmClientPage(name: Option[String])(implicit request: Request[_]): Appendable =
-    confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"))
+  def showConfirmClientPage(name: Option[String], backLinkUrl: String)(implicit request: Request[_]): Appendable =
+    confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)
 
+  protected def backLinkForConfirmCancelPage(service: String): String =
+    if (service == HMRCPIR) identifyClientCall.url else confirmClientCall.url
+
+  protected def backLinkForReviewAuthorisationsPage(service: String): String =
+    if (service == HMRCPIR) identifyClientCall.url else confirmClientCall.url
 }

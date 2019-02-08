@@ -19,13 +19,13 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @(agentForm: Form[String], clientTypes: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link_referer(request)
+    @back_link(externalUrls.agentServicesAccountUrl + "/agent-services-account")
 
     @if(agentForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("client-type"))
