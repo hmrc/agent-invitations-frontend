@@ -3,9 +3,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -53,8 +53,7 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
-      bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
+      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
     }
   }
 
@@ -63,8 +62,7 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testCurrentAuthorisationRequestCache.clear()
-    testContinueUrlKeyStoreCache.clear()
+    testAgentSessionCache.clear()
   }
 
   "GET /track/" should {

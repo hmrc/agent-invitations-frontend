@@ -82,13 +82,9 @@ abstract class BaseISpec
   def commonStubs(): Unit =
     givenAuditConnector()
 
-  protected lazy val testCurrentAuthorisationRequestCache = new TestCurrentAuthorisationRequestCache
-
-  protected lazy val testAgentMultiAuthorisationJourneyStateCache = new TestAgentMultiAuthorisationJourneyStateCache
+  protected lazy val testAgentSessionCache = new TestAgentSessionCache
 
   protected lazy val testClientConsentsJourneyStateCache = new TestClientConsentsJourneyStateCache
-
-  protected lazy val testContinueUrlKeyStoreCache = new TestContinueUrlKeyStoreCache
 
   protected implicit val materializer = app.materializer
 
@@ -118,18 +114,14 @@ abstract class BaseISpec
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testCurrentAuthorisationRequestCache.clear()
-    testContinueUrlKeyStoreCache.clear()
-    testAgentMultiAuthorisationJourneyStateCache.clear()
+    testAgentSessionCache.clear()
     testClientConsentsJourneyStateCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
-      bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
+      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
       bind(classOf[ClientConsentsJourneyStateCache]).toInstance(testClientConsentsJourneyStateCache)
-      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
     }
   }
 
