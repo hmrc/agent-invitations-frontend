@@ -4,9 +4,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
-import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, CurrentAuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -28,7 +26,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
-      val formData = CurrentAuthorisationRequest(personal, "INVALID_SERVICE").copy(fromFastTrack = fromFastTrack)
+      val formData = AgentFastTrackRequest(personal, "INVALID_SERVICE")
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -42,7 +40,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "return 303 and redirect to error url with mixed form data" in {
       val formData =
-        CurrentAuthorisationRequest(business, serviceITSA, "vrn", validNino.value, None, fromFastTrack)
+        AgentFastTrackRequest(business, serviceITSA, "vrn", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -81,8 +79,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "Throw an exception when the cache is empty" in {
-      val formData = CurrentAuthorisationRequest()
-      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentSessionCache.save(AgentSession())
       an[Exception] shouldBe thrownBy {
         await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       }
@@ -93,22 +90,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
-
-    "An IllegalArgumentException should be thrown when the client identifier type is not valid" in {
-      val formData =
-        CurrentAuthorisationRequest(
-          business,
-          serviceVAT,
-          "foo",
-          validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack)
-      testCurrentAuthorisationRequestCache.save(formData)
-
-      an[IllegalArgumentException] shouldBe thrownBy {
-        await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
-      }
-    }
   }
 
   "POST /agents/check-details" should {
@@ -116,15 +97,14 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "show error on the page when no radio button is selected" in {
       val formData =
-        CurrentAuthorisationRequest(
+        AgentFastTrackRequest(
           business,
           serviceVAT,
           "vrn",
           validVrn.value,
-          Some(validRegistrationDate),
-          fromFastTrack)
-      testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(fastTrackController.submitCheckDetails(authorisedAsValidAgent(request, arn.value)))
+          Some(validRegistrationDate))
+      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate)))
+      val result = await(fastTrackController.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody(agentFastTrackForm.fill(formData).data.toSeq : _*), arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Select yes if the details are correct"))
     }
@@ -155,10 +135,9 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
+      testAgentSessionCache.save(AgentSession(personal, Some(servicePIR), Some("ni"), Some(validNino.value), Some(validPostcode)))
+
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
-      val formData =
-        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
-      testCurrentAuthorisationRequestCache.save(formData)
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "This field is required")

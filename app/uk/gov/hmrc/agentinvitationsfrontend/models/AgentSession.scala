@@ -16,10 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
+case class AgentSession(
+  clientType: Option[String] = None,
+  service: Option[String] = None,
+  clientIdentifierType: Option[String] = None,
+  clientIdentifier: Option[String] = None,
+  knownFact: Option[String] = None,
+  continueUrl: Option[String] = None,
+  errorUrl: Option[String] = None,
+  fromFastTrack: Boolean = false,
+  isDeAuthJourney: Boolean = false,
+  requests: Set[AuthorisationRequest] = Set.empty)
 
-object AgentMultiAuthorisationJourneyState {
-  implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
+object AgentSession {
+  implicit val format: Format[AgentSession] = Json.format[AgentSession]
 }

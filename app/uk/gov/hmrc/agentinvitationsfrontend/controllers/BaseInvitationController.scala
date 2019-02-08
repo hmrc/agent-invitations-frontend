@@ -25,7 +25,6 @@ import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationControllerSupport._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -33,9 +32,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -47,8 +46,7 @@ abstract class BaseInvitationController(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
-  journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
-  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  agentSessionCache: AgentSessionCache,
   auditService: AuditService
 )(
   implicit override val externalUrls: ExternalUrls,
@@ -89,14 +87,14 @@ abstract class BaseInvitationController(
 
   val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
 
-  protected def handleGetClientType(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleGetClientType(
+    isDeAuthJourney: Boolean = false)(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (_, _) =>
-      journeyStateCache.fetchAndClear.flatMap { _ =>
-        currentAuthorisationRequestCache.fetch.flatMap {
-          case Some(data) if data.clientType.isEmpty && data.fromFastTrack =>
-            Ok(clientTypePage(backLinkUrl = routes.AgentsFastTrackInvitationController.showCheckDetails().url))
-          case _ => currentAuthorisationRequestCache.fetchAndClear.map(_ => Ok(clientTypePage()))
-        }
+      agentSessionCache.fetch.flatMap {
+        case Some(cache) if cache.clientType.isEmpty && cache.fromFastTrack =>
+          Ok(clientTypePage(backLinkUrl = routes.AgentsFastTrackInvitationController.showCheckDetails().url))
+        case _ =>
+          agentSessionCache.save(AgentSession(isDeAuthJourney = isDeAuthJourney)).map(_ => Ok(clientTypePage()))
       }
     }
 
@@ -107,15 +105,17 @@ abstract class BaseInvitationController(
         .fold(
           formWithErrors => Ok(clientTypePage(formWithErrors)),
           userInput => {
-            val updateAggregate = currentAuthorisationRequestCache.fetch
-              .map(_.getOrElse(CurrentAuthorisationRequest()))
-              .map(_.copy(clientType = Some(userInput)))
-
-            updateAggregate.flatMap(
-              toUpdate =>
-                currentAuthorisationRequestCache
-                  .save(toUpdate)
-                  .flatMap(_ => redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)))
+            agentSessionCache.fetch
+              .flatMap {
+                case Some(cache) => agentSessionCache.save(cache.copy(clientType = Some(userInput)))
+                case None        => agentSessionCache.save(AgentSession(clientType = Some(userInput)))
+              }
+              .flatMap { updatedSession =>
+                if (updatedSession.fromFastTrack)
+                  redirectFastTrackToNextPage(arn, updatedSession, isWhitelisted)
+                else
+                  Redirect(selectServiceCall)
+              }
           }
         )
     }
@@ -132,33 +132,23 @@ abstract class BaseInvitationController(
     isWhitelisted: Boolean,
     form: Form[String] = ServiceTypeForm.form,
     businessForm: Form[Confirmation])(implicit request: Request[_]): Future[Result] =
-    journeyStateCache.fetch.flatMap {
-      case Some(basket) if basket.requests.nonEmpty =>
-        basket.clientType match {
-          case "personal" =>
-            Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = true))
-          case "business" => Ok(businessSelectServicePage(businessForm, basketFlag = true, clientTypeCall.url))
-          case _          => Redirect(clientTypeCall)
-        }
-      case _ =>
-        currentAuthorisationRequestCache.fetch.flatMap {
-          case Some(input) if input.clientType.nonEmpty =>
-            input.clientType match {
-              case Some("personal") =>
-                Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = false))
-              case Some("business") =>
-                Ok(businessSelectServicePage(businessForm, basketFlag = false, clientTypeCall.url))
-              case _ => Redirect(clientTypeCall)
-            }
+    agentSessionCache.fetch.flatMap {
+      case Some(cache) =>
+        cache.clientType match {
+          case Some("personal") =>
+            Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = cache.requests.nonEmpty))
+          case Some("business") =>
+            Ok(businessSelectServicePage(businessForm, basketFlag = cache.requests.nonEmpty, clientTypeCall.url))
           case _ => Redirect(clientTypeCall)
         }
+      case _ => Redirect(clientTypeCall)
     }
 
   protected def handleSubmitSelectService(
     businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =
-    currentAuthorisationRequestCache.fetch.flatMap { car =>
+    agentSessionCache.fetch.flatMap { car =>
       car.flatMap(_.clientType) match {
         case Some("personal") => handleSubmitSelectServicePersonal(businessForm)
         case Some("business") => handleSubmitSelectServiceBusiness(businessForm)
@@ -173,27 +163,26 @@ abstract class BaseInvitationController(
         .bindFromRequest()
         .fold(
           formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors, businessForm),
-          serviceType => {
-            def updateSessionAndRedirect = {
-              val updateAggregate = currentAuthorisationRequestCache.save(
-                CurrentAuthorisationRequest(Some("personal"), serviceType, "", "", None))
-
-              updateAggregate.flatMap(
-                toUpdate =>
-                  currentAuthorisationRequestCache
-                    .save(toUpdate)
+          serviceInput => {
+            def updateSessionAndRedirect(agentSession: Option[AgentSession]): Future[Result] =
+              agentSession match {
+                case Some(cache) =>
+                  agentSessionCache
+                    .save(cache.copy(clientType = Some("personal"), service = Some(serviceInput)))
                     .flatMap(_ =>
-                      ifShouldShowService(toUpdate, featureFlags, isWhitelisted) {
-                        redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)
-                    }))
-            }
+                      ifShouldShowService(serviceInput, featureFlags, isWhitelisted) {
+                        if (isSupportedWhitelistedService(serviceInput, isWhitelisted)) Redirect(identifyClientCall)
+                        else Redirect(clientTypeCall)
+                    })
+                case None => Redirect(clientTypeCall)
+              }
 
-            currentAuthorisationRequestCache.fetch.flatMap { cache =>
+            agentSessionCache.fetch.flatMap { cache =>
               cache.flatMap(_.clientType) match {
-                case Some("personal") => updateSessionAndRedirect
+                case Some("personal") => updateSessionAndRedirect(cache)
                 case Some("business") =>
-                  if (serviceType == HMRCMTDVAT) {
-                    updateSessionAndRedirect
+                  if (serviceInput == HMRCMTDVAT) {
+                    updateSessionAndRedirect(cache)
                   } else {
                     Redirect(selectServiceCall)
                   }
@@ -213,17 +202,18 @@ abstract class BaseInvitationController(
           formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
           data => {
             if (data.choice) {
-              val updateAggregate = currentAuthorisationRequestCache.save(
-                CurrentAuthorisationRequest(Some("business"), HMRCMTDVAT, "", "", None))
-
-              updateAggregate.flatMap(
-                toUpdate =>
-                  currentAuthorisationRequestCache
-                    .save(toUpdate)
+              agentSessionCache.fetch.flatMap {
+                case Some(cache) =>
+                  agentSessionCache
+                    .save(cache.copy(clientType = Some("business"), service = Some(HMRCMTDVAT)))
                     .flatMap(_ =>
-                      ifShouldShowService(toUpdate, featureFlags, isWhitelisted) {
-                        redirectBasedOnCurrentInputState(arn, toUpdate, isWhitelisted)
-                    }))
+                      ifShouldShowService(HMRCMTDVAT, featureFlags, isWhitelisted) {
+                        if (isSupportedWhitelistedService(HMRCMTDVAT, isWhitelisted)) Redirect(identifyClientCall)
+                        else Redirect(clientTypeCall)
+                    })
+                case None => Redirect(clientTypeCall)
+              }
+
             } else Future successful Redirect(clientTypeCall)
           }
         )
@@ -231,10 +221,10 @@ abstract class BaseInvitationController(
 
   protected def handleShowIdentifyClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetch.map {
-        case Some(inviteDetails) if inviteDetails.service.nonEmpty =>
-          inviteDetails.service match {
-            case HMRCMTDIT =>
+      agentSessionCache.fetch.map {
+        case Some(cache) =>
+          cache.service match {
+            case Some(HMRCMTDIT) =>
               Ok(
                 identify_client_itsa(
                   ItsaClientForm.form(featureFlags.showKfcMtdIt),
@@ -242,7 +232,7 @@ abstract class BaseInvitationController(
                   submitIdentifyClientCall,
                   selectServiceCall.url))
 
-            case HMRCMTDVAT =>
+            case Some(HMRCMTDVAT) =>
               Ok(
                 identify_client_vat(
                   VatClientForm.form(featureFlags.showKfcMtdVat),
@@ -250,7 +240,7 @@ abstract class BaseInvitationController(
                   submitIdentifyClientCall,
                   selectServiceCall.url))
 
-            case HMRCPIR =>
+            case Some(HMRCPIR) =>
               Ok(
                 identify_client_irv(
                   IrvClientForm.form(featureFlags.showKfcPersonalIncome),
@@ -267,13 +257,13 @@ abstract class BaseInvitationController(
 
   protected def handleSubmitIdentifyClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(car) =>
-          car.service match {
-            case HMRCMTDIT  => identifyItsaClient(arn, isWhitelisted)
-            case HMRCMTDVAT => identifyVatClient(arn, isWhitelisted)
-            case HMRCPIR    => identifyIrvClient(arn, isWhitelisted)
-            case _          => Redirect(selectServiceCall)
+      agentSessionCache.fetch.flatMap {
+        case Some(session) =>
+          session.service match {
+            case Some(HMRCMTDIT)  => identifyItsaClient(arn, isWhitelisted)
+            case Some(HMRCMTDVAT) => identifyVatClient(arn, isWhitelisted)
+            case Some(HMRCPIR)    => identifyIrvClient(arn, isWhitelisted)
+            case _                => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
       }
@@ -281,10 +271,10 @@ abstract class BaseInvitationController(
 
   protected def handleShowConfirmClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
-        case Some(data) =>
-          (data.clientIdentifier, data.service) match {
-            case (clientId, service) if clientId.nonEmpty =>
+      agentSessionCache.fetch.flatMap {
+        case Some(cache) =>
+          (cache.clientIdentifier, cache.service) match {
+            case (Some(clientId), Some(service)) if clientId.nonEmpty =>
               invitationsService.getClientNameByService(clientId, service).flatMap { name =>
                 Ok(showConfirmClientPage(name, identifyClientCall.url))
               }
@@ -309,18 +299,23 @@ abstract class BaseInvitationController(
               submitIdentifyClientCall,
               selectServiceCall.url)),
         userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "ni",
-                knownFact = userInput.postcode
-              )
-            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-          } yield redirectResult
+          agentSessionCache.fetch.flatMap {
+            case Some(cache) =>
+              val updatedSession =
+                cache.copy(
+                  clientIdentifier = Some(userInput.clientIdentifier),
+                  clientIdentifierType = Some("ni"),
+                  knownFact = userInput.postcode)
+              agentSessionCache
+                .save(updatedSession)
+                .flatMap { updatedSession =>
+                  val itsaInvitation = ItsaInvitation(
+                    Nino(userInput.clientIdentifier),
+                    if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
+                  knownFactCheckItsa(arn, updatedSession, itsaInvitation, isWhitelisted)
+                }
+            case None => Redirect(clientTypeCall)
+        }
       )
 
   def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(
@@ -338,18 +333,25 @@ abstract class BaseInvitationController(
               submitIdentifyClientCall,
               selectServiceCall.url)),
         userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "vrn",
-                knownFact = userInput.registrationDate
-              )
-            _              <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-            redirectResult <- redirectBasedOnCurrentInputState(arn, invitationWithClientDetails, isWhitelisted)
-          } yield redirectResult
+          agentSessionCache.fetch.flatMap {
+            case Some(cache) =>
+              val updatedSession =
+                cache.copy(
+                  clientIdentifier = Some(userInput.clientIdentifier),
+                  clientIdentifierType = Some("vrn"),
+                  knownFact = userInput.registrationDate)
+              agentSessionCache
+                .save(updatedSession)
+                .flatMap { updatedSession =>
+                  val vatInvitation =
+                    VatInvitation(
+                      updatedSession.clientType,
+                      Vrn(userInput.clientIdentifier),
+                      if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
+                  knownFactCheckVat(arn, updatedSession, vatInvitation, isWhitelisted)
+                }
+            case None => Redirect(clientTypeCall)
+        }
       )
 
   def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
@@ -367,30 +369,29 @@ abstract class BaseInvitationController(
               submitIdentifyClientCall,
               selectServiceCall.url)),
         userInput =>
-          for {
-            maybeCachedInvitation <- currentAuthorisationRequestCache.fetch
-            invitationWithClientDetails = maybeCachedInvitation
-              .getOrElse(CurrentAuthorisationRequest())
-              .copy(
-                clientIdentifier = userInput.clientIdentifier,
-                clientIdentifierType = "ni",
-                knownFact = userInput.dob
-              )
-            result <- for {
-                       _ <- currentAuthorisationRequestCache.save(invitationWithClientDetails)
-                       redirectResult <- redirectBasedOnCurrentInputState(
-                                          arn,
-                                          invitationWithClientDetails,
-                                          isWhitelisted)
-                     } yield redirectResult
-          } yield result
+          agentSessionCache.fetch.flatMap {
+            case Some(cache) =>
+              val updatedSession =
+                cache.copy(
+                  clientIdentifier = Some(userInput.clientIdentifier),
+                  clientIdentifierType = Some("ni"),
+                  knownFact = userInput.dob)
+              agentSessionCache
+                .save(updatedSession)
+                .flatMap { updatedSession =>
+                  val pirInvitation =
+                    PirInvitation(
+                      Nino(userInput.clientIdentifier),
+                      if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
+                  knownFactCheckIrv(arn, updatedSession, pirInvitation, isWhitelisted)
+                }
+            case None => Redirect(clientTypeCall)
+        }
       )
 
-  def ifShouldShowService(
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    featureFlags: FeatureFlags,
-    isWhitelisted: Boolean)(body: => Future[Result]): Future[Result] =
-    currentAuthorisationRequest.service match {
+  def ifShouldShowService(service: String, featureFlags: FeatureFlags, isWhitelisted: Boolean)(
+    body: => Future[Result]): Future[Result] =
+    service match {
       case HMRCPIR if !isWhitelisted =>
         Logger(getClass).warn(s"User is not whitelisted to create $HMRCPIR invitation")
         Future successful BadRequest
@@ -406,11 +407,13 @@ abstract class BaseInvitationController(
       case _ => body
     }
 
-  def maybeResultIfPendingInvitationsOrRelationshipExistFor(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier): Future[Option[Result]] =
+  def maybeResultIfPendingInvitationsOrRelationshipExistFor(
+    arn: Arn,
+    clientId: String,
+    service: String,
+    agentSession: AgentSession)(implicit hc: HeaderCarrier): Future[Option[Result]] =
     for {
-      existsInBasket <- invitationExistsInBasket(service, clientId)
-      hasPendingInvitations <- if (existsInBasket) Future.successful(true)
+      hasPendingInvitations <- if (invitationExistsInBasket(service, clientId, agentSession)) Future.successful(true)
                               else
                                 invitationsService.hasPendingInvitationsFor(arn, clientId, service)
       result <- if (hasPendingInvitations) {
@@ -423,67 +426,16 @@ abstract class BaseInvitationController(
                }
     } yield result
 
-  def invitationExistsInBasket(service: String, clientId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
-    for {
-      hasPendingInvitationServiceInJourney <- journeyStateCache.fetch.map {
-                                               case Some(cache)
-                                                   if cache.requests
-                                                     .map(_.invitation.service)
-                                                     .contains(service) && cache.requests
-                                                     .map(_.invitation.clientId)
-                                                     .contains(clientId) =>
-                                                 true
-                                               case _ => false
-                                             }
-    } yield hasPendingInvitationServiceInJourney
-
-  def redirectBasedOnCurrentInputState(
-    arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    currentAuthorisationRequest match {
-      case CurrentInvitationInputVatReady(completeVatInvitation) =>
-        knownFactCheckVat(arn, currentAuthorisationRequest, completeVatInvitation, isWhitelisted)
-
-      case CurrentInvitationInputItsaReady(completeItsaInvitation) =>
-        knownFactCheckItsa(arn, currentAuthorisationRequest, completeItsaInvitation, isWhitelisted)
-
-      case CurrentInvitationInputPirReady(completePirInvitation) =>
-        knownFactCheckIrv(arn, currentAuthorisationRequest, completePirInvitation, isWhitelisted)
-
-      case CurrentInvitationInputNeedsClientType(_) =>
-        Redirect(clientTypeCall)
-
-      case CurrentInvitationInputNeedsKnownFact(_) =>
-        Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
-
-      case CurrentInvitationInputNeedsClientIdentifier(invitationNeedsClientIdentifier) =>
-        invitationNeedsClientIdentifier.service match {
-          case service if isSupportedWhitelistedService(service, isWhitelisted) =>
-            Redirect(identifyClientCall)
-          case _ =>
-            Redirect(clientTypeCall)
-        }
-
-      case CurrentInvitationInputFromFastTrackNeedsClientType(_) =>
-        Redirect(clientTypeCall)
-
-      case CurrentInvitationInputNeedsService(_) =>
-        Redirect(selectServiceCall)
-
-      case _ =>
-        Logger(getClass).warn("Resetting due to mix data in session")
-        currentAuthorisationRequestCache
-          .save(CurrentAuthorisationRequest())
-          .map(_ => Redirect(clientTypeCall))
-    }
+  def invitationExistsInBasket(service: String, clientId: String, agentSession: AgentSession): Boolean =
+    agentSession.requests.map(_.invitation.service).contains(service) &&
+      agentSession.requests.map(_.invitation.clientId).contains(clientId)
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
     enabledPersonalServices(isWhitelisted).exists(_._1 == service)
 
-  private def knownFactCheckVat(
+  protected def knownFactCheckVat(
     arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
+    agentSession: AgentSession,
     vatInvitation: VatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     vatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
@@ -493,15 +445,17 @@ abstract class BaseInvitationController(
           case Some(true) =>
             maybeResultIfPendingInvitationsOrRelationshipExistFor(
               arn,
-              currentAuthorisationRequest.clientIdentifier,
-              currentAuthorisationRequest.service)
+              agentSession.clientIdentifier.getOrElse(""),
+              agentSession.service.getOrElse(""),
+              agentSession)
               .flatMap {
-                case Some(r) if (currentAuthorisationRequest.fromFastTrack) => r
+                case Some(r) if agentSession.fromFastTrack => r
                 case _ =>
-                  redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                  redirectOrShowConfirmClient(agentSession, featureFlags) {
                     createInvitation(arn, vatInvitation)
                   }
               }
+
           case Some(false) =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
             Redirect(routes.AgentsErrorController.notMatched())
@@ -510,14 +464,14 @@ abstract class BaseInvitationController(
             Redirect(routes.AgentsInvitationController.notSignedUp())
         }
       case None =>
-        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+        redirectOrShowConfirmClient(agentSession, featureFlags) {
           createInvitation(arn, vatInvitation)
         }
     }
 
-  private def knownFactCheckItsa(
+  protected def knownFactCheckItsa(
     arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
+    agentSession: AgentSession,
     itsaInvitation: ItsaInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     itsaInvitation.postcode match {
@@ -529,12 +483,13 @@ abstract class BaseInvitationController(
                      case Some(true) =>
                        maybeResultIfPendingInvitationsOrRelationshipExistFor(
                          arn,
-                         currentAuthorisationRequest.clientIdentifier,
-                         currentAuthorisationRequest.service)
+                         agentSession.clientIdentifier.getOrElse(""),
+                         agentSession.service.getOrElse(""),
+                         agentSession)
                          .flatMap {
-                           case Some(r) if (currentAuthorisationRequest.fromFastTrack) => r
+                           case Some(r) if agentSession.fromFastTrack => r
                            case _ =>
-                             redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                             redirectOrShowConfirmClient(agentSession, featureFlags) {
                                createInvitation(arn, itsaInvitation)
                              }
                          }
@@ -562,14 +517,14 @@ abstract class BaseInvitationController(
                    }
         } yield result
       case None =>
-        redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+        redirectOrShowConfirmClient(agentSession, featureFlags) {
           createInvitation(arn, itsaInvitation)
         }
     }
 
-  private def knownFactCheckIrv(
+  protected def knownFactCheckIrv(
     arn: Arn,
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
+    agentSession: AgentSession,
     pirInvitation: PirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
     if (featureFlags.showKfcPersonalIncome) {
@@ -581,15 +536,19 @@ abstract class BaseInvitationController(
               case Some(true) =>
                 maybeResultIfPendingInvitationsOrRelationshipExistFor(
                   arn,
-                  currentAuthorisationRequest.clientIdentifier,
-                  currentAuthorisationRequest.service)
+                  agentSession.clientIdentifier.getOrElse(""),
+                  agentSession.service.getOrElse(""),
+                  agentSession)
                   .flatMap {
-                    case Some(r) if currentAuthorisationRequest.fromFastTrack => r
+                    case Some(r) if agentSession.fromFastTrack => r
                     case _ =>
-                      redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                      redirectOrShowConfirmClient(agentSession, featureFlags) {
                         createInvitation(arn, pirInvitation)
                       }
                   }
+                redirectOrShowConfirmClient(agentSession, featureFlags) {
+                  createInvitation(arn, pirInvitation)
+                }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
                 Redirect(routes.AgentsErrorController.notMatched())
@@ -603,20 +562,20 @@ abstract class BaseInvitationController(
           Redirect(routes.AgentsErrorController.notMatched())
       }
     } else {
-      redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+      redirectOrShowConfirmClient(agentSession, featureFlags) {
         createInvitation(arn, pirInvitation)
       }
     }
 
-  def redirectOrShowConfirmClient(currentAuthorisationRequest: CurrentAuthorisationRequest, featureFlags: FeatureFlags)(
-    body: => Future[Result])(implicit request: Request[_]): Future[Result] =
+  def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(body: => Future[Result])(
+    implicit request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, _) =>
-      if (currentAuthorisationRequest.fromFastTrack) body
+      if (agentSession.fromFastTrack) body
       else {
-        val clientType = currentAuthorisationRequest.clientType
-        val service = currentAuthorisationRequest.service
-        val clientIdentifier = currentAuthorisationRequest.clientIdentifier
-        val knownFact = currentAuthorisationRequest.knownFact
+        val clientType = agentSession.clientType
+        val service = agentSession.service.getOrElse(" ") //TODO: Fix these getOrElse calls
+        val clientIdentifier = agentSession.clientIdentifier.getOrElse(" ")
+        val knownFact = agentSession.knownFact
 
         service match {
           case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
@@ -627,67 +586,102 @@ abstract class BaseInvitationController(
             Redirect(confirmClientCall)
           case _ =>
             val result = for {
-              existsInBasket <- invitationExistsInBasket(service, clientIdentifier)
+              existsInBasket <- invitationExistsInBasket(service, clientIdentifier, agentSession)
               hasPendingInvitations <- if (existsInBasket) Future.successful(true)
                                       else
                                         invitationsService.hasPendingInvitationsFor(arn, clientIdentifier, service)
               hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(arn, clientIdentifier, service)
             } yield (hasPendingInvitations, hasActiveRelationship)
 
-            result.flatMap {
-              case (true, _)
-                  if (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
-                Future successful Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+            val serviceEnabled = (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
+              (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
+              (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm)
 
-              case (_, true)
-                  if (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-                    (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-                    (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm) =>
-                Future successful Redirect(routes.AgentsErrorController.activeRelationshipExists())
-              case _ => {
-                for {
-                  clientName      <- invitationsService.getClientNameByService(clientIdentifier, service)
-                  journeyStateOpt <- journeyStateCache.fetch
-                  currentCache = journeyStateOpt match {
-                    case None               => AgentMultiAuthorisationJourneyState("", Set.empty)
-                    case Some(journeyState) => journeyState
+            result.flatMap {
+              case (true, _) if serviceEnabled =>
+                Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
+
+              case (_, true) if serviceEnabled => Redirect(routes.AgentsErrorController.activeRelationshipExists())
+
+              case _ =>
+                invitationsService
+                  .getClientNameByService(clientIdentifier, service)
+                  .map { clientName =>
+                    val updatedBasket = agentSession.requests ++ Set(
+                      AuthorisationRequest(
+                        clientName.getOrElse(""),
+                        Invitation(clientType, service, clientIdentifier, knownFact)))
+                    agentSessionCache.save(AgentSession(clientType = clientType, requests = updatedBasket))
                   }
-                  _ <- journeyStateCache.save(
-                        AgentMultiAuthorisationJourneyState(
-                          clientType.getOrElse(""),
-                          currentCache.requests ++ Set(
-                            AuthorisationRequest(
-                              clientName.getOrElse(""),
-                              Invitation(clientType, service, clientIdentifier, knownFact)))
-                        ))
-                  result <- clientType match {
-                             case Some("personal") =>
-                               toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
-                             case Some("business") => body
-                             case _                => toFuture(Redirect(clientTypeCall))
-                           }
-                } yield result
-              }
+                  .flatMap { _ =>
+                    clientType match {
+                      case Some("personal") =>
+                        toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
+                      case Some("business") => body
+                      case _                => toFuture(Redirect(clientTypeCall))
+                    }
+                  }
             }
         }
       }
     }
 
+  protected def redirectFastTrackToNextPage(arn: Arn, agentSession: AgentSession, isWhitelisted: Boolean)(
+    implicit hc: HeaderCarrier,
+    request: Request[_]): Future[Result] =
+    maybeResultIfPendingInvitationsOrRelationshipExistFor(
+      arn,
+      agentSession.clientIdentifier.getOrElse(""),
+      agentSession.service.getOrElse(""),
+      agentSession).flatMap {
+      case Some(r) => r
+      case None =>
+        agentSession match {
+          case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _) =>
+            val knownFactRequired = knownFact.isEmpty &&
+              ((service == HMRCPIR && featureFlags.showKfcPersonalIncome)
+                || (service == HMRCMTDVAT && featureFlags.showKfcMtdVat)
+                || (service == HMRCMTDIT && featureFlags.showKfcMtdIt))
+
+            if (knownFactRequired) {
+              Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
+            } else {
+              service match {
+                case HMRCPIR =>
+                  val pirInvitation = PirInvitation(
+                    Nino(clientIdentifier),
+                    if (featureFlags.showKfcPersonalIncome) knownFact.map(DOB(_)) else None)
+                  knownFactCheckIrv(arn, agentSession, pirInvitation, isWhitelisted)
+                case HMRCMTDVAT =>
+                  val vatInvitation = VatInvitation(
+                    Some(clientType),
+                    Vrn(clientIdentifier),
+                    if (featureFlags.showKfcMtdVat) knownFact.map(VatRegDate(_)) else None)
+                  knownFactCheckVat(arn, agentSession, vatInvitation, isWhitelisted)
+                case HMRCMTDIT =>
+                  val itsaInvitation =
+                    ItsaInvitation(
+                      Nino(clientIdentifier),
+                      if (featureFlags.showKfcMtdIt) knownFact.map(Postcode(_)) else None)
+                  knownFactCheckItsa(arn, agentSession, itsaInvitation, isWhitelisted)
+                case _ =>
+                  Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
+              }
+            }
+
+          case session if session.clientType.isEmpty && session.service.contains(HMRCMTDVAT) =>
+            Redirect(routes.AgentsInvitationController.showClientType())
+
+          case _ =>
+            Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
+        }
+    }
+
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, invitation: Invitation)(
     implicit request: Request[_]) =
     for {
-      _            <- invitationsService.createInvitation(arn, invitation, featureFlags)
-      fastTrackOps <- currentAuthorisationRequestCache.fetchAndClear
-      cacheOpts    <- journeyStateCache.fetchAndClear
-      clientType = (cacheOpts, fastTrackOps) match {
-        case (Some(cache), _) if cache.clientType.nonEmpty => cache.clientType
-        case (_, Some(fastTrack)) if fastTrack.clientType.isDefined =>
-          fastTrack.clientType.getOrElse("No Client Type found for fast track")
-        case _ => throw new IllegalStateException("No Client Type found when creating invitation/s")
-      }
-    } yield Redirect(routes.AgentsInvitationController.showInvitationSent()).addingToSession("clientType" -> clientType)
+      _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
+    } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
 
