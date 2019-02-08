@@ -84,11 +84,11 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def showSelectService: Action[AnyContent] = Action.async { implicit request =>
-    handleGetSelectServicePage
+    handleGetSelectServicePage(agentConfirmationForm("cancel-authorisation.error.business-service.required"))
   }
 
   def submitSelectService: Action[AnyContent] = Action.async { implicit request =>
-    handleSubmitSelectService
+    handleSubmitSelectService(agentConfirmationForm("cancel-authorisation.error.business-service.required"))
   }
 
   def showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
@@ -159,7 +159,8 @@ class AgentLedDeAuthController @Inject()(
               .bindFromRequest()
               .fold(
                 formWithErrors => {
-                  Ok(cancelAuthorisation.confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(cache.service)))
+                  Ok(cancelAuthorisation
+                    .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(cache.service)))
                 },
                 data => {
                   if (data.choice) {
@@ -242,6 +243,12 @@ class AgentLedDeAuthController @Inject()(
     enabledServices: Seq[(String, String)],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     cancelAuthorisation.select_service(form, enabledServices, false)
+
+  override def businessSelectServicePage(
+    form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
+    basketFlag: Boolean,
+    backLink: String)(implicit request: Request[_]): Appendable =
+    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceCall)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 

@@ -120,16 +120,18 @@ abstract class BaseInvitationController(
         )
     }
 
-  protected def handleGetSelectServicePage(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleGetSelectServicePage(
+    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
+    implicit hc: HeaderCarrier,
+    request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (_, isWhitelisted) =>
-      getSelectServicePage(isWhitelisted)
+      getSelectServicePage(isWhitelisted, businessForm = businessForm)
     }
 
   private def getSelectServicePage(
     isWhitelisted: Boolean,
     form: Form[String] = ServiceTypeForm.form,
-    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
-    implicit request: Request[_]): Future[Result] =
+    businessForm: Form[Confirmation])(implicit request: Request[_]): Future[Result] =
     journeyStateCache.fetch.flatMap {
       case Some(basket) if basket.requests.nonEmpty =>
         basket.clientType match {
@@ -152,21 +154,25 @@ abstract class BaseInvitationController(
         }
     }
 
-  protected def handleSubmitSelectService(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleSubmitSelectService(
+    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
+    implicit hc: HeaderCarrier,
+    request: Request[_]): Future[Result] =
     currentAuthorisationRequestCache.fetch.flatMap { car =>
       car.flatMap(_.clientType) match {
-        case Some("personal") => handleSubmitSelectServicePersonal
-        case Some("business") => handleSubmitSelectServiceBusiness
+        case Some("personal") => handleSubmitSelectServicePersonal(businessForm)
+        case Some("business") => handleSubmitSelectServiceBusiness(businessForm)
         case _                => Redirect(clientTypeCall)
       }
     }
 
-  protected def handleSubmitSelectServicePersonal(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  private def handleSubmitSelectServicePersonal(
+    businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
         .bindFromRequest()
         .fold(
-          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
+          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors, businessForm),
           serviceType => {
             def updateSessionAndRedirect = {
               val updateAggregate = currentAuthorisationRequestCache.fetch
@@ -199,9 +205,10 @@ abstract class BaseInvitationController(
         )
     }
 
-  protected def handleSubmitSelectServiceBusiness(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  private def handleSubmitSelectServiceBusiness(
+    businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentConfirmationForm("error.business-service.required")
+      businessForm
         .bindFromRequest()
         .fold(
           formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
@@ -686,10 +693,8 @@ abstract class BaseInvitationController(
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
     select_service(form, enabledServices, basketFlag)
 
-  def businessSelectServicePage(
-    form: Form[Confirmation] = agentConfirmationForm("error.business-service.required"),
-    basketFlag: Boolean,
-    backLinkUrl: String)(implicit request: Request[_]): Appendable =
+  def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
+    implicit request: Request[_]): Appendable =
     business_select_service(form, basketFlag, submitServiceCall, backLinkUrl)
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()

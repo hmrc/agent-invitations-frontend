@@ -90,11 +90,11 @@ class AgentsInvitationController @Inject()(
   }
 
   val showSelectService: Action[AnyContent] = Action.async { implicit request =>
-    handleGetSelectServicePage
+    handleGetSelectServicePage()
   }
 
   val submitSelectService: Action[AnyContent] = Action.async { implicit request =>
-    handleSubmitSelectService
+    handleSubmitSelectService()
   }
 
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
@@ -178,7 +178,8 @@ class AgentsInvitationController @Inject()(
               review_authorisations(
                 ReviewAuthorisationsPageConfig(journeyState, featureFlags),
                 agentConfirmationForm("error.review-authorisation.required"),
-                backLinkForReviewAuthorisationsPage(cacheOpt.map(_.service).getOrElse(""))))
+                backLinkForReviewAuthorisationsPage(cacheOpt.map(_.service).getOrElse(""))
+              ))
           case Some(_) => Redirect(routes.AgentsInvitationController.allAuthorisationsRemoved())
           case None    => Redirect(agentsRootUrl)
         }
