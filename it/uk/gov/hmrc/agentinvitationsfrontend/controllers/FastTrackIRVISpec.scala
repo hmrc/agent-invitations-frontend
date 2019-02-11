@@ -69,36 +69,6 @@ class FastTrackIRVISpec extends BaseISpec {
     }
   }
 
-  "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
-
-    "return 303 for authorised Agent with valid Nino then selected IRV, redirect to invitation-sent" in {
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(personal, "", "ni", validNino.value, Some(dateOfBirth), fromFastTrack))
-      givenInvitationCreationSucceeds(
-        arn,
-        personal,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        "NI")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
-      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      givenAgentReferenceRecordExistsForArn(arn, "uid")
-
-      val serviceForm = ServiceTypeForm.form.fill(servicePIR)
-      val result =
-        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verify2AuthoriseAttempt()
-    }
-  }
-
   "POST /agents/fast-track" should {
     val request = FakeRequest(
       "POST",

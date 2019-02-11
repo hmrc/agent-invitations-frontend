@@ -20,33 +20,6 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
-  "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
-
-    "return 303 for authorised Agent with valid Nino but selected VAT, redirect to identify-client" in {
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(business, "", "ni", validNino.value, None, fromFastTrack))
-      givenInvitationCreationSucceeds(
-        arn,
-        business,
-        validNino.value,
-        invitationIdPIR,
-        validNino.value,
-        "ni",
-        servicePIR,
-        "NI")
-      val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
-      val result =
-        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/more-details")
-      verifyAuthoriseAttempt()
-    }
-
-  }
-
   "POST /agents/fast-track" should {
     val request = FakeRequest(
       "POST",

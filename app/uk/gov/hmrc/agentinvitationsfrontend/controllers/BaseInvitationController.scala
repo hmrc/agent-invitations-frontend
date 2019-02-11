@@ -175,9 +175,8 @@ abstract class BaseInvitationController(
           formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors, businessForm),
           serviceType => {
             def updateSessionAndRedirect = {
-              val updateAggregate = currentAuthorisationRequestCache.fetch
-                .map(_.getOrElse(CurrentAuthorisationRequest()))
-                .map(_.copy(service = serviceType))
+              val updateAggregate = currentAuthorisationRequestCache.save(
+                CurrentAuthorisationRequest(Some("personal"), serviceType, "", "", None))
 
               updateAggregate.flatMap(
                 toUpdate =>
@@ -214,9 +213,8 @@ abstract class BaseInvitationController(
           formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
           data => {
             if (data.choice) {
-              val updateAggregate = currentAuthorisationRequestCache.fetch
-                .map(_.getOrElse(CurrentAuthorisationRequest()))
-                .map(_.copy(service = HMRCMTDVAT))
+              val updateAggregate = currentAuthorisationRequestCache.save(
+                CurrentAuthorisationRequest(Some("business"), HMRCMTDVAT, "", "", None))
 
               updateAggregate.flatMap(
                 toUpdate =>

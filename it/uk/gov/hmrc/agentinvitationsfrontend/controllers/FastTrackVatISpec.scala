@@ -76,36 +76,6 @@ class FastTrackVatISpec extends BaseISpec {
     }
   }
 
-  "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
-
-    "return 303 for authorised Agent with valid VAT information and selected VAT, redirect to invitation-sent" in {
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(business, "", "vrn", validVrn.value, Some(validRegistrationDate), fromFastTrack))
-      givenInvitationCreationSucceeds(
-        arn,
-        business,
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        identifierVAT)
-      givenAgentReference(arn, "BBBBBBBB", "business")
-      givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
-      givenAgentReferenceRecordExistsForArn(arn, "uid")
-
-      val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
-      val result =
-        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
-      verify2AuthoriseAttempt()
-    }
-  }
-
   "POST /agents/fast-track" should {
     val request = FakeRequest(
       "POST",
