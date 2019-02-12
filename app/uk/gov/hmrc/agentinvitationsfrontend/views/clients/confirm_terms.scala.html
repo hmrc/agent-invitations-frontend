@@ -16,7 +16,7 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -58,7 +58,7 @@
         'class -> "margin-top-30"
     ) {
 
-        @inputRadioGroup(
+        @input_radio_group(
             confirmTermsForm("confirmTerms"),
             Seq(("true", Messages("confirm-terms.radio1")), ("false", Messages("confirm-terms.radio2"))),
             '_legend -> Messages(s"confirm-terms.subheading4", pageConfig.agencyName),

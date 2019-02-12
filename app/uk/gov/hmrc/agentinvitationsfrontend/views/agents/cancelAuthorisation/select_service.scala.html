@@ -15,12 +15,11 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 
 @(agentForm: Form[String], services: Seq[(String, String)], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -37,7 +36,7 @@ action = routes.AgentLedDeAuthController.submitSelectService(),
 'class -> "form js-form") {
 
 <div class="form-group">
-    @inputRadioGroup(
+    @input_radio_group(
     agentForm("serviceType"),
     services,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>""" +

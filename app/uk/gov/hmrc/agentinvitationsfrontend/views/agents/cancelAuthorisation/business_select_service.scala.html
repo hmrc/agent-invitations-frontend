@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
@@ -36,7 +36,7 @@
         action = submitCall,
         'class -> "form js-form") {
         <div class="form-group">
-        @inputRadioGroup(
+        @input_radio_group(
             choiceForm("accepted"),
             Seq("true"-> Messages("business-select-service.yes"), "false" -> Messages("business-select-service.no")),
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.business-select-service.header") + """</h1>"""),

@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
-@import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup, errorSummary}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 @(confirmForm: Form[ConfirmForm], service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -43,7 +43,7 @@
 
   @form(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
-   @inputRadioGroup(
+   @input_radio_group(
     confirmForm("confirmCancelAuthorisation"),
     Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
     '_legend -> Html(legend),
