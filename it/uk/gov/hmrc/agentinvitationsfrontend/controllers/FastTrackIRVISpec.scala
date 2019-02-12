@@ -347,6 +347,54 @@ class FastTrackIRVISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
 
+    "redirect to already-authorisation-present when a relationship already exists between agent and client" in {
+      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenAfiRelationshipIsActiveForAgent(arn, validNino)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "clientType"           -> "personal",
+        "service"              -> "PERSONAL-INCOME-RECORD",
+        "clientIdentifierType" -> "ni",
+        "clientIdentifier"     -> validNino.value,
+        "knownFact.year"       -> "1980",
+        "knownFact.month"      -> "07",
+        "knownFact.day"        -> "07"
+      )
+      val formData =
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+    }
+
+    "redirect to already-authorisation-pending when a relationship already exists between agent and client when there is no end date" in {
+      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+      givenAfiRelationshipIsActiveForAgentNoEndDate(arn, validNino)
+      givenAgentReferenceRecordExistsForArn(arn, "uid")
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "clientType"           -> "personal",
+        "service"              -> "PERSONAL-INCOME-RECORD",
+        "clientIdentifierType" -> "ni",
+        "clientIdentifier"     -> validNino.value,
+        "knownFact.year"       -> "1980",
+        "knownFact.month"      -> "07",
+        "knownFact.day"        -> "07"
+      )
+      val formData =
+        CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None, fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+    }
+
     "redisplay the page with errors when known fact is not valid for IRV" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
