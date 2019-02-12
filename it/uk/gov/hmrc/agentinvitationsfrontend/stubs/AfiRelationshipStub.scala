@@ -26,6 +26,22 @@ trait AfiRelationshipStub {
                          |   "clientId":"${clientId.value}"
                          |}]""".stripMargin)))
 
+  def givenAfiRelationshipIsActiveForAgentNoEndDate(arn: Arn, clientId: Nino) =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |[{
+                         |   "arn":"${arn.value}",
+                         |   "clientId":"${clientId.value}"
+                         |},
+                         |{  "arn":"${arn.value}",
+                         |   "clientId":"${clientId.value}"
+                         |}]""".stripMargin)))
+
   def givenAfiRelationshipNotFoundForAgent(arn: Arn, clientId: Nino) =
     stubFor(
       get(urlEqualTo(

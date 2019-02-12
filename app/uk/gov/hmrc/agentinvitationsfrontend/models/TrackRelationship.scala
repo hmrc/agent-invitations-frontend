@@ -73,10 +73,13 @@ object IrvTrackRelationship {
 
   implicit val reads: Reads[IrvTrackRelationship] =
     ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "endDate").readNullable[LocalDateTime].map(date => javaDateTimeToJodaDate(date.get)) and
+      (JsPath \ "endDate").readNullable[LocalDateTime].map(dateOpts => javaDateTimeToJodaDate(dateOpts)) and
       (JsPath \ "clientId").read[String])(IrvTrackRelationship.apply _)
 
-  def javaDateTimeToJodaDate(javaTime: LocalDateTime): Option[LocalDate] =
-    Some(LocalDate.parse(javaTime.toLocalDate.toString))
+  def javaDateTimeToJodaDate(javaTimeOpts: Option[LocalDateTime]): Option[LocalDate] =
+    javaTimeOpts match {
+      case Some(javaTime) => Some(LocalDate.parse(javaTime.toLocalDate.toString))
+      case _              => Some(LocalDate.parse("9999-12-31"))
+    }
 
 }
