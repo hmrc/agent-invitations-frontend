@@ -193,7 +193,7 @@ class FastTrackITSAISpec extends BaseISpec {
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
       testCurrentAuthorisationRequestCache.save(formData)
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request.withHeaders("Referer" -> "/go/back/to/this"), arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
@@ -201,7 +201,15 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
       checkHtmlResultWithBodyText(result, "DH1 4EJ")
-      checkResultContainsBackLink(result, "/invitations/agents/fast-track")
+      checkResultContainsBackLink(result, "/go/back/to/this")
+    }
+
+    "display the check details page without a back link when no Referer header is found" in {
+      val formData =
+        CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
+      testCurrentAuthorisationRequestCache.save(formData)
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      checkHtmlResultWithNotBodyText(result, "Back")
     }
 
     "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {

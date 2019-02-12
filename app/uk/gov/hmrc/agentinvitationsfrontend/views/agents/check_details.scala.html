@@ -20,7 +20,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import scala.util.Try
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 
@@ -31,7 +30,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 
 
-@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentAuthorisationRequest, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig, bankLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentAuthorisationRequest, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
@@ -48,7 +47,9 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), serviceMessageKey))) {
 
-    @back_link(bankLinkUrl)
+    @if(request.headers.get("Referer").isDefined){
+        @back_link_referer(request)
+    }
 
     @if(confirmForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
