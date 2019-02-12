@@ -208,6 +208,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
@@ -230,6 +231,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
@@ -250,6 +252,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         givenAgentReference(arn, "ABCDEFGH", "personal")
         givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         val requestWithForm =
           request.withFormUrlEncodedBody(

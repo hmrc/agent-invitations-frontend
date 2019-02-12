@@ -491,9 +491,17 @@ abstract class BaseInvitationController(
         invitationsService
           .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, vatRegDate) flatMap {
           case Some(true) =>
-            redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-              createInvitation(arn, vatInvitation)
-            }
+            maybeResultIfPendingInvitationsOrRelationshipExistFor(
+              arn,
+              currentAuthorisationRequest.clientIdentifier,
+              currentAuthorisationRequest.service)
+              .flatMap {
+                case Some(r) => r
+                case None =>
+                  redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                    createInvitation(arn, vatInvitation)
+                  }
+              }
           case Some(false) =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
             Redirect(routes.AgentsErrorController.notMatched())
@@ -519,9 +527,19 @@ abstract class BaseInvitationController(
                           .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
           result <- hasPostcode match {
                      case Some(true) =>
-                       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                         createInvitation(arn, itsaInvitation)
-                       }
+                       maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                         arn,
+                         currentAuthorisationRequest.clientIdentifier,
+                         currentAuthorisationRequest.service)
+                         .flatMap {
+                           case Some(r) => {
+                             r
+                           }
+                           case None =>
+                             redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                               createInvitation(arn, itsaInvitation)
+                             }
+                         }
                      case Some(false) =>
                        Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
                        auditService.sendAgentInvitationSubmitted(
@@ -563,9 +581,17 @@ abstract class BaseInvitationController(
             .checkCitizenRecordMatches(pirInvitation.clientIdentifier, LocalDate.parse(dob.value))
             .flatMap {
               case Some(true) =>
-                redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
-                  createInvitation(arn, pirInvitation)
-                }
+                maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                  arn,
+                  currentAuthorisationRequest.clientIdentifier,
+                  currentAuthorisationRequest.service)
+                  .flatMap {
+                    case Some(r) => r
+                    case None =>
+                      redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
+                        createInvitation(arn, pirInvitation)
+                      }
+                  }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
                 Redirect(routes.AgentsErrorController.notMatched())

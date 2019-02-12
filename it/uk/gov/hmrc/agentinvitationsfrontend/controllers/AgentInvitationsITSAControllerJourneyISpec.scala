@@ -75,10 +75,6 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "service is HMRC-MTD-IT" should {
 
       "redirect to confirm-client when a valid NINO and postcode are submitted" in {
-        val journeyState = AgentMultiAuthorisationJourneyState(
-          "personal",
-          Set(AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))
-        testAgentMultiAuthorisationJourneyStateCache.save(journeyState)
         testCurrentAuthorisationRequestCache.save(
           CurrentAuthorisationRequest(personal, "HMRC-MTD-IT", "ni", validNino.value, Some(validPostcode)))
         givenInvitationCreationSucceeds(

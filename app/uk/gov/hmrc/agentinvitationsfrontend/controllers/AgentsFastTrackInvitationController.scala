@@ -111,19 +111,12 @@ class AgentsFastTrackInvitationController @Inject()(
                     formWithErrors,
                     currentAuthorisationRequest.service,
                     serviceToMessageKey(currentAuthorisationRequest.service))),
-              knownFact =>
-                maybeResultIfPendingInvitationsOrRelationshipExistFor(
-                  arn,
-                  currentAuthorisationRequest.clientIdentifier,
-                  currentAuthorisationRequest.service)
-                  .flatMap {
-                    case Some(r) => r
-                    case None =>
-                      val updatedCache = currentAuthorisationRequest.copy(knownFact = knownFact, fromFastTrack = true)
-                      currentAuthorisationRequestCache
-                        .save(updatedCache)
-                        .flatMap(_ => redirectBasedOnCurrentInputState(arn, updatedCache, isWhitelisted))
-                }
+              knownFact => {
+                val updatedCache = currentAuthorisationRequest.copy(knownFact = knownFact, fromFastTrack = true)
+                currentAuthorisationRequestCache
+                  .save(updatedCache)
+                  .flatMap(_ => redirectBasedOnCurrentInputState(arn, updatedCache, isWhitelisted))
+              }
             )
         }
       )
@@ -209,18 +202,10 @@ class AgentsFastTrackInvitationController @Inject()(
           },
           data => {
             if (data.value.getOrElse(false)) {
-              cachedCurrentInvitationInput.flatMap(
-                cacheItem =>
-                  maybeResultIfPendingInvitationsOrRelationshipExistFor(
-                    arn,
-                    cacheItem.clientIdentifier,
-                    cacheItem.service).flatMap {
-                    case Some(r) => r
-                    case None =>
-                      cachedCurrentInvitationInput.flatMap { cii =>
-                        redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
-                      }
-                })
+              cachedCurrentInvitationInput.flatMap(cacheItem =>
+                cachedCurrentInvitationInput.flatMap { cii =>
+                  redirectBasedOnCurrentInputState(arn, cii, isWhitelisted)
+              })
             } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
         )
