@@ -262,6 +262,21 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       )
     }
 
+    "Display the page when coming from fast track" in {
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode), true))
+
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You are already authorised",
+        "This client has already authorised you to report their income and expenses through software."
+      )
+      checkHtmlResultWithNotBodyText(result, "Start a new request")
+    }
+
     "throw an Exception if there is nothing in either of the caches" in {
       val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
 
