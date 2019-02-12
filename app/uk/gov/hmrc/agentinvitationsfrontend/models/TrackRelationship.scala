@@ -78,8 +78,8 @@ object IrvTrackRelationship {
 
   def javaDateTimeToJodaDate(javaTimeOpts: Option[LocalDateTime]): Option[LocalDate] =
     javaTimeOpts match {
-      case Some(javaTime) =>Some(LocalDate.parse(javaTime.toLocalDate.toString))
-      case _ => Some(LocalDate.parse("9999-12-31"))
+      case Some(javaTime) => Some(LocalDate.parse(javaTime.toLocalDate.toString))
+      case _              => Some(LocalDate.parse("9999-12-31"))
     }
 
 }
