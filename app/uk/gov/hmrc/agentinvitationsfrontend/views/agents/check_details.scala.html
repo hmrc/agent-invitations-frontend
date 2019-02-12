@@ -16,7 +16,7 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import scala.util.Try
@@ -138,7 +138,7 @@
                 'class -> "margin-top-30"
             ) {
 
-                @inputRadioGroup(
+                @input_radio_group(
                     confirmForm("checkDetails"),
                     Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
                     '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),

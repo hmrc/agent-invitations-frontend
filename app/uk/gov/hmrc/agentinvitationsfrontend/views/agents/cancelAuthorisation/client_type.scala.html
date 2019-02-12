@@ -16,7 +16,7 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, inputRadioGroup}
+@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
@@ -35,7 +35,7 @@
         action = routes.AgentLedDeAuthController.submitClientType(),
         'class -> "form js-form") {
 
-        @inputRadioGroup(
+        @input_radio_group(
             agentForm("clientType"),
             clientTypes,
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>""" +

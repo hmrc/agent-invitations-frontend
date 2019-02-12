@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, inputRadioGroup, errorSummary}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
@@ -53,7 +53,7 @@
 
     @form(config.submitUrl){
 
-        @inputRadioGroup(
+        @input_radio_group(
             confirmDeclineForm("confirmDecline"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
             '_legend -> legend,

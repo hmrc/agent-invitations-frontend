@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, inputRadioGroup}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
@@ -34,7 +34,7 @@
 action = routes.AgentsInvitationController.submitConfirmClient(),
 'class -> "form js-form"
 ) {
-@inputRadioGroup(
+@input_radio_group(
 choiceForm("accepted"),
 Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
 '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("confirm-client.header") +

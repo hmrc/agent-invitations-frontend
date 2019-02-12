@@ -15,13 +15,8 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary}
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmAuthForm
-@import uk.gov.hmrc.play.views.html.helpers.inputRadioGroup
-@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @(agentName: String, clientType: String, uid: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
