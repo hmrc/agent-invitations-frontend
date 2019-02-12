@@ -181,8 +181,7 @@ class AgentsFastTrackInvitationController @Inject()(
               currentInvitation,
               featureFlags,
               serviceToMessageKey(currentInvitation.service),
-              CheckDetailsPageConfig(currentInvitation, featureFlags),
-              agentFastTrackRoot.url
+              CheckDetailsPageConfig(currentInvitation, featureFlags)
             ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
       }
@@ -204,8 +203,7 @@ class AgentsFastTrackInvitationController @Inject()(
                   cii,
                   featureFlags,
                   serviceToMessageKey(cii.service),
-                  CheckDetailsPageConfig(cii, featureFlags),
-                  agentFastTrackRoot.url
+                  CheckDetailsPageConfig(cii, featureFlags)
                 ))
             }
           },
