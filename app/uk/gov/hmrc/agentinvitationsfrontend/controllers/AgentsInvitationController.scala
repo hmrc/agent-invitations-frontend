@@ -342,7 +342,7 @@ class AgentsInvitationController @Inject()(
           if (currentJourneyCache.fromFastTrack)
             routes.AgentsFastTrackInvitationController.showKnownFact().url
           else routes.AgentsInvitationController.showConfirmClient().url
-        Ok(pending_authorisation_exists(cacheItem.requests.nonEmpty, backLinkUrl))
+        Ok(pending_authorisation_exists(cacheItem.requests.nonEmpty, backLinkUrl, currentJourneyCache.fromFastTrack))
       }
     }
   }

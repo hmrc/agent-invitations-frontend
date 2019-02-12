@@ -79,7 +79,12 @@ class AgentsErrorController @Inject()(
                                       case None        => false
                                     }
         currentCacheItem <- currentAuthorisationRequestCache.get
-      } yield Ok(active_authorisation_exists(journeyStateCacheNonEmpty, currentCacheItem.service))
+      } yield
+        Ok(
+          active_authorisation_exists(
+            journeyStateCacheNonEmpty,
+            currentCacheItem.service,
+            currentCacheItem.fromFastTrack))
     }
   }
 

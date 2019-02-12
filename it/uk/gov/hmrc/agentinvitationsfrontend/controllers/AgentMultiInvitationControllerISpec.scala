@@ -385,6 +385,20 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "Start a new request"
       )
     }
+
+    "Display the pending authorisation already exists error page version when coming from fast track" in {
+      testCurrentAuthorisationRequestCache.save(CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(""), true))
+      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "There is a problem",
+        "You already created an authorisation request for this client. They have not yet responded to this request.",
+        "Track your authorisation requests"
+      )
+      checkHtmlResultWithNotBodyText(result, "Start a new request")
+    }
   }
 
   trait AgentAuthorisationFullCacheScenario {

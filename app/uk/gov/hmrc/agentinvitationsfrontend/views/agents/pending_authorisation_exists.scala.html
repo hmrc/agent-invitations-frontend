@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(authRequestsExist: Boolean, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean, backLinkUrl: String, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"problem.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
@@ -37,7 +37,9 @@
 
    <div><a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a></div>
 
-    <div class = "margin-top-30 text-link-small"><a href="@routes.AgentsInvitationController.showClientType()">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+      @if(!fromFastTrack) {
+          <div class = "margin-top-30 text-link-small"><a href="@routes.AgentsInvitationController.showClientType()">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+      }
   }
 
 }
