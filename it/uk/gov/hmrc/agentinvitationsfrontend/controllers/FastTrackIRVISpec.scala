@@ -36,6 +36,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "personal")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenAgentReferenceRecordExistsForArn(arn, "uid")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
@@ -231,6 +232,7 @@ class FastTrackIRVISpec extends BaseISpec {
     "redirect to already-authorisation-pending when YES is selected for IRV service and there is already a pending invitation" in {
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)
@@ -246,6 +248,7 @@ class FastTrackIRVISpec extends BaseISpec {
     "redirect to already-authorisation-present when YES is selected for IRV service and there is already a relationship" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipIsActiveForAgent(arn, validNino)
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val formData =
         CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth), fromFastTrack)

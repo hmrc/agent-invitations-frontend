@@ -35,6 +35,7 @@ class FastTrackITSAISpec extends BaseISpec {
       givenAgentReference(arn, "AAAAAAAA", "personal")
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
       val clientTypeForm = ClientTypeForm.form.fill("personal")
       val result =
@@ -337,6 +338,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to already-authorisation-pending when YES is selected for ITSA service but there is already a pending invitation" in {
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val formData =
         CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode), fromFastTrack)
@@ -466,6 +468,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to already-authorisation-pending when there is already a pending invitation" in {
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
@@ -485,6 +488,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to already-authorisation-present when there is already a relationship" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+      givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",

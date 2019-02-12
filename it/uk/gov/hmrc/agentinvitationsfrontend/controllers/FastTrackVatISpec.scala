@@ -43,6 +43,7 @@ class FastTrackVatISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", "business")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 204)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val clientTypeForm = ClientTypeForm.form.fill("business")
       val result =
@@ -362,6 +363,7 @@ class FastTrackVatISpec extends BaseISpec {
     "redirect to already-authorisation-pending when YES is selected for VAT service and there is already a pending invitation" in {
       givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentAuthorisationRequest(
@@ -384,6 +386,7 @@ class FastTrackVatISpec extends BaseISpec {
     "redirect to already-authorisation-present when YES is selected for VAT service and there is already a relationship" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
       val formData =
         CurrentAuthorisationRequest(
