@@ -352,6 +352,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipIsActiveForAgent(arn, validNino)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
@@ -376,6 +377,7 @@ class FastTrackIRVISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipIsActiveForAgentNoEndDate(arn, validNino)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
+      givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
       val requestWithForm = request.withFormUrlEncodedBody(
         "clientType"           -> "personal",
