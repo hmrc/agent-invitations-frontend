@@ -496,8 +496,8 @@ abstract class BaseInvitationController(
               currentAuthorisationRequest.clientIdentifier,
               currentAuthorisationRequest.service)
               .flatMap {
-                case Some(r) => r
-                case None =>
+                case Some(r) if (currentAuthorisationRequest.fromFastTrack) => r
+                case _ =>
                   redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
                     createInvitation(arn, vatInvitation)
                   }
@@ -532,10 +532,8 @@ abstract class BaseInvitationController(
                          currentAuthorisationRequest.clientIdentifier,
                          currentAuthorisationRequest.service)
                          .flatMap {
-                           case Some(r) => {
-                             r
-                           }
-                           case None =>
+                           case Some(r) if (currentAuthorisationRequest.fromFastTrack) => r
+                           case _ =>
                              redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
                                createInvitation(arn, itsaInvitation)
                              }
@@ -586,8 +584,8 @@ abstract class BaseInvitationController(
                   currentAuthorisationRequest.clientIdentifier,
                   currentAuthorisationRequest.service)
                   .flatMap {
-                    case Some(r) => r
-                    case None =>
+                    case Some(r) if currentAuthorisationRequest.fromFastTrack => r
+                    case _ =>
                       redirectOrShowConfirmClient(currentAuthorisationRequest, featureFlags) {
                         createInvitation(arn, pirInvitation)
                       }
