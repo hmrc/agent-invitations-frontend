@@ -292,7 +292,7 @@ class FastTrackIRVISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
 
       verify2AuthoriseAttempt()
-      await(testCurrentAuthorisationRequestCache.fetch).get shouldBe formData
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
     }
   }
 

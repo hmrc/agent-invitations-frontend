@@ -678,8 +678,16 @@ abstract class BaseInvitationController(
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, invitation: Invitation)(
     implicit request: Request[_]) =
     for {
-      _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
-    } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
+      _            <- invitationsService.createInvitation(arn, invitation, featureFlags)
+      fastTrackOps <- currentAuthorisationRequestCache.fetchAndClear
+      cacheOpts    <- journeyStateCache.fetchAndClear
+      clientType = (cacheOpts, fastTrackOps) match {
+        case (_, Some(fastTrack)) if fastTrack.clientType.isDefined =>
+          fastTrack.clientType.getOrElse("No Client Type found for fast track")
+        case (Some(cache), _) => cache.clientType
+        case _                => throw new IllegalStateException("No Client Type found when creating invitation/s")
+      }
+    } yield Redirect(routes.AgentsInvitationController.showInvitationSent()).addingToSession("clientType" -> clientType)
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
 

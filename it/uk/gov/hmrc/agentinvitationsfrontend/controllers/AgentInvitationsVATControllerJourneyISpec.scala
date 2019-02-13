@@ -246,7 +246,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("business"), serviceVAT, "vrn", validVrn.value, Some(validVrn.value)))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> business.get), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -275,7 +275,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       intercept[IllegalStateException] {
         await(result)
-      }.getMessage shouldBe "Cached session state expected but not found"
+      }.getMessage shouldBe "Session State: client type expected but not found"
     }
   }
 

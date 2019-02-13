@@ -196,7 +196,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -228,14 +228,14 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       intercept[IllegalStateException] {
         await(result)
-      }.getMessage shouldBe "no client type found in cache"
+      }.getMessage shouldBe "Session State: client type expected but not found"
     }
 
     "throw a IllegalStateException when there is nothing in the cache" in {
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       intercept[IllegalStateException] {
         await(result)
-      }.getMessage shouldBe "Cached session state expected but not found"
+      }.getMessage shouldBe "Session State: client type expected but not found"
     }
   }
 
