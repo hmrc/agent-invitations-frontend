@@ -44,6 +44,8 @@ class FastTrackIRVISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
       verify2AuthoriseAttempt()
     }
 
@@ -205,6 +207,8 @@ class FastTrackIRVISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
     }
 
     "redirect to identify-client when NO is selected for IRV service" in {
@@ -293,6 +297,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       verify2AuthoriseAttempt()
       await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
     }
   }
 
@@ -345,6 +350,8 @@ class FastTrackIRVISpec extends BaseISpec {
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
     }
 
     "redirect to already-authorisation-present when a relationship already exists between agent and client" in {

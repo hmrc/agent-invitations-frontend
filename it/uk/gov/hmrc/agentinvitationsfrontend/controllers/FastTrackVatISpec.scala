@@ -51,6 +51,8 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
       verify2AuthoriseAttempt()
     }
 
@@ -289,6 +291,8 @@ class FastTrackVatISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
@@ -541,6 +545,8 @@ class FastTrackVatISpec extends BaseISpec {
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      await(testCurrentAuthorisationRequestCache.fetch) shouldBe None
+      await(testAgentMultiAuthorisationJourneyStateCache.fetch) shouldBe None
     }
 
     "redisplay the page with errors when known fact is not provided for VAT" in {

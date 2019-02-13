@@ -221,12 +221,17 @@ class AgentsInvitationController @Inject()(
                                             journeyState.requests,
                                             featureFlags)
                     _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
-                    result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
-                               Redirect(routes.AgentsInvitationController.showInvitationSent())
-                                 .addingToSession("clientType" -> journeyState.clientType)
-                             else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
-                               Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
-                             else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
+                    result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) {
+                               for {
+                                 _ <- journeyStateCache.fetchAndClear
+                                 _ <- currentAuthorisationRequestCache.fetchAndClear
+                               } yield
+                                 Redirect(routes.AgentsInvitationController.showInvitationSent())
+                                   .addingToSession("clientType" -> journeyState.clientType)
+                             } else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
+                               Future successful Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
+                             else
+                               Future successful Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
                   } yield result
                 }
               }
