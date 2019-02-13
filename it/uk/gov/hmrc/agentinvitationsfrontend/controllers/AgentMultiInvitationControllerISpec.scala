@@ -397,7 +397,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "You already created an authorisation request for this client. They have not yet responded to this request.",
         "Track your authorisation requests"
       )
-      checkHtmlResultWithNotBodyText(result, "Start a new request")
+      checkHtmlResultWithNotBodyText(result, "Start a new request", "Return to your authorisation requests")
     }
   }
 

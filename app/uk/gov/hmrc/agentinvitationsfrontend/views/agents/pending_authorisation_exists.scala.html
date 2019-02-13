@@ -27,7 +27,7 @@
 
   <h1 class="heading-xlarge margin-top-0">@Messages("problem.header")</h1>
 
-  @if(authRequestsExist) {
+  @if(authRequestsExist && !fromFastTrack) {
 
    <p>@Messages("pending-authorisation-exists.p")</p>
 
