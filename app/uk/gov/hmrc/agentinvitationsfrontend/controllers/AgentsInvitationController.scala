@@ -223,6 +223,7 @@ class AgentsInvitationController @Inject()(
                     _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
                     result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
                                Redirect(routes.AgentsInvitationController.showInvitationSent())
+                                 .addingToSession("clientType" -> journeyState.clientType)
                              else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                                Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
                              else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())

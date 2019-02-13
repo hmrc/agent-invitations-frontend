@@ -682,10 +682,10 @@ abstract class BaseInvitationController(
       fastTrackOps <- currentAuthorisationRequestCache.fetchAndClear
       cacheOpts    <- journeyStateCache.fetchAndClear
       clientType = (cacheOpts, fastTrackOps) match {
+        case (Some(cache), _) if cache.clientType.nonEmpty => cache.clientType
         case (_, Some(fastTrack)) if fastTrack.clientType.isDefined =>
           fastTrack.clientType.getOrElse("No Client Type found for fast track")
-        case (Some(cache), _) => cache.clientType
-        case _                => throw new IllegalStateException("No Client Type found when creating invitation/s")
+        case _ => throw new IllegalStateException("No Client Type found when creating invitation/s")
       }
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent()).addingToSession("clientType" -> clientType)
 
