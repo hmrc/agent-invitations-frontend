@@ -223,6 +223,7 @@ class AgentsInvitationController @Inject()(
                     _ <- journeyStateCache.save(journeyState.copy(requests = processedRequests))
                     result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
                                Redirect(routes.AgentsInvitationController.showInvitationSent())
+                                 .addingToSession("clientType" -> journeyState.clientType)
                              else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                                Redirect(routes.AgentsErrorController.allCreateAuthorisationFailed())
                              else Redirect(routes.AgentsErrorController.someCreateAuthorisationFailed())
@@ -274,26 +275,26 @@ class AgentsInvitationController @Inject()(
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      currentAuthorisationRequestCache.get.flatMap(cacheItem =>
-        for {
-          agentLink <- invitationsService.createAgentLink(
-                        arn,
-                        cacheItem.clientType.getOrElse(
-                          throw new IllegalStateException("no client type found in cache")))
-          continue <- continueUrlCache.fetch
-        } yield {
-          val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
-          val clientType = if (agentLink.contains("personal")) "personal" else "business"
-          val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          Ok(
-            invitation_sent(
-              InvitationSentPageConfig(
-                invitationUrl,
-                continue.isDefined,
-                featureFlags.enableTrackRequests,
-                clientType,
-                inferredExpiryDate)))
-      })
+      request.session.get("clientType") match {
+        case Some(clientType) =>
+          for {
+            agentLink <- invitationsService.createAgentLink(arn, clientType)
+            continue  <- continueUrlCache.fetch
+          } yield {
+            val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
+            val clientType = if (agentLink.contains("personal")) "personal" else "business"
+            val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+            Ok(
+              invitation_sent(
+                InvitationSentPageConfig(
+                  invitationUrl,
+                  continue.isDefined,
+                  featureFlags.enableTrackRequests,
+                  clientType,
+                  inferredExpiryDate)))
+          }
+        case _ => throw new IllegalStateException("Session State: client type expected but not found")
+      }
     }
   }
 

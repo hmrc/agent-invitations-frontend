@@ -26,7 +26,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -60,7 +60,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -94,7 +94,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("business"), serviceITSA, "ni", nino, Some(validPostcode)))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> business.get), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(

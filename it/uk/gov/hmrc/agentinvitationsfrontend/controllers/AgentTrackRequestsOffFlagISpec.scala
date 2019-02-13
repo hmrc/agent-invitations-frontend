@@ -77,7 +77,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       testContinueUrlKeyStoreCache.save(continueUrl)
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -99,7 +99,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
