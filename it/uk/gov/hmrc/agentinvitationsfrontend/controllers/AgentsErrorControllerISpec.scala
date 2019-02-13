@@ -263,6 +263,13 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "Display the page when coming from fast track" in {
+      val clientDetail1 =
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
       testCurrentAuthorisationRequestCache.save(
         CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode), true))
 
@@ -274,7 +281,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         "You are already authorised",
         "This client has already authorised you to report their income and expenses through software."
       )
-      checkHtmlResultWithNotBodyText(result, "Start a new request")
+      checkHtmlResultWithNotBodyText(result, "Start a new request", "Return to your authorisation requests")
     }
 
     "throw an Exception if there is nothing in either of the caches" in {

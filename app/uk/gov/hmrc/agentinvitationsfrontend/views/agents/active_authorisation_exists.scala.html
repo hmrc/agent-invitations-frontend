@@ -31,7 +31,7 @@
 
     <p>@Messages("active-authorisation-exists.p2")</p>
 
-    @if(authRequestsExist) {
+    @if(authRequestsExist && !fromFastTrack) {
 
    <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("active-authorisation-exists.return")</a>
   }else {
