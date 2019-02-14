@@ -5,7 +5,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AgentsInvitationJourneyModelFormatsSpec extends UnitSpec {
+class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
   implicit val formats: Format[State] = AgentInvitationJourneyStateFormats.formats
 

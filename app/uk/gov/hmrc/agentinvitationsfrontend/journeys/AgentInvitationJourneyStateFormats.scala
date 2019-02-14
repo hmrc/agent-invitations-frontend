@@ -11,7 +11,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: SelectService => selectServiceFormat.writes(s)
   }
 
-  override def deserializeStateProperties(stateName: String, properties: JsValue): JsResult[State] = stateName match {
+  override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "UnknownState"     => JsSuccess(UnknownState)
     case "Start"            => JsSuccess(Start)
     case "SelectClientType" => JsSuccess(SelectClientType)

@@ -8,7 +8,7 @@ import play.api.libs.json._
 trait JsonStateFormats[State] {
 
   val serializeStateProperties: PartialFunction[State, JsValue]
-  def deserializeStateProperties(stateName: String, properties: JsValue): JsResult[State]
+  def deserializeState(stateName: String, properties: JsValue): JsResult[State]
 
   final val reads: Reads[State] = new Reads[State] {
     override def reads(json: JsValue): JsResult[State] = json match {
@@ -16,7 +16,7 @@ trait JsonStateFormats[State] {
         (obj \ "state")
           .asOpt[String]
           .map(s => (obj \ "properties").asOpt[JsValue].map(p => (s, p)).getOrElse((s, JsNull))) match {
-          case Some((stateName, properties)) => deserializeStateProperties(stateName, properties)
+          case Some((stateName, properties)) => deserializeState(stateName, properties)
           case None                          => JsError("Missing state field")
         }
 
