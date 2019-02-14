@@ -193,9 +193,6 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
-
       val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(

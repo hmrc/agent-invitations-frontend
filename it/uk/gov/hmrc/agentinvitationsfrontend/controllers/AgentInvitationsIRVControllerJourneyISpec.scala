@@ -265,9 +265,6 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), servicePIR, "ni", nino, Some(dateOfBirth)))
-
       val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
