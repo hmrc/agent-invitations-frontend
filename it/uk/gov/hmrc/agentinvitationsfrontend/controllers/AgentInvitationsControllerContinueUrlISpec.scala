@@ -49,7 +49,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      await(testAgentSessionCache.get) shouldBe AgentSession(personal, continueUrl = Some(continueUrl.url))
     }
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
@@ -82,7 +82,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      await(testAgentSessionCache.get) shouldBe AgentSession(personal, continueUrl = Some(continueUrl.url))
     }
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
@@ -114,7 +114,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(business)
+      await(testAgentSessionCache.get) shouldBe AgentSession(business, continueUrl = Some(continueUrl.url))
     }
 
   }

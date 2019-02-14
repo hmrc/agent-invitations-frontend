@@ -88,7 +88,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      await(testAgentSessionCache.get) shouldBe AgentSession(personal, continueUrl = Some(continueUrl.url))
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {

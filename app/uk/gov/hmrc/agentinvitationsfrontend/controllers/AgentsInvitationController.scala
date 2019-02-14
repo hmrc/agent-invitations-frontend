@@ -254,16 +254,17 @@ class AgentsInvitationController @Inject()(
         invitationsService.createAgentLink(arn, clientType).flatMap { agentLink =>
           val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          //clear every thing in the cache except clientType , as its needed in-case user refreshes the page
-          agentSessionCache.save(AgentSession(clientType = Some(clientType))).map { _ =>
-            Ok(
-              invitation_sent(
-                InvitationSentPageConfig(
-                  invitationUrl,
-                  continueUrlExists,
-                  featureFlags.enableTrackRequests,
-                  clientType,
-                  inferredExpiryDate)))
+          //clear every thing in the cache except clientType and continueUrl , as these needed in-case user refreshes the page
+          agentSessionCache.save(AgentSession(clientType = Some(clientType), continueUrl = session.continueUrl)).map {
+            _ =>
+              Ok(
+                invitation_sent(
+                  InvitationSentPageConfig(
+                    invitationUrl,
+                    continueUrlExists,
+                    featureFlags.enableTrackRequests,
+                    clientType,
+                    inferredExpiryDate)))
           }
         }
       }

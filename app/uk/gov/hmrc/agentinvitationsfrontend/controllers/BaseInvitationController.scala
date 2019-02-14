@@ -82,7 +82,7 @@ abstract class BaseInvitationController(
     case HMRCMTDIT  => messageKeyForITSA
     case HMRCPIR    => messageKeyForAfi
     case HMRCMTDVAT => messageKeyForVAT
-    case _          => "Service is missing"
+    case p          => p
   }
 
   val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
