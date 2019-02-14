@@ -10,6 +10,9 @@ trait JourneyService {
 
   val model: JourneyModel
 
+  /**
+    * Applies transition to the current state and returns new state or error.
+    */
   def apply(transition: model.Transition)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Either[model.Error, model.State]]
@@ -18,10 +21,10 @@ trait JourneyService {
 
 trait PersistentJourneyService extends JourneyService {
 
-  def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[model.State]]
-  def save(state: model.State)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[model.State]
+  protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[model.State]]
+  protected def save(state: model.State)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[model.State]
 
-  def apply(transition: model.Transition)(
+  override def apply(transition: model.Transition)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Either[model.Error, model.State]] =
     for {

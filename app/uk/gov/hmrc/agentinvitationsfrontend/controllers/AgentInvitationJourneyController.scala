@@ -43,6 +43,7 @@ class AgentInvitationJourneyController @Inject()(
 
   override val renderState: State => Result = {
     case States.Start => Redirect(agentsRootUrl)
+    case _            => Redirect(agentsRootUrl)
   }
 
 }
