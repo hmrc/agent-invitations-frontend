@@ -248,25 +248,25 @@ class AgentsInvitationController @Inject()(
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      agentSessionCache.get.flatMap(cacheItem =>
-        for {
-          agentLink <- invitationsService.createAgentLink(
-                        arn,
-                        cacheItem.clientType.getOrElse(
-                          throw new IllegalStateException("no client type found in cache")))
-        } yield {
+      agentSessionCache.get.flatMap { session =>
+        val clientType = session.clientType.getOrElse(throw new IllegalStateException("no client type found in cache"))
+        val continueUrlExists = session.continueUrl.isDefined
+        invitationsService.createAgentLink(arn, clientType).flatMap { agentLink =>
           val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
-          val clientType = if (agentLink.contains("personal")) "personal" else "business"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          Ok(
-            invitation_sent(
-              InvitationSentPageConfig(
-                invitationUrl,
-                cacheItem.continueUrl.isDefined,
-                featureFlags.enableTrackRequests,
-                clientType,
-                inferredExpiryDate)))
-      })
+          //clear every thing in the cache except clientType , as its needed in-case user refreshes the page
+          agentSessionCache.save(AgentSession(clientType = Some(clientType))).map { _ =>
+            Ok(
+              invitation_sent(
+                InvitationSentPageConfig(
+                  invitationUrl,
+                  continueUrlExists,
+                  featureFlags.enableTrackRequests,
+                  clientType,
+                  inferredExpiryDate)))
+          }
+        }
+      }
     }
   }
 

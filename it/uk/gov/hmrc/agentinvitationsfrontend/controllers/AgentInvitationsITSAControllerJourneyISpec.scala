@@ -215,6 +215,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
+      //check if we have cleared everything in cache except clientType
+      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+
       verifyAuthoriseAttempt()
     }
   }

@@ -98,6 +98,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to client-type when a valid NINO is submitted but cache is empty" in {
+        testAgentSessionCache.clear()
         givenInvitationCreationSucceeds(
           arn,
           personal,
@@ -277,6 +278,9 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
           s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
+
+      //check if we have cleared everything in cache except clientType
+      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
 
       verifyAuthoriseAttempt()
     }
