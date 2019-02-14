@@ -20,7 +20,7 @@ trait TestCache[T] {
   def clear(): Unit =
     sessions.clear()
 
-  protected def allSessionsRemoved: Boolean =
+  def allSessionsRemoved: Boolean =
     sessions.isEmpty
 
   def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[T]] =

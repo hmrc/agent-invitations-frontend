@@ -5,8 +5,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
+import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -51,12 +51,12 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testCurrentAuthorisationRequestCache.clear()
+    testAgentSessionCache.clear()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit =
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
+      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
   }
 
   "Show Fast Track flag is switched off" should {
@@ -67,7 +67,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
+          AgentFastTrackRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -77,7 +77,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None)
+        val formData = AgentFastTrackRequest(personal, servicePIR, "ni", validNino.value, None)
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -88,7 +88,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          AgentFastTrackRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
