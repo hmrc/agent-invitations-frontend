@@ -57,7 +57,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val timeout = 2.seconds
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
-      await(testAgentSessionCache.fetch).get shouldBe AgentSession(personal)
+      await(testAgentSessionCache.fetch).get shouldBe AgentSession(personal, clientTypeForInvitationSent = personal)
     }
   }
 

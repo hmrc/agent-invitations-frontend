@@ -107,8 +107,12 @@ abstract class BaseInvitationController(
           userInput => {
             agentSessionCache.fetch
               .flatMap {
-                case Some(cache) => agentSessionCache.save(cache.copy(clientType = Some(userInput)))
-                case None        => agentSessionCache.save(AgentSession(clientType = Some(userInput)))
+                case Some(cache) =>
+                  agentSessionCache.save(
+                    cache.copy(clientType = Some(userInput), clientTypeForInvitationSent = Some(userInput)))
+                case None =>
+                  agentSessionCache.save(
+                    AgentSession(clientType = Some(userInput), clientTypeForInvitationSent = Some(userInput)))
               }
               .flatMap { updatedSession =>
                 if (updatedSession.fromFastTrack)
@@ -611,7 +615,11 @@ abstract class BaseInvitationController(
                       AuthorisationRequest(
                         clientName.getOrElse(""),
                         Invitation(clientType, service, clientIdentifier, knownFact)))
-                    agentSessionCache.save(AgentSession(clientType = clientType, requests = updatedBasket))
+                    agentSessionCache.save(
+                      AgentSession(
+                        clientType = clientType,
+                        requests = updatedBasket,
+                        clientTypeForInvitationSent = clientType))
                   }
                   .flatMap { _ =>
                     clientType match {
@@ -637,7 +645,7 @@ abstract class BaseInvitationController(
       case Some(r) => r
       case None =>
         agentSession match {
-          case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _) =>
+          case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _, _) =>
             val knownFactRequired = knownFact.isEmpty &&
               ((service == HMRCPIR && featureFlags.showKfcPersonalIncome)
                 || (service == HMRCMTDVAT && featureFlags.showKfcMtdVat)

@@ -128,7 +128,11 @@ class AgentsInvitationController @Inject()(
                             val updatedBasket = existingSession.requests ++ Seq(
                               AuthorisationRequest(clientName, Invitation(clientType, service, clientId, knownFact)))
                             agentSessionCache
-                              .save(AgentSession(clientType, requests = updatedBasket))
+                              .save(
+                                AgentSession(
+                                  clientType,
+                                  requests = updatedBasket,
+                                  clientTypeForInvitationSent = clientType))
                               .flatMap { _ =>
                                 clientType match {
                                   case Some("personal") =>
@@ -249,23 +253,28 @@ class AgentsInvitationController @Inject()(
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       agentSessionCache.get.flatMap { session =>
-        val clientType = session.clientType.getOrElse(throw new IllegalStateException("no client type found in cache"))
+        val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
+          throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
-        invitationsService.createAgentLink(arn, clientType).flatMap { agentLink =>
+        invitationsService.createAgentLink(arn, clientTypeForInvitationSent).flatMap { agentLink =>
           val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          //clear every thing in the cache except clientType and continueUrl , as these needed in-case user refreshes the page
-          agentSessionCache.save(AgentSession(clientType = Some(clientType), continueUrl = session.continueUrl)).map {
-            _ =>
+          //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
+          agentSessionCache
+            .save(
+              AgentSession(
+                clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
+                continueUrl = session.continueUrl))
+            .map { _ =>
               Ok(
                 invitation_sent(
                   InvitationSentPageConfig(
                     invitationUrl,
                     continueUrlExists,
                     featureFlags.enableTrackRequests,
-                    clientType,
+                    clientTypeForInvitationSent,
                     inferredExpiryDate)))
-          }
+            }
         }
       }
     }

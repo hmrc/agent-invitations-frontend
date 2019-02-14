@@ -62,7 +62,6 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testAgentSessionCache.clear()
-    testAgentSessionCache.clear()
   }
 
   "GET /agents/invitation-sent" should {
@@ -72,7 +71,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
       testAgentSessionCache.save(
-        AgentSession(Some("personal"), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url)))
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -88,13 +87,13 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal, continueUrl = Some(continueUrl.url))
+      await(testAgentSessionCache.get) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal)
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, "personal")
       testAgentSessionCache.save(
-        AgentSession(Some("personal"), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode)))
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), clientTypeForInvitationSent = personal))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -108,6 +107,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       verifyAuthoriseAttempt()
+      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = personal)
     }
 
   }
