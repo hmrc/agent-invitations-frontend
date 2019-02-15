@@ -3,8 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, ContinueUrlCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
+import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -49,9 +49,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
-      bind(classOf[ContinueUrlCache]).toInstance(testContinueUrlKeyStoreCache)
-      bind(classOf[AgentMultiAuthorisationJourneyStateCache]).toInstance(testAgentMultiAuthorisationJourneyStateCache)
+      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
     }
   }
 
@@ -63,9 +61,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testCurrentAuthorisationRequestCache.clear()
-    testContinueUrlKeyStoreCache.clear()
-    testAgentMultiAuthorisationJourneyStateCache.clear()
+    testAgentSessionCache.clear()
   }
 
   "GET /agents/invitation-sent" should {
@@ -74,9 +70,8 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
-      testContinueUrlKeyStoreCache.save(continueUrl)
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+      testAgentSessionCache.save(
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -92,13 +87,13 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(testContinueUrlKeyStoreCache.fetch).get shouldBe continueUrl
+      await(testAgentSessionCache.get) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal)
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, "personal")
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+      testAgentSessionCache.save(
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), clientTypeForInvitationSent = personal))
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -112,7 +107,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       verifyAuthoriseAttempt()
-      await(testContinueUrlKeyStoreCache.fetch) shouldBe None
+      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = personal)
     }
 
   }

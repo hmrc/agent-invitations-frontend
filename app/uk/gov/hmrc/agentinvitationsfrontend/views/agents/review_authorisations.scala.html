@@ -30,10 +30,10 @@
     <h1 class="heading-xlarge margin-bottom-40">@Messages("review-authorisations.heading")</h1>
 
     <p class="margin-bottom-30">
-    @if(config.authorisationRequests.requests.size == 1) {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.requests.size} authorisation request")
+    @if(config.agentSession.requests.size == 1) {
+        @Messages("review-authorisations.p", s"${config.agentSession.requests.size} authorisation request")
     } else {
-        @Messages("review-authorisations.p", s"${config.authorisationRequests.requests.size} authorisation requests")
+        @Messages("review-authorisations.p", s"${config.agentSession.requests.size} authorisation requests")
     }
     </p>
 
@@ -42,7 +42,7 @@
   }
 
     <dl class="govuk-check-your-answers cya-questions-long">
-    @for(authorisationRequest <- config.authorisationRequests.requests) {
+    @for(authorisationRequest <- config.agentSession.requests) {
         <div>
             <dt class="bold">
             @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))

@@ -6,7 +6,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -57,7 +57,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit =
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
+      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
   }
 
   lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]

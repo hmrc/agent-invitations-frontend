@@ -1,5 +1,0 @@
-package uk.gov.hmrc.agentinvitationsfrontend.support
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentMultiAuthorisationJourneyStateCache
-
-class TestAgentMultiAuthorisationJourneyStateCache extends AgentMultiAuthorisationJourneyStateCache with TestCache[AgentMultiAuthorisationJourneyState]

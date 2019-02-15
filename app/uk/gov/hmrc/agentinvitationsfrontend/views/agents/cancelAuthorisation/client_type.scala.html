@@ -21,7 +21,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
-@(agentForm: Form[String], clientTypes: Seq[(String, String)])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+@(agentForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -37,7 +38,7 @@
 
         @input_radio_group(
             agentForm("clientType"),
-            clientTypes,
+            config.clientTypes,
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>""" +
                 """<p>""" + Messages("cancel-authorisation.client-type.p1") + """</p> """),
             '_groupDivClass -> "form-group soft--ends margin-bottom-10",

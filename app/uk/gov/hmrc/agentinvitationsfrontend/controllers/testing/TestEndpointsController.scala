@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
-import com.google.inject.Provider
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
@@ -26,21 +25,21 @@ import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
-import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
+import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   pirRelationshipConnector: PirRelationshipConnector,
-  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  agentSessionCache: AgentSessionCache,
   val authConnector: AuthConnector,
   val env: Environment,
   val withVerifiedPasscode: PasscodeVerification)(
@@ -118,7 +117,7 @@ object TestEndpointsController {
       }))
   }
 
-  val testCurrentAuthorisationRequestForm: Form[CurrentAuthorisationRequest] = {
+  val testCurrentAuthorisationRequestForm: Form[AgentFastTrackRequest] = {
     Form(
       mapping(
         "clientType"           -> optional(text),
@@ -127,7 +126,7 @@ object TestEndpointsController {
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        CurrentAuthorisationRequest(clientType, service, clientIdType, clientId, knownFact)
+        AgentFastTrackRequest(clientType, service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
         Some(
           (

@@ -60,7 +60,6 @@ class AgentsRequestTrackingController @Inject()(
   val invitationsConnector: InvitationsConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
-  val support: AgentInvitationControllerSupport,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
   @Named("agent-invitations-frontend.external-url") externalUrl: String)(
   implicit val externalUrls: ExternalUrls,

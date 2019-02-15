@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Json, OFormat}
+sealed trait ClientType
 
-case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
+case object Personal extends ClientType
 
-object AgentMultiAuthorisationJourneyState {
-  implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
-}
+case object Business extends ClientType
