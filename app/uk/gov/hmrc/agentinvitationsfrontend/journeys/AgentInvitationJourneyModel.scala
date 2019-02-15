@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Business, ClientType, Personal}
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -26,15 +26,20 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   def unknownState: Error = Errors.UnknownState
   def errorFor(ex: Exception): Error = Errors.GenericError(ex)
+  def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error =
+    Errors.TransitionNotAllowed(state, breadcrumbs, transition)
 
   object Errors {
     case object UnknownState extends Error
+    case class TransitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition) extends Error
     case class GenericError(ex: Exception) extends Error
   }
 
   object States {
     case object Start extends State
     case object SelectClientType extends State
+    case object SelectPersonalService extends State
+    case object SelectBusinessService extends State
     case class SelectService(clientType: ClientType) extends State
   }
 
@@ -43,6 +48,18 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     val startJourney = Transition {
       case _ => goto(Start)
+    }
+
+    def showSelectClientType(agent: AuthorisedAgent) = Transition {
+      case _ => goto(SelectClientType)
+    }
+
+    def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
+      case SelectClientType =>
+        clientType match {
+          case Personal => goto(SelectPersonalService)
+          case Business => goto(SelectBusinessService)
+        }
     }
 
   }

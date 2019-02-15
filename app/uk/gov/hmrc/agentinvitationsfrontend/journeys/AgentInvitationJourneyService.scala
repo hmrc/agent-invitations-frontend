@@ -33,16 +33,18 @@ trait AgentInvitationJourneyService extends PersistentJourneyService {
 class KeystoreCachedAgentInvitationJourneyService @Inject()(session: SessionCache)
     extends AgentInvitationJourneyService {
 
-  import model.State
-
   val id = "agent-invitation-journey"
 
-  implicit val formats: Format[model.State] = AgentInvitationJourneyStateFormats.formats
+  case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
-  protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[State]] =
-    session.fetchAndGetEntry[State](id)
+  implicit val formats1: Format[model.State] = AgentInvitationJourneyStateFormats.formats
+  implicit val formats2: Format[PersistentState] = Json.format[PersistentState]
 
-  protected def save(agentAuthorisationInput: State)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[State] =
-    session.cache(id, agentAuthorisationInput).map(_ => agentAuthorisationInput)
+  protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
+    session.fetchAndGetEntry[PersistentState](id).map(_.map(ps => (ps.state, ps.breadcrumbs)))
+
+  protected def save(
+    state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
+    session.cache(id, PersistentState(state._1, state._2)).map(_ => state)
 
 }

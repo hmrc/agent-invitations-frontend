@@ -20,6 +20,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(SelectClientType) shouldBe Json.obj("state" -> "SelectClientType")
         Json.parse("""{"state":"SelectClientType"}""").as[State] shouldBe SelectClientType
       }
+      "SelectPersonalService" in {
+        Json.toJson(SelectPersonalService) shouldBe Json.obj("state" -> "SelectPersonalService")
+        Json.parse("""{"state":"SelectPersonalService"}""").as[State] shouldBe SelectPersonalService
+      }
+      "SelectBusinessService" in {
+        Json.toJson(SelectBusinessService) shouldBe Json.obj("state" -> "SelectBusinessService")
+        Json.parse("""{"state":"SelectBusinessService"}""").as[State] shouldBe SelectBusinessService
+      }
       "SelectService" in {
         Json.toJson(SelectService(Personal)) shouldBe Json
           .obj("state" -> "SelectService", "properties" -> Json.obj("clientType" -> "Personal"))

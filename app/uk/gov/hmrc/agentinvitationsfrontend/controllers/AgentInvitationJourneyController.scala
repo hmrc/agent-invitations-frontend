@@ -18,19 +18,19 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.single
-import play.api.i18n.I18nSupport
-import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class AgentInvitationJourneyController @Inject()(
@@ -49,36 +49,56 @@ class AgentInvitationJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends BaseJourneyController(journeyService) with I18nSupport with AuthActions {
+    extends JourneyController {
 
   import AgentInvitationJourneyController._
   import journeyService.model.States._
   import journeyService.model.{Error, Errors, State, Transitions}
 
-  /* Here we decide how to turn HTTP request into transition of the current state */
-  val agentsRoot: Action[AnyContent] = simpleAction(Transitions.startJourney)
+  /* Here we decide how to handle HTTP request and transition the state of the journey */
+  val agentsRoot = simpleAction(Transitions.startJourney)
+  val showClientType = authorisedAgentAction(Transitions.showSelectClientType)
+  val submitClientType =
+    authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)(
+      SelectClientTypeFormValidationFailed)
 
-  /* Here we handle unexpected transition errors */
-  override def handleError(error: Error)(implicit request: Request[_]): Future[Result] = error match {
-    case Errors.UnknownState     => Future.successful(Redirect(routes.AgentsInvitationController.agentsRoot()))
-    case Errors.GenericError(ex) => Future.failed(throw ex)
+  /* Here we handle errors thrown during state transition */
+  override def handleError(error: Error): Route = { implicit request =>
+    error match {
+      case Errors.UnknownState => Redirect(routes.AgentsInvitationController.agentsRoot())
+      case Errors.TransitionNotAllowed(origin, breadcrumbs, _) =>
+        renderState(origin, breadcrumbs)(request) // renders current state back
+      case Errors.GenericError(ex) => throw ex //delegates to the global ErrorHandler
+    }
   }
 
-  /* Here we decide how to render our current state */
-  override def renderState(state: State)(implicit request: Request[_]): Result = state match {
+  /* Here we decide how to render or where to redirect after state transition */
+  override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
+    state match {
+      case Start => Redirect(routes.AgentsInvitationController.showClientType())
+      case SelectClientType =>
+        Ok(client_type(null /*SelectClientTypeForm*/, ClientTypePageConfig(Some("TBC")))) //FIXME change client_type to use Form[ClientType]
+    }
+  }
 
-    case Start            => Redirect(routes.AgentsInvitationController.showClientType())
-    case SelectClientType => Ok(client_type(SelectClientTypeForm, null, null, null))
+  /* Here we handle form validation errors */
+  override def handleFormValidationError(error: FormValidationError): Route = { implicit request =>
+    error match {
+      case SelectClientTypeFormValidationFailed(form) =>
+        Ok(client_type(null /*form*/, ClientTypePageConfig(Some("TBC")))) //FIXME change client_type to use Form[ClientType]
+    }
   }
 
 }
 
 object AgentInvitationJourneyController {
 
-  val SelectClientTypeForm = Form(
+  val SelectClientTypeForm: Form[ClientType] = Form(
     single(
       "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    )
+    ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
+
+  case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
 
 }

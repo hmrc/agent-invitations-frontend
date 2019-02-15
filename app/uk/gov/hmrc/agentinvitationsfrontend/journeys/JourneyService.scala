@@ -26,33 +26,44 @@ trait JourneyService {
 
   val model: JourneyModel
 
+  type StateAndBreadcrumbs = (model.State, List[model.State])
+
   /**
     * Applies transition to the current state and returns new state or error.
     */
   def apply(transition: model.Transition)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Either[model.Error, model.State]]
+    ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]]
 
 }
 
 trait PersistentJourneyService extends JourneyService {
 
-  protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[model.State]]
-  protected def save(state: model.State)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[model.State]
+  protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]]
+  protected def save(
+    state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs]
 
   override def apply(transition: model.Transition)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Either[model.Error, model.State]] =
+    ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]] =
     for {
       initialState <- fetch
       endStateOrError <- initialState match {
-                          case Some(state) =>
-                            transition.apply(state) flatMap {
-                              case Right(endState) => save(endState).map(Right.apply)
-                              case Left(error)     => model.fail(error)
-                            }
-                          case None => model.fail(model.unknownState)
+                          case Some((state, breadcrumbs)) =>
+                            if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap {
+                              case Right(endState) =>
+                                save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs)).map(x =>
+                                  Right.apply(x))
+                              case Left(error) => model.fail(error).map(repack)
+                            } else
+                              model.fail(model.transitionNotAllowed(state, breadcrumbs, transition)).map(repack)
+                          case None => model.fail(model.unknownState).map(repack)
                         }
     } yield endStateOrError
+
+  private def repack(either: Either[model.Error, model.State]): Either[model.Error, StateAndBreadcrumbs] =
+    either match {
+      case Left(e) => Left(e)
+    }
 
 }
