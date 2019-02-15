@@ -427,4 +427,20 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       )
     }
   }
+
+  "GET /response-failed" should {
+
+    "display the page correctly" in {
+      val request = FakeRequest("GET", "/agents/cancel-authorisation/response-failed")
+      val result = controller.responseFailed()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result,
+        "cancel-authorisation.response-failed.header",
+        "cancel-authorisation.response-failed.description",
+        "cancel-authorisation.response-failed.advice",
+        "cancel-authorisation.response-failed.tryAgain"
+      )
+    }
+  }
 }
