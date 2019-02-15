@@ -67,16 +67,16 @@
         }
 
         @featureSwitchOn() {
-            @Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("identify-client.header") + """</h1>""")
+            @Html("""<h1 class="heading-xlarge margin-bottom-10">""" + Messages("identify-client.header") + """</h1>""")
 
-            <p>@Messages("identify-client.itsa.p1")</p>
+            <p class="hint-text">@Messages("identify-client.itsa.p1")</p>
 
             <div class="form-group">
             @input(
                 agentInvitationsForm("clientIdentifier"),
                 '_label -> Messages("identify-client.nino.label"),
                 '_inputClass -> "form-control",
-                '_labelTextClass -> "form-label-bold",
+                '_labelTextClass -> "form-label",
                 '_inputHint -> Html("""<span>""" + Messages("identify-client.nino.hint") + """</span>"""),
                 '_labelClass -> "soft--ends"
             )
@@ -86,7 +86,7 @@
             @dateFieldsFreeInlineLegend(agentInvitationsForm, "dob",
                 '_legend -> Messages("identify-client.irv-date-of-birth.label"),
                 '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
-                '_legendSpanClass -> "form-label-bold",
+                '_legendSpanClass -> "form-label",
                 '_legendClass -> "flush--ends"
             )
             </div>

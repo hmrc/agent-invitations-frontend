@@ -181,3 +181,17 @@ fieldset .div-underline:last-child{
     border: 0 !important;
     white-space: nowrap !important;
 }
+
+.hint-text {
+    color: #6f777b;
+}
+
+#confirmDecline h2 {
+    margin-top: 30px;
+}
+
+.govuk-radios--inline .multiple-choice {
+    float: left;
+    clear: none;
+    margin-right: 20px;
+}
