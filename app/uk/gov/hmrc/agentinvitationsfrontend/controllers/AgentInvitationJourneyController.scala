@@ -18,8 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.single
-import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, Call, Result}
+import play.api.i18n.I18nSupport
+import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -51,23 +51,24 @@ class AgentInvitationJourneyController @Inject()(
   ec: ExecutionContext)
     extends BaseJourneyController(journeyService) with I18nSupport with AuthActions {
 
-  import journeyService.model.{Error, Errors, State, States, Transitions}
   import AgentInvitationJourneyController._
+  import journeyService.model.States._
+  import journeyService.model.{Error, Errors, State, Transitions}
 
+  /* Here we decide how to turn HTTP request into transition of the current state */
   val agentsRoot: Action[AnyContent] = simpleAction(Transitions.startJourney)
 
-  override val handleError: Error => Future[Result] = {
-    case Errors.UnknownState     => Future.successful(Redirect(routes.AgentsInvitationController.showClientType())) //FIXME
+  /* Here we handle unexpected transition errors */
+  override def handleError(error: Error)(implicit request: Request[_]): Future[Result] = error match {
+    case Errors.UnknownState     => Future.successful(Redirect(routes.AgentsInvitationController.agentsRoot()))
     case Errors.GenericError(ex) => Future.failed(throw ex)
   }
 
-  import States._
+  /* Here we decide how to render our current state */
+  override def renderState(state: State)(implicit request: Request[_]): Result = state match {
 
-  override val renderState: State => Result = {
-
-    case Start => Redirect(routes.AgentsInvitationController.showClientType())
-    case SelectClientType =>
-      ??? //Ok(client_type(SelectClientTypeForm, clientTypes, agentServicesAccountUrl, backLinkUrl))
+    case Start            => Redirect(routes.AgentsInvitationController.showClientType())
+    case SelectClientType => Ok(client_type(SelectClientTypeForm, null, null, null))
   }
 
 }
