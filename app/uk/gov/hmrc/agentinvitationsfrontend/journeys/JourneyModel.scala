@@ -33,7 +33,11 @@ trait JourneyModel {
     def apply(rules: PartialFunction[State, Future[Either[Error, State]]]): Transition = new Transition(rules)
   }
 
+  /** Where your journey starts by default */
   def root: State
+
+  /** Converts or wraps exception thrown during transition into an Error */
+  def errorFor(ex: Exception): Error
 
   final def goto(state: State): Future[Either[Error, State]] = Future.successful(Right(state))
 

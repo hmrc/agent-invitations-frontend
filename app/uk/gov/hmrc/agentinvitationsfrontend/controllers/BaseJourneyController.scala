@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,13 +17,19 @@ abstract class BaseJourneyController(val journeyService: JourneyService)(implici
 
   protected final def simpleAction(transition: Transition): Action[AnyContent] =
     Action.async { implicit request =>
-      journeyService
-        .apply(transition)
-        .flatMap(
-          _.fold(
-            handleError,
-            state => Future.successful(renderState(state))
-          ))
+      apply(transition)
     }
+
+  protected final def apply(transition: Transition)(implicit hc: HeaderCarrier): Future[Result] =
+    journeyService
+      .apply(transition)
+      .recover {
+        case e: Exception => Left(journeyService.model.errorFor(e))
+      }
+      .flatMap(
+        _.fold(
+          handleError,
+          state => Future.successful(renderState(state))
+        ))
 
 }
