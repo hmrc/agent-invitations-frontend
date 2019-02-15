@@ -23,11 +23,11 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.response-failed.header"), ""))) {
 
-<h1 id="notMatchedHeader" class="heading-large">@Messages("cancel-authorisation.response-failed.header")</h1>
+<h1 id="responseFailedHeader" class="heading-large">@Messages("cancel-authorisation.response-failed.header")</h1>
 
-<p id="notMatched">@Messages("cancel-authorisation.response-failed.description")</p>
+<p id="responseFailed">@Messages("cancel-authorisation.response-failed.description")</p>
 
-<p id="notMatchedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
+<p id="responseFailedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
 
 <a id="showClientTypeButton" href="@routes.AgentLedDeAuthController.showClientType()" class="button">@Messages("cancel-authorisation.response-failed.tryAgain")</a>
 
