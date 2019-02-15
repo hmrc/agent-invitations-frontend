@@ -20,11 +20,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[String], clientTypes: Seq[(String, String)], agentServicesAccountUrl: String, bankLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+
+@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@agentServicesCall = @{s"${externalUrls.agentServicesAccountUrl}/agent-services-account"}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(bankLinkUrl)
+    @back_link(config.backLinkUrl.getOrElse(agentServicesCall))
 
     @if(agentInvitationsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))
@@ -36,7 +40,7 @@
 
         @input_radio_group(
             agentInvitationsForm("clientType"),
-            clientTypes,
+            config.clientTypes,
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("client-type.header") + """</h1>""" +
                 """<p>""" + Messages("client-type.p1") + """</p> """),
             '_groupDivClass -> "form-group soft--ends margin-bottom-10",
