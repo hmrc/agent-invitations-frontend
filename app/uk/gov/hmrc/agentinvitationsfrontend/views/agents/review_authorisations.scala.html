@@ -27,9 +27,9 @@
 
     @back_link(backLinkUrl)
 
-    <h1 class ="heading-xlarge">@Messages("review-authorisations.heading")</h1>
+    <h1 class="heading-xlarge margin-bottom-40">@Messages("review-authorisations.heading")</h1>
 
-    <p>
+    <p class="margin-bottom-30">
     @if(config.authorisationRequests.requests.size == 1) {
         @Messages("review-authorisations.p", s"${config.authorisationRequests.requests.size} authorisation request")
     } else {

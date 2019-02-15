@@ -32,7 +32,7 @@
 
 @itsaTerms = {
 
-<span class="checkbox-heading">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</span>
+<span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</span>
 <ul class="list list-bullet">
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
@@ -40,7 +40,7 @@
 }
 
 @pirTerms = {
-    <span class="checkbox-heading">@Messages("confirm-terms-multi.pir.p1", pageConfig.agencyName)</span>
+    <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.pir.p1", pageConfig.agencyName)</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.pir.list.item1")</li>
         <li>@Messages("confirm-terms-multi.pir.list.item2")</li>
@@ -50,7 +50,7 @@
 }
 
 @vatTerms = {
-    <span class="checkbox-heading">@Messages("confirm-terms-multi.vat.p1", pageConfig.agencyName)</span>
+    <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.vat.p1", pageConfig.agencyName)</span>
     <ul class="list list-bullet">
         <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
@@ -95,7 +95,7 @@
 
                     @if(pageConfig.isPending(consent)) {
 
-                        <h2 class = "margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
+                        <h2 class="margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                             @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
