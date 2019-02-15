@@ -57,7 +57,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val timeout = 2.seconds
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
-      await(testAgentSessionCache.fetch).get shouldBe AgentSession(personal)
+      await(testAgentSessionCache.fetch).get shouldBe AgentSession(personal, clientTypeForInvitationSent = personal)
     }
   }
 
@@ -156,7 +156,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display correct identify client page based on selected service" in {
 
-      Services.supportedServicesForCancelAuthorisation.foreach { service =>
+      Services.supportedServices.foreach { service =>
         testAgentSessionCache.save(AgentSession(personal, Some(service)))
         val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 200

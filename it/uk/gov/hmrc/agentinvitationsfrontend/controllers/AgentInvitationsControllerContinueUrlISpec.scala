@@ -23,7 +23,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("/someITSA/Url")
       testAgentSessionCache.save(
-        AgentSession(Some("personal"), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("/someITSA/Url")))
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("/someITSA/Url"), clientTypeForInvitationSent = personal))
 
       val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
@@ -49,14 +49,14 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      await(testAgentSessionCache.get) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal)
     }
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
       givenAgentReference(arn, uid, "personal")
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
       testAgentSessionCache.save(
-        AgentSession(Some("personal"), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("http://localhost:9996/tax-history/select-client")))
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("http://localhost:9996/tax-history/select-client"), clientTypeForInvitationSent = personal))
 
       val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> personal.get), arn.value))
 
@@ -82,13 +82,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      await(testAgentSessionCache.get) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = personal)
     }
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
       givenAgentReference(arn, uid, "business")
       val continueUrl = ContinueUrl("/someVat/Url")
-      testAgentSessionCache.save(AgentSession(Some("business"), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url)))
+      testAgentSessionCache.save(AgentSession(business, Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = business))
 
       val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> business.get), arn.value))
 
@@ -114,7 +114,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(business)
+      await(testAgentSessionCache.get) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = business)
     }
 
   }

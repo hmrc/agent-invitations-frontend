@@ -192,7 +192,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
       givenAgentReference(arn, uid, "personal")
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), clientTypeForInvitationSent = personal))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -215,8 +215,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
-      //check if we have cleared everything in cache except clientType
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      //check if we have cleared everything in cache except clientTypeForInvitationsSent
+      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = personal)
 
       verifyAuthoriseAttempt()
     }

@@ -16,21 +16,18 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Format, Json}
+sealed trait ServiceType {
+  val value: String
+}
 
-case class AgentSession(
-  clientType: Option[String] = None,
-  service: Option[String] = None,
-  clientIdentifierType: Option[String] = None,
-  clientIdentifier: Option[String] = None,
-  knownFact: Option[String] = None,
-  continueUrl: Option[String] = None,
-  errorUrl: Option[String] = None,
-  fromFastTrack: Boolean = false,
-  isDeAuthJourney: Boolean = false,
-  requests: Set[AuthorisationRequest] = Set.empty,
-  clientTypeForInvitationSent: Option[String] = None)
+case object HmrcMtdIt extends ServiceType {
+  override val value: String = "HMRC-MTD-IT"
+}
 
-object AgentSession {
-  implicit val format: Format[AgentSession] = Json.format[AgentSession]
+case object HmrcPir extends ServiceType {
+  override val value: String = "PERSONAL-INCOME-RECORD"
+}
+
+case object HmrcMtdVat extends ServiceType {
+  override val value: String = "HMRC-MTD-VAT"
 }
