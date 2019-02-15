@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -55,10 +56,6 @@ abstract class BaseInvitationController(
   messages: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
-
-  val personalOption = Seq("personal" -> Messages("client-type.personal"))
-  val businessOption = Seq("business" -> Messages("client-type.business"))
-  val clientTypes = personalOption ++ businessOption
 
   val personalIncomeRecord =
     if (featureFlags.showPersonalIncome)
@@ -695,7 +692,7 @@ abstract class BaseInvitationController(
 
   def clientTypePage(form: Form[String] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
     implicit request: Request[_]): Appendable =
-    client_type(form, clientTypes, agentServicesAccountUrl, backLinkUrl)
+    client_type(form, ClientTypePageConfig(Some(backLinkUrl)))
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 

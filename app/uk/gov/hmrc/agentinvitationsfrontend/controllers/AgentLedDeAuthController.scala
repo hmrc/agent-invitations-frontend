@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.Form
 import play.api.mvc._
 import play.api.{Configuration, Logger}
@@ -31,6 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDV
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -242,7 +244,7 @@ class AgentLedDeAuthController @Inject()(
 
   override def clientTypePage(form: Form[String], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
-    cancelAuthorisation.client_type(form, clientTypes)
+    cancelAuthorisation.client_type(form, ClientTypePageConfig(None))
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
