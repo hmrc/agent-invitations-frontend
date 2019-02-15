@@ -459,7 +459,7 @@ abstract class BaseInvitationController(
 
           case Some(false) =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
-            Redirect(routes.AgentsErrorController.notMatched())
+            Redirect(notMatchedCall)
           case None =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
             Redirect(routes.AgentsInvitationController.notSignedUp())
@@ -503,7 +503,7 @@ abstract class BaseInvitationController(
                          "",
                          "Fail",
                          Some("POSTCODE_DOES_NOT_MATCH"))
-                       toFuture(Redirect(routes.AgentsErrorController.notMatched()))
+                       toFuture(Redirect(notMatchedCall))
                      case None =>
                        Logger(getClass).warn(
                          s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
@@ -552,15 +552,15 @@ abstract class BaseInvitationController(
                 }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(notMatchedCall)
               case None =>
                 Logger(getClass).warn(
                   s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(notMatchedCall)
             }
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
-          Redirect(routes.AgentsErrorController.notMatched())
+          Redirect(notMatchedCall)
       }
     } else {
       redirectOrShowConfirmClient(agentSession, featureFlags) {
@@ -713,6 +713,8 @@ abstract class BaseInvitationController(
   def submitIdentifyClientCall: Call = routes.AgentsInvitationController.submitIdentifyClient()
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
+
+  def notMatchedCall: Call = routes.AgentsErrorController.notMatched()
 
   def showConfirmClientPage(name: Option[String], backLinkUrl: String)(implicit request: Request[_]): Appendable =
     confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)

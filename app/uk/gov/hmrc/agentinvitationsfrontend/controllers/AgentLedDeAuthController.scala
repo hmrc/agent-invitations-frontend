@@ -240,6 +240,12 @@ class AgentLedDeAuthController @Inject()(
       }
     }
 
+  def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.no_client_found())
+    })
+  }
+
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
   override def clientTypePage(form: Form[String], backLinkUrl: String)(
@@ -267,6 +273,8 @@ class AgentLedDeAuthController @Inject()(
   override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
+
+  override def notMatchedCall: Call = routes.AgentLedDeAuthController.noClientFound()
 
   override def showConfirmClientPage(name: Option[String], backLinkUrl: String)(
     implicit request: Request[_]): Appendable =

@@ -411,4 +411,20 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, "My Agency is no longer authorised by Some Client Company to report their income or expenses through software.")
     }
   }
+
+  "GET /no-client-found" should {
+
+    "display the page correctly" in {
+      val request = FakeRequest("GET", "/agents/cancel-authorisation/no-client-found")
+      val result = controller.noClientFound()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result,
+        "cancel-authorisation.not-matched.header",
+        "cancel-authorisation.not-matched.description",
+        "cancel-authorisation.not-matched.advice",
+        "cancel-authorisation.start-over.button"
+      )
+    }
+  }
 }

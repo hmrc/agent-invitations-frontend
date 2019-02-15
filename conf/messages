@@ -181,6 +181,10 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+cancel-authorisation.not-matched.header=There is a problem
+cancel-authorisation.not-matched.description=We could not find any clients matching these details.
+cancel-authorisation.not-matched.advice=Check the details and try again.
+cancel-authorisation.start-over.button=Start over
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
