@@ -62,6 +62,7 @@ class AgentLedDeAuthController @Inject()(
       invitationsConnector,
       relationshipsService,
       agentSessionCache,
+      relationshipsConnector,
       auditService
     ) {
 
@@ -109,12 +110,14 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def submitConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (_, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
+          val service = cache.service.getOrElse("")
+          val clientId = cache.clientIdentifier.getOrElse("")
           //TODO: Fix this , its a duplicated call to getClientNameByService, we could cache the clientName instead of calling the endpoint twice
           invitationsService
-            .getClientNameByService(cache.clientIdentifier.getOrElse(""), cache.service.getOrElse(""))
+            .getClientNameByService(clientId, service)
             .flatMap {
               name =>
                 val clientName = name.getOrElse("")
@@ -125,7 +128,10 @@ class AgentLedDeAuthController @Inject()(
                       Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
                     data => {
                       if (data.choice) {
-                        Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+                        checkRelationshipExistsForService(arn, service, clientId).map {
+                          case true  => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+                          case false => Redirect(routes.AgentsErrorController.notAuthorised())
+                        }
                       } else {
                         Redirect(agentsLedDeAuthRootUrl)
                       }
@@ -212,6 +218,19 @@ class AgentLedDeAuthController @Inject()(
       }
     })
   }
+
+//  def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(
+//    implicit hc: HeaderCarrier): Future[Boolean] =
+//    service match {
+//      case HMRCMTDIT => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
+//      case HMRCPIR => {
+//        relationshipsService.checkPirRelationship(arn, Nino(clientId))
+//      }
+//      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
+//      case e => {
+//        throw new Error(s"Unsupported service for checking relationship: $e")
+//      }
+//    }
 
   private def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
     service match {

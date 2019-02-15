@@ -182,6 +182,12 @@ cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
 
+#Not authorisation to de-auth
+not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to report their income and expenses through software.
+not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
+not-authorised.HMRC-MTD-VAT.p=This business has not authorised you to report their VAT Returns through software.
+not-authorised.button=Start over
+
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
 delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to report their income and expenses through software.

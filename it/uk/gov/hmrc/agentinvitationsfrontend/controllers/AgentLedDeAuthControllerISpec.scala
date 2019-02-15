@@ -297,7 +297,9 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "user selects Yes and clicks Continue" should {
 
-      "show /cancel-authorisation/confirm-cancel page as expected" in {
+      "redirect to /cancel-authorisation/confirm-cancel page as expected" in {
+        givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
+        givenTradingName(validNino, "My Trading Name")
         testAgentSessionCache.save(
           AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
@@ -308,6 +310,21 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmCancel().url)
+      }
+
+      "redirect to /not-authorised when there is no relationship to de-authorise" in {
+        givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
+        givenTradingName(validNino, "My Trading Name")
+        testAgentSessionCache.save(
+          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+
+        val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+        val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
+
+        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.notAuthorised().url)
       }
     }
 
