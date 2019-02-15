@@ -11,10 +11,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
   "AgentsInvitationJourneyFormats" should {
     "serialize and deserialize state" when {
-      "UnknownState" in {
-        Json.toJson(UnknownState) shouldBe Json.obj("state" -> "UnknownState")
-        Json.parse("""{"state":"UnknownState"}""").as[State] shouldBe UnknownState
-      }
       "Start" in {
         Json.toJson(Start) shouldBe Json.obj("state" -> "Start")
         Json.parse("""{"state":"Start"}""").as[State] shouldBe Start

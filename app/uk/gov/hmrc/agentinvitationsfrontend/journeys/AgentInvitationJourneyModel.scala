@@ -23,11 +23,10 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   def root: State = States.Start
 
+  def unknownState: Error = Errors.UnknownState
   def errorFor(ex: Exception): Error = Errors.GenericError(ex)
 
   object States {
-
-    case object UnknownState extends State
     case object Start extends State
     case object SelectClientType extends State
     case class SelectService(clientType: String) extends State
@@ -35,7 +34,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   }
 
   object Errors {
-
+    case object UnknownState extends Error
     case class GenericError(ex: Exception) extends Error
   }
 

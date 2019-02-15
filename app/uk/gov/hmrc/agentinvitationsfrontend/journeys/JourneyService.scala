@@ -35,7 +35,7 @@ trait PersistentJourneyService extends JourneyService {
                               case Right(endState) => save(endState).map(Right.apply)
                               case Left(error)     => Future.successful(Left(error))
                             }
-                          case None => model.goto(model.root)
+                          case None => model.fail(model.unknownState)
                         }
     } yield endStateOrError
 

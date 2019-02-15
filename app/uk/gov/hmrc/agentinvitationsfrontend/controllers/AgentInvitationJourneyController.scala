@@ -31,19 +31,18 @@ class AgentInvitationJourneyController @Inject()(
   ec: ExecutionContext)
     extends BaseJourneyController(journeyService) with I18nSupport with AuthActions {
 
-  import journeyService.model.{Error, State, States, Transitions}
-
-  val agentsRootUrl: Call = routes.AgentsInvitationController.showClientType()
+  import journeyService.model.{Error, Errors, State, States, Transitions}
 
   val agentsRoot: Action[AnyContent] = simpleAction(Transitions.startJourney)
 
   override val handleError: Error => Future[Result] = {
-    case error => Future.failed(throw new Exception(error.toString))
+    case Errors.UnknownState     => Future.successful(Redirect(routes.AgentsInvitationController.showClientType())) //FIXME
+    case Errors.GenericError(ex) => Future.failed(throw ex)
   }
 
   override val renderState: State => Result = {
-    case States.Start => Redirect(agentsRootUrl)
-    case _            => Redirect(agentsRootUrl)
+    case States.Start => Redirect(routes.AgentsInvitationController.showClientType())
+
   }
 
 }

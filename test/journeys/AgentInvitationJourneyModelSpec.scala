@@ -18,8 +18,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec {
 
   "AgentInvitationJourneyService" when {
     "at any state" should {
-      "startJourney and go to Start" in {
-        await(JourneyAt(UnknownState) apply startJourney) shouldBe Right(Start)
+      "after startJourney goes to Start" in {
         await(JourneyAt(Start) apply startJourney) shouldBe Right(Start)
       }
     }
