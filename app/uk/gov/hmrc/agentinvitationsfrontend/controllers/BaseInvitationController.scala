@@ -547,9 +547,6 @@ abstract class BaseInvitationController(
                         createInvitation(arn, pirInvitation)
                       }
                   }
-                redirectOrShowConfirmClient(agentSession, featureFlags) {
-                  createInvitation(arn, pirInvitation)
-                }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
                 Redirect(notMatchedCall)
