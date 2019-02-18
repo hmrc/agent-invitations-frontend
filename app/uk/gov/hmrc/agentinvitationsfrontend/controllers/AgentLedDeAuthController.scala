@@ -180,7 +180,7 @@ class AgentLedDeAuthController @Inject()(
                       deleteRelationshipForService(service, arn, clientId).map {
                         case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
                         case Some(false) => NotFound //TODO: should be fixed in Sprint 36
-                        case _           => InternalServerError //TODO: should be fixed in Sprint 36
+                        case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
                       }
                     } else {
                       Redirect(agentsLedDeAuthRootUrl)
@@ -243,6 +243,12 @@ class AgentLedDeAuthController @Inject()(
   def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
       Ok(cancelAuthorisation.no_client_found())
+    })
+  }
+
+  def responseFailed(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.response_failed())
     })
   }
 

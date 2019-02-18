@@ -185,6 +185,11 @@ cancel-authorisation.not-matched.header=There is a problem
 cancel-authorisation.not-matched.description=We could not find any clients matching these details.
 cancel-authorisation.not-matched.advice=Check the details and try again.
 cancel-authorisation.start-over.button=Start over
+cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
+cancel-authorisation.response-failed.description=You can try again now, or try later.
+cancel-authorisation.response-failed.advice=We may not have saved your responses.
+cancel-authorisation.response-failed.tryAgain=Try again
+
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
