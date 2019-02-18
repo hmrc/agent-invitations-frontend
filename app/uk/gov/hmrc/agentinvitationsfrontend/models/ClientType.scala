@@ -35,17 +35,6 @@ object ClientType {
     case ClientType.business => "business"
   }
 
-  def toEnum: String => ClientType = {
-    case "personal" => Personal
-    case "business" => Business
-    case alien      => throw new Exception(s"Client type $alien not supported")
-  }
-
-  def fromEnum: ClientType => String = {
-    case Personal => "personal"
-    case Business => "business"
-  }
-
   implicit val formats: Format[ClientType] = new EnumFormats[ClientType] {
     override val deserialize: String => ClientType = toEnum
   }.formats

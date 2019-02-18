@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Business, ClientType, Personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -57,8 +57,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType =>
         clientType match {
-          case Personal => goto(SelectPersonalService)
-          case Business => goto(SelectBusinessService)
+          case ClientType.personal => goto(SelectPersonalService)
+          case ClientType.business => goto(SelectBusinessService)
         }
     }
 
