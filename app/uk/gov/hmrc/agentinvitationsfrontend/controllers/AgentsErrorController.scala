@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import com.google.inject.Provider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
@@ -27,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
 import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_matched}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, cannot_create_request, invitation_creation_failed, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -85,6 +84,18 @@ class AgentsErrorController @Inject()(
             journeyStateCacheNonEmpty,
             currentCacheItem.service,
             currentCacheItem.fromFastTrack))
+    }
+  }
+
+  val cannotCreateRequest: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      for {
+        journeyStateCacheNonEmpty <- journeyStateCache.fetch.map {
+                                      case Some(cache) => cache.requests.nonEmpty
+                                      case None        => false
+                                    }
+        currentCacheItem <- currentAuthorisationRequestCache.get
+      } yield Ok(cannot_create_request(journeyStateCacheNonEmpty, currentCacheItem.fromFastTrack))
     }
   }
 

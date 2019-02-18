@@ -224,6 +224,14 @@ all-authorisations-removed.header=Authorisation request removed
 all-authorisations-removed.p=You have removed all of your new authorisation requests.
 new-request.button=Start a new request
 
+#Cannot Create Request
+cannot-create-request.header=You cannot ask this client to authorise you yet
+cannot-create-request.p1=We are processing this client''s sign-up to Making Tax Digital for VAT.
+cannot-create-request.p2=Once this is done, you can ask the client to authorise you for this service.
+cannot-create-request.p3=This may take up to 72 hours, so try again later.
+cannot-create-request.review-auth=Return to your authorisation requests
+cannot-create-request.start-again=Start a new request
+
 #Create authorisation failed
 create-auth-failed.header=Sorry, there is a problem with the service
 create-auth-failed.p1=We could not create the following authorisation {0}.

@@ -456,20 +456,29 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
   }
 
   "Check Vat Registered Client KFC" should {
-    "return Some(true) if DES/ETMP has a matching effectiveRegistrationDate" in {
+    "return Some(204) if DES/ETMP has a matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 204)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(true)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(204)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
-    "return Some(false) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
+    "return Some(403) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 403)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(false)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(403)
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
+    }
+
+    "return Some(423) if DES/ETMP VAT information is under going migration" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 423)
+
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(423)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }

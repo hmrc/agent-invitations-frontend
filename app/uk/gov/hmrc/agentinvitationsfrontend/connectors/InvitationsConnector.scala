@@ -287,12 +287,12 @@ class InvitationsConnector @Inject()(
 
   def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+    ec: ExecutionContext): Future[Option[Int]] =
     monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
-      http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map(_ => Some(true))
+      http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map(_ => Some(204))
     }.recover {
-      case ex: Upstream4xxResponse if ex.upstreamResponseCode == 403 => Some(false)
-      case _: NotFoundException                                      => None
+      case ex: Upstream4xxResponse => Some(ex.upstreamResponseCode)
+      case _: NotFoundException   => None
     }
 
   def checkCitizenRecord(nino: Nino, dob: LocalDate)(

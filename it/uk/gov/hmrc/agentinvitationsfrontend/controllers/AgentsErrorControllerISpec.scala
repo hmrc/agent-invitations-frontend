@@ -293,4 +293,73 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
     }
   }
+
+  "GET /agents/cannot-create-request" should {
+    val request = FakeRequest("GET", "/agents/cannot-create-request")
+
+    "display cannot-create-request page when there are existing authorisation requests in the basket" in {
+      val clientDetail1 =
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          vatInvitation,
+          state = AuthorisationRequest.FAILED)
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), false))
+
+      val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You cannot ask this client to authorise you yet",
+        htmlEscapedMessage("We are processing this client's sign-up to Making Tax Digital for VAT."),
+        "Once this is done, you can ask the client to authorise you for this service.",
+        "This may take up to 72 hours, so try again later.",
+        "Return to your authorisation requests"
+      )
+      checkHtmlResultWithNotBodyText(result, "Start a new request")
+    }
+
+    "display cannot-create-request page when the basket is empty" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), false))
+
+      val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You cannot ask this client to authorise you yet",
+        htmlEscapedMessage("We are processing this client's sign-up to Making Tax Digital for VAT."),
+        "Once this is done, you can ask the client to authorise you for this service.",
+        "This may take up to 72 hours, so try again later.",
+        "Start a new request"
+      )
+      checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
+    }
+
+    "display cannot-create-request page when going through fast-track" in {
+      testAgentMultiAuthorisationJourneyStateCache.save(
+        AgentMultiAuthorisationJourneyState("personal", Set.empty))
+      testCurrentAuthorisationRequestCache.save(
+        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), true))
+
+      val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "You cannot ask this client to authorise you yet",
+        htmlEscapedMessage("We are processing this client's sign-up to Making Tax Digital for VAT."),
+        "Once this is done, you can ask the client to authorise you for this service.",
+        "This may take up to 72 hours, so try again later.",
+        "Start a new request"
+      )
+      checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
+    }
+  }
 }
