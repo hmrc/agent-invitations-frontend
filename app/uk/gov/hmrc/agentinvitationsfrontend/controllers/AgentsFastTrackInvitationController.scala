@@ -148,7 +148,8 @@ class AgentsFastTrackInvitationController @Inject()(
                 clientIdentifierType = Some(fastTrackRequest.clientIdentifierType),
                 clientIdentifier = Some(fastTrackRequest.clientIdentifier),
                 knownFact = fastTrackRequest.knownFact,
-                fromFastTrack = true
+                fromFastTrack = true,
+                clientTypeForInvitationSent = fastTrackRequest.clientType
               )
               agentSessionCache.save(agentSession).flatMap { _ =>
                 withMaybeContinueUrlCached {
