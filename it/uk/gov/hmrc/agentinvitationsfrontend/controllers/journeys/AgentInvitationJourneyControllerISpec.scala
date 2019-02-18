@@ -15,10 +15,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     .overrides(new TestAgentInvitationJourneyModule)
     .build()
 
-  lazy val testJourneyService = app.injector.instanceOf[TestAgentInvitationJourneyService]
+  lazy val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
   lazy val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
 
-  import testJourneyService.model.States._
+  import journeyState.model.States._
 
   "GET /agents" should {
     val request = FakeRequest("GET", "/agents")
@@ -27,15 +27,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
-      testJourneyService.get shouldBe Some((Start, Nil))
+      journeyState.get shouldBe Some((Start, Nil))
     }
 
     "redirect to /agents/client-type" in {
-      testJourneyService.set(Start, Nil)
+      journeyState.set(Start, Nil)
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
-      testJourneyService.get shouldBe Some((Start, Nil))
+      journeyState.get shouldBe Some((Start, Nil))
     }
   }
 
@@ -43,7 +43,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     val request = FakeRequest("GET", "/agents/client-type")
 
     "show the client type page" in {
-      testJourneyService.set(Start, Nil)
+      journeyState.set(Start, Nil)
 
       val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -57,7 +57,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
         htmlEscapedMessage("client-type.header"),
         hasMessage("client-type.p1")
       )
-      testJourneyService.get shouldBe Some((SelectClientType, List(Start)))
+      journeyState.get shouldBe Some((SelectClientType, List(Start)))
     }
   }
 
@@ -65,7 +65,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/client-type")
 
     "redirect to /agents/select-service after selecting personal client type" in {
-      testJourneyService.set(SelectClientType, List(Start))
+      journeyState.set(SelectClientType, List(Start))
 
       val result =
         controller.submitClientType(
@@ -73,11 +73,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      testJourneyService.get shouldBe Some((SelectedClientType(ClientType.personal), List(SelectClientType, Start)))
+      journeyState.get shouldBe Some((SelectedClientType(ClientType.personal), List(SelectClientType, Start)))
     }
 
     "redirect to /agents/select-service after selecting business client type" in {
-      testJourneyService.set(SelectClientType, List(Start))
+      journeyState.set(SelectClientType, List(Start))
 
       val result =
         controller.submitClientType(
@@ -85,7 +85,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      testJourneyService.get shouldBe Some((SelectedClientType(ClientType.business), List(SelectClientType, Start)))
+      journeyState.get shouldBe Some((SelectedClientType(ClientType.business), List(SelectClientType, Start)))
     }
   }
 }

@@ -18,18 +18,19 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
-import play.api.data.Forms.single
-import play.api.mvc.Call
+import play.api.data.Forms.{mapping, optional, single, text}
+import play.api.mvc.{Action, AnyContent, Call}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
 
@@ -65,6 +66,7 @@ class AgentInvitationJourneyController @Inject()(
     authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)(
       SelectClientTypeFormValidationFailed)
   val showSelectService = authorisedAgentAction(Transitions.showSelectService)
+  val submitSelectService = Action(NotImplemented) //authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedClientType)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -78,14 +80,24 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we decide how to render or where to redirect after state transition */
   override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
     state match {
-      case Start => Redirect(getCallFor(SelectClientType))
+      case Start => Redirect(routes.AgentInvitationJourneyController.showClientType())
       case SelectClientType =>
         Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
-      case SelectedClientType(ClientType.personal) => Redirect(getCallFor(SelectPersonalService))
-      case SelectedClientType(ClientType.business) => Redirect(getCallFor(SelectBusinessService))
-      case SelectPersonalService =>
-        Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
-      case SelectBusinessService => ???
+      case SelectedClientType(ClientType.personal) =>
+        Redirect(routes.AgentInvitationJourneyController.showSelectService())
+      case SelectedClientType(ClientType.business) =>
+        Redirect(routes.AgentInvitationJourneyController.showSelectService())
+      case SelectPersonalService(basket, services) =>
+        Ok(select_service(SelectPersonalServiceForm, SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
+      case SelectBusinessService(basket) =>
+        Ok(
+          business_select_service(
+            SelectBusinessServiceForm,
+            BusinessSelectServicePageConfig(
+              basket.nonEmpty,
+              routes.AgentInvitationJourneyController.submitSelectService(),
+              backLinkFor(breadcrumbs))
+          ))
     }
   }
 
@@ -98,15 +110,15 @@ class AgentInvitationJourneyController @Inject()(
       }
   }
 
-  private def getCallFor(state: State): Call = state match {
-    case Start                 => routes.AgentInvitationJourneyController.agentsRoot()
-    case SelectClientType      => routes.AgentInvitationJourneyController.showClientType()
-    case SelectPersonalService => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService => routes.AgentInvitationJourneyController.showSelectService()
+  private def getLinkTo(state: State): Call = state match {
+    case Start                       => routes.AgentInvitationJourneyController.agentsRoot()
+    case SelectClientType            => routes.AgentInvitationJourneyController.showClientType()
+    case SelectPersonalService(_, _) => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService(_)    => routes.AgentInvitationJourneyController.showSelectService()
   }
 
   private def backLinkFor(breadcrumbs: List[State]): Option[String] =
-    breadcrumbs.headOption.map(getCallFor).map(_.url)
+    breadcrumbs.headOption.map(getLinkTo).map(_.url)
 
 }
 
@@ -117,6 +129,20 @@ object AgentInvitationJourneyController {
       "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
     ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
+
+  val SelectPersonalServiceForm: Form[String] = Form(
+    single(
+      "serviceType" -> text.verifying("service.type.invalid", supportedServices.contains _)
+    )
+  )
+
+  val SelectBusinessServiceForm: Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice("error.business-service.required"))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
   case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
 

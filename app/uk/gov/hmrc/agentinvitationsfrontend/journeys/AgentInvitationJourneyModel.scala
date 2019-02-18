@@ -15,7 +15,8 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, AuthorisedAgent, ClientType}
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -33,12 +34,15 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class GenericError(ex: Exception) extends Error
   }
 
+  type Basket = Seq[AuthorisationRequest]
+
+  /* State should contain only minimal set of data required to proceed */
   object States {
     case object Start extends State
     case object SelectClientType extends State
     case class SelectedClientType(clientType: ClientType) extends State
-    case object SelectPersonalService extends State
-    case object SelectBusinessService extends State
+    case class SelectPersonalService(basket: Basket, services: Set[String]) extends State
+    case class SelectBusinessService(basket: Basket) extends State
   }
 
   object Transitions {
@@ -49,7 +53,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {
-      case _ => goto(SelectClientType)
+      case _ => goto(SelectClientType) // clears basket
     }
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
@@ -57,8 +61,12 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def showSelectService(agent: AuthorisedAgent) = Transition {
-      case SelectedClientType(ClientType.personal) => goto(SelectPersonalService)
-      case SelectedClientType(ClientType.business) => goto(SelectBusinessService)
+      case SelectedClientType(ClientType.personal) =>
+        goto(
+          SelectPersonalService(
+            Seq.empty,
+            if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT)))
+      case SelectedClientType(ClientType.business) => goto(SelectBusinessService(Seq.empty))
     }
 
   }

@@ -15,11 +15,12 @@
  */
 
 package journeys
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, JsArray, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
@@ -36,7 +37,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(SelectClientType) shouldBe Json.obj("state" -> "SelectClientType")
         Json.parse("""{"state":"SelectClientType"}""").as[State] shouldBe SelectClientType
       }
-      "SelectService" in {
+      "SelectedClientType" in {
         Json.toJson(SelectedClientType(ClientType.personal)) shouldBe Json
           .obj("state" -> "SelectedClientType", "properties" -> Json.obj("clientType" -> "personal"))
         Json
@@ -47,12 +48,22 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe SelectedClientType(ClientType.business)
       }
       "SelectPersonalService" in {
-        Json.toJson(SelectPersonalService) shouldBe Json.obj("state" -> "SelectPersonalService")
-        Json.parse("""{"state":"SelectPersonalService"}""").as[State] shouldBe SelectPersonalService
+        Json.toJson(SelectPersonalService(Seq.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) shouldBe Json.obj(
+          "state" -> "SelectPersonalService",
+          "properties" -> Json
+            .obj("basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
+        )
+        Json
+          .parse(
+            """{"state":"SelectPersonalService", "properties": {"basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
+          .as[State] shouldBe SelectPersonalService(Seq.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))
       }
       "SelectBusinessService" in {
-        Json.toJson(SelectBusinessService) shouldBe Json.obj("state" -> "SelectBusinessService")
-        Json.parse("""{"state":"SelectBusinessService"}""").as[State] shouldBe SelectBusinessService
+        Json.toJson(SelectBusinessService(Seq.empty)) shouldBe Json
+          .obj("state" -> "SelectBusinessService", "properties" -> Json.obj("basket" -> JsArray()))
+        Json
+          .parse("""{"state":"SelectBusinessService", "properties": {"basket": []}}""")
+          .as[State] shouldBe SelectBusinessService(Seq.empty)
       }
     }
 

@@ -20,6 +20,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -36,7 +37,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec {
     await(save((initialState, Nil)))
   }
 
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
+  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
 
   "AgentInvitationJourneyService" when {
     "at state Start" should {
@@ -61,13 +62,33 @@ class AgentInvitationJourneyModelSpec extends UnitSpec {
         await(JourneyAt(SelectClientType) apply showSelectClientType(authorisedAgent)) shouldBe Right(
           (SelectClientType, Nil))
       }
-      "transition to SelectPersonalService given selectedClientType(Personal)" in {
+      "transition to SelectPersonalService given selectedClientType(personal)" in {
         await(JourneyAt(SelectClientType) apply selectedClientType(authorisedAgent)(ClientType.personal)) shouldBe Right(
-          (SelectPersonalService, List(SelectClientType)))
+          (SelectedClientType(ClientType.personal), List(SelectClientType)))
       }
-      "transition to SelectBusinessService given selectedClientType(Business)" in {
+      "transition to SelectBusinessService given selectedClientType(business)" in {
         await(JourneyAt(SelectClientType) apply selectedClientType(authorisedAgent)(ClientType.business)) shouldBe Right(
-          (SelectBusinessService, List(SelectClientType)))
+          (SelectedClientType(ClientType.business), List(SelectClientType)))
+      }
+    }
+    "at state SelectedClientType" should {
+      "transition to Start given startJourney" in {
+        await(JourneyAt(SelectedClientType(ClientType.business)) apply startJourney) shouldBe Right(
+          (Start, List(SelectedClientType(ClientType.business))))
+      }
+      "transition to SelectClientType given showSelectClientType" in {
+        await(JourneyAt(SelectedClientType(ClientType.business)) apply showSelectClientType(authorisedAgent)) shouldBe Right(
+          (SelectClientType, List(SelectedClientType(ClientType.business))))
+      }
+      "transition to SelectPersonalService with empty basket given showSelectService" in {
+        await(JourneyAt(SelectedClientType(ClientType.personal)) apply showSelectService(authorisedAgent)) shouldBe Right(
+          (
+            SelectPersonalService(Seq.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+            List(SelectedClientType(ClientType.personal))))
+      }
+      "transition to SelectBusinessService with empty basket given SelectedClientType(business)" in {
+        await(JourneyAt(SelectedClientType(ClientType.business)) apply showSelectService(authorisedAgent)) shouldBe Right(
+          (SelectBusinessService(Seq.empty), List(SelectedClientType(ClientType.business))))
       }
     }
   }

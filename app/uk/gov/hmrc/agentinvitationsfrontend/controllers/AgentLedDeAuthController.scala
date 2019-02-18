@@ -287,7 +287,7 @@ class AgentLedDeAuthController @Inject()(
 
   override def submitServiceBusinessCall: Call = routes.AgentLedDeAuthController.submitSelectBusinessService()
 
-  override def selectServicePage(
+  def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Set[String],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
