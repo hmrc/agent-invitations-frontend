@@ -36,6 +36,16 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(SelectClientType) shouldBe Json.obj("state" -> "SelectClientType")
         Json.parse("""{"state":"SelectClientType"}""").as[State] shouldBe SelectClientType
       }
+      "SelectService" in {
+        Json.toJson(SelectedClientType(ClientType.personal)) shouldBe Json
+          .obj("state" -> "SelectedClientType", "properties" -> Json.obj("clientType" -> "personal"))
+        Json
+          .parse("""{"state":"SelectedClientType", "properties": {"clientType": "personal"}}""")
+          .as[State] shouldBe SelectedClientType(ClientType.personal)
+        Json
+          .parse("""{"state":"SelectedClientType", "properties": {"clientType": "business"}}""")
+          .as[State] shouldBe SelectedClientType(ClientType.business)
+      }
       "SelectPersonalService" in {
         Json.toJson(SelectPersonalService) shouldBe Json.obj("state" -> "SelectPersonalService")
         Json.parse("""{"state":"SelectPersonalService"}""").as[State] shouldBe SelectPersonalService
@@ -43,16 +53,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       "SelectBusinessService" in {
         Json.toJson(SelectBusinessService) shouldBe Json.obj("state" -> "SelectBusinessService")
         Json.parse("""{"state":"SelectBusinessService"}""").as[State] shouldBe SelectBusinessService
-      }
-      "SelectService" in {
-        Json.toJson(SelectService(ClientType.personal)) shouldBe Json
-          .obj("state" -> "SelectService", "properties" -> Json.obj("clientType" -> "personal"))
-        Json
-          .parse("""{"state":"SelectService", "properties": {"clientType": "personal"}}""")
-          .as[State] shouldBe SelectService(ClientType.personal)
-        Json
-          .parse("""{"state":"SelectService", "properties": {"clientType": "business"}}""")
-          .as[State] shouldBe SelectService(ClientType.business)
       }
     }
 

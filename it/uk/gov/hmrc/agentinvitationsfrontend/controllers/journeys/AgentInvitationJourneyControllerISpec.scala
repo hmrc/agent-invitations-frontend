@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -56,6 +57,35 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
         htmlEscapedMessage("client-type.header"),
         hasMessage("client-type.p1")
       )
+      testJourneyService.get shouldBe Some((SelectClientType, List(Start)))
+    }
+  }
+
+  "POST /agents/client-type" should {
+    val request = FakeRequest("POST", "/agents/client-type")
+
+    "redirect to /agents/select-service after selecting personal client type" in {
+      testJourneyService.set(SelectClientType, List(Start))
+
+      val result =
+        controller.submitClientType(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      testJourneyService.get shouldBe Some((SelectedClientType(ClientType.personal), List(SelectClientType, Start)))
+    }
+
+    "redirect to /agents/select-service after selecting business client type" in {
+      testJourneyService.set(SelectClientType, List(Start))
+
+      val result =
+        controller.submitClientType(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "business"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      testJourneyService.get shouldBe Some((SelectedClientType(ClientType.business), List(SelectClientType, Start)))
     }
   }
 }

@@ -64,6 +64,7 @@ class AgentInvitationJourneyController @Inject()(
   val submitClientType =
     authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)(
       SelectClientTypeFormValidationFailed)
+  val showSelectService = authorisedAgentAction(Transitions.showSelectService)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -77,9 +78,14 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we decide how to render or where to redirect after state transition */
   override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
     state match {
-      case Start => Redirect(routes.AgentInvitationJourneyController.showClientType())
+      case Start => Redirect(getCallFor(SelectClientType))
       case SelectClientType =>
         Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
+      case SelectedClientType(ClientType.personal) => Redirect(getCallFor(SelectPersonalService))
+      case SelectedClientType(ClientType.business) => Redirect(getCallFor(SelectBusinessService))
+      case SelectPersonalService =>
+        Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
+      case SelectBusinessService => ???
     }
   }
 
@@ -93,10 +99,10 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   private def getCallFor(state: State): Call = state match {
-    case Start            => routes.AgentInvitationJourneyController.agentsRoot()
-    case SelectClientType => routes.AgentInvitationJourneyController.showClientType()
-    //case SelectPersonalService => routes.AgentInvitationJourneyController.showSelectService()
-    //case SelectBusinessService => routes.AgentInvitationJourneyController.showSelectService()
+    case Start                 => routes.AgentInvitationJourneyController.agentsRoot()
+    case SelectClientType      => routes.AgentInvitationJourneyController.showClientType()
+    case SelectPersonalService => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService => routes.AgentInvitationJourneyController.showSelectService()
   }
 
   private def backLinkFor(breadcrumbs: List[State]): Option[String] =

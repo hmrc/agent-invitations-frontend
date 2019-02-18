@@ -21,18 +21,18 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
-  val selectServiceFormat = Json.format[SelectService]
+  val selectedClientType = Json.format[SelectedClientType]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: SelectService => selectServiceFormat.writes(s)
+    case s: SelectedClientType => selectedClientType.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "Start"                 => JsSuccess(Start)
     case "SelectClientType"      => JsSuccess(SelectClientType)
+    case "SelectedClientType"    => selectedClientType.reads(properties)
     case "SelectPersonalService" => JsSuccess(SelectPersonalService)
     case "SelectBusinessService" => JsSuccess(SelectBusinessService)
-    case "SelectService"         => selectServiceFormat.reads(properties)
     case _                       => JsError(s"Unknown state name $stateName")
   }
 

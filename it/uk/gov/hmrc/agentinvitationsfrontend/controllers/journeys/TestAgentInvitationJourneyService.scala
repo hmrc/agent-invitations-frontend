@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 import com.google.inject.AbstractModule
 import javax.inject.Singleton
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.{AgentInvitationJourneyModel, AgentInvitationJourneyService}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
@@ -17,7 +17,7 @@ class TestAgentInvitationJourneyService extends AgentInvitationJourneyService {
     implicit headerCarrier: HeaderCarrier,
     timeout: Duration,
     ec: ExecutionContext): Unit =
-    Await.result(save(state, Nil), timeout)
+    Await.result(save((state, breadcrumbs)), timeout)
 
   def get: Option[StateAndBreadcrumbs] = state
 
@@ -27,9 +27,9 @@ class TestAgentInvitationJourneyService extends AgentInvitationJourneyService {
     state
   )
 
-  override protected def save(state: (AgentInvitationJourneyModel.State, List[AgentInvitationJourneyModel.State]))(
+  override protected def save(state: (model.State, List[model.State]))(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[(AgentInvitationJourneyModel.State, List[AgentInvitationJourneyModel.State])] =
+    ec: ExecutionContext): Future[(model.State, List[model.State])] =
     Future {
       this.state = Some(state)
       state

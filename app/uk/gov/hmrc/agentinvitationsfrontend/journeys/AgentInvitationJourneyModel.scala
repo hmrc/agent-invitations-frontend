@@ -36,9 +36,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
   object States {
     case object Start extends State
     case object SelectClientType extends State
+    case class SelectedClientType(clientType: ClientType) extends State
     case object SelectPersonalService extends State
     case object SelectBusinessService extends State
-    case class SelectService(clientType: ClientType) extends State
   }
 
   object Transitions {
@@ -53,11 +53,12 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType =>
-        clientType match {
-          case ClientType.personal => goto(SelectPersonalService)
-          case ClientType.business => goto(SelectBusinessService)
-        }
+      case SelectClientType => goto(SelectedClientType(clientType))
+    }
+
+    def showSelectService(agent: AuthorisedAgent) = Transition {
+      case SelectedClientType(ClientType.personal) => goto(SelectPersonalService)
+      case SelectedClientType(ClientType.business) => goto(SelectBusinessService)
     }
 
   }
