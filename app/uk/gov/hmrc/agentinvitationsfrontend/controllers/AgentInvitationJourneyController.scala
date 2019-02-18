@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.single
+import play.api.mvc.Call
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -77,17 +78,28 @@ class AgentInvitationJourneyController @Inject()(
     state match {
       case Start => Redirect(routes.AgentsInvitationController.showClientType())
       case SelectClientType =>
-        Ok(client_type(null /*SelectClientTypeForm*/, ClientTypePageConfig(Some("TBC")))) //FIXME change client_type to use Form[ClientType]
+        Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
     }
   }
 
   /* Here we handle form validation errors */
-  override def handleFormValidationError(error: FormValidationError): Route = { implicit request =>
-    error match {
-      case SelectClientTypeFormValidationFailed(form) =>
-        Ok(client_type(null /*form*/, ClientTypePageConfig(Some("TBC")))) //FIXME change client_type to use Form[ClientType]
-    }
+  override def handleFormValidationError(error: FormValidationError, breadcrumbs: List[State]): Route = {
+    implicit request =>
+      error match {
+        case SelectClientTypeFormValidationFailed(form) =>
+          Ok(client_type(form, ClientTypePageConfig(backLinkFor(breadcrumbs))))
+      }
   }
+
+  private def getCallForState(state: State): Call = state match {
+    case Start                 => routes.AgentsInvitationController.agentsRoot()
+    case SelectClientType      => routes.AgentsInvitationController.showClientType()
+    case SelectPersonalService => routes.AgentsInvitationController.showSelectService()
+    case SelectBusinessService => routes.AgentsInvitationController.showSelectService()
+  }
+
+  private def backLinkFor(breadcrumbs: List[State]): Option[String] =
+    breadcrumbs.headOption.map(getCallForState).map(_.url)
 
 }
 

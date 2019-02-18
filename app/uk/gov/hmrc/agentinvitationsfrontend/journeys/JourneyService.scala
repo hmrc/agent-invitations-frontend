@@ -35,6 +35,8 @@ trait JourneyService {
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]]
 
+  def currentState(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]]
+
 }
 
 trait PersistentJourneyService extends JourneyService {
@@ -52,14 +54,17 @@ trait PersistentJourneyService extends JourneyService {
                           case Some((state, breadcrumbs)) =>
                             if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap {
                               case Right(endState) =>
-                                save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs)).map(x =>
-                                  Right.apply(x))
+                                save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs.take(9)))
+                                  .map(x => Right.apply(x))
                               case Left(error) => model.fail(error).map(repack)
                             } else
                               model.fail(model.transitionNotAllowed(state, breadcrumbs, transition)).map(repack)
                           case None => model.fail(model.unknownState).map(repack)
                         }
     } yield endStateOrError
+
+  override def currentState(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
+    fetch
 
   private def repack(either: Either[model.Error, model.State]): Either[model.Error, StateAndBreadcrumbs] =
     either match {

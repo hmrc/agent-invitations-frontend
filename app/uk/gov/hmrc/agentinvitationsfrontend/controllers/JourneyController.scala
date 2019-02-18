@@ -52,7 +52,7 @@ abstract class JourneyController(implicit ec: ExecutionContext)
 
   def renderState(state: State, breadcrumbs: List[State]): Route // implement this to render state after transition
   def handleError(error: Error): Route // implement this to handle model errors
-  def handleFormValidationError(error: FormValidationError): Route // implement this to handle form validation errors
+  def handleFormValidationError(error: FormValidationError, breadcrumbs: List[State]): Route // implement this to handle form validation errors
 
   protected final def apply(transition: Transition)(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     journeyService
@@ -90,7 +90,12 @@ abstract class JourneyController(implicit ec: ExecutionContext)
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(handleFormValidationError(validationError(formWithErrors))(request)),
+        formWithErrors =>
+          journeyService.currentState.map {
+            case Some((_, breadcrumbs)) =>
+              handleFormValidationError(validationError(formWithErrors), breadcrumbs)(request)
+            case None => handleFormValidationError(validationError(formWithErrors), Nil)(request)
+        },
         userInput => apply(transition(userInput))
       )
 
