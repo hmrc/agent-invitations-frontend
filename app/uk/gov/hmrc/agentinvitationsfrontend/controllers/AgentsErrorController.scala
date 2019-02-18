@@ -95,7 +95,15 @@ class AgentsErrorController @Inject()(
                                       case None        => false
                                     }
         currentCacheItem <- currentAuthorisationRequestCache.get
-      } yield Ok(cannot_create_request(journeyStateCacheNonEmpty, currentCacheItem.fromFastTrack))
+      } yield {
+
+        val backLink =
+          if (currentCacheItem.fromFastTrack)
+            routes.AgentsFastTrackInvitationController.showCheckDetails().url
+          else routes.AgentsInvitationController.showIdentifyClient().url
+
+        Ok(cannot_create_request(journeyStateCacheNonEmpty, currentCacheItem.fromFastTrack, backLink))
+      }
     }
   }
 

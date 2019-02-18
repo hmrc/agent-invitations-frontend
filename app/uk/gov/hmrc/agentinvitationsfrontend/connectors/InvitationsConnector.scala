@@ -292,7 +292,7 @@ class InvitationsConnector @Inject()(
       http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map(_ => Some(204))
     }.recover {
       case ex: Upstream4xxResponse => Some(ex.upstreamResponseCode)
-      case _: NotFoundException   => None
+      case _: NotFoundException    => None
     }
 
   def checkCitizenRecord(nino: Nino, dob: LocalDate)(

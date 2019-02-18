@@ -20,20 +20,22 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 
-@(hasJourneyCache: Boolean, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(hasJourneyCache: Boolean, fromFastTrack: Boolean, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cannot-create-request.header"), ""))) {
 
-    <h1 id="cannotCreateRequestHeader" class="heading-xlarge">@Messages("cannot-create-request.header")</h1>
+@back_link(backLink)
+
+<h1 id="cannotCreateRequestHeader" class="heading-xlarge">@Messages("cannot-create-request.header")</h1>
 
     <p id="cannotCreateRequestP1">@Messages("cannot-create-request.p1")</p>
     <p id="cannotCreateRequestP2">@Messages("cannot-create-request.p2")</p>
     <p id="cannotCreateRequestP3">@Messages("cannot-create-request.p3")</p>
 
     @if(hasJourneyCache && (fromFastTrack == false)) {
-        <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link-small" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("cannot-create-request.review-auth")</a></p>
+        <p class="margin-top-30"><a id="showReviewAuthLink" class="button" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("cannot-create-request.review-auth")</a></p>
     } else {
-        <p class="margin-top-30"><a id="showClientType" class="text-link-small" href=@routes.AgentsInvitationController.showClientType()>@Messages("cannot-create-request.start-again")</a></p>
+        <p class="margin-top-30"><a id="showClientType" class="button" href=@routes.AgentsInvitationController.showClientType()>@Messages("cannot-create-request.start-again")</a></p>
     }
 
 }
