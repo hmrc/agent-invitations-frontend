@@ -250,7 +250,9 @@ class AgentLedDeAuthController @Inject()(
         case _                                                      =>
           //TODO: Fix this loose check
           agentSession.clientType match {
-            case Some("personal") => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            case Some("personal") => {
+              Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            }
             case Some("business") => Redirect(confirmClientCall)
             case _                => Redirect(clientTypeCall)
           }

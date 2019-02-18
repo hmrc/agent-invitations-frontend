@@ -452,8 +452,22 @@ abstract class BaseInvitationController(
               .flatMap {
                 case Some(r) if agentSession.fromFastTrack => r
                 case _ =>
-                  redirectOrShowConfirmClient(agentSession, featureFlags) {
-                    createInvitation(arn, vatInvitation)
+                  if (agentSession.isDeAuthJourney && !featureFlags.enableMtdVatToConfirm) {
+                    checkRelationshipExistsForService(
+                      arn,
+                      agentSession.service.getOrElse(""),
+                      agentSession.clientIdentifier.getOrElse("")).flatMap {
+                      case true =>
+                        redirectOrShowConfirmClient(agentSession, featureFlags) {
+                          createInvitation(arn, vatInvitation)
+                        }
+                      case false =>
+                        Redirect(routes.AgentsErrorController.notAuthorised())
+                    }
+                  } else {
+                    redirectOrShowConfirmClient(agentSession, featureFlags) {
+                      createInvitation(arn, vatInvitation)
+                    }
                   }
               }
 
@@ -490,8 +504,22 @@ abstract class BaseInvitationController(
                          .flatMap {
                            case Some(r) if agentSession.fromFastTrack => r
                            case _ =>
-                             redirectOrShowConfirmClient(agentSession, featureFlags) {
-                               createInvitation(arn, itsaInvitation)
+                             if (agentSession.isDeAuthJourney && !featureFlags.enableMtdItToConfirm) {
+                               checkRelationshipExistsForService(
+                                 arn,
+                                 agentSession.service.getOrElse(""),
+                                 agentSession.clientIdentifier.getOrElse("")).flatMap {
+                                 case true =>
+                                   redirectOrShowConfirmClient(agentSession, featureFlags) {
+                                     createInvitation(arn, itsaInvitation)
+                                   }
+                                 case false =>
+                                   Redirect(routes.AgentsErrorController.notAuthorised())
+                               }
+                             } else {
+                               redirectOrShowConfirmClient(agentSession, featureFlags) {
+                                 createInvitation(arn, itsaInvitation)
+                               }
                              }
                          }
                      case Some(false) =>
@@ -543,19 +571,17 @@ abstract class BaseInvitationController(
                   .flatMap {
                     case Some(r) if agentSession.fromFastTrack => r
                     case _ =>
-                      if (agentSession.isDeAuthJourney) {
+                      if (agentSession.isDeAuthJourney && !featureFlags.enableIrvToConfirm) {
                         checkRelationshipExistsForService(
                           arn,
                           agentSession.service.getOrElse(""),
-                          agentSession.clientIdentifier.getOrElse("")).map {
+                          agentSession.clientIdentifier.getOrElse("")).flatMap {
                           case true =>
                             redirectOrShowConfirmClient(agentSession, featureFlags) {
                               createInvitation(arn, pirInvitation)
                             }
-                          case false => {
-                            println(s"^^^^^^^^^^^^^^ falsey false")
+                          case false =>
                             Redirect(routes.AgentsErrorController.notAuthorised())
-                          }
                         }
                       } else {
                         redirectOrShowConfirmClient(agentSession, featureFlags) {
@@ -563,9 +589,6 @@ abstract class BaseInvitationController(
                         }
                       }
                   }
-                redirectOrShowConfirmClient(agentSession, featureFlags) {
-                  createInvitation(arn, pirInvitation)
-                }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
                 Redirect(routes.AgentsErrorController.notMatched())

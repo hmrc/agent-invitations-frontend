@@ -84,7 +84,10 @@ class AgentsErrorController @Inject()(
 
   val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map(cacheItem => Ok(not_authorised(cacheItem.service.getOrElse(""))))
+      agentSessionCache.get.map(cacheItem => {
+        println(s"^^^^^^^^^ hit not authorised error page")
+        Ok(not_authorised(cacheItem.service.getOrElse("")))
+      })
     }
   }
 
