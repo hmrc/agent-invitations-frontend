@@ -29,6 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, Re
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.repo.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -100,7 +101,7 @@ class AgentsFastTrackInvitationController @Inject()(
 
   val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentSessionCache.get.flatMap(
+      agentSessionCache.hardGet.flatMap(
         agentSession => {
           val service = agentSession.service.getOrElse("")
           getKnownFactFormForService(service)
@@ -230,7 +231,7 @@ class AgentsFastTrackInvitationController @Inject()(
     continueUrlActions.withMaybeContinueUrl {
       case None => block
       case Some(continueUrl) =>
-        agentSessionCache.get.flatMap { session =>
+        agentSessionCache.hardGet.flatMap { session =>
           agentSessionCache
             .save(session.copy(continueUrl = Some(continueUrl.url)))
             .flatMap(_ => block)

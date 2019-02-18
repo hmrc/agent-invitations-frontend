@@ -24,7 +24,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
+import uk.gov.hmrc.agentinvitationsfrontend.repo.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_authorised, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -57,14 +57,14 @@ class AgentsErrorController @Inject()(
 
   val allCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map(cacheItem =>
+      agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
 
   val someCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map(cacheItem =>
+      agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
@@ -72,7 +72,7 @@ class AgentsErrorController @Inject()(
   val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        agentSession <- agentSessionCache.get
+        agentSession <- agentSessionCache.hardGet
       } yield
         Ok(
           active_authorisation_exists(
@@ -84,9 +84,10 @@ class AgentsErrorController @Inject()(
 
   val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map(cacheItem => {
-        Ok(not_authorised(cacheItem.service.getOrElse("")))
-      })
+      agentSessionCache.get.map {
+        case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
+        case Left(_)             => Ok(not_authorised("")) //TODO
+      }
     }
   }
 

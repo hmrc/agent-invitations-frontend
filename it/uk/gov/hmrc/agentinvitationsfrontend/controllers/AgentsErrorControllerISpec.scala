@@ -1,23 +1,20 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+import java.util.UUID
+
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   lazy val controller: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
 
   val itsaInvitation = ItsaInvitation(validNino, Some(Postcode(validPostcode)))
   val pirInvitation = PirInvitation(validNino, Some(DOB(dateOfBirth)))
-  val vatInvitation = VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate)))
+  val vatInvitation = VatInvitation( Some(business), validVrn, Some(VatRegDate(validRegistrationDate)))
 
   "GET /agents/not-matched" should {
     val request = FakeRequest("GET", "/agents/not-matched")
@@ -40,9 +37,11 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 403 for authorised Agent who submitted not matching known facts if they have a session with no basket" in {
-      testAgentSessionCache.save(AgentSession())
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(AgentSession()))
 
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+      val result = notMatched(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -57,9 +56,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 403 for authorised Agent who submitted not matching known facts if they have a basket" in {
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), requests = Set(AuthorisationRequest("Gareth Gates", itsaInvitation))))
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(AgentSession( Some(personal), requests = Set(AuthorisationRequest("Gareth Gates", itsaInvitation)))))
+      val result = notMatched(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -80,16 +80,27 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("GET", "/all-create-authorisation-failed")
     "display the all create authorisation failed error page" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", itsaInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", pirInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          pirInvitation,
+          state = AuthorisationRequest.FAILED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", vatInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          vatInvitation,
+          state = AuthorisationRequest.FAILED)
 
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), requests = Set(clientDetail1, clientDetail2, clientDetail3)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -119,16 +130,27 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("GET", "/some-create-authorisation-failed")
     "display the some create authorisation failed error page with more than one failed request" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", itsaInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", pirInvitation, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          pirInvitation,
+          state = AuthorisationRequest.CREATED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", vatInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          vatInvitation,
+          state = AuthorisationRequest.FAILED)
 
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), requests = Set(clientDetail1, clientDetail2, clientDetail3)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -148,16 +170,27 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display the some creation failed error page with one failed request" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", itsaInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
       val clientDetail2 =
-        AuthorisationRequest("Malcolm Pirson", pirInvitation, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Malcolm Pirson",
+          pirInvitation,
+          state = AuthorisationRequest.CREATED)
       val clientDetail3 =
-        AuthorisationRequest("Sara Vaterloo", vatInvitation, state = AuthorisationRequest.CREATED)
+        AuthorisationRequest(
+          "Sara Vaterloo",
+          vatInvitation,
+          state = AuthorisationRequest.CREATED)
 
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), requests = Set(clientDetail1, clientDetail2, clientDetail3)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -181,10 +214,12 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
   "GET /already-authorisation-present" should {
     val request = FakeRequest("GET", "/already-authorisation-present")
     "display the already authorisation present page when there are no requests in the journey cache" in {
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -196,18 +231,17 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "display the already authorisation present page when there are some requests in the journey cache" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", itsaInvitation, state = AuthorisationRequest.FAILED)
-      testAgentSessionCache.save(
-        AgentSession(
-          Some(personal),
-          Some(serviceITSA),
-          Some("ni"),
-          Some(nino),
-          Some(validPostcode),
-          requests = Set(clientDetail1)))
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), requests = Set(clientDetail1))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -219,10 +253,12 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "Display the page when there is nothing in the journeyStateCache" in {
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -235,19 +271,17 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
     "Display the page when coming from fast track" in {
       val clientDetail1 =
-        AuthorisationRequest("Gareth Gates Sr", itsaInvitation, state = AuthorisationRequest.FAILED)
+        AuthorisationRequest(
+          "Gareth Gates Sr",
+          itsaInvitation,
+          state = AuthorisationRequest.FAILED)
 
-      testAgentSessionCache.save(
-        AgentSession(
-          Some(personal),
-          Some(serviceITSA),
-          Some("ni"),
-          Some(nino),
-          Some(validPostcode),
-          requests = Set(clientDetail1),
-          fromFastTrack = fromFastTrack))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), requests = Set(clientDetail1), fromFastTrack = fromFastTrack)))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -265,29 +299,6 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         await(result)
       }.getMessage shouldBe "Cached session state expected but not found"
 
-    }
-  }
-
-  "GET /agent/not-authorised" should {
-    val request = FakeRequest("GET", "/not-authorised")
-    "display the page" in {
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), Some(serviceITSA), None, None, None, requests = Set.empty, fromFastTrack = fromFastTrack))
-      val result = controller.notAuthorised()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
-        "There is a problem",
-        "This individual has not authorised you to report their income and expenses through software.",
-        "Start over")
-    }
-
-    "throw an Exception if there is nothing in the cache" in {
-      val result = controller.notAuthorised()(authorisedAsValidAgent(request, arn.value))
-
-      intercept[Exception] {
-        await(result)
-      }.getMessage shouldBe "Cached session state expected but not found"
     }
   }
 }

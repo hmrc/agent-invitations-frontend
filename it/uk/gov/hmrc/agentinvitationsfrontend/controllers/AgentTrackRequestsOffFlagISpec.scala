@@ -1,17 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
@@ -44,25 +42,19 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
         "features.enable-fast-track"                                          -> true,
         "features.enable-track-requests"                                      -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
+    override def configure(): Unit = {
+    }
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val requestTrackingController: AgentsRequestTrackingController =
     app.injector.instanceOf[AgentsRequestTrackingController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    testAgentSessionCache.clear()
-  }
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
@@ -70,17 +62,11 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, personal)
       val continueUrl = ContinueUrl("/someITSA/Url")
-      testAgentSessionCache.save(
-        AgentSession(
-          Some(personal),
-          Some(serviceITSA),
-          Some("ni"),
-          Some(nino),
-          Some(validPostcode),
-          continueUrl = Some(continueUrl.url),
-          clientTypeForInvitationSent = Some(personal)
-        ))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent =  Some(personal))))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -95,22 +81,16 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(
-        continueUrl = Some(continueUrl.url),
-        clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent =  Some(personal))
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, personal)
-      testAgentSessionCache.save(
-        AgentSession(
-          Some(personal),
-          Some(serviceITSA),
-          Some("ni"),
-          Some(nino),
-          Some(validPostcode),
-          clientTypeForInvitationSent = Some(personal)))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), clientTypeForInvitationSent =  Some(personal))))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value, sessionId))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -123,7 +103,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       verifyAuthoriseAttempt()
-      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(clientTypeForInvitationSent =  Some(personal))
     }
 
   }

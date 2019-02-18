@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
@@ -8,17 +10,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val fastTrackController: AgentsFastTrackInvitationController =
     app.injector.instanceOf[AgentsFastTrackInvitationController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   "POST /agents/fast-track" should {
     val request = FakeRequest(
@@ -28,10 +25,12 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentFastTrackRequest(Some(personal), "INVALID_SERVICE")
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
+        authorisedAsValidAgent(request, arn.value, sessionId)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
@@ -41,11 +40,13 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url with mixed form data" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData =
         AgentFastTrackRequest(Some(business), serviceITSA, "vrn", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
-        authorisedAsValidAgent(request, arn.value)
+        authorisedAsValidAgent(request, arn.value, sessionId)
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
@@ -54,9 +55,11 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if the form is invalid" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val requestWithForm = request
         .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
-      val result = fastTrack(authorisedAsValidAgent(requestWithForm, arn.value))
+      val result = fastTrack(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe
@@ -65,12 +68,14 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "throw an exception for not providing an error url" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val requestNoUrl = FakeRequest("POST", "agents/fast-track")
       val requestWithForm = requestNoUrl
         .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
 
       intercept[IllegalStateException] {
-        await(fastTrack(authorisedAsValidAgent(requestWithForm, arn.value)))
+        await(fastTrack(authorisedAsValidAgent(requestWithForm, arn.value, sessionId)))
       }.getMessage shouldBe "No Error Url Provided"
 
     }
@@ -81,14 +86,17 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "Throw an exception when the cache is empty" in {
-      testAgentSessionCache.save(AgentSession())
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(AgentSession()))
       an[Exception] shouldBe thrownBy {
-        await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+        await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
       }
     }
 
     "Redirect to select service when there is None in the cache" in {
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
+      val sessionId = UUID.randomUUID().toString
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
@@ -98,31 +106,37 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "show error on the page when no radio button is selected" in {
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData =
-        AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
-      testAgentSessionCache.save(
-        AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate)))
-      val result = await(
-        fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(agentFastTrackForm.fill(formData).data.toSeq: _*),
-            arn.value)))
+        AgentFastTrackRequest(
+          Some(business),
+          serviceVAT,
+          "vrn",
+          validVrn.value,
+          Some(validRegistrationDate))
+      await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate))))
+      val result = await(fastTrackController.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody(agentFastTrackForm.fill(formData).data.toSeq : _*), arn.value, sessionId)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Select yes if the details are correct"))
     }
   }
 
   "GET agents/more-details" should {
+    val sessionId = UUID.randomUUID().toString
     val request = FakeRequest()
 
     "redirect to client-type if there is no invitation in the cache" in {
-      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
+      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value, sessionId)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
     }
   }
 
   "POST /agents/more-details" should {
+    val sessionId = UUID.randomUUID().toString
+    implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
     val request = FakeRequest("POST", "/agents/identify-client")
 
     "return form with errors when form data is invalid" in {
@@ -137,11 +151,10 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
-      testAgentSessionCache.save(
-        AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(validPostcode)))
+      await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
-      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value, sessionId)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "This field is required")
     }

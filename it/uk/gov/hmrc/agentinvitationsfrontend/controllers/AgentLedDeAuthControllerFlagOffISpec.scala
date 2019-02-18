@@ -1,17 +1,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import akka.util.Timeout
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-
-import scala.concurrent.duration._
 
 class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours {
 
@@ -51,20 +45,17 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
         "features.redirect-to-confirm-mtd-vat"                                -> false,
         "features.show-agent-led-de-auth"                                     -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
+    override def configure(): Unit = {
+    }
   }
 
   lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  implicit val timeout: Timeout = 2.seconds
 
   "GET /cancel-authorisation/client-type" should {
 

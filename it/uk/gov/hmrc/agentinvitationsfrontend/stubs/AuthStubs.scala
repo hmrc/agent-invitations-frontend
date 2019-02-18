@@ -11,8 +11,8 @@ trait AuthStubs {
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String): FakeRequest[A] =
-    authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String, sessionId: String = "session12345"): FakeRequest[A] =
+    authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn), sessionId)
 
   def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) =
     authenticatedClient(request, "Individual", Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
@@ -23,7 +23,7 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A]): FakeRequest[A] = {
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], sessionId: String = "clientSession12345"): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -68,10 +68,10 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
+    request.withSession(SessionKeys.authToken -> "Client Bearer XYZ", SessionKeys.sessionId -> sessionId)
   }
 
-  def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A]): FakeRequest[A] = {
+  def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A], sessionId: String = "clientSession-12345"): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -104,10 +104,10 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
   }
 
-  def authorisedAsAnyClientFalse[A](request: FakeRequest[A]): FakeRequest[A] = {
+  def authorisedAsAnyClientFalse[A](request: FakeRequest[A], sessionId: String = "clientSession-1234567"): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -152,7 +152,7 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "session12345")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
   }
 
   def authenticatedClient[A](
@@ -184,7 +184,7 @@ trait AuthStubs {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
-  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment): FakeRequest[A] = {
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment, sessionId: String): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -204,7 +204,7 @@ trait AuthStubs {
          |]}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> "Session12345")
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit =

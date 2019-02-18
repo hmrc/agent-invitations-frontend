@@ -1,16 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 
 class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
@@ -42,24 +38,12 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         "features.show-kfc-mtd-vat"                                           -> false,
         "features.enable-fast-track"                                          -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
-      .overrides(new TestGuiceModule)
 
   lazy val fastTrackController: AgentsFastTrackInvitationController =
     app.injector.instanceOf[AgentsFastTrackInvitationController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    testAgentSessionCache.clear()
-  }
-
-  private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
-  }
 
   "Show Feature Flags are switched off" should {
     val request = FakeRequest("POST", "/agents/fast-track")
