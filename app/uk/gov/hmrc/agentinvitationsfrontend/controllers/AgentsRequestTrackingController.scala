@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
-
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
@@ -29,7 +28,7 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
@@ -43,7 +42,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class TrackResendForm(service: String, clientType: Option[String], expiryDate: String)
+case class TrackResendForm(service: String, clientType: Option[ClientType], expiryDate: String)
 
 case class CancelRequestForm(invitationId: String, service: String, clientName: String)
 
@@ -101,11 +100,15 @@ class AgentsRequestTrackingController @Inject()(
           },
           data => {
             for {
-              agentLink <- invitationsService.createAgentLink(arn, data.clientType.getOrElse(""))
+              agentLink <- invitationsService.createAgentLink(arn, data.clientType)
             } yield
               Ok(
                 resend_link(
-                  ResendLinkPageConfig(externalUrl, agentLink, data.clientType.getOrElse(""), data.expiryDate)))
+                  ResendLinkPageConfig(
+                    externalUrl,
+                    agentLink,
+                    data.clientType.map(ClientType.fromEnum).getOrElse(""),
+                    data.expiryDate)))
           }
         )
     }
@@ -240,8 +243,10 @@ class AgentsRequestTrackingController @Inject()(
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(text)
-          .verifying("Unsupported client type", clientType => Services.supportedClientTypes.contains(clientType)),
+        "clientType" -> optional(
+          text
+            .verifying("Unsupported client type", clientType => Services.supportedClientTypes.contains(clientType))
+            .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }

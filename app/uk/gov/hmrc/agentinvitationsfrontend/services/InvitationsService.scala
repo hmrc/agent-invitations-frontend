@@ -77,7 +77,7 @@ class InvitationsService @Inject()(
 
   def createMultipleInvitations(
     arn: Arn,
-    clientType: String,
+    clientType: Option[ClientType],
     requests: Set[AuthorisationRequest],
     featureFlags: FeatureFlags)(
     implicit hc: HeaderCarrier,
@@ -120,11 +120,16 @@ class InvitationsService @Inject()(
         }
     }))
 
-  def createAgentLink(arn: Arn, clientType: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    invitationsConnector.createAgentLink(arn, clientType).map {
-      case Some(multiInv) => multiInv
-      case None           => throw new Exception("Creating multi-invitation link failed")
-    }
+  def createAgentLink(arn: Arn, clientType: Option[ClientType])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[String] =
+    clientType
+      .map(ct =>
+        invitationsConnector.createAgentLink(arn, ClientType.fromEnum(ct)).map {
+          case Some(multiInv) => multiInv
+          case None           => throw new Exception("Creating multi-invitation link failed")
+      })
+      .getOrElse(throw new Exception("Creating multi-invitation link failed because of missing clientType"))
 
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,

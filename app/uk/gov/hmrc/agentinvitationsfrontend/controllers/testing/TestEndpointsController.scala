@@ -25,7 +25,7 @@ import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -120,7 +120,7 @@ object TestEndpointsController {
   val testCurrentAuthorisationRequestForm: Form[AgentFastTrackRequest] = {
     Form(
       mapping(
-        "clientType"           -> optional(text),
+        "clientType"           -> optional(text.transform(ClientType.toEnum, ClientType.fromEnum)),
         "service"              -> text,
         "clientIdentifierType" -> text,
         "clientIdentifier"     -> normalizedText,
@@ -142,8 +142,10 @@ object TestEndpointsController {
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(text)
-          .verifying("Unsupported client type", clientType => supportedClientTypes.contains(clientType)),
+        "clientType" -> optional(
+          text
+            .verifying("Unsupported client type", clientType => supportedClientTypes.contains(clientType))
+            .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }

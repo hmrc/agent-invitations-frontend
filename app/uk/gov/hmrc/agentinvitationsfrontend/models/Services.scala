@@ -49,10 +49,7 @@ object Services {
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
   val supportedTypes = List("ni", "vrn", "utr")
 
-  //Todo Client Types to be used later
-  val personal = Some("personal")
-  val business = Some("business")
-  val supportedClientTypes = List(personal, business)
+  val supportedClientTypes = List("personal", "business")
 
   def determineService(invitationId: InvitationId): Service =
     invitationId.value.head match {
