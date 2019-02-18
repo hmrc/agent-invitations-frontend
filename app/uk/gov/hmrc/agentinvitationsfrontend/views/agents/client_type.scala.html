@@ -22,7 +22,8 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 
-@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+@(agentInvitationsForm: Form[ClientType], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @agentServicesCall = @{s"${externalUrls.agentServicesAccountUrl}/agent-services-account"}
 

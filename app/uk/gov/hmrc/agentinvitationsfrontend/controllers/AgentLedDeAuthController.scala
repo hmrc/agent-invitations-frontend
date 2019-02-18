@@ -233,9 +233,9 @@ class AgentLedDeAuthController @Inject()(
         case _                                                      =>
           //TODO: Fix this loose check
           agentSession.clientType match {
-            case Some("personal") => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
-            case Some("business") => Redirect(confirmClientCall)
-            case _                => Redirect(clientTypeCall)
+            case Some(ClientType.personal) => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            case Some(ClientType.business) => Redirect(confirmClientCall)
+            case _                         => Redirect(clientTypeCall)
           }
       }
     }
@@ -254,7 +254,7 @@ class AgentLedDeAuthController @Inject()(
 
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
-  override def clientTypePage(form: Form[String], backLinkUrl: String)(
+  override def clientTypePage(form: Form[ClientType], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
     cancelAuthorisation.client_type(form, ClientTypePageConfig(None))
 

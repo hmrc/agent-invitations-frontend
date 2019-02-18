@@ -3,6 +3,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -13,7 +14,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class FastTrackITSAISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController =
+    app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -22,24 +24,31 @@ class FastTrackITSAISpec extends BaseISpec {
     val submitClientType = controller.submitClientType()
     "return 303 for authorised Agent with valid Nino and Known Fact, then selected Individual, redirect to invitation-sent" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
         "ni",
         serviceITSA,
         "NI")
-      givenAgentReference(arn, "AAAAAAAA", "personal")
+      givenAgentReference(arn, "AAAAAAAA", personal)
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
-      val clientTypeForm = ClientTypeForm.form.fill("personal")
+      val clientTypeForm = ClientTypeForm.form.fill(personal)
       val result =
-        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
+        submitClientType(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -77,7 +86,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track is correct for ITSA" in {
       val formData =
-        AgentFastTrackRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
+        AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, Some(validPostcode))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -90,7 +99,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "return 303 check-details if service calling fast-track for does not contain postcode for ITSA" in {
 
       val formData =
-        AgentFastTrackRequest(personal, serviceITSA, "ni", validNino.value, None)
+        AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -102,7 +111,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 if service calling fast-track contains invalid postcode for ITSA" in {
       val formData =
-        AgentFastTrackRequest(personal, serviceITSA, "ni", validNino.value, Some("invali_postcode"))
+        AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, Some("invali_postcode"))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -127,7 +136,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 and redirect to error url if service calling fast-track for ITSA contains invalid nino" in {
       val formData =
-        AgentFastTrackRequest(personal, serviceITSA, "ni", "INVALID_NINO", None).copy()
+        AgentFastTrackRequest(Some(personal), serviceITSA, "ni", "INVALID_NINO", None).copy()
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -140,7 +149,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for ITSA does not contain nino" in {
-      val formData = AgentFastTrackRequest(personal, serviceITSA)
+      val formData = AgentFastTrackRequest(Some(personal), serviceITSA)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -154,7 +163,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for ITSA" in {
       val formData =
-        AgentFastTrackRequest(personal, "", "ni", validNino.value, None)
+        AgentFastTrackRequest(Some(personal), "", "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -184,9 +193,17 @@ class FastTrackITSAISpec extends BaseISpec {
     val request = FakeRequest()
 
     "display the check details page when known fact is required and provided for ITSA for short postcode without spaces" in {
-      val agentSession = AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+      val agentSession = AgentSession(
+        Some(personal),
+        Some(serviceITSA),
+        Some("ni"),
+        Some(validNino.value),
+        Some(validPostcode),
+        fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(agentSession)
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request.withHeaders("Referer" -> "/go/back/to/this"), arn.value)))
+      val result = await(
+        fastTrackController.showCheckDetails(
+          authorisedAsValidAgent(request.withHeaders("Referer" -> "/go/back/to/this"), arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Individual or sole trader"))
@@ -198,7 +215,13 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "display the check details page without a back link when no Referer header is found" in {
-      val agentSession = AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+      val agentSession = AgentSession(
+        Some(personal),
+        Some(serviceITSA),
+        Some("ni"),
+        Some(validNino.value),
+        Some(validPostcode),
+        fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(agentSession)
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithNotBodyText(result, "Back")
@@ -207,7 +230,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcodeSpaces), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcodeSpaces),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -221,7 +250,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "display the check details page when known fact is required and provided for ITSA for long postcode" in {
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcodeLong), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcodeLong),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -235,7 +270,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "display alternate check details page when known fact is required but not provided for ITSA" in {
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), knownFact = None, fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          knownFact = None,
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -249,7 +290,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "display check details page when client type is not provided for ITSA" in {
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
@@ -269,21 +316,27 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to confirm_invitation when YES is selected for ITSA service" in {
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
         "ni",
         serviceITSA,
         "MTDITID")
-      givenAgentReference(arn, "AAAAAAAA", "personal")
+      givenAgentReference(arn, "AAAAAAAA", personal)
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -295,7 +348,7 @@ class FastTrackITSAISpec extends BaseISpec {
     "redirect to identify-client when NO is selected for ITSA service" in {
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -305,7 +358,13 @@ class FastTrackITSAISpec extends BaseISpec {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -320,7 +379,13 @@ class FastTrackITSAISpec extends BaseISpec {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
 
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -335,7 +400,13 @@ class FastTrackITSAISpec extends BaseISpec {
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
 
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -346,7 +417,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 not-matched if nino and postcode do not match for ITSA" in {
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       testAgentSessionCache.currentSession.item.get shouldBe formData
       givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
@@ -368,7 +445,13 @@ class FastTrackITSAISpec extends BaseISpec {
 
     "return 303 not-signed-up if Agent attempts to invite client who does not have an ITSA enrolment" in {
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       testAgentSessionCache.currentSession.item.get shouldBe formData
       givenNotEnrolledClientITSA(validNino, validPostcode)
@@ -393,7 +476,13 @@ class FastTrackITSAISpec extends BaseISpec {
     val request = FakeRequest()
     "display the known fact page when known fact is required and not provided for ITSA" in {
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's postcode?")
@@ -413,14 +502,14 @@ class FastTrackITSAISpec extends BaseISpec {
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdITSA,
         validNino.value,
         "ni",
         "HMRC-MTD-IT",
         "NI")
-      givenAgentReference(arn, "AAAAAAAA", "personal")
+      givenAgentReference(arn, "AAAAAAAA", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
@@ -432,7 +521,13 @@ class FastTrackITSAISpec extends BaseISpec {
         "clientIdentifier"     -> validNino.value,
         "knownFact"            -> "DH14EJ")
       val formData =
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), knownFact = Some(validPostcode), fromFastTrack = fromFastTrack)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          knownFact = Some(validPostcode),
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
@@ -452,7 +547,13 @@ class FastTrackITSAISpec extends BaseISpec {
         "clientIdentifier"     -> validNino.value,
         "knownFact"            -> "DH14EJ")
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), knownFact = None, fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          knownFact = None,
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
@@ -471,7 +572,13 @@ class FastTrackITSAISpec extends BaseISpec {
         "clientIdentifier"     -> validNino.value,
         "knownFact"            -> "DH14EJ")
       val formData =
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), knownFact = None, fromFastTrack = fromFastTrack)
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          knownFact = None,
+          fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
       val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
@@ -482,7 +589,13 @@ class FastTrackITSAISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
-      val formData = AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), knownFact = None, fromFastTrack = fromFastTrack)
+      val formData = AgentSession(
+        Some(personal),
+        Some(serviceITSA),
+        Some("ni"),
+        Some(validNino.value),
+        knownFact = None,
+        fromFastTrack = fromFastTrack)
       testAgentSessionCache.save(formData)
 
       val requestWithForm = request.withFormUrlEncodedBody(

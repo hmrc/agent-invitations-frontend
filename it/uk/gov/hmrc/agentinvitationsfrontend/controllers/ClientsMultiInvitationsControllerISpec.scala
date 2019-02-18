@@ -21,7 +21,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmDeclineForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState, ConfirmedTerms}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState, ClientType, ConfirmedTerms}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.logging.SessionId
@@ -335,35 +336,34 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "redirect to wrong-account-type page when submitting confirm terms" in {
       await(
-    testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
-      Seq(
-        ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
-      ),
-      Some("My agency Name")
-    )))
+        testClientConsentsJourneyStateCache.save(ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-    ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
 
-      val result = controller.submitMultiConfirmTerms("personal", uid)(
-    authorisedAsAnyOrganisationClient(FakeRequest())
-      .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
-      .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
+      val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest())
+        .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
+        .withSession("itsaChoice" -> "false", "afiChoice" -> "false", "vatChoice" -> "false", "whichConsent" -> "vat"))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientErrorController.incorrectClientType().url)
 
       await(testClientConsentsJourneyStateCache.fetch) shouldBe Some(
-    ClientConsentsJourneyState(
-      Seq(
-        ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
-        ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
-        ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
-      ),
-      Some("My agency Name")
-    ))
+        ClientConsentsJourneyState(
+          Seq(
+            ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false),
+            ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false),
+            ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false)
+          ),
+          Some("My agency Name")
+        ))
     }
 
   }
@@ -553,7 +553,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My agency Name")
         )))
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result =
+        controller.showCheckAnswers(ClientType.fromEnum(personal), uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -573,7 +574,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
     "throw a Illegal State Exception if there is nothing in the cache" in {
       await(testClientConsentsJourneyStateCache.clear())
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result =
+        controller.showCheckAnswers(ClientType.fromEnum(personal), uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[IllegalStateException] shouldBe thrownBy {
         await(result)
@@ -591,7 +593,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           None
         )))
 
-      val result = controller.showCheckAnswers(personal.get, uid)(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result =
+        controller.showCheckAnswers(ClientType.fromEnum(personal), uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[Exception] shouldBe thrownBy {
         await(result)
@@ -612,7 +615,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "itsa")(
         authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -636,7 +639,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "itsa")(
         authorisedAsAnyIndividualClient(FakeRequest()
           .withHeaders(
             "Referer" -> s"someBaseUrl${routes.ClientsMultiInvitationController.showCheckAnswers("personal", uid).url}")))
@@ -663,7 +666,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "afi")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "afi")(
         authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -689,7 +692,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "vat")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "vat")(
         authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -706,7 +709,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
     "return Invalid Journey State when there is nothing in the cache" in {
       await(testClientConsentsJourneyStateCache.clear())
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "itsa")(
         authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[IllegalStateException] shouldBe thrownBy {
@@ -724,7 +727,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           Some("My Agency Name")
         )))
 
-      val result = controller.getMultiConfirmTermsIndividual(personal.get, uid, "itsa")(
+      val result = controller.getMultiConfirmTermsIndividual(ClientType.fromEnum(personal), uid, "itsa")(
         authorisedAsAnyIndividualClient(FakeRequest()))
 
       an[BadRequestException] shouldBe thrownBy {

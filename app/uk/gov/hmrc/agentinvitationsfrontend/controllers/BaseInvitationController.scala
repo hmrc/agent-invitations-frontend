@@ -136,9 +136,9 @@ abstract class BaseInvitationController(
     agentSessionCache.fetch.flatMap {
       case Some(cache) =>
         cache.clientType match {
-          case Some("personal") =>
+          case Some(ClientType.personal) =>
             Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = cache.requests.nonEmpty))
-          case Some("business") =>
+          case Some(ClientType.business) =>
             Ok(businessSelectServicePage(businessForm, basketFlag = cache.requests.nonEmpty, clientTypeCall.url))
           case _ => Redirect(clientTypeCall)
         }
@@ -151,9 +151,9 @@ abstract class BaseInvitationController(
     request: Request[_]): Future[Result] =
     agentSessionCache.fetch.flatMap { car =>
       car.flatMap(_.clientType) match {
-        case Some("personal") => handleSubmitSelectServicePersonal(businessForm)
-        case Some("business") => handleSubmitSelectServiceBusiness(businessForm)
-        case _                => Redirect(clientTypeCall)
+        case Some(ClientType.personal) => handleSubmitSelectServicePersonal(businessForm)
+        case Some(ClientType.business) => handleSubmitSelectServiceBusiness(businessForm)
+        case _                         => Redirect(clientTypeCall)
       }
     }
 
@@ -169,7 +169,7 @@ abstract class BaseInvitationController(
               agentSession match {
                 case Some(cache) =>
                   agentSessionCache
-                    .save(cache.copy(clientType = Some("personal"), service = Some(serviceInput)))
+                    .save(cache.copy(clientType = Some(ClientType.personal), service = Some(serviceInput)))
                     .flatMap(_ =>
                       ifShouldShowService(serviceInput, featureFlags, isWhitelisted) {
                         if (isSupportedWhitelistedService(serviceInput, isWhitelisted)) Redirect(identifyClientCall)
@@ -180,8 +180,8 @@ abstract class BaseInvitationController(
 
             agentSessionCache.fetch.flatMap { cache =>
               cache.flatMap(_.clientType) match {
-                case Some("personal") => updateSessionAndRedirect(cache)
-                case Some("business") =>
+                case Some(ClientType.personal) => updateSessionAndRedirect(cache)
+                case Some(ClientType.business) =>
                   if (serviceInput == HMRCMTDVAT) {
                     updateSessionAndRedirect(cache)
                   } else {
@@ -206,7 +206,7 @@ abstract class BaseInvitationController(
               agentSessionCache.fetch.flatMap {
                 case Some(cache) =>
                   agentSessionCache
-                    .save(cache.copy(clientType = Some("business"), service = Some(HMRCMTDVAT)))
+                    .save(cache.copy(clientType = Some(ClientType.business), service = Some(HMRCMTDVAT)))
                     .flatMap(_ =>
                       ifShouldShowService(HMRCMTDVAT, featureFlags, isWhitelisted) {
                         if (isSupportedWhitelistedService(HMRCMTDVAT, isWhitelisted)) Redirect(identifyClientCall)
@@ -620,10 +620,10 @@ abstract class BaseInvitationController(
                   }
                   .flatMap { _ =>
                     clientType match {
-                      case Some("personal") =>
+                      case Some(ClientType.personal) =>
                         toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
-                      case Some("business") => body
-                      case _                => toFuture(Redirect(clientTypeCall))
+                      case Some(ClientType.business) => body
+                      case _                         => toFuture(Redirect(clientTypeCall))
                     }
                   }
             }
@@ -690,7 +690,7 @@ abstract class BaseInvitationController(
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
 
-  def clientTypePage(form: Form[String] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
+  def clientTypePage(form: Form[ClientType] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
     implicit request: Request[_]): Appendable =
     client_type(form, ClientTypePageConfig(Some(backLinkUrl)))
 

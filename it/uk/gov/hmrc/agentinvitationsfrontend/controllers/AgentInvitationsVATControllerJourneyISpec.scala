@@ -6,6 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.logging.SessionId
@@ -24,7 +25,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid VAT service when YES is selected, redirect to identify-client" in {
-      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+      testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
       val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
@@ -35,10 +36,11 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 303 for an authorised Agent when NO is selected, redirect to select-client-type" in {
-      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+      testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
       val confirmForm = agentConfirmationForm("error").fill(Confirmation(false))
 
-      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
+      val result =
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -46,7 +48,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 303 for authorised Agent with valid VAT service when there is no valid clientType in cache, redirect to client-type" in {
-      testAgentSessionCache.save(AgentSession(Some("foo"), Some(serviceVAT)))
+      testAgentSessionCache.save(AgentSession(None, Some(serviceVAT)))
       val result =
         submitService(authorisedAsValidAgent(request, arn.value))
 
@@ -62,7 +64,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for VAT service" in {
-      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+      testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -94,7 +96,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to confirm-client when a valid VRN and registrationDate are submitted" in {
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -105,12 +107,17 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         testAgentSessionCache.save(
-          AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate)))
+          AgentSession(
+            Some(business),
+            Some(serviceVAT),
+            Some("vrn"),
+            Some(validVrn.value),
+            Some(validRegistrationDate)))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year"   -> "2007",
-          "registrationDate.month"  -> "7",
-          "registrationDate.day"    -> "7"
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2007",
+          "registrationDate.month" -> "7",
+          "registrationDate.day"   -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -121,7 +128,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       "redirect to client-type when a valid VRN and registrationDate are submitted but cache is empty" in {
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -132,10 +139,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year"   -> "2007",
-          "registrationDate.month"  -> "7",
-          "registrationDate.day"    -> "7"
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2007",
+          "registrationDate.month" -> "7",
+          "registrationDate.day"   -> "7"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -144,10 +151,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty VRN is submitted" in {
-        testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> "",
-          "registrationDate"        -> validRegistrationDate)
+        testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> "", "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -156,10 +162,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid VRN is submitted" in {
-        testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> "invalid",
-          "registrationDate"        -> validRegistrationDate)
+        testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> "invalid", "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -168,12 +173,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an empty registrationDate is submitted" in {
-        testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+        testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year"   -> "2008",
-          "registrationDate.month"  -> "",
-          "registrationDate.day"    -> "12"
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2008",
+          "registrationDate.month" -> "",
+          "registrationDate.day"   -> "12"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -183,12 +188,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid registrationDate is submitted" in {
-        testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+        testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year"   -> "2007",
-          "registrationDate.month"  -> "17",
-          "registrationDate.day"    -> "07"
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "2007",
+          "registrationDate.month" -> "17",
+          "registrationDate.day"   -> "07"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -198,12 +203,12 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when invalid registrationDate fields are submitted" in {
-        testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+        testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate.year"   -> "INVALID",
-          "registrationDate.month"  -> "INVALID",
-          "registrationDate.day"    -> "INVALID"
+          "clientIdentifier"       -> validVrn.value,
+          "registrationDate.year"  -> "INVALID",
+          "registrationDate.month" -> "INVALID",
+          "registrationDate.day"   -> "INVALID"
         )
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
@@ -215,10 +220,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        testAgentSessionCache.save(AgentSession(business))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validVrn.value,
-          "registrationDate"        -> validRegistrationDate)
+        testAgentSessionCache.save(AgentSession(Some(business)))
+        val requestWithForm = request
+          .withFormUrlEncodedBody("clientIdentifier" -> validVrn.value, "registrationDate" -> validRegistrationDate)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -232,9 +236,15 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val invitationSent = controller.showInvitationSent()
 
     "return 200 for authorised Agent successfully created VAT invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
-      givenAgentReference(arn, uid, "business")
+      givenAgentReference(arn, uid, business)
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), clientTypeForInvitationSent = business))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          clientTypeForInvitationSent = Some(business)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -259,7 +269,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       //check if we have cleared everything in cache except clientTypeForInvitationsSent
-      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = business)
+      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = Some(business))
 
       verifyAuthoriseAttempt()
     }
@@ -271,7 +281,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with no requests in basket" in {
-      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT)))
+      testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT)))
       val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
@@ -286,8 +296,10 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
-      val authRequest: AuthorisationRequest = AuthorisationRequest( "clientName", VatInvitation(business, validVrn, Some(VatRegDate(validRegistrationDate))))
-      testAgentSessionCache.save(AgentSession(business, Some(serviceVAT), requests = Set(authRequest)))
+      val authRequest: AuthorisationRequest = AuthorisationRequest(
+        "clientName",
+        VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))
+      testAgentSessionCache.save(AgentSession(Some(business), Some(serviceVAT), requests = Set(authRequest)))
       val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
@@ -308,7 +320,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 and show client name" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenClientDetails(validVrn)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -320,7 +338,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 and no client name was found" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenClientDetailsNotFound(validVrn)
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -338,17 +362,23 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "redirect to review-authorisations if client type is personal" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(personal),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
         "vrn",
         serviceVAT,
         identifierVAT)
-      givenAgentReference(arn, "ABCDEFGH", "business")
+      givenAgentReference(arn, "ABCDEFGH", business)
       givenClientDetails(validVrn)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
@@ -361,17 +391,23 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "redirect to invitation-sent if client type is business" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenInvitationCreationSucceeds(
         arn,
-        business,
+        Some(business),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
         "vrn",
         serviceVAT,
         identifierVAT)
-      givenAgentReference(arn, "ABCDEFGH", "business")
+      givenAgentReference(arn, "ABCDEFGH", business)
       givenClientDetails(validVrn)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
@@ -385,7 +421,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "redirect to pending authorisations exist if there are already pending invitations for this client" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenGetAllPendingInvitationsReturnsSome(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
@@ -396,9 +438,19 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
-      val authRequest = AuthorisationRequest( "clientName", VatInvitation(personal, validVrn, Some(VatRegDate(validRegistrationDate))))
+      val authRequest =
+        AuthorisationRequest(
+          "clientName",
+          VatInvitation(Some(personal), validVrn, Some(VatRegDate(validRegistrationDate))))
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), requests = Set(authRequest), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          requests = Set(authRequest),
+          fromFastTrack = fromFastTrack))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
@@ -409,9 +461,18 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
-     val authRequest = AuthorisationRequest( "clientName", VatInvitation(business, validVrn9755, Some(VatRegDate(validRegistrationDate))))
+      val authRequest = AuthorisationRequest(
+        "clientName",
+        VatInvitation(Some(business), validVrn9755, Some(VatRegDate(validRegistrationDate))))
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), requests = Set(authRequest), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          requests = Set(authRequest),
+          fromFastTrack = fromFastTrack))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
 
@@ -424,9 +485,15 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "fail when creation of invitation is unsuccessful" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenInvitationCreationFails(arn)
-      givenAgentReference(arn, "ABCDEFGH", "business")
+      givenAgentReference(arn, "ABCDEFGH", business)
       givenClientDetails(validVrn)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
@@ -441,7 +508,13 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
     "return 200 for not selecting an option" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack))
+        AgentSession(
+          Some(business),
+          Some(serviceVAT),
+          Some("vrn"),
+          Some(validVrn.value),
+          Some(validRegistrationDate),
+          fromFastTrack = fromFastTrack))
       givenClientDetails(validVrn)
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -456,7 +529,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
       testAgentSessionCache.save(
-        AgentSession(business, Some(serviceVAT), Some(""), Some(""), fromFastTrack = fromManual))
+        AgentSession(Some(business), Some(serviceVAT), Some(""), Some(""), fromFastTrack = fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 case class AgentFastTrackRequest(
-  clientType: Option[String],
+  clientType: Option[ClientType],
   service: String,
   clientIdentifierType: String,
   clientIdentifier: String,
@@ -25,6 +25,6 @@ case class AgentFastTrackRequest(
 
 object AgentFastTrackRequest {
 
-  def apply(clientType: Option[String], service: String): AgentFastTrackRequest =
+  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
     AgentFastTrackRequest(clientType, service, "", "", None)
 }

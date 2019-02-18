@@ -17,6 +17,7 @@
 package models
 
 import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
@@ -48,7 +49,7 @@ class InvitationSpec extends UnitSpec {
 
     "read and write VatInvitation as expected" in {
 
-      val vatInvitation = VatInvitation(Some("personal"), Vrn("329611751"), Some(VatRegDate("10-10-2030")))
+      val vatInvitation = VatInvitation(Some(personal), Vrn("329611751"), Some(VatRegDate("10-10-2030")))
       val jsValue = Json.parse(
         """{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"329611751","clientIdentifierType":"vrn","vatRegDate":{"value":"10-10-2030"}}}""")
 

@@ -8,6 +8,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -52,18 +53,21 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("POST", "/agents/cancel-authorisation/client-type")
       val submitClientType = controller.submitClientType()
 
-      val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
       status(result) shouldBe 303
       val timeout = 2.seconds
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
-      await(testAgentSessionCache.fetch).get shouldBe AgentSession(personal, clientTypeForInvitationSent = personal)
+      await(testAgentSessionCache.fetch).get shouldBe AgentSession(
+        Some(personal),
+        clientTypeForInvitationSent = Some(personal))
     }
   }
 
   "GET /cancel-authorisation/select-service" should {
     "return 200 with expected page content when the clientType is personal" in {
-      testAgentSessionCache.save(AgentSession(personal))
+      testAgentSessionCache.save(AgentSession(Some(personal)))
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
 
@@ -82,7 +86,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 200 with expected page content when the clientType is business" in {
-      testAgentSessionCache.save(AgentSession(business))
+      testAgentSessionCache.save(AgentSession(Some(business)))
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
 
@@ -105,11 +109,12 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
   "POST /cancel-authorisation/select-service" should {
 
     "return redirect after storing service_type in the cache" in {
-      testAgentSessionCache.save(AgentSession(personal))
+      testAgentSessionCache.save(AgentSession(Some(personal)))
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
       val submitSelectService = controller.submitSelectService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+      val result = submitSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
@@ -117,11 +122,12 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "handle the confirmation form if the client_type is business" in {
-      testAgentSessionCache.save(AgentSession(business))
+      testAgentSessionCache.save(AgentSession(Some(business)))
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
       val submitSelectService = controller.submitSelectService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result =
+        submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
@@ -129,11 +135,12 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "handle forms with invalid service_types" in {
-      testAgentSessionCache.save(AgentSession(personal))
+      testAgentSessionCache.save(AgentSession(Some(personal)))
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
       val submitSelectService = controller.submitSelectService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-BLAH"), arn.value))
+      val result = submitSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-BLAH"), arn.value))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
@@ -157,25 +164,25 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     "display correct identify client page based on selected service" in {
 
       Services.supportedServices.foreach { service =>
-        testAgentSessionCache.save(AgentSession(personal, Some(service)))
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(service)))
         val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 200
 
-        if(service == HMRCPIR) {
-          checkHtmlResultWithBodyText(result,
+        if (service == HMRCPIR) {
+          checkHtmlResultWithBodyText(
+            result,
             htmlEscapedMessage("identify-client.nino.label"),
-            htmlEscapedMessage("identify-client.irv-date-of-birth.label")
-          )
-        } else if(service == HMRCMTDIT) {
-          checkHtmlResultWithBodyText(result,
+            htmlEscapedMessage("identify-client.irv-date-of-birth.label"))
+        } else if (service == HMRCMTDIT) {
+          checkHtmlResultWithBodyText(
+            result,
             htmlEscapedMessage("identify-client.nino.label"),
-            htmlEscapedMessage("identify-client.postcode.label")
-          )
-        } else if(service == HMRCMTDVAT) {
-          checkHtmlResultWithBodyText(result,
+            htmlEscapedMessage("identify-client.postcode.label"))
+        } else if (service == HMRCMTDVAT) {
+          checkHtmlResultWithBodyText(
+            result,
             htmlEscapedMessage("identify-client.vrn.label"),
-            htmlEscapedMessage("identify-client.vat-registration-date.label")
-          )
+            htmlEscapedMessage("identify-client.vat-registration-date.label"))
         }
 
         checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/select-service")
@@ -183,7 +190,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "redirect to /cancel-authorisation/select-service page if service in the cache is not a valid service" in {
-      testAgentSessionCache.save(AgentSession(personal, Some("blah service")))
+      testAgentSessionCache.save(AgentSession(Some(personal), Some("blah service")))
       val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
@@ -204,8 +211,9 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is PERSONAL-INCOME-RECORD" should {
       "handle the form correctly and redirect" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
-        givenAgentReference(arn, "ABCDEFGH", "personal")
+        testAgentSessionCache.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
+        givenAgentReference(arn, "ABCDEFGH", personal)
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
@@ -213,9 +221,9 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientIdentifier" -> validNino.value,
-            "dob.year"   -> "1980",
-            "dob.month"  -> "07",
-            "dob.day"    -> "07"
+            "dob.year"         -> "1980",
+            "dob.month"        -> "07",
+            "dob.day"          -> "07"
           )
 
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -227,8 +235,9 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-IT" should {
       "handle the form correctly and redirect" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
-        givenAgentReference(arn, "ABCDEFGH", "personal")
+        testAgentSessionCache.save(
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        givenAgentReference(arn, "ABCDEFGH", personal)
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
@@ -236,7 +245,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientIdentifier" -> validNino.value,
-            "postcode"   -> s"$validPostcode"
+            "postcode"         -> s"$validPostcode"
           )
 
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -248,18 +257,24 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-VAT" should {
       "handle the form correctly and redirect" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate)))
-        givenAgentReference(arn, "ABCDEFGH", "personal")
+        testAgentSessionCache.save(
+          AgentSession(
+            Some(personal),
+            Some(serviceVAT),
+            Some("vrn"),
+            Some(validVrn.value),
+            Some(validRegistrationDate)))
+        givenAgentReference(arn, "ABCDEFGH", personal)
         givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
 
         val requestWithForm =
           request.withFormUrlEncodedBody(
-            "clientIdentifier" -> validVrn.value,
-            "registrationDate.year"   -> "2007",
-            "registrationDate.month"  -> "7",
-            "registrationDate.day"    -> "7"
+            "clientIdentifier"       -> validVrn.value,
+            "registrationDate.year"  -> "2007",
+            "registrationDate.month" -> "7",
+            "registrationDate.day"   -> "7"
           )
 
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -277,7 +292,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display the page correctly" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
       givenTradingName(validNino, "some trading name")
 
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
@@ -299,7 +314,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
       "show /cancel-authorisation/confirm-cancel page as expected" in {
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
@@ -315,7 +330,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
       "show /cancel-authorisation/client-type page as expected" in {
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(false))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
@@ -335,13 +350,15 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display the page correctly" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
       givenTradingName(validNino, "some trading name")
 
       val result = showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-cancel.header")
-      checkHtmlResultWithBodyText(result, "If you cancel your authorisation, you will not be able to report income and expenses for some trading name")
+      checkHtmlResultWithBodyText(
+        result,
+        "If you cancel your authorisation, you will not be able to report income and expenses for some trading name")
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
   }
@@ -355,7 +372,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
       "show /cancel-authorisation/cancelled page as expected" in {
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
         givenCancelledAuthorisationItsa(arn, validNino, 204)
 
@@ -373,7 +390,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
       "show /cancel-authorisation/client-type page as expected" in {
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(false))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
@@ -393,22 +410,24 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display the page correctly" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
       givenGetAgencyNameClientStub(arn)
       givenTradingName(validNino, "Some Client Company")
 
       val result = showCancelled(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "cancel-authorisation.cancelled.header",
-         "cancel-authorisation.cancelled.subheader",
-         "cancel-authorisation.cancelled.print"
-      )
+        "cancel-authorisation.cancelled.subheader",
+        "cancel-authorisation.cancelled.print")
 
       val today = java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM YYYY").withZone(ZoneOffset.UTC))
 
       checkHtmlResultWithBodyText(result, today)
-      checkHtmlResultWithBodyText(result, "My Agency is no longer authorised by Some Client Company to report their income or expenses through software.")
+      checkHtmlResultWithBodyText(
+        result,
+        "My Agency is no longer authorised by Some Client Company to report their income or expenses through software.")
     }
   }
 
@@ -419,7 +438,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val result = controller.noClientFound()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "cancel-authorisation.not-matched.header",
         "cancel-authorisation.not-matched.description",
         "cancel-authorisation.not-matched.advice",

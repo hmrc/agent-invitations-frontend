@@ -135,10 +135,10 @@ class AgentsInvitationController @Inject()(
                                   clientTypeForInvitationSent = clientType))
                               .flatMap { _ =>
                                 clientType match {
-                                  case Some("personal") =>
+                                  case Some(ClientType.personal) =>
                                     Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                                  case Some("business") => confirmAndRedirect(arn, existingSession, false)
-                                  case _                => toFuture(Redirect(agentsRootUrl))
+                                  case Some(ClientType.business) => confirmAndRedirect(arn, existingSession, false)
+                                  case _                         => toFuture(Redirect(agentsRootUrl))
                                 }
                               }
                         }
@@ -195,7 +195,7 @@ class AgentsInvitationController @Inject()(
                   processedRequests <- invitationsService
                                         .createMultipleInvitations(
                                           arn,
-                                          sessionCache.clientType.getOrElse(""),
+                                          sessionCache.clientType,
                                           sessionCache.requests,
                                           featureFlags)
                   _ <- agentSessionCache.save(sessionCache.copy(requests = processedRequests))
@@ -256,7 +256,7 @@ class AgentsInvitationController @Inject()(
         val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
           throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
-        invitationsService.createAgentLink(arn, clientTypeForInvitationSent).flatMap { agentLink =>
+        invitationsService.createAgentLink(arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
           val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
           //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
@@ -272,7 +272,7 @@ class AgentsInvitationController @Inject()(
                     invitationUrl,
                     continueUrlExists,
                     featureFlags.enableTrackRequests,
-                    clientTypeForInvitationSent,
+                    ClientType.fromEnum(clientTypeForInvitationSent),
                     inferredExpiryDate)))
             }
         }

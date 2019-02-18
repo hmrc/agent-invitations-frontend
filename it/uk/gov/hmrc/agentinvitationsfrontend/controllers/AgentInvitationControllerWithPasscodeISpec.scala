@@ -24,6 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -67,9 +68,8 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   }
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
+    override def configure(): Unit =
       bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
-    }
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
@@ -97,7 +97,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 for an authorised whitelisted Agent with OTAC session key in select service page" in {
-      testAgentSessionCache.save(AgentSession(personal))
+      testAgentSessionCache.save(AgentSession(Some(personal)))
       val request =
         FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken, "someOtacToken123"))
       stubFor(
@@ -119,7 +119,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 and don't show the IRV option for an authorised non-whitelisted agent without passcode or OTAC session key in select service page" in {
-      testAgentSessionCache.save(AgentSession(personal))
+      testAgentSessionCache.save(AgentSession(Some(personal)))
       val request = FakeRequest("GET", "/agents/select-service")
       stubFor(
         get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
@@ -142,7 +142,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "POST to /select-service" when {
     "service is IRV" should {
       "redirect to /identify-client if user is whitelisted (has valid OTAC session key)" in {
-        testAgentSessionCache.save(AgentSession(personal))
+        testAgentSessionCache.save(AgentSession(Some(personal)))
         stubFor(
           get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
             .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
@@ -161,7 +161,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        testAgentSessionCache.save(AgentSession(personal))
+        testAgentSessionCache.save(AgentSession(Some(personal)))
         val request = FakeRequest("POST", "/agents/select-service")
         val serviceForm = ServiceTypeForm.form.fill("PERSONAL-INCOME-RECORD")
         val result = controller.submitSelectService(
@@ -174,7 +174,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        testAgentSessionCache.save(AgentSession(personal))
+        testAgentSessionCache.save(AgentSession(Some(personal)))
         val serviceForm = ServiceTypeForm.form.fill("HMRC-MTD-IT")
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -187,7 +187,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     "service is VAT" should {
       "not be restricted by whitelisting" in {
         val request = FakeRequest("POST", "/agents/select-service")
-        testAgentSessionCache.save(AgentSession(business))
+        testAgentSessionCache.save(AgentSession(Some(business)))
         val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
         val result = controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))

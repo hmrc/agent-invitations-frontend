@@ -242,9 +242,11 @@ object AgentsFastTrackInvitationController {
   val validateFastTrackForm: Constraint[AgentFastTrackRequest] =
     Constraint[AgentFastTrackRequest] { formData: AgentFastTrackRequest =>
       formData match {
-        case AgentFastTrackRequest(Some("personal") | None, HMRCMTDIT, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCMTDIT, "ni", clientId, _)
+            if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(Some("personal") | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _)
+            if Nino.isValid(clientId) =>
           Valid
         case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId) => Valid
         case _                                                                                 => Invalid(ValidationError("INVALID_SUBMISSION"))
@@ -255,7 +257,9 @@ object AgentsFastTrackInvitationController {
     Form(
       mapping(
         "clientType" -> optional(
-          lowerCaseText.verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)),
+          lowerCaseText
+            .verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)
+            .transform(ClientType.toEnum, ClientType.fromEnum)),
         "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
@@ -273,10 +277,10 @@ object AgentsFastTrackInvitationController {
             request.knownFact))
       }).verifying(validateFastTrackForm))
 
-  def clientTypeFor(clientType: Option[String], service: String): Option[String] =
+  def clientTypeFor(clientType: Option[ClientType], service: String): Option[ClientType] =
     clientType.orElse(service match {
-      case "HMRC-MTD-IT"            => Some("personal")
-      case "PERSONAL-INCOME-RECORD" => Some("personal")
+      case "HMRC-MTD-IT"            => Some(ClientType.personal)
+      case "PERSONAL-INCOME-RECORD" => Some(ClientType.personal)
       case _                        => None
     })
 
