@@ -1,0 +1,8 @@
+# microservice specific routes
+
+# Invitations ---------------------------------------------------------------------------------------------------------
+
+# Agent Endpoints
+GET         /agents                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.agentsRoot
+GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showClientType
+POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitClientType

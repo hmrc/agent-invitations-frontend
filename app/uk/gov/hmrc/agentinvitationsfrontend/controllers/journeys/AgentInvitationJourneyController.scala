@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
+
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.single
@@ -23,6 +24,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -66,7 +68,7 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
     error match {
-      case Errors.UnknownState => Redirect(routes.AgentsInvitationController.agentsRoot())
+      case Errors.UnknownState => Redirect(getCallFor(Start))
       case Errors.TransitionNotAllowed(origin, breadcrumbs, _) =>
         renderState(origin, breadcrumbs)(request) // renders current state back
       case Errors.GenericError(ex) => throw ex //delegates to the global ErrorHandler
@@ -76,7 +78,7 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we decide how to render or where to redirect after state transition */
   override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
     state match {
-      case Start => Redirect(routes.AgentsInvitationController.showClientType())
+      case Start => Redirect(routes.AgentInvitationJourneyController.showClientType())
       case SelectClientType =>
         Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
     }
@@ -91,15 +93,15 @@ class AgentInvitationJourneyController @Inject()(
       }
   }
 
-  private def getCallForState(state: State): Call = state match {
-    case Start                 => routes.AgentsInvitationController.agentsRoot()
-    case SelectClientType      => routes.AgentsInvitationController.showClientType()
-    case SelectPersonalService => routes.AgentsInvitationController.showSelectService()
-    case SelectBusinessService => routes.AgentsInvitationController.showSelectService()
+  private def getCallFor(state: State): Call = state match {
+    case Start            => routes.AgentInvitationJourneyController.agentsRoot()
+    case SelectClientType => routes.AgentInvitationJourneyController.showClientType()
+    //case SelectPersonalService => routes.AgentInvitationJourneyController.showSelectService()
+    //case SelectBusinessService => routes.AgentInvitationJourneyController.showSelectService()
   }
 
   private def backLinkFor(breadcrumbs: List[State]): Option[String] =
-    breadcrumbs.headOption.map(getCallForState).map(_.url)
+    breadcrumbs.headOption.map(getCallFor).map(_.url)
 
 }
 

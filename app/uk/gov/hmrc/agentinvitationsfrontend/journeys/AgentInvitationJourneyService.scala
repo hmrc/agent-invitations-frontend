@@ -29,7 +29,6 @@ trait AgentInvitationJourneyService extends PersistentJourneyService {
   override val model = AgentInvitationJourneyModel
 }
 
-@Singleton
 class KeystoreCachedAgentInvitationJourneyService @Inject()(session: SessionCache)
     extends AgentInvitationJourneyService {
 
