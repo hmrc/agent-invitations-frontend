@@ -50,8 +50,8 @@ trait PersistentJourneyService extends JourneyService {
     ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]] =
     for {
       initialState <- fetch
-      endStateOrError <- initialState match {
-                          case Some((state, breadcrumbs)) =>
+      endStateOrError <- initialState.getOrElse((model.root, Nil)) match {
+                          case (state, breadcrumbs) =>
                             if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap {
                               case Right(endState) =>
                                 save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs.take(9)))
@@ -59,7 +59,6 @@ trait PersistentJourneyService extends JourneyService {
                               case Left(error) => model.fail(error).map(repack)
                             } else
                               model.fail(model.transitionNotAllowed(state, breadcrumbs, transition)).map(repack)
-                          case None => model.fail(model.unknownState).map(repack)
                         }
     } yield endStateOrError
 

@@ -36,9 +36,6 @@ trait JourneyModel {
   /** Where your journey starts by default */
   def root: State
 
-  /** Error to report when current state is unknown. To be used by persistence service. */
-  def unknownState: Error
-
   /** Error to report an attempt to make invalid transition */
   def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error
 

@@ -24,13 +24,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   def root: State = States.Start
 
-  def unknownState: Error = Errors.UnknownState
   def errorFor(ex: Exception): Error = Errors.GenericError(ex)
   def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error =
     Errors.TransitionNotAllowed(state, breadcrumbs, transition)
 
   object Errors {
-    case object UnknownState extends Error
     case class TransitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition) extends Error
     case class GenericError(ex: Exception) extends Error
   }

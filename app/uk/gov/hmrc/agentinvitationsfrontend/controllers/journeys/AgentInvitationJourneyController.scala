@@ -68,7 +68,6 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
     error match {
-      case Errors.UnknownState => Redirect(getCallFor(Start))
       case Errors.TransitionNotAllowed(origin, breadcrumbs, _) =>
         renderState(origin, breadcrumbs)(request) // renders current state back
       case Errors.GenericError(ex) => throw ex //delegates to the global ErrorHandler

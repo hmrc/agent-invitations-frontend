@@ -19,6 +19,8 @@ class TestAgentInvitationJourneyService extends AgentInvitationJourneyService {
     ec: ExecutionContext): Unit =
     Await.result(save(state, Nil), timeout)
 
+  def get: Option[StateAndBreadcrumbs] = state
+
   override protected def fetch(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[(model.State, List[model.State])]] = Future.successful(
