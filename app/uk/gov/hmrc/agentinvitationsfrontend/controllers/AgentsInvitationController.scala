@@ -92,8 +92,12 @@ class AgentsInvitationController @Inject()(
     handleGetSelectServicePage()
   }
 
-  val submitSelectService: Action[AnyContent] = Action.async { implicit request =>
-    handleSubmitSelectService()
+  val submitSelectPersonalService: Action[AnyContent] = Action.async { implicit request =>
+    handleSubmitSelectServicePersonal(agentConfirmationForm("error.business-service.required"))
+  }
+
+  val submitSelectBusinessService: Action[AnyContent] = Action.async { implicit request =>
+    handleSubmitSelectServiceBusiness(agentConfirmationForm("error.business-service.required"))
   }
 
   val showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>

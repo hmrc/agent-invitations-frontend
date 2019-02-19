@@ -94,9 +94,14 @@ class AgentLedDeAuthController @Inject()(
       handleGetSelectServicePage(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
   }
 
-  def submitSelectService: Action[AnyContent] = Action.async { implicit request =>
+  def submitSelectPersonalService: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(
-      handleSubmitSelectService(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
+      handleSubmitSelectServicePersonal(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
+  }
+
+  def submitSelectBusinessService: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(
+      handleSubmitSelectServiceBusiness(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
   }
 
   def showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
@@ -266,7 +271,9 @@ class AgentLedDeAuthController @Inject()(
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
-  override def submitServiceCall: Call = routes.AgentLedDeAuthController.submitSelectService()
+  override def submitServicePersonalCall: Call = routes.AgentLedDeAuthController.submitSelectPersonalService()
+
+  override def submitServiceBusinessCall: Call = routes.AgentLedDeAuthController.submitSelectBusinessService()
 
   override def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
@@ -278,7 +285,7 @@ class AgentLedDeAuthController @Inject()(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
     basketFlag: Boolean,
     backLink: String)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceCall)
+    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceBusinessCall)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 

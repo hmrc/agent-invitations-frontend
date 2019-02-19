@@ -17,8 +17,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
 
   "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
+    val request = FakeRequest("POST", "/agents/select-personal-service")
+    val submitService = controller.submitSelectPersonalService()
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
       val sessionId = UUID.randomUUID().toString

@@ -182,9 +182,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, selectService)
   }
 
-  "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
+  "POST /agents/select-personal-service" should {
+    val request = FakeRequest("POST", "/agents/select-personal-service")
+    val submitService = controller.submitSelectPersonalService()
 
     "show errors on the page if the form contains invalid service selection" in {
       val sessionId = UUID.randomUUID().toString
