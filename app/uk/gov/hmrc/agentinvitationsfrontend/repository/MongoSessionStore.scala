@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.repo
+package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import play.api.Logger
 import play.api.libs.json._

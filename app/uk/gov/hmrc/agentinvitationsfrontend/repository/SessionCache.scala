@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.repo
+package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import play.api.Logger
 import play.api.libs.json.{Reads, Writes}
@@ -35,9 +35,9 @@ trait SessionCache[T] extends MongoSessionStore[T] {
 
   def fetchAndClear(implicit hc: HeaderCarrier, reads: Reads[T]): Future[Option[T]] = {
     val result = for {
-      clientConsentsState <- get
-      _                   <- delete()
-    } yield clientConsentsState
+      cache <- get
+      _     <- delete()
+    } yield cache
 
     result.flatMap {
       case Right(cache) => cache
