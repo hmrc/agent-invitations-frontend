@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, AuthorisedAgent, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, AuthorisedAgent, ClientType, Confirmation}
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -40,9 +40,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
   object States {
     case object Start extends State
     case object SelectClientType extends State
-    case class SelectedClientType(clientType: ClientType) extends State
+    case class ClientTypeSelected(clientType: ClientType) extends State
     case class SelectPersonalService(basket: Basket, services: Set[String]) extends State
     case class SelectBusinessService(basket: Basket) extends State
+    case class PersonalServiceSelected(service: String, basket: Basket) extends State
+    case class BusinessServiceSelected(basket: Basket) extends State
   }
 
   object Transitions {
@@ -57,16 +59,28 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType => goto(SelectedClientType(clientType))
+      case SelectClientType => goto(ClientTypeSelected(clientType))
     }
 
     def showSelectService(agent: AuthorisedAgent) = Transition {
-      case SelectedClientType(ClientType.personal) =>
+      case ClientTypeSelected(ClientType.personal) =>
         goto(
           SelectPersonalService(
             Seq.empty,
             if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT)))
-      case SelectedClientType(ClientType.business) => goto(SelectBusinessService(Seq.empty))
+      case ClientTypeSelected(ClientType.business) => goto(SelectBusinessService(Seq.empty))
+    }
+
+    def selectedPersonalService(agent: AuthorisedAgent)(service: String) = Transition {
+      case SelectPersonalService(basket, services) =>
+        if (services.contains(service)) goto(PersonalServiceSelected(service, basket))
+        else goto(SelectPersonalService(basket, services))
+    }
+
+    def selectedBusinessService(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
+      case SelectBusinessService(basket) =>
+        if (confirmed.choice) goto(BusinessServiceSelected(basket))
+        else goto(SelectClientType)
     }
 
   }

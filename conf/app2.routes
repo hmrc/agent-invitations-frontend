@@ -7,4 +7,5 @@ GET         /agents                                             @uk.gov.hmrc.age
 GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showClientType
 POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitClientType
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSelectService
-POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitSelectService
+POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitPersonalSelectService
+POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitBusinessSelectService

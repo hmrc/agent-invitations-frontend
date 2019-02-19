@@ -15,80 +15,106 @@
  */
 
 package journeys
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Errors.TransitionNotAllowed
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, Error, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationJourneyModelSpec extends UnitSpec {
+class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error, State] {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  case class JourneyAt(initialState: State)
-      extends AgentInvitationJourneyService with TestStorage[(State, List[State])] {
+  case class given(initialState: State) extends AgentInvitationJourneyService with TestStorage[(State, List[State])] {
     await(save((initialState, Nil)))
+
+    def when(transition: Transition): Either[Error, (State, List[State])] =
+      await(super.apply(transition))
   }
 
+  val emptyBasket: Basket = Nil
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
 
   "AgentInvitationJourneyService" when {
     "at state Start" should {
       "transition to Start given startJourney" in {
-        await(JourneyAt(Start) apply startJourney) shouldBe Right((Start, Nil))
+        given(Start) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        await(JourneyAt(Start) apply showSelectClientType(authorisedAgent)) shouldBe Right(
-          (SelectClientType, List(Start)))
+        given(Start) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType)
       }
       "return error given selectedClientType(Personal)" in {
-        await(JourneyAt(Start) apply selectedClientType(authorisedAgent)(ClientType.personal)) should matchPattern {
-          case Left(TransitionNotAllowed(Start, Nil, _)) =>
-        }
+        val selectedClientTypeT = selectedClientType(authorisedAgent)(ClientType.personal)
+        given(Start) when selectedClientTypeT should transitionBeNotAllowed
       }
     }
     "at state SelectClientType" should {
       "transition to Start given startJourney" in {
-        await(JourneyAt(SelectClientType) apply startJourney) shouldBe Right((Start, List(SelectClientType)))
+        given(SelectClientType) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        await(JourneyAt(SelectClientType) apply showSelectClientType(authorisedAgent)) shouldBe Right(
-          (SelectClientType, Nil))
+        given(SelectClientType) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType)
       }
       "transition to SelectPersonalService given selectedClientType(personal)" in {
-        await(JourneyAt(SelectClientType) apply selectedClientType(authorisedAgent)(ClientType.personal)) shouldBe Right(
-          (SelectedClientType(ClientType.personal), List(SelectClientType)))
+        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
+          ClientTypeSelected(ClientType.personal))
       }
       "transition to SelectBusinessService given selectedClientType(business)" in {
-        await(JourneyAt(SelectClientType) apply selectedClientType(authorisedAgent)(ClientType.business)) shouldBe Right(
-          (SelectedClientType(ClientType.business), List(SelectClientType)))
+        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
+          ClientTypeSelected(ClientType.business))
       }
     }
-    "at state SelectedClientType" should {
+    "at state ClientTypeSelected" should {
       "transition to Start given startJourney" in {
-        await(JourneyAt(SelectedClientType(ClientType.business)) apply startJourney) shouldBe Right(
-          (Start, List(SelectedClientType(ClientType.business))))
+        given(ClientTypeSelected(ClientType.business)) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        await(JourneyAt(SelectedClientType(ClientType.business)) apply showSelectClientType(authorisedAgent)) shouldBe Right(
-          (SelectClientType, List(SelectedClientType(ClientType.business))))
+        given(ClientTypeSelected(ClientType.business)) when showSelectClientType(authorisedAgent) should thenGo(
+          SelectClientType)
       }
       "transition to SelectPersonalService with empty basket given showSelectService" in {
-        await(JourneyAt(SelectedClientType(ClientType.personal)) apply showSelectService(authorisedAgent)) shouldBe Right(
-          (
-            SelectPersonalService(Seq.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
-            List(SelectedClientType(ClientType.personal))))
+        given(ClientTypeSelected(ClientType.personal)) when showSelectService(authorisedAgent) should thenGo(
+          SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
       }
-      "transition to SelectBusinessService with empty basket given SelectedClientType(business)" in {
-        await(JourneyAt(SelectedClientType(ClientType.business)) apply showSelectService(authorisedAgent)) shouldBe Right(
-          (SelectBusinessService(Seq.empty), List(SelectedClientType(ClientType.business))))
+      "transition to SelectBusinessService with empty basket given ClientTypeSelected(business)" in {
+        given(ClientTypeSelected(ClientType.business)) when showSelectService(authorisedAgent) should thenGo(
+          SelectBusinessService(emptyBasket))
+      }
+    }
+    "at state SelectPersonalService" should {
+      "transition to Start given startJourney" in {
+        given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when startJourney should thenGo(
+          Start)
+      }
+      "transition to SelectPersonalService given showSelectPersonalService" in {
+        await(
+          given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
+            authorisedAgent)(HMRCMTDIT)) should thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
+      }
+      "throw an InvalidService error when the service is invalid" in {
+        await(
+          given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
+            authorisedAgent)("foo")) should thenGo(
+          SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
+      }
+    }
+    "at state SelectBusinessService" should {
+      "transition to Start given startJourney" in {
+        given(SelectBusinessService(emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to SelectBusinessService given selectedBusinessService when yes is selected" in {
+        given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
+          BusinessServiceSelected(emptyBasket))
+      }
+      "transition to SelectClientType given selectedBusinessService when no is selected" in {
+        given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
+          SelectClientType)
       }
     }
   }

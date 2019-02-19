@@ -66,7 +66,10 @@ class AgentInvitationJourneyController @Inject()(
     authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)(
       SelectClientTypeFormValidationFailed)
   val showSelectService = authorisedAgentAction(Transitions.showSelectService)
-  val submitSelectService = Action(NotImplemented) //authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedClientType)
+  val submitPersonalSelectService = authorisedAgentActionWithForm(SelectPersonalServiceForm)(
+    Transitions.selectedPersonalService)(SelectPersonalServiceFormValidationFailed)
+  val submitBusinessSelectService = authorisedAgentActionWithForm(SelectBusinessServiceForm)(
+    Transitions.selectedBusinessService)(SelectBusinessServiceFormValidationFailed)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -83,9 +86,9 @@ class AgentInvitationJourneyController @Inject()(
       case Start => Redirect(routes.AgentInvitationJourneyController.showClientType())
       case SelectClientType =>
         Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
-      case SelectedClientType(ClientType.personal) =>
+      case ClientTypeSelected(ClientType.personal) =>
         Redirect(routes.AgentInvitationJourneyController.showSelectService())
-      case SelectedClientType(ClientType.business) =>
+      case ClientTypeSelected(ClientType.business) =>
         Redirect(routes.AgentInvitationJourneyController.showSelectService())
       case SelectPersonalService(basket, services) =>
         Ok(select_service(SelectPersonalServiceForm, SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
@@ -95,9 +98,11 @@ class AgentInvitationJourneyController @Inject()(
             SelectBusinessServiceForm,
             BusinessSelectServicePageConfig(
               basket.nonEmpty,
-              routes.AgentInvitationJourneyController.submitSelectService(),
+              routes.AgentInvitationJourneyController.submitBusinessSelectService(),
               backLinkFor(breadcrumbs))
           ))
+      case PersonalServiceSelected(service, basket) => NotImplemented
+      case BusinessServiceSelected(basket)          => NotImplemented
     }
   }
 
@@ -115,6 +120,7 @@ class AgentInvitationJourneyController @Inject()(
     case SelectClientType            => routes.AgentInvitationJourneyController.showClientType()
     case SelectPersonalService(_, _) => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService(_)    => routes.AgentInvitationJourneyController.showSelectService()
+    case _                           => throw new Exception(s"Link not found for $state")
   }
 
   private def backLinkFor(breadcrumbs: List[State]): Option[String] =
@@ -145,5 +151,7 @@ object AgentInvitationJourneyController {
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
   case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
+  case class SelectPersonalServiceFormValidationFailed(form: Form[String]) extends FormValidationError
+  case class SelectBusinessServiceFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
 
 }

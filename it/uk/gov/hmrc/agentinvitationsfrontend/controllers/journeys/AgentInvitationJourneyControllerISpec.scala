@@ -3,6 +3,7 @@ import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -73,7 +74,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      journeyState.get shouldBe Some((SelectedClientType(ClientType.personal), List(SelectClientType, Start)))
+      journeyState.get shouldBe Some((ClientTypeSelected(ClientType.personal), List(SelectClientType, Start)))
     }
 
     "redirect to /agents/select-service after selecting business client type" in {
@@ -85,7 +86,57 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      journeyState.get shouldBe Some((SelectedClientType(ClientType.business), List(SelectClientType, Start)))
+      journeyState.get shouldBe Some((ClientTypeSelected(ClientType.business), List(SelectClientType, Start)))
+    }
+  }
+
+  "GET /agents/select-service" should {
+    val request = FakeRequest("GET", "/agents/select-service")
+
+    "show the select service page" in {
+      journeyState.set(ClientTypeSelected(ClientType.personal), List(SelectClientType, Start))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("title.suffix.agents")),
+        htmlEscapedMessage("select-service.header"),
+        htmlEscapedMessage("personal-select-service.itsa"),
+        htmlEscapedMessage("personal-select-service.personal-income-viewer"),
+        htmlEscapedMessage("select-service.vat")
+      )
+      journeyState.get shouldBe Some(
+        (
+          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          List(ClientTypeSelected(ClientType.personal), SelectClientType, Start)))
+    }
+  }
+
+  "POST /agents/select-personal-service" should {
+    val request = FakeRequest("POST", "/agents/select-personal-service")
+
+    "accept valid service choice and redirect" in {
+      journeyState.set(
+        SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+        List(ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+
+      journeyState.get shouldBe Some(
+        PersonalServiceSelected(HMRCMTDIT, Nil),
+        List(
+          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          ClientTypeSelected(ClientType.personal),
+          SelectClientType,
+          Start)
+      )
     }
   }
 }

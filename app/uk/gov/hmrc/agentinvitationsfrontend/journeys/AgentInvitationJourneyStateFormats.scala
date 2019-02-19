@@ -21,23 +21,29 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
-  val SelectedClientTypeFormat = Json.format[SelectedClientType]
+  val SelectedClientTypeFormat = Json.format[ClientTypeSelected]
   val SelectPersonalServiceFormat = Json.format[SelectPersonalService]
+  val SelectedPersonalServiceFormat = Json.format[PersonalServiceSelected]
   val SelectBusinessServiceFormat = Json.format[SelectBusinessService]
+  val SelectedBusinessServiceFormat = Json.format[BusinessServiceSelected]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: SelectedClientType    => SelectedClientTypeFormat.writes(s)
-    case s: SelectPersonalService => SelectPersonalServiceFormat.writes(s)
-    case s: SelectBusinessService => SelectBusinessServiceFormat.writes(s)
+    case s: ClientTypeSelected      => SelectedClientTypeFormat.writes(s)
+    case s: SelectPersonalService   => SelectPersonalServiceFormat.writes(s)
+    case s: PersonalServiceSelected => SelectedPersonalServiceFormat.writes(s)
+    case s: SelectBusinessService   => SelectBusinessServiceFormat.writes(s)
+    case s: BusinessServiceSelected => SelectedBusinessServiceFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "Start"                 => JsSuccess(Start)
-    case "SelectClientType"      => JsSuccess(SelectClientType)
-    case "SelectedClientType"    => SelectedClientTypeFormat.reads(properties)
-    case "SelectPersonalService" => SelectPersonalServiceFormat.reads(properties)
-    case "SelectBusinessService" => SelectBusinessServiceFormat.reads(properties)
-    case _                       => JsError(s"Unknown state name $stateName")
+    case "Start"                   => JsSuccess(Start)
+    case "SelectClientType"        => JsSuccess(SelectClientType)
+    case "ClientTypeSelected"      => SelectedClientTypeFormat.reads(properties)
+    case "SelectPersonalService"   => SelectPersonalServiceFormat.reads(properties)
+    case "PersonalServiceSelected" => SelectedPersonalServiceFormat.reads(properties)
+    case "SelectBusinessService"   => SelectBusinessServiceFormat.reads(properties)
+    case "BusinessServiceSelected" => SelectedBusinessServiceFormat.reads(properties)
+    case _                         => JsError(s"Unknown state name $stateName")
   }
 
 }
