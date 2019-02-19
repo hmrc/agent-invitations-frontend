@@ -67,13 +67,22 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "PersonalServiceSelected" in {
         Json.toJson(PersonalServiceSelected(HMRCMTDIT, Nil)) shouldBe Json.obj(
-          "state" -> "PersonalServiceSelected",
-          "properties" -> Json
-            .obj("service" -> "HMRC-MTD-IT", "properties" -> Json.obj("basket" -> JsArray()))
+          "state"      -> "PersonalServiceSelected",
+          "properties" -> Json.obj("service" -> "HMRC-MTD-IT", "basket" -> JsArray())
         )
         Json
-          .parse("""{"state":"SelectPersonalService", "properties": {"basket": [], "service": "HMRC-MTD-IT"}}""")
-          .as[State] shouldBe SelectPersonalService(Seq.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))
+          .parse("""{"state":"PersonalServiceSelected", "properties": {"basket": [], "service": "HMRC-MTD-IT"}}""")
+          .as[State] shouldBe PersonalServiceSelected(HMRCMTDIT, Nil)
+      }
+
+      "BusinessServiceSelected" in {
+        Json.toJson(BusinessServiceSelected(Nil)) shouldBe Json.obj(
+          "state"      -> "BusinessServiceSelected",
+          "properties" -> Json.obj("basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"BusinessServiceSelected", "properties": {"basket": []}}""")
+          .as[State] shouldBe BusinessServiceSelected(Seq.empty)
       }
     }
 

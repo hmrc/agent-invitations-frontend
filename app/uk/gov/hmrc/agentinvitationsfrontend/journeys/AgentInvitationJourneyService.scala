@@ -16,34 +16,46 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Named, Singleton}
 import play.api.libs.json._
+import play.modules.reactivemongo.ReactiveMongoComponent
+import uk.gov.hmrc.agentinvitationsfrontend.repository.SessionCache
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.cache.client.SessionCache
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[KeystoreCachedAgentInvitationJourneyService])
+@ImplementedBy(classOf[MongoDBCachedAgentInvitationJourneyService])
 trait AgentInvitationJourneyService extends PersistentJourneyService {
 
   override val model = AgentInvitationJourneyModel
 }
 
-class KeystoreCachedAgentInvitationJourneyService @Inject()(session: SessionCache)
+@Singleton
+class MongoDBCachedAgentInvitationJourneyService @Inject()(
+  @Named("mongodb.session.expireAfterSeconds") val _expireAfterSeconds: Int,
+  _mongo: ReactiveMongoComponent,
+  _ec: ExecutionContext)
     extends AgentInvitationJourneyService {
 
-  val id = "agent-invitation-journey"
+  val id = "agentInvitationJourney"
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
   implicit val formats1: Format[model.State] = AgentInvitationJourneyStateFormats.formats
   implicit val formats2: Format[PersistentState] = Json.format[PersistentState]
 
+  final val cache = new SessionCache[PersistentState] {
+    override val expireAfterSeconds: Int = _expireAfterSeconds
+    override val mongo: ReactiveMongoComponent = _mongo
+    override val sessionName: String = id
+    override implicit val ec: ExecutionContext = _ec
+  }
+
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
-    session.fetchAndGetEntry[PersistentState](id).map(_.map(ps => (ps.state, ps.breadcrumbs)))
+    cache.fetch.map(_.map(ps => (ps.state, ps.breadcrumbs)))
 
   protected def save(
     state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
-    session.cache(id, PersistentState(state._1, state._2)).map(_ => state)
+    cache.save(PersistentState(state._1, state._2)).map(_ => state)
 
 }
