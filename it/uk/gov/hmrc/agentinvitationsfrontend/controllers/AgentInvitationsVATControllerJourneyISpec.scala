@@ -22,8 +22,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(Random.alphanumeric.take(10).toString())))
 
   "POST /agents/select-service" should {
-    val request = FakeRequest("POST", "/agents/select-service")
-    val submitService = controller.submitSelectService()
+    val request = FakeRequest("POST", "/agents/select-business-service")
+    val submitService = controller.submitSelectBusinessService()
 
     "return 303 for authorised Agent with valid VAT service when YES is selected, redirect to identify-client" in {
       val sessionId = UUID.randomUUID().toString

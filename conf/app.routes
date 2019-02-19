@@ -9,7 +9,8 @@ POST        /agents/identify-client                             @uk.gov.hmrc.age
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showInvitationSent
 GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.continueAfterInvitationSent
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showSelectService
-POST        /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitSelectService
+POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitSelectPersonalService
+POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitSelectBusinessService
 GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showClientType
 POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitClientType
 GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showConfirmClient
@@ -31,7 +32,8 @@ GET         /agents/cancel-authorisation                        @uk.gov.hmrc.age
 GET         /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showClientType
 POST        /agents/cancel-authorisation/client-type            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitClientType
 GET         /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showSelectService
-POST        /agents/cancel-authorisation/select-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitSelectService
+POST        /agents/cancel-authorisation/select-personal-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitSelectPersonalService
+POST        /agents/cancel-authorisation/select-business-service         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitSelectBusinessService
 GET         /agents/cancel-authorisation/identify-client        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showIdentifyClient
 POST        /agents/cancel-authorisation/identify-client        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitIdentifyClient
 GET         /agents/cancel-authorisation/confirm-client         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showConfirmClient

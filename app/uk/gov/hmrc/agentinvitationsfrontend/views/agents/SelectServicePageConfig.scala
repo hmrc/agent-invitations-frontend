@@ -17,7 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
 case class SelectServicePageConfig(basketFlag: Boolean, featureFlags: FeatureFlags, services: Set[String])(
@@ -37,5 +38,7 @@ case class SelectServicePageConfig(basketFlag: Boolean, featureFlags: FeatureFla
 
     map.toSeq
   }
+
+  val submitCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
 
 }

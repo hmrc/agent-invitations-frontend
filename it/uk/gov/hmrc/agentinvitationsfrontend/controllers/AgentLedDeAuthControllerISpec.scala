@@ -115,8 +115,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal))))
 
-      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
-      val submitSelectService = controller.submitSelectService()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
+      val submitSelectService = controller.submitSelectPersonalService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value, sessionId))
       status(result) shouldBe 303
@@ -130,8 +130,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(business))))
 
-      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
-      val submitSelectService = controller.submitSelectService()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-business-service")
+      val submitSelectService = controller.submitSelectBusinessService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value, sessionId))
       status(result) shouldBe 303
@@ -145,8 +145,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal))))
 
-      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
-      val submitSelectService = controller.submitSelectService()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
+      val submitSelectService = controller.submitSelectPersonalService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-BLAH"), arn.value, sessionId))
       status(result) shouldBe 200

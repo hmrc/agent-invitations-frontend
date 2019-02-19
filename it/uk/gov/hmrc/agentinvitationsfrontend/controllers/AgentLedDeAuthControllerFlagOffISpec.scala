@@ -93,8 +93,8 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST /cancel-authorisation/select-service" should {
 
     "return 401 when flag is off" in {
-      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
-      val submitSelectService = controller.submitSelectService()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
+      val submitSelectService = controller.submitSelectPersonalService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 501

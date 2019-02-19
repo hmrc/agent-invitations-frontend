@@ -135,19 +135,7 @@ abstract class BaseInvitationController(
       case _ => Redirect(clientTypeCall)
     }
 
-  protected def handleSubmitSelectService(
-    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
-    implicit hc: HeaderCarrier,
-    request: Request[_]): Future[Result] =
-    agentSessionCache.fetch.flatMap { car =>
-      car.flatMap(_.clientType) match {
-        case Some(ClientType.personal) => handleSubmitSelectServicePersonal(businessForm)
-        case Some(ClientType.business) => handleSubmitSelectServiceBusiness(businessForm)
-        case _                         => Redirect(clientTypeCall)
-      }
-    }
-
-  private def handleSubmitSelectServicePersonal(
+  protected def handleSubmitSelectServicePersonal(
     businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
@@ -184,7 +172,7 @@ abstract class BaseInvitationController(
         )
     }
 
-  private def handleSubmitSelectServiceBusiness(
+  protected def handleSubmitSelectServiceBusiness(
     businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       businessForm
@@ -736,7 +724,9 @@ abstract class BaseInvitationController(
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
-  def submitServiceCall: Call = routes.AgentsInvitationController.submitSelectService()
+  def submitServicePersonalCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
+
+  def submitServiceBusinessCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
 
   def selectServicePage(form: Form[String] = ServiceTypeForm.form, enabledServices: Set[String], basketFlag: Boolean)(
     implicit request: Request[_]): Appendable =
@@ -744,7 +734,9 @@ abstract class BaseInvitationController(
 
   def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
-    business_select_service(form, BusinessSelectServicePageConfig(basketFlag, submitServiceCall, Some(backLinkUrl)))
+    business_select_service(
+      form,
+      BusinessSelectServicePageConfig(basketFlag, submitServiceBusinessCall, Some(backLinkUrl)))
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 
