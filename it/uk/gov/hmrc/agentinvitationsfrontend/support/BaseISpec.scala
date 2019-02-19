@@ -18,7 +18,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.repo.{AgentSessionCache, ClientConse
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -39,8 +38,6 @@ abstract class BaseISpec
 
   lazy val sessionStore: AgentSessionCache  = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
-
-  def headerCarrier(sessionId: String) = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
 
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()

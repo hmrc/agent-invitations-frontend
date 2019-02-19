@@ -1,11 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours {
 
@@ -56,6 +60,7 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   }
 
   lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /cancel-authorisation/client-type" should {
 

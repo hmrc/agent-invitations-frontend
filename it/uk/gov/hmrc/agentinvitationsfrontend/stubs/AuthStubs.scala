@@ -4,15 +4,15 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel}
-import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs {
   me: WireMockSupport =>
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String, sessionId: String = "session12345"): FakeRequest[A] =
-    authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn), sessionId)
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] =
+    authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
   def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) =
     authenticatedClient(request, "Individual", Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
@@ -23,7 +23,7 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], sessionId: String = "clientSession12345"): FakeRequest[A] = {
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -68,10 +68,10 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Client Bearer XYZ", SessionKeys.sessionId -> sessionId)
+    request.withSession(SessionKeys.authToken -> "Client Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A], sessionId: String = "clientSession-12345"): FakeRequest[A] = {
+  def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -104,7 +104,7 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
   def authorisedAsAnyClientFalse[A](request: FakeRequest[A], sessionId: String = "clientSession-1234567"): FakeRequest[A] = {
@@ -184,7 +184,7 @@ trait AuthStubs {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
-  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment, sessionId: String): FakeRequest[A] = {
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -204,7 +204,7 @@ trait AuthStubs {
          |]}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit =

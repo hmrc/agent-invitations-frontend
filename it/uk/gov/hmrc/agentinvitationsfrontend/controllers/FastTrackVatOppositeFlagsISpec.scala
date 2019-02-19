@@ -12,6 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
@@ -58,6 +59,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   val agentSession = AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack)
 
@@ -175,10 +177,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
     val request = FakeRequest()
     "display the check details page when known fact is not required and provided for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession))
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request,    arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -186,10 +186,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "display alternate check details page when known fact is not required and not provided for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(knownFact = None, fromFastTrack = fromFastTrack)))
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request,    arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -197,10 +195,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "display alternate check details page when client-type is required and not provided for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = None)))
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request,    arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
@@ -227,13 +223,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = Some(business))))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -253,13 +247,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", personal)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = Some(personal), fromFastTrack = fromFastTrack)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -279,13 +271,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
         "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = None, fromFastTrack = fromFastTrack)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
     }
@@ -294,13 +284,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = None, knownFact = None, fromFastTrack = fromFastTrack)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -322,13 +310,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenAgentReference(arn, "BBBBBBBB", personal)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(clientType = None, fromFastTrack = fromFastTrack)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -337,7 +323,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result2 = await(
         controller.submitClientType(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value, sessionId)))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*),    arn.value)))
       status(result2) shouldBe 303
       redirectLocation(result2) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -354,13 +340,11 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
         "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession.copy(fromFastTrack = fromFastTrack)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("checkDetails" -> "false")))
+          authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
@@ -369,10 +353,9 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
   "GET /agents/more-details" should {
     val request = FakeRequest()
     "display the known fact page when known fact is required and provided for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
       await(sessionStore.save(agentSession.copy(clientType = Some(business), fromFastTrack = fromFastTrack, knownFact = None)))
-      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request,    arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
       checkHtmlResultWithBodyText(
         result,
@@ -405,11 +388,9 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
         "knownFact.day"        -> "07"
       )
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(agentSession))
 
-      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value, sessionId)))
+      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm,    arn.value)))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }

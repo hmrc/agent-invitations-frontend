@@ -13,6 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, _}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
@@ -58,16 +59,15 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val fastTrackController: AgentsFastTrackInvitationController =
     app.injector.instanceOf[AgentsFastTrackInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /agents/identify-client" when {
     val request = FakeRequest("GET", "/agents/identify-client")
 
     "not show a postcode entry field if service is ITSA" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal), Some(serviceITSA))))
 
-      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -84,11 +84,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "not show a vat registration date entry field if service is VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT))))
 
-      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -103,11 +101,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "not show a date of birth entry field if service is IRV" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(business), Some(servicePIR))))
 
-      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val resultFuture = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(resultFuture) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -127,8 +123,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitIdentifyClient = controller.submitIdentifyClient()
 
     "return 303 review-authorisation for ITSA" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(personal), Some(serviceITSA), Some(""), Some(""), fromFastTrack = fromManual)
       await(sessionStore.save(formData))
 
@@ -150,7 +144,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val form = ItsaClientForm.form(true).fill(ItsaClient(validNino.nino, None))
 
       val result = submitIdentifyClient(
-        authorisedAsValidAgent(request, arn.value, sessionId)
+        authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
@@ -158,8 +152,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 already-authorisation-present when there is already a relationship between the agent and client" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), fromFastTrack = fromManual)
       await(sessionStore.save(formData))
 
@@ -169,7 +161,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       val form = ItsaClientForm.form(true).fill(ItsaClient(validNino.nino, None))
       val result = submitIdentifyClient(
-        authorisedAsValidAgent(request, arn.value, sessionId)
+        authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
@@ -178,8 +170,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 confirm-client for IRV" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
       val formData = AgentSession(Some(personal), Some(servicePIR), Some(""), Some(""), fromFastTrack = fromManual)
       await(sessionStore.save(formData))
@@ -196,7 +186,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val result = submitIdentifyClient(
-        authorisedAsValidAgent(request, arn.value, sessionId)
+        authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
@@ -204,8 +194,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 invitation-sent for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(business), Some(serviceVAT), Some(""), Some(""), fromFastTrack = fromManual)
       await(sessionStore.save(formData))
       val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
@@ -224,7 +212,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val result = submitIdentifyClient(
-        authorisedAsValidAgent(request, arn.value, sessionId)
+        authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
@@ -232,8 +220,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 303 already-authorisation-present when there is already a relationship for the agent and client" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(business), Some(serviceVAT), Some(""), Some(""), fromFastTrack = fromManual)
       await(sessionStore.save(formData))
       val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
@@ -241,7 +227,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
 
       val result = submitIdentifyClient(
-        authorisedAsValidAgent(request, arn.value, sessionId)
+        authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
       status(result) shouldBe 303
@@ -327,12 +313,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val request = FakeRequest()
 
     "display the check details page without known fact when KFC flag is off for ITSA" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)
       await(sessionStore.save(formData))
 
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
@@ -341,11 +325,9 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "display the check details page without known fact when KFC flag is off for IRV" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack = fromFastTrack)
       await(sessionStore.save(formData))
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("view a client's PAYE income record"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
@@ -353,12 +335,10 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "display the check details page without known fact when KFC flag is off for VAT" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val formData = AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack)
       await(sessionStore.save(formData))
 
-      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value, sessionId)))
+      val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
@@ -372,13 +352,11 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val showConfirmClient = controller.showConfirmClient()
 
     "return 200 and show client name for PERSONAL-INCOME-RECORD" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack = fromManual)))
 
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
 
-      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = showConfirmClient(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "64 Bit")
@@ -388,14 +366,12 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "return 200 and no client name was found for PERSONAL-INCOME-RECORD" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack = fromManual)))
 
       givenCitizenDetailsReturns404For(validNino.value)
 
-      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = showConfirmClient(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes")
@@ -410,8 +386,6 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     val submitConfirmClient = controller.submitConfirmClient()
 
     "redirect to review-authorisation and create invitation for PERSONAL-INCOME-RECORD" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
 
@@ -430,20 +404,18 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
-        submitConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody(choice.data.toSeq: _*))
+        submitConfirmClient(authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showReviewAuthorisations().url
       status(result) shouldBe 303
     }
 
     "return 200 for not selecting an option for PERSONAL-INCOME-RECORD" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
 
       givenCitizenDetailsAreKnownFor(validNino.value, "64", "Bit")
 
-      val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = submitConfirmClient(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "64 Bit")
       checkHtmlResultWithBodyMsgs(result, "error.confirm-client.required")
@@ -453,28 +425,24 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
     }
 
     "redirect to already-authorisation-pending if there are already authorisations pending for this client" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
-        submitConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody(choice.data.toSeq: _*))
+        submitConfirmClient(authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
       status(result) shouldBe 303
     }
 
     "redirect to already-authorisation-pending if this authorisation is already in the basket" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), requests = Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))), "itemId")))))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
       val choice = agentConfirmationForm("error-message").fill(Confirmation(true))
       val result =
-        submitConfirmClient(authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody(choice.data.toSeq: _*))
+        submitConfirmClient(authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody(choice.data.toSeq: _*))
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.pendingAuthorisationExists().url
       status(result) shouldBe 303
     }
@@ -482,10 +450,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
 
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
-      val result = action(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = action(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url
     }

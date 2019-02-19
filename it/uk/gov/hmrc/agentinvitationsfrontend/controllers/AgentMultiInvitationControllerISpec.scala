@@ -24,11 +24,13 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val errorController: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   val clientDetail1 = AuthorisationRequest("Gareth Gates Sr",  ItsaInvitation(validNino, Some(Postcode(validPostcode))))
   val clientDetail2 = AuthorisationRequest("Malcolm Pirson",  PirInvitation(validNino, Some(DOB(dateOfBirth))))
@@ -38,12 +40,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/select-service")
 
     "show the select personal service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(
           Some(personal), requests =  Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))))
-      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
       checkHasAgentSignOutLink(result)
@@ -51,37 +51,31 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the select business service page with review authorisations link if there is content in the authorisationRequest cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(
           Some(business),
           requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))))))
-      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
     "show the business select service page if there is not content in the authorisationCache but is in the fastTrackCache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession( Some(business), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromFastTrack)))
-      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
     "show the select service page if there is an unsupported client type in the authorisationRequest cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(
           None,
           requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))))))
-      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
       verifyAuthoriseAttempt()
@@ -92,13 +86,11 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("GET", "/agents/review-authorisation")
 
     "show the review authorisations page if there is a single item in the authorisationRequest cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(
           Some(personal),
           requests = Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))))
-      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -112,11 +104,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "show the review authorisations page if there are multiple items in the authorisationRequest cache" in {
-
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
-      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -136,11 +125,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "redirect to the all authorisation removed page if there are no authorisations in the cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal))))
 
-      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.allAuthorisationsRemoved().url)
     }
@@ -155,11 +142,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
   "POST /agents/review-authorisations" should {
     val request = FakeRequest("POST", "/agents/review-authorisation")
     "Redirect to select service if YES is selected on the review-authorisations page" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT))))
       val result = controller.submitReviewAuthorisations()(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "true"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
@@ -195,12 +180,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       givenAgentReference(arn, uid, personal)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT))))
 
       val result = controller.submitReviewAuthorisations()(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "false"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showInvitationSent().url)
     }
@@ -209,12 +192,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       givenInvitationCreationFails(arn)
       givenAgentReference(arn, uid, personal)
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT), requests = Set(clientDetail1, clientDetail2, clientDetail3))))
 
       val result = controller.submitReviewAuthorisations()(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "false"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsErrorController.allCreateAuthorisationFailed.url)
@@ -250,23 +231,21 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         identifierVAT)
       givenAgentReference(arn, uid, personal)
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT), requests = Set(clientDetail1, clientDetail2, clientDetail3))))
 
       val result = controller.submitReviewAuthorisations()(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "false"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsErrorController.someCreateAuthorisationFailed.url)
     }
 
     "Redisplay the page with errors if no option is chosen" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
+
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT))))
 
-      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.submitReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to add another authorisation for this client")
     }
@@ -275,11 +254,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
   "GET /agents/delete" should {
     val request = FakeRequest("GET", "/agents/delete")
     "show the delete page for an authenticated agent" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.showDelete(clientDetail1.itemId)(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showDelete(clientDetail1.itemId)(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -289,10 +266,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "throw an Exception if the item you want to delete is not in the cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
+
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
-      val result = controller.showDelete("foo")(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showDelete("foo")(authorisedAsValidAgent(request,    arn.value))
       an[Exception] shouldBe thrownBy {
         await(result)
       }
@@ -303,13 +280,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     val request = FakeRequest("POST", "/agents/delete")
 
     "Redirect to review-authorisations page with selected invitation removed from cache when YES is selected" in {
-
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
       val result = controller.submitDelete(clientDetail1.itemId)(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "true"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
 
@@ -319,13 +293,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Redirect to review-authorisations page with selected invitation not removed from cache when NO is selected" in {
-
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal),requests= Set(clientDetail1, clientDetail2, clientDetail3))))
 
       val result = controller.submitDelete(clientDetail1.itemId)(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> "false"))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
 
@@ -335,13 +306,10 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "throw an Exception when the item you are searching with is not in the cache" in {
-
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
       val result = controller.submitDelete("foo")(
-        authorisedAsValidAgent(request, arn.value, sessionId).withFormUrlEncodedBody("accepted" -> ""))
+        authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> ""))
 
       an[Exception] shouldBe thrownBy {
         await(result)
@@ -356,12 +324,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Redisplay the page with errors when neither radio button is selected" in {
-
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.submitDelete(clientDetail1.itemId)(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.submitDelete(clientDetail1.itemId)(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to remove the authorisation request for this client")
 
@@ -392,11 +357,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
           AuthorisationRequest.NEW,
           "itemId")
 
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceITSA), requests = Set(authRequest1))))
 
-      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -407,10 +370,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Display the pending authorisation already exists error page version when there are no authorisation requests left in the basket" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT))))
-      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -423,10 +384,8 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Display the pending authorisation already exists error page version when coming from fast track" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession( Some(personal), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(""), fromFastTrack = true)))
-      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.pendingAuthorisationExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
