@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.Forms.{boolean, mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
@@ -24,7 +25,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -46,6 +47,7 @@ class AgentsFastTrackInvitationController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
+  relationshipsConnector: RelationshipsConnector,
   agentSessionCache: AgentSessionCache,
   authConnector: AuthConnector,
   val continueUrlActions: ContinueUrlActions,
@@ -63,6 +65,7 @@ class AgentsFastTrackInvitationController @Inject()(
       invitationsConnector,
       relationshipsService,
       agentSessionCache,
+      relationshipsConnector,
       auditService
     ) {
 

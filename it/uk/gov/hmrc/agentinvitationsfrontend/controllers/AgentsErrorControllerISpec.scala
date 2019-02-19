@@ -267,4 +267,27 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
     }
   }
+
+  "GET /agent/not-authorised" should {
+    val request = FakeRequest("GET", "/not-authorised")
+    "display the page" in {
+      testAgentSessionCache.save(
+        AgentSession(Some(personal), Some(serviceITSA), None, None, None, requests = Set.empty, fromFastTrack = fromFastTrack))
+      val result = controller.notAuthorised()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,
+        "There is a problem",
+        "This individual has not authorised you to report their income and expenses through software.",
+        "Start over")
+    }
+
+    "throw an Exception if there is nothing in the cache" in {
+      val result = controller.notAuthorised()(authorisedAsValidAgent(request, arn.value))
+
+      intercept[Exception] {
+        await(result)
+      }.getMessage shouldBe "Cached session state expected but not found"
+    }
+  }
 }

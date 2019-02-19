@@ -191,6 +191,12 @@ cancel-authorisation.response-failed.advice=We may not have saved your responses
 cancel-authorisation.response-failed.tryAgain=Try again
 
 
+#Not authorisation to de-auth
+not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to report their income and expenses through software.
+not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
+not-authorised.HMRC-MTD-VAT.p=This business has not authorised you to report their VAT Returns through software.
+not-authorised.button=Start over
+
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
 delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to report their income and expenses through software.

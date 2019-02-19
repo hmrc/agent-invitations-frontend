@@ -24,7 +24,7 @@ import play.api.{Configuration, Logger}
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -48,6 +48,7 @@ abstract class BaseInvitationController(
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   agentSessionCache: AgentSessionCache,
+  relationshipsConnector: RelationshipsConnector,
   auditService: AuditService
 )(
   implicit override val externalUrls: ExternalUrls,
@@ -273,7 +274,7 @@ abstract class BaseInvitationController(
       }
     }
 
-  private def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
+  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
     implicit request: Request[_],
     hc: HeaderCarrier): Future[Result] =
     ItsaClientForm
@@ -440,8 +441,22 @@ abstract class BaseInvitationController(
               .flatMap {
                 case Some(r) if agentSession.fromFastTrack => r
                 case _ =>
-                  redirectOrShowConfirmClient(agentSession, featureFlags) {
-                    createInvitation(arn, vatInvitation)
+                  if (agentSession.isDeAuthJourney && !featureFlags.enableMtdVatToConfirm) {
+                    checkRelationshipExistsForService(
+                      arn,
+                      agentSession.service.getOrElse(""),
+                      agentSession.clientIdentifier.getOrElse("")).flatMap {
+                      case true =>
+                        redirectOrShowConfirmClient(agentSession, featureFlags) {
+                          createInvitation(arn, vatInvitation)
+                        }
+                      case false =>
+                        Redirect(routes.AgentsErrorController.notAuthorised())
+                    }
+                  } else {
+                    redirectOrShowConfirmClient(agentSession, featureFlags) {
+                      createInvitation(arn, vatInvitation)
+                    }
                   }
               }
 
@@ -478,8 +493,22 @@ abstract class BaseInvitationController(
                          .flatMap {
                            case Some(r) if agentSession.fromFastTrack => r
                            case _ =>
-                             redirectOrShowConfirmClient(agentSession, featureFlags) {
-                               createInvitation(arn, itsaInvitation)
+                             if (agentSession.isDeAuthJourney && !featureFlags.enableMtdItToConfirm) {
+                               checkRelationshipExistsForService(
+                                 arn,
+                                 agentSession.service.getOrElse(""),
+                                 agentSession.clientIdentifier.getOrElse("")).flatMap {
+                                 case true =>
+                                   redirectOrShowConfirmClient(agentSession, featureFlags) {
+                                     createInvitation(arn, itsaInvitation)
+                                   }
+                                 case false =>
+                                   Redirect(routes.AgentsErrorController.notAuthorised())
+                               }
+                             } else {
+                               redirectOrShowConfirmClient(agentSession, featureFlags) {
+                                 createInvitation(arn, itsaInvitation)
+                               }
                              }
                          }
                      case Some(false) =>
@@ -531,8 +560,22 @@ abstract class BaseInvitationController(
                   .flatMap {
                     case Some(r) if agentSession.fromFastTrack => r
                     case _ =>
-                      redirectOrShowConfirmClient(agentSession, featureFlags) {
-                        createInvitation(arn, pirInvitation)
+                      if (agentSession.isDeAuthJourney && !featureFlags.enableIrvToConfirm) {
+                        checkRelationshipExistsForService(
+                          arn,
+                          agentSession.service.getOrElse(""),
+                          agentSession.clientIdentifier.getOrElse("")).flatMap {
+                          case true =>
+                            redirectOrShowConfirmClient(agentSession, featureFlags) {
+                              createInvitation(arn, pirInvitation)
+                            }
+                          case false =>
+                            Redirect(routes.AgentsErrorController.notAuthorised())
+                        }
+                      } else {
+                        redirectOrShowConfirmClient(agentSession, featureFlags) {
+                          createInvitation(arn, pirInvitation)
+                        }
                       }
                   }
               case Some(false) =>
@@ -550,6 +593,17 @@ abstract class BaseInvitationController(
     } else {
       redirectOrShowConfirmClient(agentSession, featureFlags) {
         createInvitation(arn, pirInvitation)
+      }
+    }
+
+  def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier): Future[Boolean] =
+    service match {
+      case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
+      case HMRCPIR    => relationshipsService.checkPirRelationship(arn, Nino(clientId))
+      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
+      case e => {
+        throw new Error(s"Unsupported service for checking relationship: $e")
       }
     }
 

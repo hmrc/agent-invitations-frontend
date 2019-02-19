@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
@@ -24,7 +25,7 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{VatInvitation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
@@ -45,6 +46,7 @@ class AgentsInvitationController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
+  relationshipsConnector: RelationshipsConnector,
   auditService: AuditService,
   agentSessionCache: AgentSessionCache,
   val env: Environment,
@@ -63,6 +65,7 @@ class AgentsInvitationController @Inject()(
       invitationsConnector,
       relationshipsService,
       agentSessionCache,
+      relationshipsConnector,
       auditService
     ) {
 

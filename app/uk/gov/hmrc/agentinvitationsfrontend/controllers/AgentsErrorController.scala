@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
@@ -25,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_matched}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_authorised, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -78,6 +79,14 @@ class AgentsErrorController @Inject()(
             agentSession.requests.nonEmpty,
             agentSession.service.getOrElse(""),
             agentSession.fromFastTrack))
+    }
+  }
+
+  val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      agentSessionCache.get.map(cacheItem => {
+        Ok(not_authorised(cacheItem.service.getOrElse("")))
+      })
     }
   }
 
