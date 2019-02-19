@@ -14,7 +14,7 @@ import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
-import uk.gov.hmrc.agentinvitationsfrontend.repo.{AgentSessionCache, ClientConsentsCache}
+import uk.gov.hmrc.agentinvitationsfrontend.repository.{AgentSessionCache, ClientConsentsCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -25,7 +25,8 @@ import scala.concurrent.Future
 
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
-    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport with MongoSupport {
+    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport
+    with MongoSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -36,7 +37,7 @@ abstract class BaseISpec
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
 
-  lazy val sessionStore: AgentSessionCache  = app.injector.instanceOf[AgentSessionCache]
+  lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
 
   protected def appBuilder: GuiceApplicationBuilder =
@@ -79,7 +80,7 @@ abstract class BaseISpec
         "features.show-agent-led-de-auth"                                     -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri" -> s"$mongoUri"
+        "mongodb.uri"                                                         -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
@@ -118,8 +119,7 @@ abstract class BaseISpec
   }
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
-    }
+    override def configure(): Unit = {}
   }
 
   protected def checkHtmlResultWithoutBodyText(result: Result, expectedSubstrings: String*): Unit = {
@@ -147,7 +147,7 @@ abstract class BaseISpec
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {
     val element = s"""<a id="identifiersBackLink" href="$backLinkUrl" class="link-back">Back</a>"""
-    checkHtmlResultWithBodyText(result,element)
+    checkHtmlResultWithBodyText(result, element)
   }
 
   def checkHasAgentSignOutLink(result: Future[Result]) = {
@@ -159,13 +159,13 @@ abstract class BaseISpec
   }
 
   def verifyAgentInvitationResponseEvent(
-                                          invitationId: InvitationId,
-                                          arn: String,
-                                          clientResponse: String,
-                                          clientIdType: String,
-                                          clientId: String,
-                                          service: String,
-                                          agencyName: String): Unit =
+    invitationId: InvitationId,
+    arn: String,
+    clientResponse: String,
+    clientIdType: String,
+    clientId: String,
+    service: String,
+    agencyName: String): Unit =
     verifyAuditRequestSent(
       1,
       AgentClientInvitationResponse,
@@ -197,13 +197,13 @@ abstract class BaseISpec
   }
 
   def verifyAgentClientInvitationSubmittedEvent(
-                                                 arn: String,
-                                                 clientType: String,
-                                                 clientId: String,
-                                                 clientIdType: String,
-                                                 result: String,
-                                                 service: String,
-                                                 uid: String): Unit =
+    arn: String,
+    clientType: String,
+    clientId: String,
+    clientIdType: String,
+    result: String,
+    service: String,
+    uid: String): Unit =
     verifyAuditRequestSent(
       1,
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
@@ -222,12 +222,12 @@ abstract class BaseISpec
     )
 
   def verifyAgentClientInvitationSubmittedEventFailed(
-                                                 arn: String,
-                                                 clientType: String,
-                                                 clientId: String,
-                                                 clientIdType: String,
-                                                 result: String,
-                                                 service: String): Unit =
+    arn: String,
+    clientType: String,
+    clientId: String,
+    clientIdType: String,
+    result: String,
+    service: String): Unit =
     verifyAuditRequestSent(
       1,
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,

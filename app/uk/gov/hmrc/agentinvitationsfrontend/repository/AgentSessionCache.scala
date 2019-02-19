@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.repo
+package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import com.google.inject.Singleton
 import javax.inject.{Inject, Named}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsentsJourneyState
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ClientConsentsCache @Inject()(
+class AgentSessionCache @Inject()(
   @Named("mongodb.session.expireAfterSeconds") val expireAfterSeconds: Int,
   val mongo: ReactiveMongoComponent,
   implicit val ec: ExecutionContext)
-    extends SessionCache[ClientConsentsJourneyState] {
-  override val sessionName: String = "clientSession"
+    extends SessionCache[AgentSession] {
+  override val sessionName: String = "agentSession"
 }

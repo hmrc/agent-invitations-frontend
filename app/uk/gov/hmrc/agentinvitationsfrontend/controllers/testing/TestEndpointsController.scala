@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
-import uk.gov.hmrc.agentinvitationsfrontend.repo.AgentSessionCache
+import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}

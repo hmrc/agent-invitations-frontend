@@ -25,7 +25,7 @@ import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.repo.ClientConsentsCache
+import uk.gov.hmrc.agentinvitationsfrontend.repository.ClientConsentsCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._

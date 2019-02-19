@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{VatInvitation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.repo.AgentSessionCache
+import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
