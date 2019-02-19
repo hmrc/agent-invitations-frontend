@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.duration._
@@ -57,11 +58,11 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
         "features.show-hmrc-mtd-vat"                                         -> true,
         "features.enable-fast-track"                                         -> true,
         "passcodeAuthentication.enabled"                                     -> true,
-        "mongodb.uri" -> s"$mongoUri"
+        "mongodb.uri"                                                        -> s"$mongoUri"
       )
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
   private val timeout = 2.seconds
 
   "GET /agents/client-type" should {
@@ -84,8 +85,6 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 for an authorised whitelisted Agent with OTAC session key in select service page" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal))))
       val request =
         FakeRequest("GET", "/agents/select-service").withSession((SessionKeys.otacToken, "someOtacToken123"))
@@ -94,7 +93,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           .withHeader("Otac-Authorization", equalTo("someOtacToken123"))
           .willReturn(aResponse()
             .withStatus(200)))
-      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -108,15 +107,13 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
     }
 
     "return 200 and don't show the IRV option for an authorised non-whitelisted agent without passcode or OTAC session key in select service page" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal))))
       val request = FakeRequest("GET", "/agents/select-service")
       stubFor(
         get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
           .willReturn(aResponse()
             .withStatus(200)))
-      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -133,8 +130,6 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
   "POST to /select-personal-service" when {
     "service is IRV" should {
       "redirect to /identify-client if user is whitelisted (has valid OTAC session key)" in {
-        val sessionId = UUID.randomUUID().toString
-        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
         await(sessionStore.save(AgentSession(Some(personal))))
         stubFor(
           get(urlEqualTo("/authorise/read/agent-fi-agent-frontend"))
@@ -143,10 +138,11 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
               .withStatus(200)))
 
         val request =
-          FakeRequest("POST", "/agents/select-personal-service").withSession(SessionKeys.otacToken -> "someOtacToken123")
+          FakeRequest("POST", "/agents/select-personal-service").withSession(
+            SessionKeys.otacToken -> "someOtacToken123")
         val serviceForm = ServiceTypeForm.form.fill("PERSONAL-INCOME-RECORD")
         val result = controller.submitSelectPersonalService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value, sessionId))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
@@ -154,13 +150,11 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
       }
 
       "return BAD_REQUEST if user is not whitelisted (has no OTAC key in session)" in {
-        val sessionId = UUID.randomUUID().toString
-        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
         await(sessionStore.save(AgentSession(Some(personal))))
         val request = FakeRequest("POST", "/agents/select-personal-service")
         val serviceForm = ServiceTypeForm.form.fill("PERSONAL-INCOME-RECORD")
         val result = controller.submitSelectPersonalService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value, sessionId))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 400
       }
@@ -168,13 +162,11 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
     "service is ITSA" should {
       "not be restricted by whitelisting" in {
-        val request = FakeRequest("POST", "/agents/select-personal-service")
-        val sessionId = UUID.randomUUID().toString
-        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        val request = FakeRequest("POST", "/agents/select-service")
         await(sessionStore.save(AgentSession(Some(personal))))
         val serviceForm = ServiceTypeForm.form.fill("HMRC-MTD-IT")
         val result = controller.submitSelectPersonalService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value, sessionId))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
@@ -183,13 +175,11 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
     "service is VAT" should {
       "not be restricted by whitelisting" in {
-        val request = FakeRequest("POST", "/agents/select-personal-service")
-        val sessionId = UUID.randomUUID().toString
-        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        val request = FakeRequest("POST", "/agents/select-service")
         await(sessionStore.save(AgentSession(Some(business))))
         val confirmForm = agentConfirmationForm("error").fill(Confirmation(true))
         val result = controller.submitSelectBusinessService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value, sessionId))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"

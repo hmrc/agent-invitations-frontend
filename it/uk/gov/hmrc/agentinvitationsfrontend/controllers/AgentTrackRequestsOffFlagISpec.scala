@@ -9,6 +9,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.binders.ContinueUrl
 
 class AgentTrackRequestsOffFlagISpec extends BaseISpec {
@@ -53,6 +54,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
   lazy val requestTrackingController: AgentsRequestTrackingController =
     app.injector.instanceOf[AgentsRequestTrackingController]
 
@@ -62,11 +64,9 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, personal)
       val continueUrl = ContinueUrl("/someITSA/Url")
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent =  Some(personal))))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = invitationSent(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -86,11 +86,9 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, personal)
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), clientTypeForInvitationSent =  Some(personal))))
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = invitationSent(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(

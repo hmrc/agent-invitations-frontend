@@ -26,12 +26,14 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 import scala.concurrent.duration._
 
 class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /agents/" should {
     "redirect to /agent/select-service" in {
@@ -47,12 +49,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val selectClientType = controller.showClientType()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val invitation =
         AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
       await(sessionStore.save(invitation))
-      val result = selectClientType(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = selectClientType(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -70,12 +70,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment when coming from fast track" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val invitation =
         AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), fromFastTrack = true)
       await(sessionStore.save(invitation))
-      val result = selectClientType(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = selectClientType(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -123,12 +121,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val selectService = controller.showSelectService()
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for personal" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val invitation =
         AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
       await(sessionStore.save(invitation))
-      val result = selectService(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -148,11 +144,9 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for business" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val invitation = AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validNino.value), Some("1234567"))
       await(sessionStore.save(invitation))
-      val result = selectService(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.yes"))
@@ -163,12 +157,10 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "redirect to select client type page when the client type in the cache is not supported" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       val invitation =
         AgentSession(None, Some(serviceVAT), Some("vrn"), Some(validNino.value), Some("1234567"))
       await(sessionStore.save(invitation))
-      val result = selectService(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
     }
@@ -187,13 +179,11 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val submitService = controller.submitSelectPersonalService()
 
     "show errors on the page if the form contains invalid service selection" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession(Some(personal))))
       val result = submitService(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("serviceType" -> ""),
-          arn.value, sessionId))
+          arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -216,30 +206,24 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
-      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(None, None)))
-      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
 
     "throw exception when there is no content in the cache" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(AgentSession()))
-      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value, sessionId))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
     }
@@ -271,8 +255,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
-      val sessionId = UUID.randomUUID().toString
-      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
       await(sessionStore.save(
         AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
       val unsupportedForm =
@@ -281,7 +263,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       intercept[Exception] {
         await(
           notEnrolled(
-            authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value, sessionId)))
+            authorisedAsValidAgent(request.withFormUrlEncodedBody(unsupportedForm.data.toSeq: _*), arn.value)))
       }.getMessage shouldBe "Unsupported Service: UNSUPPORTED_SERVICE"
     }
 

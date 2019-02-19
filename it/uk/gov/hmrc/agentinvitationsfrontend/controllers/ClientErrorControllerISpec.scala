@@ -1,12 +1,17 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+import java.util.UUID
+
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 
 class ClientErrorControllerISpec extends BaseISpec {
 
   lazy val controller: ClientErrorController = app.injector.instanceOf[ClientErrorController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /wrong-account-type" should {
 

@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -7,6 +9,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitatio
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
 
@@ -43,6 +47,7 @@ class AgentInvitationControllerFastTrackOffISpec extends BaseISpec {
       )
 
   lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "Show Fast Track flag is switched off" should {
     val request = FakeRequest("POST", "/agents/fast-track")
