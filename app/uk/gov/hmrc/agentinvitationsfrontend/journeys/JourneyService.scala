@@ -67,7 +67,8 @@ trait PersistentJourneyService extends JourneyService {
 
   private def repack(either: Either[model.Error, model.State]): Either[model.Error, StateAndBreadcrumbs] =
     either match {
-      case Left(e) => Left(e)
+      case Left(e)  => Left(e)
+      case Right(s) => Right((s, Nil))
     }
 
 }
