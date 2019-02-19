@@ -223,6 +223,28 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmCancel().url)
       }
+
+      "redirect to not-authorised when there is no relationship to deauthorise" in {
+        givenAfiRelationshipNotFoundForAgent(arn, validNino)
+        testAgentSessionCache.save(AgentSession(personal, Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), isDeAuthJourney = true))
+        givenAgentReference(arn, "ABCDEFGH", "personal")
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+        givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+
+        val requestWithForm =
+          request.withFormUrlEncodedBody(
+            "clientIdentifier" -> validNino.value,
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
+          )
+
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.notAuthorised().url)
+      }
     }
 
     "service is HMRC-MTD-IT" should {

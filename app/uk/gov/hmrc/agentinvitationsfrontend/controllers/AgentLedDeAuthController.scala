@@ -219,19 +219,6 @@ class AgentLedDeAuthController @Inject()(
     })
   }
 
-//  def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(
-//    implicit hc: HeaderCarrier): Future[Boolean] =
-//    service match {
-//      case HMRCMTDIT => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
-//      case HMRCPIR => {
-//        relationshipsService.checkPirRelationship(arn, Nino(clientId))
-//      }
-//      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
-//      case e => {
-//        throw new Error(s"Unsupported service for checking relationship: $e")
-//      }
-//    }
-
   private def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
     service match {
       case HMRCMTDIT  => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
