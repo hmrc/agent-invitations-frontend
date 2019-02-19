@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -57,23 +57,11 @@ abstract class BaseInvitationController(
   ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
-  val personalIncomeRecord =
-    if (featureFlags.showPersonalIncome)
-      Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
-    else Seq.empty
-
-  val mtdItId =
-    if (featureFlags.showHmrcMtdIt) Seq(HMRCMTDIT -> Messages("personal-select-service.itsa")) else Seq.empty
-
-  val vat =
-    if (featureFlags.showHmrcMtdVat) Seq(HMRCMTDVAT -> Messages("select-service.vat")) else Seq.empty
-
-  def enabledPersonalServices(isWhitelisted: Boolean): Seq[(String, String)] =
-    if (isWhitelisted) {
-      personalIncomeRecord ++ mtdItId ++ vat
-    } else {
-      mtdItId ++ vat
-    }
+  def enabledPersonalServices(isWhitelisted: Boolean): Set[String] =
+    if (isWhitelisted)
+      Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+    else
+      Set(HMRCMTDIT, HMRCMTDVAT)
 
   val serviceToMessageKey: String => String = {
     case HMRCMTDIT  => messageKeyForITSA
@@ -137,7 +125,7 @@ abstract class BaseInvitationController(
       case Some(cache) =>
         cache.clientType match {
           case Some(ClientType.personal) =>
-            Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = cache.requests.nonEmpty))
+            Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), cache.requests.nonEmpty))
           case Some(ClientType.business) =>
             Ok(businessSelectServicePage(businessForm, basketFlag = cache.requests.nonEmpty, clientTypeCall.url))
           case _ => Redirect(clientTypeCall)
@@ -432,7 +420,7 @@ abstract class BaseInvitationController(
       agentSession.requests.map(_.invitation.clientId).contains(clientId)
 
   private def isSupportedWhitelistedService(service: String, isWhitelisted: Boolean): Boolean =
-    enabledPersonalServices(isWhitelisted).exists(_._1 == service)
+    enabledPersonalServices(isWhitelisted).contains(service)
 
   protected def knownFactCheckVat(
     arn: Arn,
@@ -695,15 +683,13 @@ abstract class BaseInvitationController(
 
   def submitServiceCall: Call = routes.AgentsInvitationController.submitSelectService()
 
-  def selectServicePage(
-    form: Form[String] = ServiceTypeForm.form,
-    enabledServices: Seq[(String, String)],
-    basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    select_service(form, enabledServices, basketFlag)
+  def selectServicePage(form: Form[String] = ServiceTypeForm.form, enabledServices: Set[String], basketFlag: Boolean)(
+    implicit request: Request[_]): Appendable =
+    select_service(form, SelectServicePageConfig(basketFlag, featureFlags, enabledServices))
 
   def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
-    business_select_service(form, basketFlag, submitServiceCall, backLinkUrl)
+    business_select_service(form, BusinessSelectServicePageConfig(basketFlag, submitServiceCall, Some(backLinkUrl)))
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 

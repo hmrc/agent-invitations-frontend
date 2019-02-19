@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.data.Form
 import play.api.mvc._
 import play.api.{Configuration, Logger}
@@ -32,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDV
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -264,9 +263,9 @@ class AgentLedDeAuthController @Inject()(
 
   override def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
-    enabledServices: Seq[(String, String)],
+    enabledServices: Set[String],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.select_service(form, enabledServices, false)
+    cancelAuthorisation.select_service(form, SelectServicePageConfig(false, featureFlags, enabledServices))
 
   override def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
