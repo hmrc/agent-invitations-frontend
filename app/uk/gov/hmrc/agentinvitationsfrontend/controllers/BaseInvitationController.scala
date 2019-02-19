@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -57,10 +58,6 @@ abstract class BaseInvitationController(
   ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
-  val personalOption = Seq("personal" -> Messages("client-type.personal"))
-  val businessOption = Seq("business" -> Messages("client-type.business"))
-  val clientTypes = personalOption ++ businessOption
-
   val personalIncomeRecord =
     if (featureFlags.showPersonalIncome)
       Seq(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
@@ -83,7 +80,7 @@ abstract class BaseInvitationController(
     case HMRCMTDIT  => messageKeyForITSA
     case HMRCPIR    => messageKeyForAfi
     case HMRCMTDVAT => messageKeyForVAT
-    case _          => "Service is missing"
+    case p          => p
   }
 
   val agentServicesAccountUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
@@ -108,8 +105,12 @@ abstract class BaseInvitationController(
           userInput => {
             agentSessionCache.fetch
               .flatMap {
-                case Some(cache) => agentSessionCache.save(cache.copy(clientType = Some(userInput)))
-                case None        => agentSessionCache.save(AgentSession(clientType = Some(userInput)))
+                case Some(cache) =>
+                  agentSessionCache.save(
+                    cache.copy(clientType = Some(userInput), clientTypeForInvitationSent = Some(userInput)))
+                case None =>
+                  agentSessionCache.save(
+                    AgentSession(clientType = Some(userInput), clientTypeForInvitationSent = Some(userInput)))
               }
               .flatMap { updatedSession =>
                 if (updatedSession.fromFastTrack)
@@ -136,9 +137,9 @@ abstract class BaseInvitationController(
     agentSessionCache.fetch.flatMap {
       case Some(cache) =>
         cache.clientType match {
-          case Some("personal") =>
+          case Some(ClientType.personal) =>
             Ok(selectServicePage(form, enabledPersonalServices(isWhitelisted), basketFlag = cache.requests.nonEmpty))
-          case Some("business") =>
+          case Some(ClientType.business) =>
             Ok(businessSelectServicePage(businessForm, basketFlag = cache.requests.nonEmpty, clientTypeCall.url))
           case _ => Redirect(clientTypeCall)
         }
@@ -151,9 +152,9 @@ abstract class BaseInvitationController(
     request: Request[_]): Future[Result] =
     agentSessionCache.fetch.flatMap { car =>
       car.flatMap(_.clientType) match {
-        case Some("personal") => handleSubmitSelectServicePersonal(businessForm)
-        case Some("business") => handleSubmitSelectServiceBusiness(businessForm)
-        case _                => Redirect(clientTypeCall)
+        case Some(ClientType.personal) => handleSubmitSelectServicePersonal(businessForm)
+        case Some(ClientType.business) => handleSubmitSelectServiceBusiness(businessForm)
+        case _                         => Redirect(clientTypeCall)
       }
     }
 
@@ -169,7 +170,7 @@ abstract class BaseInvitationController(
               agentSession match {
                 case Some(cache) =>
                   agentSessionCache
-                    .save(cache.copy(clientType = Some("personal"), service = Some(serviceInput)))
+                    .save(cache.copy(clientType = Some(ClientType.personal), service = Some(serviceInput)))
                     .flatMap(_ =>
                       ifShouldShowService(serviceInput, featureFlags, isWhitelisted) {
                         if (isSupportedWhitelistedService(serviceInput, isWhitelisted)) Redirect(identifyClientCall)
@@ -180,8 +181,8 @@ abstract class BaseInvitationController(
 
             agentSessionCache.fetch.flatMap { cache =>
               cache.flatMap(_.clientType) match {
-                case Some("personal") => updateSessionAndRedirect(cache)
-                case Some("business") =>
+                case Some(ClientType.personal) => updateSessionAndRedirect(cache)
+                case Some(ClientType.business) =>
                   if (serviceInput == HMRCMTDVAT) {
                     updateSessionAndRedirect(cache)
                   } else {
@@ -206,7 +207,7 @@ abstract class BaseInvitationController(
               agentSessionCache.fetch.flatMap {
                 case Some(cache) =>
                   agentSessionCache
-                    .save(cache.copy(clientType = Some("business"), service = Some(HMRCMTDVAT)))
+                    .save(cache.copy(clientType = Some(ClientType.business), service = Some(HMRCMTDVAT)))
                     .flatMap(_ =>
                       ifShouldShowService(HMRCMTDVAT, featureFlags, isWhitelisted) {
                         if (isSupportedWhitelistedService(HMRCMTDVAT, isWhitelisted)) Redirect(identifyClientCall)
@@ -473,7 +474,7 @@ abstract class BaseInvitationController(
 
           case Some(false) =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
-            Redirect(routes.AgentsErrorController.notMatched())
+            Redirect(notMatchedCall)
           case None =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
             Redirect(routes.AgentsInvitationController.notSignedUp())
@@ -531,7 +532,7 @@ abstract class BaseInvitationController(
                          "",
                          "Fail",
                          Some("POSTCODE_DOES_NOT_MATCH"))
-                       toFuture(Redirect(routes.AgentsErrorController.notMatched()))
+                       toFuture(Redirect(notMatchedCall))
                      case None =>
                        Logger(getClass).warn(
                          s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
@@ -591,15 +592,15 @@ abstract class BaseInvitationController(
                   }
               case Some(false) =>
                 Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(notMatchedCall)
               case None =>
                 Logger(getClass).warn(
                   s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Redirect(routes.AgentsErrorController.notMatched())
+                Redirect(notMatchedCall)
             }
         case None =>
           Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
-          Redirect(routes.AgentsErrorController.notMatched())
+          Redirect(notMatchedCall)
       }
     } else {
       redirectOrShowConfirmClient(agentSession, featureFlags) {
@@ -662,14 +663,18 @@ abstract class BaseInvitationController(
                       AuthorisationRequest(
                         clientName.getOrElse(""),
                         Invitation(clientType, service, clientIdentifier, knownFact)))
-                    agentSessionCache.save(AgentSession(clientType = clientType, requests = updatedBasket))
+                    agentSessionCache.save(
+                      AgentSession(
+                        clientType = clientType,
+                        requests = updatedBasket,
+                        clientTypeForInvitationSent = clientType))
                   }
                   .flatMap { _ =>
                     clientType match {
-                      case Some("personal") =>
+                      case Some(ClientType.personal) =>
                         toFuture(Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
-                      case Some("business") => body
-                      case _                => toFuture(Redirect(clientTypeCall))
+                      case Some(ClientType.business) => body
+                      case _                         => toFuture(Redirect(clientTypeCall))
                     }
                   }
             }
@@ -688,7 +693,7 @@ abstract class BaseInvitationController(
       case Some(r) => r
       case None =>
         agentSession match {
-          case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _) =>
+          case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _, _) =>
             val knownFactRequired = knownFact.isEmpty &&
               ((service == HMRCPIR && featureFlags.showKfcPersonalIncome)
                 || (service == HMRCMTDVAT && featureFlags.showKfcMtdVat)
@@ -736,9 +741,9 @@ abstract class BaseInvitationController(
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()
 
-  def clientTypePage(form: Form[String] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
+  def clientTypePage(form: Form[ClientType] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
     implicit request: Request[_]): Appendable =
-    client_type(form, clientTypes, agentServicesAccountUrl, backLinkUrl)
+    client_type(form, ClientTypePageConfig(Some(backLinkUrl)))
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
@@ -759,6 +764,8 @@ abstract class BaseInvitationController(
   def submitIdentifyClientCall: Call = routes.AgentsInvitationController.submitIdentifyClient()
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
+
+  def notMatchedCall: Call = routes.AgentsErrorController.notMatched()
 
   def showConfirmClientPage(name: Option[String], backLinkUrl: String)(implicit request: Request[_]): Appendable =
     confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)

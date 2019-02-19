@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
-case class AgentFastTrackRequest(
-  clientType: Option[ClientType],
-  service: String,
-  clientIdentifierType: String,
-  clientIdentifier: String,
-  knownFact: Option[String])
+import play.api.i18n.Messages
 
-object AgentFastTrackRequest {
+case class ClientTypePageConfig(backLinkUrl: Option[String])(implicit messages: Messages) {
 
-  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
-    AgentFastTrackRequest(clientType, service, "", "", None)
+  val personalOption = Seq("personal" -> Messages("client-type.personal"))
+  val businessOption = Seq("business" -> Messages("client-type.business"))
+  val clientTypes = personalOption ++ businessOption
 }

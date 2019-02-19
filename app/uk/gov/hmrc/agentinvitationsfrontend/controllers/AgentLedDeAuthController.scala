@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.Form
 import play.api.mvc._
 import play.api.{Configuration, Logger}
@@ -31,6 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDV
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -184,7 +186,7 @@ class AgentLedDeAuthController @Inject()(
                       deleteRelationshipForService(service, arn, clientId).map {
                         case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
                         case Some(false) => NotFound //TODO: should be fixed in Sprint 36
-                        case _           => InternalServerError //TODO: should be fixed in Sprint 36
+                        case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
                       }
                     } else {
                       Redirect(agentsLedDeAuthRootUrl)
@@ -237,20 +239,30 @@ class AgentLedDeAuthController @Inject()(
         case _                                                      =>
           //TODO: Fix this loose check
           agentSession.clientType match {
-            case Some("personal") => {
-              Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
-            }
-            case Some("business") => Redirect(confirmClientCall)
-            case _                => Redirect(clientTypeCall)
+            case Some(ClientType.personal) => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            case Some(ClientType.business) => Redirect(confirmClientCall)
+            case _                         => Redirect(clientTypeCall)
           }
       }
     }
 
+  def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.no_client_found())
+    })
+  }
+
+  def responseFailed(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.response_failed())
+    })
+  }
+
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
-  override def clientTypePage(form: Form[String], backLinkUrl: String)(
+  override def clientTypePage(form: Form[ClientType], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
-    cancelAuthorisation.client_type(form, clientTypes)
+    cancelAuthorisation.client_type(form, ClientTypePageConfig(None))
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
@@ -273,6 +285,8 @@ class AgentLedDeAuthController @Inject()(
   override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
+
+  override def notMatchedCall: Call = routes.AgentLedDeAuthController.noClientFound()
 
   override def showConfirmClientPage(name: Option[String], backLinkUrl: String)(
     implicit request: Request[_]): Appendable =

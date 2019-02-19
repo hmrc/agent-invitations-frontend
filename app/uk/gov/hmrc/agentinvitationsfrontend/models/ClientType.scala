@@ -15,16 +15,27 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+import play.api.libs.json.Format
 
-case class AgentFastTrackRequest(
-  clientType: Option[ClientType],
-  service: String,
-  clientIdentifierType: String,
-  clientIdentifier: String,
-  knownFact: Option[String])
+sealed trait ClientType
 
-object AgentFastTrackRequest {
+object ClientType {
 
-  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
-    AgentFastTrackRequest(clientType, service, "", "", None)
+  case object personal extends ClientType
+  case object business extends ClientType
+
+  def toEnum: String => ClientType = {
+    case "personal" => personal
+    case "business" => business
+    case alien      => throw new Exception(s"Client type $alien not supported")
+  }
+
+  def fromEnum: ClientType => String = {
+    case ClientType.personal => "personal"
+    case ClientType.business => "business"
+  }
+
+  implicit val formats: Format[ClientType] = new EnumFormats[ClientType] {
+    override val deserialize: String => ClientType = toEnum
+  }.formats
 }

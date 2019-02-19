@@ -25,7 +25,7 @@ Feature flags exist for each service and for requirement of known facts.
 
 ### Running the app locally
 
-    sm --start AGENT_MTD -f
+    sm --start AGENT_AUTHORISATIONS -f
     sm --stop AGENT_INVITATIONS_FRONTEND
     sbt run
 

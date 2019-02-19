@@ -43,7 +43,7 @@ object DOB {
 }
 
 sealed trait Invitation {
-  val clientType: Option[String]
+  val clientType: Option[ClientType]
 
   val service: String
 
@@ -58,7 +58,7 @@ sealed trait Invitation {
 
 object Invitation {
   def apply(
-    clientType: Option[String],
+    clientType: Option[ClientType],
     service: String,
     clientIdentifier: String,
     knownFact: Option[String]): Invitation =
@@ -108,7 +108,7 @@ object Invitation {
 case class ItsaInvitation(
   clientIdentifier: Nino,
   postcode: Option[Postcode],
-  clientType: Option[String] = Services.personal,
+  clientType: Option[ClientType] = Some(ClientType.personal),
   service: String = Services.HMRCMTDIT,
   clientIdentifierType: String = "ni")
     extends Invitation {
@@ -122,7 +122,7 @@ object ItsaInvitation {
 case class PirInvitation(
   clientIdentifier: Nino,
   dob: Option[DOB],
-  clientType: Option[String] = Services.personal,
+  clientType: Option[ClientType] = Some(ClientType.personal),
   service: String = Services.HMRCPIR,
   clientIdentifierType: String = "ni")
     extends Invitation {
@@ -134,7 +134,7 @@ object PirInvitation {
 }
 
 case class VatInvitation(
-  clientType: Option[String],
+  clientType: Option[ClientType],
   clientIdentifier: Vrn,
   vatRegDate: Option[VatRegDate],
   service: String = Services.HMRCMTDVAT,

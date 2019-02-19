@@ -27,8 +27,8 @@
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
-@legend = @{"""<h1 class="heading-xlarge """ + marginTop + """">""" + Messages("confirm-cancel.header") + """</h1>""" +
-        """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
+@legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-cancel.header") + """</h1>""" +
+        """<p class="hint-text">""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 
@@ -40,6 +40,7 @@
 
     @form(routes.AgentsRequestTrackingController.submitConfirmCancel){
 
+        <div class="govuk-radios--inline">
         @input_radio_group(
             confirmForm("confirmCancel"),
             Seq(("true", Messages("confirm-cancel.radio.yes")),("false",Messages("confirm-cancel.radio.no"))),
@@ -47,6 +48,7 @@
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='confirmCancel'""")
         )
+        </div>
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>

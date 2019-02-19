@@ -5,6 +5,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ItsaClientForm, ServiceTypeForm}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -23,7 +24,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid ITSA service, redirect to enter identify-client page" in {
-      testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
+      testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
       val serviceForm = ServiceTypeForm.form.fill(serviceITSA)
       val result =
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
@@ -41,7 +42,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for ITSA service" in {
-      testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
+      testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
 
@@ -75,12 +76,18 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     "service is HMRC-MTD-IT" should {
 
       "redirect to confirm-client when a valid NINO and postcode are submitted" in {
-        val authRequest= AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
+        val authRequest = AuthorisationRequest("clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), requests = Set(authRequest)))
+          AgentSession(
+            Some(personal),
+            Some(serviceITSA),
+            Some("ni"),
+            Some(validNino.value),
+            Some(validPostcode),
+            requests = Set(authRequest)))
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           validNino.value,
           invitationIdITSA,
           validNino.value,
@@ -91,9 +98,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
         givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validNino.value,
-          "postcode"        -> validPostcode)
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
@@ -104,7 +110,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         testAgentSessionCache.save(AgentSession())
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           validNino.value,
           invitationIdITSA,
           validNino.value,
@@ -126,7 +132,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
         val requestWithForm = request
           .withFormUrlEncodedBody("clientIdentifier" -> "", "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -137,10 +143,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> "invalid",
-          "postcode"        -> validPostcode)
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> "invalid", "postcode" -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -149,7 +154,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when an empty postcode is submitted" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
         val requestWithForm = request
           .withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "postcode" -> "")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
@@ -160,10 +165,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when a postcode with invalid format is submitted" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validNino.value,
-          "postcode"        -> "invalid")
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "postcode" -> "invalid")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -172,10 +176,9 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       }
 
       "redisplay page with errors when a postcode with invalid characters is submitted" in {
-        testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
-        val requestWithForm = request.withFormUrlEncodedBody(
-          "clientIdentifier" -> validNino.value,
-          "postcode"        -> "invalid%")
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
+        val requestWithForm =
+          request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "postcode" -> "invalid%")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 200
@@ -190,9 +193,15 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val invitationSent = controller.showInvitationSent()
 
     "return 200 for authorised Agent successfully created ITSA invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
-      givenAgentReference(arn, uid, "personal")
+      givenAgentReference(arn, uid, personal)
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          clientTypeForInvitationSent = Some(personal)))
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -215,8 +224,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
-      //check if we have cleared everything in cache except clientType
-      await(testAgentSessionCache.get) shouldBe AgentSession(personal)
+      //check if we have cleared everything in cache except clientTypeForInvitationsSent
+      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
 
       verifyAuthoriseAttempt()
     }
@@ -228,7 +237,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     val featureFlags = FeatureFlags()
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are no requests in basket" in {
-      testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA)))
+      testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA)))
       val ninoForm = ItsaClientForm.form(featureFlags.showKfcMtdIt).fill(ItsaClient("", None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
@@ -243,8 +252,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled ITSA client when there are requests in basket" in {
-      val authRequest = AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
-      testAgentSessionCache.save(AgentSession(personal, Some(serviceITSA), requests = Set(authRequest)))
+      val authRequest = AuthorisationRequest("clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
+      testAgentSessionCache.save(AgentSession(Some(personal), Some(serviceITSA), requests = Set(authRequest)))
       val ninoForm = ItsaClientForm.form(featureFlags.showKfcMtdIt).fill(ItsaClient("", None))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(ninoForm.data.toSeq: _*), arn.value))
@@ -265,7 +274,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 and show client trading name" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenTradingName(validNino, "64 Bit")
 
       val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
@@ -278,7 +293,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 and show client's name" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenTradingNameMissing(validNino)
       givenCitizenDetailsAreKnownFor(validNino.value, "Anne Marri", "Son Pear")
 
@@ -292,7 +313,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 and no client name was found" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenTradingNameMissing(validNino)
       givenCitizenDetailsReturns404For(validNino.value)
 
@@ -312,10 +339,16 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "redirect to show-review-authorisations when YES is selected" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -323,7 +356,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         serviceITSA,
         "NI")
       givenTradingName(validNino, "64 Bit")
-      givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenAgentReference(arn, "ABCDEFGH", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
 
@@ -336,10 +369,16 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "redirect to show identify client when NO is selected" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -347,7 +386,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         serviceITSA,
         "NI")
       givenTradingName(validNino, "64 Bit")
-      givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenAgentReference(arn, "ABCDEFGH", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(false))
@@ -358,9 +397,16 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to already-invitations-pending when YES is selected but there are already invitations for this client" in {
-      val authRequest = AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
+      val authRequest = AuthorisationRequest("clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual, requests = Set(authRequest)))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual,
+          requests = Set(authRequest)))
       givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, serviceITSA)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
@@ -371,9 +417,16 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "redirect to already-invitations-pending when YES is selected but there are already invitations in the basket for this client" in {
-      val authRequest = AuthorisationRequest( "clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
+      val authRequest = AuthorisationRequest("clientName", ItsaInvitation(validNino, Some(Postcode(validPostcode))))
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual, requests = Set(authRequest)))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual,
+          requests = Set(authRequest)))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
@@ -385,7 +438,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
 
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
       givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
@@ -398,10 +457,16 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "redirect to select client type when client type in cache is not supported" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         mtdItId.value,
         invitationIdITSA,
         validNino.value,
@@ -409,7 +474,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         serviceITSA,
         "NI")
       givenTradingName(validNino, "64 Bit")
-      givenAgentReference(arn, "ABCDEFGH", "personal")
+      givenAgentReference(arn, "ABCDEFGH", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
       val choice = agentConfirmationForm("error message").fill(Confirmation(true))
@@ -421,7 +486,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
 
     "return 200 for not selecting an option" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), fromFastTrack = fromManual))
+        AgentSession(
+          None,
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some(validPostcode),
+          fromFastTrack = fromManual))
       givenTradingName(validNino, "64 Bit")
       val result = submitConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -436,7 +507,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
   def behaveLikeMissingCacheScenarios(action: Action[AnyContent], request: FakeRequest[AnyContentAsEmpty.type]) = {
     "return to identify-client no client identifier found in cache" in {
       testAgentSessionCache.save(
-        AgentSession(None, Some(serviceITSA), Some("ni"), None,None, fromFastTrack = fromManual))
+        AgentSession(None, Some(serviceITSA), Some("ni"), None, None, fromFastTrack = fromManual))
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentsInvitationController.showIdentifyClient().url

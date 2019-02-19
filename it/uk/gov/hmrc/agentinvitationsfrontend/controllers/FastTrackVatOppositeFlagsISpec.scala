@@ -7,6 +7,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -64,17 +65,23 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
   }
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
+    override def configure(): Unit =
       bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
-    }
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController =
+    app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
-  val agentSession = AgentSession(business, Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = fromFastTrack)
+  val agentSession = AgentSession(
+    Some(business),
+    Some(serviceVAT),
+    Some("vrn"),
+    Some(validVrn.value),
+    Some(validRegistrationDate),
+    fromFastTrack = fromFastTrack)
 
   "POST /agents/fast-track" should {
     val request = FakeRequest(
@@ -85,7 +92,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track is correct for VAT" in {
       val formData =
-        AgentFastTrackRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+        AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -97,7 +104,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
       val formData =
-        AgentFastTrackRequest(business, serviceVAT, "vrn", validVrn.value, None)
+        AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
 
       val result = fastTrack(
@@ -109,7 +116,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
-      val formData = AgentFastTrackRequest(business, serviceVAT, "vrn", validVrn.value, Some("invalid_reg_date"))
+      val formData = AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some("invalid_reg_date"))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
 
       val result = fastTrack(
@@ -134,7 +141,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
-      val formData =  AgentFastTrackRequest(business, serviceVAT, "", "INVALID_VRN", Some(validRegistrationDate))
+      val formData = AgentFastTrackRequest(Some(business), serviceVAT, "", "INVALID_VRN", Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -147,7 +154,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT does not contain vrn" in {
-      val formData = AgentFastTrackRequest(business, serviceVAT)
+      val formData = AgentFastTrackRequest(Some(business), serviceVAT)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -161,7 +168,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for VAT" in {
       val formData =
-        AgentFastTrackRequest(business, "", "vrn", validVrn.value, Some(validRegistrationDate))
+        AgentFastTrackRequest(Some(business), "", "vrn", validVrn.value, Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -225,18 +232,18 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
-        business,
+        Some(business),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
         "vrn",
         serviceVAT,
         "VRN")
-      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenAgentReference(arn, "BBBBBBBB", business)
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      testAgentSessionCache.save(agentSession.copy(clientType = business))
+      testAgentSessionCache.save(agentSession.copy(clientType = Some(business)))
 
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -250,17 +257,17 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
         "vrn",
         serviceVAT,
         "VRN")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      testAgentSessionCache.save(agentSession.copy(clientType = personal, fromFastTrack = fromFastTrack))
+      testAgentSessionCache.save(agentSession.copy(clientType = Some(personal), fromFastTrack = fromFastTrack))
 
       val result = await(
         fastTrackController.submitCheckDetails(
@@ -275,7 +282,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
-        business,
+        Some(business),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -311,7 +318,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -319,7 +326,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
         serviceVAT,
         "VRN")
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 200)
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       testAgentSessionCache.save(agentSession.copy(clientType = None, fromFastTrack = fromFastTrack))
@@ -331,7 +338,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
 
-      val serviceForm = ClientTypeForm.form.fill("personal")
+      val serviceForm = ClientTypeForm.form.fill(personal)
 
       val result2 = await(
         controller.submitClientType(
@@ -343,7 +350,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     "redirect to identify-client when NO is selected for VAT service" in {
       givenInvitationCreationSucceeds(
         arn,
-        business,
+        Some(business),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
@@ -364,7 +371,8 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
   "GET /agents/more-details" should {
     val request = FakeRequest()
     "display the known fact page when known fact is required and provided for VAT" in {
-      testAgentSessionCache.save(agentSession.copy(clientType = business, fromFastTrack = fromFastTrack, knownFact = None))
+      testAgentSessionCache.save(
+        agentSession.copy(clientType = Some(business), fromFastTrack = fromFastTrack, knownFact = None))
       val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, "What is your client's VAT registration date?")
       checkHtmlResultWithBodyText(
@@ -379,23 +387,23 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
     "redirect to invitation sent when client details are valid and match for VAT" in {
       givenInvitationCreationSucceeds(
         arn,
-        business,
+        Some(business),
         validVrn.value,
         invitationIdVAT,
         validVrn.value,
         "vrn",
         serviceVAT,
         identifierVAT)
-      givenAgentReference(arn, "BBBBBBBB", "business")
+      givenAgentReference(arn, "BBBBBBBB", business)
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(Some(validRegistrationDate).get), 204)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val requestWithForm = request.withFormUrlEncodedBody(
-        "knownFact.year"       -> "2007",
-        "knownFact.month"      -> "07",
-        "knownFact.day"        -> "07"
+        "knownFact.year"  -> "2007",
+        "knownFact.month" -> "07",
+        "knownFact.day"   -> "07"
       )
 
       testAgentSessionCache.save(agentSession)

@@ -4,6 +4,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -14,10 +15,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class FastTrackIRVISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController =
+    app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-  val agentSession = AgentSession(personal, Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), fromFastTrack = fromFastTrack)
+  val agentSession = AgentSession(
+    Some(personal),
+    Some(servicePIR),
+    Some("ni"),
+    Some(validNino.value),
+    Some(dateOfBirth),
+    fromFastTrack = fromFastTrack)
 
   "POST /agents/client-type" should {
     val request = FakeRequest("POST", "/agents/client-type")
@@ -26,21 +34,22 @@ class FastTrackIRVISpec extends BaseISpec {
       testAgentSessionCache.save(agentSession)
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
         "NI")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenAgentReferenceRecordExistsForArn(arn, "uid")
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
-      val clientTypeForm = ClientTypeForm.form.fill("personal")
+      val clientTypeForm = ClientTypeForm.form.fill(personal)
       val result =
-        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
+        submitClientType(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -56,7 +65,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
     "return 303 check-details if service calling fast-track is correct for IRV" in {
       val formData =
-        AgentFastTrackRequest(personal, servicePIR, "ni", validNino.value, Some(dateOfBirth))
+        AgentFastTrackRequest(Some(personal), servicePIR, "ni", validNino.value, Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -68,7 +77,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
     "return 303 and redirect to error url if service calling fast-track for PIR contains invalid nino" in {
       val formData =
-        AgentFastTrackRequest(personal, servicePIR, "ni", "INVALID_NINO" , Some(dateOfBirth))
+        AgentFastTrackRequest(Some(personal), servicePIR, "ni", "INVALID_NINO", Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -80,7 +89,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for IRV does not contain nino" in {
-      val formData = AgentFastTrackRequest(personal, servicePIR, "", "", Some(dateOfBirth))
+      val formData = AgentFastTrackRequest(Some(personal), servicePIR, "", "", Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -93,7 +102,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for IRV" in {
-      val formData = AgentFastTrackRequest(personal, "", "ni", validNino.value, None)
+      val formData = AgentFastTrackRequest(Some(personal), "", "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
         authorisedAsValidAgent(request, arn.value)
@@ -156,14 +165,14 @@ class FastTrackIRVISpec extends BaseISpec {
     "redirect to confirm_invitation when YES is selected for IRV service" in {
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
         "NI")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
@@ -180,7 +189,7 @@ class FastTrackIRVISpec extends BaseISpec {
     "redirect to identify-client when NO is selected for IRV service" in {
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdPIR,
         validNino.value,
@@ -228,14 +237,14 @@ class FastTrackIRVISpec extends BaseISpec {
       givenCitizenDetailsReturns404For(validNino.value)
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
         "NI")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
@@ -268,14 +277,14 @@ class FastTrackIRVISpec extends BaseISpec {
     "redirect to invitation sent when client details are valid and match for IRV" in {
       givenInvitationCreationSucceeds(
         arn,
-        personal,
+        Some(personal),
         validNino.value,
         invitationIdPIR,
         validNino.value,
         "ni",
         servicePIR,
         "NI")
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipNotFoundForAgent(arn, validNino)
@@ -297,7 +306,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "redirect to already-authorisation-present when a relationship already exists between agent and client" in {
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipIsActiveForAgent(arn, validNino)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
@@ -321,7 +330,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "redirect to already-authorisation-pending when a relationship already exists between agent and client when there is no end date" in {
-      givenAgentReference(arn, "BBBBBBBB", "personal")
+      givenAgentReference(arn, "BBBBBBBB", personal)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
       givenAfiRelationshipIsActiveForAgentNoEndDate(arn, validNino)
       givenAgentReferenceRecordExistsForArn(arn, "uid")

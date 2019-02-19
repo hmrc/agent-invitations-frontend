@@ -6,6 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -45,7 +46,8 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       )
       .overrides(new TestGuiceModule)
 
-  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
+  lazy val fastTrackController: AgentsFastTrackInvitationController =
+    app.injector.instanceOf[AgentsFastTrackInvitationController]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
@@ -67,7 +69,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          AgentFastTrackRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode))
+          AgentFastTrackRequest(Some(personal), serviceITSA, "ni", nino, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -77,7 +79,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = AgentFastTrackRequest(Some("personal"), servicePIR, "ni", nino, Some(validPostcode))
+        val formData = AgentFastTrackRequest(Some(personal), servicePIR, "ni", nino, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -88,7 +90,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          AgentFastTrackRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)

@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.{Format, Json}
 
 case class AgentSession(
-  clientType: Option[String] = None,
+  clientType: Option[ClientType] = None,
   service: Option[String] = None,
   clientIdentifierType: Option[String] = None,
   clientIdentifier: Option[String] = None,
@@ -28,7 +28,8 @@ case class AgentSession(
   errorUrl: Option[String] = None,
   fromFastTrack: Boolean = false,
   isDeAuthJourney: Boolean = false,
-  requests: Set[AuthorisationRequest] = Set.empty)
+  requests: Set[AuthorisationRequest] = Set.empty,
+  clientTypeForInvitationSent: Option[ClientType] = None)
 
 object AgentSession {
   implicit val format: Format[AgentSession] = Json.format[AgentSession]

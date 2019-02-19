@@ -39,6 +39,8 @@ POST        /agents/cancel-authorisation/confirm-client         @uk.gov.hmrc.age
 GET         /agents/cancel-authorisation/confirm-cancel         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showConfirmCancel
 POST        /agents/cancel-authorisation/confirm-cancel         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitConfirmCancel
 GET         /agents/cancel-authorisation/cancelled              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showCancelled
+GET         /agents/cancel-authorisation/no-client-found        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.noClientFound
+GET         /agents/cancel-authorisation/response-failed        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.responseFailed
 
 
 # Error Agent Endpoints

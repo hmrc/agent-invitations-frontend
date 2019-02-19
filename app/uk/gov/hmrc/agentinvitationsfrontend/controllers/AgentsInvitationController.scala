@@ -131,13 +131,17 @@ class AgentsInvitationController @Inject()(
                             val updatedBasket = existingSession.requests ++ Seq(
                               AuthorisationRequest(clientName, Invitation(clientType, service, clientId, knownFact)))
                             agentSessionCache
-                              .save(AgentSession(clientType, requests = updatedBasket))
+                              .save(
+                                AgentSession(
+                                  clientType,
+                                  requests = updatedBasket,
+                                  clientTypeForInvitationSent = clientType))
                               .flatMap { _ =>
                                 clientType match {
-                                  case Some("personal") =>
+                                  case Some(ClientType.personal) =>
                                     Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                                  case Some("business") => confirmAndRedirect(arn, existingSession, false)
-                                  case _                => toFuture(Redirect(agentsRootUrl))
+                                  case Some(ClientType.business) => confirmAndRedirect(arn, existingSession, false)
+                                  case _                         => toFuture(Redirect(agentsRootUrl))
                                 }
                               }
                         }
@@ -194,7 +198,7 @@ class AgentsInvitationController @Inject()(
                   processedRequests <- invitationsService
                                         .createMultipleInvitations(
                                           arn,
-                                          sessionCache.clientType.getOrElse(""),
+                                          sessionCache.clientType,
                                           sessionCache.requests,
                                           featureFlags)
                   _ <- agentSessionCache.save(sessionCache.copy(requests = processedRequests))
@@ -252,22 +256,28 @@ class AgentsInvitationController @Inject()(
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
       agentSessionCache.get.flatMap { session =>
-        val clientType = session.clientType.getOrElse(throw new IllegalStateException("no client type found in cache"))
+        val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
+          throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
-        invitationsService.createAgentLink(arn, clientType).flatMap { agentLink =>
+        invitationsService.createAgentLink(arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
           val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          //clear every thing in the cache except clientType , as its needed in-case user refreshes the page
-          agentSessionCache.save(AgentSession(clientType = Some(clientType))).map { _ =>
-            Ok(
-              invitation_sent(
-                InvitationSentPageConfig(
-                  invitationUrl,
-                  continueUrlExists,
-                  featureFlags.enableTrackRequests,
-                  clientType,
-                  inferredExpiryDate)))
-          }
+          //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
+          agentSessionCache
+            .save(
+              AgentSession(
+                clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
+                continueUrl = session.continueUrl))
+            .map { _ =>
+              Ok(
+                invitation_sent(
+                  InvitationSentPageConfig(
+                    invitationUrl,
+                    continueUrlExists,
+                    featureFlags.enableTrackRequests,
+                    ClientType.fromEnum(clientTypeForInvitationSent),
+                    inferredExpiryDate)))
+            }
         }
       }
     }

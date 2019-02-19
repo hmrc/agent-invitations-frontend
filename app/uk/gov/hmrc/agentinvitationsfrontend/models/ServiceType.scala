@@ -16,15 +16,18 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class AgentFastTrackRequest(
-  clientType: Option[ClientType],
-  service: String,
-  clientIdentifierType: String,
-  clientIdentifier: String,
-  knownFact: Option[String])
+sealed trait ServiceType {
+  val value: String
+}
 
-object AgentFastTrackRequest {
+case object HmrcMtdIt extends ServiceType {
+  override val value: String = "HMRC-MTD-IT"
+}
 
-  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
-    AgentFastTrackRequest(clientType, service, "", "", None)
+case object HmrcPir extends ServiceType {
+  override val value: String = "PERSONAL-INCOME-RECORD"
+}
+
+case object HmrcMtdVat extends ServiceType {
+  override val value: String = "HMRC-MTD-VAT"
 }

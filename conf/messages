@@ -181,6 +181,15 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+cancel-authorisation.not-matched.header=There is a problem
+cancel-authorisation.not-matched.description=We could not find any clients matching these details.
+cancel-authorisation.not-matched.advice=Check the details and try again.
+cancel-authorisation.start-over.button=Start over
+cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
+cancel-authorisation.response-failed.description=You can try again now, or try later.
+cancel-authorisation.response-failed.advice=We may not have saved your responses.
+cancel-authorisation.response-failed.tryAgain=Try again
+
 
 #Not authorisation to de-auth
 not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to report their income and expenses through software.
