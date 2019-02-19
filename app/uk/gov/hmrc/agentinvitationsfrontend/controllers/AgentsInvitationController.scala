@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{VatInvitation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.repo.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -178,7 +179,7 @@ class AgentsInvitationController @Inject()(
 
   def submitReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      agentSessionCache.get.flatMap { sessionCache =>
+      agentSessionCache.hardGet.flatMap { sessionCache =>
         agentConfirmationForm("error.review-authorisation.required")
           .bindFromRequest()
           .fold(
@@ -217,7 +218,7 @@ class AgentsInvitationController @Inject()(
 
   def showDelete(itemId: String): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map { agentSession =>
+      agentSessionCache.hardGet.map { agentSession =>
         val deleteItem =
           agentSession.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
         Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
@@ -241,11 +242,13 @@ class AgentsInvitationController @Inject()(
           },
           input =>
             if (input.choice) {
-              agentSessionCache
-                .transform(item => item.copy(requests = item.requests.filterNot(_.itemId == itemId)))
-                .map { _ =>
-                  Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                }
+              agentSessionCache.fetch.flatMap {
+                case Some(session) =>
+                  agentSessionCache
+                    .save(session.copy(requests = session.requests.filterNot(_.itemId == itemId)))
+                    .flatMap(_ => Redirect(routes.AgentsInvitationController.showReviewAuthorisations()))
+                case None => Redirect(routes.AgentsInvitationController.showClientType())
+              }
             } else {
               Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
           }
@@ -255,7 +258,7 @@ class AgentsInvitationController @Inject()(
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (arn, _) =>
-      agentSessionCache.get.flatMap { session =>
+      agentSessionCache.hardGet.flatMap { session =>
         val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
           throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
@@ -285,7 +288,7 @@ class AgentsInvitationController @Inject()(
 
   val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.map { agentSession =>
+      agentSessionCache.hardGet.map { agentSession =>
         val continueUrl = agentSession.continueUrl.getOrElse(agentServicesAccountUrl)
         agentSessionCache.save(agentSession.copy(continueUrl = None))
         Redirect(continueUrl)
@@ -295,7 +298,7 @@ class AgentsInvitationController @Inject()(
 
   val notSignedUp: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      agentSessionCache.get.flatMap { agentSession =>
+      agentSessionCache.hardGet.flatMap { agentSession =>
         val hasRequests = agentSession.requests.nonEmpty
         agentSession.service match {
           case Some(HMRCMTDVAT) =>

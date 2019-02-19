@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
@@ -9,25 +11,22 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
 
   "POST /agents/select-service" should {
     val request = FakeRequest("POST", "/agents/select-service")
     val submitService = controller.submitSelectService()
 
     "return 303 for authorised Agent with valid Personal Income Record service, redirect to identify client" in {
-      testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
       val serviceForm = ServiceTypeForm.form.fill(servicePIR)
       val result =
-        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
+        submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value, sessionId))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
@@ -42,8 +41,10 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for IRV service" in {
-      testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
-      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
+      val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value, sessionId))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(result, "identify-client.header", "title.suffix.agents")
@@ -83,8 +84,11 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
-        testAgentSessionCache.save(
-          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
+        await(sessionStore.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientIdentifier" -> validNino.value,
@@ -92,44 +96,49 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             "dob.month"        -> "07",
             "dob.day"          -> "07"
           )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
       }
 
-//      "redirect to client-type when a valid NINO is submitted but cache is empty" in {
-//        testAgentSessionCache.clear()
-//        givenInvitationCreationSucceeds(
-//          arn,
-//          personal,
-//          validNino.value,
-//          invitationIdPIR,
-//          validNino.value,
-//          "ni",
-//          servicePIR,
-//          "NI")
-//        givenAgentReference(arn, "ABCDEFGH", "personal")
-//        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-//        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
-//
-//        val requestWithForm =
-//          request.withFormUrlEncodedBody(
-//            "clientIdentifier" -> validNino.value,
-//            "dob.year"   -> "1980",
-//            "dob.month"  -> "07",
-//            "dob.day"    -> "07"
-//          )
-//
-//          val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
-//          status(result) shouldBe 303
-//          redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
-//      }
+      "redirect to client-type when a valid NINO is submitted but cache is empty" in {
+        givenInvitationCreationSucceeds(
+          arn,
+          Some(personal),
+          validNino.value,
+          invitationIdPIR,
+          validNino.value,
+          "ni",
+          servicePIR,
+          "NI")
+        givenAgentReference(arn, "ABCDEFGH", personal)
+        givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
+        givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
+
+        val requestWithForm =
+          request.withFormUrlEncodedBody(
+            "clientIdentifier" -> validNino.value,
+            "dob.year"   -> "1980",
+            "dob.month"  -> "07",
+            "dob.day"    -> "07"
+          )
+
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
+          val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      }
 
       "redirect to already-authorisation-pending when a valid NINO is submitted but authorisation already exists" in {
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
+
         givenGetAllPendingInvitationsReturnsSome(arn, validNino.value, servicePIR)
-        testAgentSessionCache.save(
-          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth)))
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
         val requestWithForm =
@@ -139,23 +148,21 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             "dob.month"        -> "07",
             "dob.day"          -> "07"
           )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.pendingAuthorisationExists().url)
       }
 
       "redirect to already-authorisation-pending when a valid NINO is submitted but it already exists in the basket" in {
+
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+
+        await(sessionStore.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), requests = Set(AuthorisationRequest( "clientName", PirInvitation(validNino, Some(DOB(dateOfBirth))))))))
+
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
-        testAgentSessionCache.save(
-          AgentSession(
-            Some(personal),
-            Some(servicePIR),
-            Some("ni"),
-            Some(validNino.value),
-            Some(dateOfBirth),
-            requests = Set(AuthorisationRequest("clientName", PirInvitation(validNino, Some(DOB(dateOfBirth)))))
-          ))
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
         val requestWithForm =
@@ -165,22 +172,17 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             "dob.month"        -> "07",
             "dob.day"          -> "07"
           )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.pendingAuthorisationExists().url)
       }
 
       "redirect to already-authorisation-present when a valid NINO is submitted but client already has relationship with agent for this service" in {
-        testAgentSessionCache.save(
-          AgentSession(
-            Some(personal),
-            Some(servicePIR),
-            Some("ni"),
-            Some(validNino.value),
-            Some(dateOfBirth),
-            requests = Set(AuthorisationRequest("clientName", PirInvitation(Nino("AB123456B"), Some(DOB(dateOfBirth)))))
-          ))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), requests = Set(AuthorisationRequest( "clientName", PirInvitation(Nino("AB123456B"), Some(DOB(dateOfBirth))))))))
 
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
@@ -193,16 +195,18 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             "dob.month"        -> "07",
             "dob.day"          -> "07"
           )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsErrorController.activeRelationshipExists().url)
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {
-        testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
         val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "")
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.nino.required")
@@ -210,9 +214,11 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid NINO is submitted" in {
-        testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
         val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> "invalid")
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-nino.invalid-format")
@@ -220,14 +226,16 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an no date of birth is submitted" in {
-        testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientIdentifier" -> validNino.value,
           "dob.year"         -> "",
           "dob.month"        -> "",
           "dob.day"          -> ""
         )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "error.irv-date-of-birth.required")
@@ -235,14 +243,16 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redisplay page with errors when an invalid date of birth is submitted" in {
-        testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR))))
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientIdentifier" -> validNino.value,
           "dob.year"         -> "9999",
           "dob.month"        -> "99",
           "dob.day"          -> "99"
         )
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 200
         checkHtmlResultWithBodyMsgs(result, "identify-client.header", "enter-irv-date-of-birth.invalid-format")
@@ -250,9 +260,11 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to /agents/select-service if service is missing" in {
-        testAgentSessionCache.save(AgentSession(Some(personal)))
+        val sessionId = UUID.randomUUID().toString
+        implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+        await(sessionStore.save(AgentSession(Some(personal))))
         val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value)
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value, sessionId))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
@@ -265,17 +277,15 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
     val invitationSent = controller.showInvitationSent()
 
     "return 200 for authorised Agent successfully created IRV invitation and redirected to Confirm Invitation Page (secureFlag = false) with no continue Url" in {
-      givenAgentReference(arn, uid, personal)
-      testAgentSessionCache.save(
-        AgentSession(
-          Some(personal),
-          Some(servicePIR),
-          Some("ni"),
-          Some(validNino.value),
-          Some(dateOfBirth),
-          clientTypeForInvitationSent = Some(personal)))
+      val sessionId = UUID.randomUUID().toString
+      implicit val hc: HeaderCarrier = headerCarrier(sessionId)
+      await(sessionStore.save(
+        AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), clientTypeForInvitationSent = Some(personal))))
 
-      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
+      givenAgentReference(arn, uid, personal)
+
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value, sessionId))
+
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -298,7 +308,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       //check if we have cleared everything in cache except clientTypeForInvitationsSent
-      await(testAgentSessionCache.get) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
 
       verifyAuthoriseAttempt()
     }

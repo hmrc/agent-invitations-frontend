@@ -14,10 +14,11 @@ import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
-import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.repo.{AgentSessionCache, ClientConsentsCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -25,7 +26,7 @@ import scala.concurrent.Future
 
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
-    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport {
+    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport with MongoSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -35,6 +36,11 @@ abstract class BaseISpec
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
+
+  lazy val sessionStore: AgentSessionCache  = app.injector.instanceOf[AgentSessionCache]
+  lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
+
+  def headerCarrier(sessionId: String) = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
 
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -75,16 +81,13 @@ abstract class BaseISpec
         "features.redirect-to-confirm-mtd-vat"                                -> true,
         "features.show-agent-led-de-auth"                                     -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   def commonStubs(): Unit =
     givenAuditConnector()
-
-  protected lazy val testAgentSessionCache = new TestAgentSessionCache
-
-  protected lazy val testClientConsentsJourneyStateCache = new TestClientConsentsJourneyStateCache
 
   protected implicit val materializer = app.materializer
 
@@ -114,14 +117,11 @@ abstract class BaseISpec
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    testAgentSessionCache.clear()
-    testClientConsentsJourneyStateCache.clear()
+    dropMongoDb()
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
-      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
-      bind(classOf[ClientConsentsJourneyStateCache]).toInstance(testClientConsentsJourneyStateCache)
     }
   }
 

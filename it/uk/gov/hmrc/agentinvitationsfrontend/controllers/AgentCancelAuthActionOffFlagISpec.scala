@@ -1,14 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 
 class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
 
@@ -47,23 +43,11 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
         "features.enable-track-requests"                                      -> true,
         "features.enable-track-cancel-auth-action"                                   -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
-      .overrides(new TestGuiceModule)
-
-  private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
-      bind(classOf[AgentSessionCache]).toInstance(testAgentSessionCache)
-    }
-  }
 
   lazy val requestTrackingController: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    testAgentSessionCache.clear()
-  }
 
   "GET /track/" should {
 

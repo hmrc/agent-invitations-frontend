@@ -30,7 +30,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "3.4.0",
   "uk.gov.hmrc" %% "play-partials" % "6.3.0",
   "de.threedimensions" %% "metrics-play" % "2.5.13",
-  "uk.gov.hmrc" %% "http-caching-client" % "8.0.0"
+  "uk.gov.hmrc" %% "mongo-caching" % "5.6.0"
 )
 
 def testDeps(scope: String) = Seq(
@@ -41,7 +41,8 @@ def testDeps(scope: String) = Seq(
   "org.jsoup" % "jsoup" % "1.11.3" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-  "org.mockito" % "mockito-core" % "2.23.4" % scope
+  "org.mockito" % "mockito-core" % "2.23.4" % scope,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % scope
 )
 
 lazy val root = (project in file("."))
