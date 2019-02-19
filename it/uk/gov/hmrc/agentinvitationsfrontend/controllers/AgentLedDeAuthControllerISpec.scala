@@ -234,8 +234,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
       "redirect to not-authorised when there is no relationship to deauthorise" in {
         givenAfiRelationshipNotFoundForAgent(arn, validNino)
-        testAgentSessionCache.save(AgentSession(personal, Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), isDeAuthJourney = true))
-        givenAgentReference(arn, "ABCDEFGH", "personal")
+        testAgentSessionCache.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), isDeAuthJourney = true))
+        givenAgentReference(arn, "ABCDEFGH", personal)
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
@@ -353,7 +353,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
         givenTradingName(validNino, "My Trading Name")
         testAgentSessionCache.save(
-          AgentSession(personal, Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode)))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)

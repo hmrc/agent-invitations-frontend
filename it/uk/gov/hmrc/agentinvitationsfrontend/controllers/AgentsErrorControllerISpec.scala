@@ -272,7 +272,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     val request = FakeRequest("GET", "/not-authorised")
     "display the page" in {
       testAgentSessionCache.save(
-        AgentSession(personal, Some(serviceITSA), None, None, None, requests = Set.empty, fromFastTrack = fromFastTrack))
+        AgentSession(Some(personal), Some(serviceITSA), None, None, None, requests = Set.empty, fromFastTrack = fromFastTrack))
       val result = controller.notAuthorised()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
