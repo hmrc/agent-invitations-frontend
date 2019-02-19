@@ -107,7 +107,7 @@ trait AuthStubs {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
-  def authorisedAsAnyClientFalse[A](request: FakeRequest[A], sessionId: String = "clientSession-1234567"): FakeRequest[A] = {
+  def authorisedAsAnyClientFalse[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -152,7 +152,7 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> sessionId)
+    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
   }
 
   def authenticatedClient[A](
