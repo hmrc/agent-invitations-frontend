@@ -107,8 +107,16 @@ class AgentLedDeAuthController @Inject()(
     ifShowDeAuthFlag(handleShowIdentifyClient)
   }
 
-  def submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(handleSubmitIdentifyClient)
+  def submitIdentifyClientItsa: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyItsaClient)
+  }
+
+  def submitIdentifyClientIrv: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyIrvClient)
+  }
+
+  def submitIdentifyClientVat: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyVatClient)
   }
 
   def showConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
@@ -288,7 +296,11 @@ class AgentLedDeAuthController @Inject()(
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 
-  override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
+  override def submitIdentifyClientItsaCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientItsa()
+
+  override def submitIdentifyClientIrvCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientIrv()
+
+  override def submitIdentifyClientVatCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientVat()
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
 

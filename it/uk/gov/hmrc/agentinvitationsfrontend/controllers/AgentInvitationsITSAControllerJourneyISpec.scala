@@ -67,8 +67,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
   }
 
   "POST /agents/identify-client" when {
-    val request = FakeRequest("POST", "/agents/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/identify-itsa-client")
+    val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
     behave like anAuthorisedAgentEndpoint(request, submitIdentifyClient)
 

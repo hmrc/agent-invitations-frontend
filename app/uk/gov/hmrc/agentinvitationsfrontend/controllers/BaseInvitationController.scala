@@ -208,7 +208,7 @@ abstract class BaseInvitationController(
                 identify_client_itsa(
                   ItsaClientForm.form(featureFlags.showKfcMtdIt),
                   featureFlags.showKfcMtdIt,
-                  submitIdentifyClientCall,
+                  submitIdentifyClientItsaCall,
                   selectServiceCall.url))
 
             case Some(HMRCMTDVAT) =>
@@ -216,7 +216,7 @@ abstract class BaseInvitationController(
                 identify_client_vat(
                   VatClientForm.form(featureFlags.showKfcMtdVat),
                   featureFlags.showKfcMtdVat,
-                  submitIdentifyClientCall,
+                  submitIdentifyClientVatCall,
                   selectServiceCall.url))
 
             case Some(HMRCPIR) =>
@@ -224,25 +224,11 @@ abstract class BaseInvitationController(
                 identify_client_irv(
                   IrvClientForm.form(featureFlags.showKfcPersonalIncome),
                   featureFlags.showKfcPersonalIncome,
-                  submitIdentifyClientCall,
+                  submitIdentifyClientIrvCall,
                   selectServiceCall.url
                 ))
 
             case _ => Redirect(selectServiceCall)
-          }
-        case _ => Redirect(clientTypeCall)
-      }
-    }
-
-  protected def handleSubmitIdentifyClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
-      agentSessionCache.fetch.flatMap {
-        case Some(session) =>
-          session.service match {
-            case Some(HMRCMTDIT)  => identifyItsaClient(arn, isWhitelisted)
-            case Some(HMRCMTDVAT) => identifyVatClient(arn, isWhitelisted)
-            case Some(HMRCPIR)    => identifyIrvClient(arn, isWhitelisted)
-            case _                => Redirect(selectServiceCall)
           }
         case _ => Redirect(clientTypeCall)
       }
@@ -263,110 +249,110 @@ abstract class BaseInvitationController(
       }
     }
 
-  def identifyItsaClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[_],
-    hc: HeaderCarrier): Future[Result] =
-    ItsaClientForm
-      .form(featureFlags.showKfcMtdIt)
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          Ok(
-            identify_client_itsa(
-              formWithErrors,
-              featureFlags.showKfcMtdIt,
-              submitIdentifyClientCall,
-              selectServiceCall.url)),
-        userInput =>
-          agentSessionCache.fetch.flatMap {
-            case Some(cache) =>
-              val updatedSession =
-                cache.copy(
-                  clientIdentifier = Some(userInput.clientIdentifier),
-                  clientIdentifierType = Some("ni"),
-                  knownFact = userInput.postcode)
-              agentSessionCache
-                .save(updatedSession)
-                .flatMap { updatedSession =>
-                  val itsaInvitation = ItsaInvitation(
-                    Nino(userInput.clientIdentifier),
-                    if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
-                  knownFactCheckItsa(arn, updatedSession, itsaInvitation, isWhitelisted)
-                }
-            case None => Redirect(clientTypeCall)
-        }
-      )
-
-  def identifyVatClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[_],
-    hc: HeaderCarrier): Future[Result] =
-    VatClientForm
-      .form(featureFlags.showKfcMtdVat)
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          Ok(
-            identify_client_vat(
-              formWithErrors,
-              featureFlags.showKfcMtdVat,
-              submitIdentifyClientCall,
-              selectServiceCall.url)),
-        userInput =>
-          agentSessionCache.fetch.flatMap {
-            case Some(cache) =>
-              val updatedSession =
-                cache.copy(
-                  clientIdentifier = Some(userInput.clientIdentifier),
-                  clientIdentifierType = Some("vrn"),
-                  knownFact = userInput.registrationDate)
-              agentSessionCache
-                .save(updatedSession)
-                .flatMap { updatedSession =>
-                  val vatInvitation =
-                    VatInvitation(
-                      updatedSession.clientType,
-                      Vrn(userInput.clientIdentifier),
-                      if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
-                  knownFactCheckVat(arn, updatedSession, vatInvitation, isWhitelisted)
-                }
-            case None => Redirect(clientTypeCall)
-        }
-      )
-
-  def identifyIrvClient(arn: Arn, isWhitelisted: Boolean)(
-    implicit request: Request[_],
-    hc: HeaderCarrier): Future[Result] =
-    IrvClientForm
-      .form(featureFlags.showKfcPersonalIncome)
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          Ok(
-            identify_client_irv(
-              formWithErrors,
-              featureFlags.showKfcPersonalIncome,
-              submitIdentifyClientCall,
-              selectServiceCall.url)),
-        userInput =>
-          agentSessionCache.fetch.flatMap {
-            case Some(cache) =>
-              val updatedSession =
-                cache.copy(
-                  clientIdentifier = Some(userInput.clientIdentifier),
-                  clientIdentifierType = Some("ni"),
-                  knownFact = userInput.dob)
-              agentSessionCache
-                .save(updatedSession)
-                .flatMap { updatedSession =>
-                  val pirInvitation =
-                    PirInvitation(
+  def identifyItsaClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      ItsaClientForm
+        .form(featureFlags.showKfcMtdIt)
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            Ok(
+              identify_client_itsa(
+                formWithErrors,
+                featureFlags.showKfcMtdIt,
+                submitIdentifyClientItsaCall,
+                selectServiceCall.url)),
+          userInput =>
+            agentSessionCache.fetch.flatMap {
+              case Some(cache) =>
+                val updatedSession =
+                  cache.copy(
+                    clientIdentifier = Some(userInput.clientIdentifier),
+                    clientIdentifierType = Some("ni"),
+                    knownFact = userInput.postcode)
+                agentSessionCache
+                  .save(updatedSession)
+                  .flatMap { updatedSession =>
+                    val itsaInvitation = ItsaInvitation(
                       Nino(userInput.clientIdentifier),
-                      if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
-                  knownFactCheckIrv(arn, updatedSession, pirInvitation, isWhitelisted)
-                }
-            case None => Redirect(clientTypeCall)
-        }
-      )
+                      if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
+                    knownFactCheckItsa(arn, updatedSession, itsaInvitation, isWhitelisted)
+                  }
+              case None => Redirect(clientTypeCall)
+          }
+        )
+    }
+
+  def identifyVatClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      VatClientForm
+        .form(featureFlags.showKfcMtdVat)
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            Ok(
+              identify_client_vat(
+                formWithErrors,
+                featureFlags.showKfcMtdVat,
+                submitIdentifyClientVatCall,
+                selectServiceCall.url)),
+          userInput =>
+            agentSessionCache.fetch.flatMap {
+              case Some(cache) =>
+                val updatedSession =
+                  cache.copy(
+                    clientIdentifier = Some(userInput.clientIdentifier),
+                    clientIdentifierType = Some("vrn"),
+                    knownFact = userInput.registrationDate)
+                agentSessionCache
+                  .save(updatedSession)
+                  .flatMap { updatedSession =>
+                    val vatInvitation =
+                      VatInvitation(
+                        updatedSession.clientType,
+                        Vrn(userInput.clientIdentifier),
+                        if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
+                    knownFactCheckVat(arn, updatedSession, vatInvitation, isWhitelisted)
+                  }
+              case None => Redirect(clientTypeCall)
+          }
+        )
+    }
+
+  def identifyIrvClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
+    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      IrvClientForm
+        .form(featureFlags.showKfcPersonalIncome)
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            Ok(
+              identify_client_irv(
+                formWithErrors,
+                featureFlags.showKfcPersonalIncome,
+                submitIdentifyClientIrvCall,
+                selectServiceCall.url)),
+          userInput =>
+            agentSessionCache.fetch.flatMap {
+              case Some(cache) =>
+                val updatedSession =
+                  cache.copy(
+                    clientIdentifier = Some(userInput.clientIdentifier),
+                    clientIdentifierType = Some("ni"),
+                    knownFact = userInput.dob)
+                agentSessionCache
+                  .save(updatedSession)
+                  .flatMap { updatedSession =>
+                    val pirInvitation =
+                      PirInvitation(
+                        Nino(userInput.clientIdentifier),
+                        if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
+                    knownFactCheckIrv(arn, updatedSession, pirInvitation, isWhitelisted)
+                  }
+              case None => Redirect(clientTypeCall)
+          }
+        )
+    }
 
   def ifShouldShowService(service: String, featureFlags: FeatureFlags, isWhitelisted: Boolean)(
     body: => Future[Result]): Future[Result] =
@@ -740,7 +726,11 @@ abstract class BaseInvitationController(
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 
-  def submitIdentifyClientCall: Call = routes.AgentsInvitationController.submitIdentifyClient()
+  def submitIdentifyClientItsaCall: Call = routes.AgentsInvitationController.submitIdentifyClientItsa()
+
+  def submitIdentifyClientIrvCall: Call = routes.AgentsInvitationController.submitIdentifyClientIrv()
+
+  def submitIdentifyClientVatCall: Call = routes.AgentsInvitationController.submitIdentifyClientVat()
 
   def confirmClientCall: Call = routes.AgentsInvitationController.showConfirmClient()
 

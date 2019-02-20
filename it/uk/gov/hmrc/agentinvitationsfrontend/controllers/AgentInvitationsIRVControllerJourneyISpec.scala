@@ -60,8 +60,8 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
   }
 
   "POST /agents/identify-client" when {
-    val request = FakeRequest("POST", "/agents/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/identify-irv-client")
+    val submitIdentifyClient = controller.submitIdentifyClientIrv()
 
     behave like anAuthorisedAgentEndpoint(request, submitIdentifyClient)
 

@@ -119,8 +119,8 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
   }
 
   "POST /agents/identify-client" should {
-    val request = FakeRequest("POST", "/agents/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/identify-itsa-client")
+    val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
     "return 303 review-authorisation for ITSA" in {
       val formData = AgentSession(Some(personal), Some(serviceITSA), Some(""), Some(""), fromFastTrack = fromManual)
@@ -185,7 +185,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
         identifierPIR)
       givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
 
-      val result = submitIdentifyClient(
+      val result = controller.submitIdentifyClientIrv(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
@@ -211,7 +211,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
-      val result = submitIdentifyClient(
+      val result = controller.submitIdentifyClientVat(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
@@ -226,7 +226,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
       givenCheckRelationshipVatWithStatus(arn, validVrn.value, 200)
 
-      val result = submitIdentifyClient(
+      val result = controller.submitIdentifyClientVat(
         authorisedAsValidAgent(request, arn.value)
           .withFormUrlEncodedBody(form.data.toSeq: _*))
 
