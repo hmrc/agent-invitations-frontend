@@ -29,7 +29,7 @@ case class AgentSession(
   fromFastTrack: Boolean = false,
   isDeAuthJourney: Boolean = false,
   requests: Set[AuthorisationRequest] = Set.empty,
-  clientTypeForInvitationSent: Option[ClientType] = None) {}
+  clientTypeForInvitationSent: Option[ClientType] = None)
 
 object AgentSession {
   implicit val format: Format[AgentSession] = Json.format[AgentSession]
