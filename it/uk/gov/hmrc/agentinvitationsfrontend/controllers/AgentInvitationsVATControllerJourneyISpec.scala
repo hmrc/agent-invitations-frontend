@@ -224,7 +224,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientIdentifier" -> validVrn.value,
-          "registrationDate"        -> validRegistrationDate)
+          "registrationDate.year"  -> "2007",
+          "registrationDate.month" -> "10",
+          "registrationDate.day"   -> "07")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303

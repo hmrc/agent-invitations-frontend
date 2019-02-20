@@ -237,7 +237,9 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
 
       "redirect to /agents/select-service if service is missing" in {
         await(sessionStore.save(AgentSession(Some(personal))))
-        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value)
+        val requestWithForm = request.withFormUrlEncodedBody("clientIdentifier" -> validNino.value, "dob.year"         -> "1999",
+          "dob.month"        -> "11",
+          "dob.day"          -> "11")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303

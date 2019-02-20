@@ -264,7 +264,7 @@ abstract class BaseInvitationController(
                 selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
-              case Some(cache) =>
+              case Some(cache) if cache.service.contains(HMRCMTDIT) =>
                 val updatedSession =
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
@@ -278,7 +278,10 @@ abstract class BaseInvitationController(
                       if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
                     knownFactCheckItsa(arn, updatedSession, itsaInvitation, isWhitelisted)
                   }
-              case None => Redirect(clientTypeCall)
+              case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
+              case _ => {
+                Redirect(clientTypeCall)
+              }
           }
         )
     }
@@ -298,7 +301,7 @@ abstract class BaseInvitationController(
                 selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
-              case Some(cache) =>
+              case Some(cache) if cache.service.contains(HMRCMTDVAT) =>
                 val updatedSession =
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
@@ -314,7 +317,8 @@ abstract class BaseInvitationController(
                         if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
                     knownFactCheckVat(arn, updatedSession, vatInvitation, isWhitelisted)
                   }
-              case None => Redirect(clientTypeCall)
+              case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
+              case None                                                   => Redirect(clientTypeCall)
           }
         )
     }
@@ -334,7 +338,7 @@ abstract class BaseInvitationController(
                 selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
-              case Some(cache) =>
+              case Some(cache) if cache.service.contains(HMRCPIR) =>
                 val updatedSession =
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
@@ -349,7 +353,8 @@ abstract class BaseInvitationController(
                         if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
                     knownFactCheckIrv(arn, updatedSession, pirInvitation, isWhitelisted)
                   }
-              case None => Redirect(clientTypeCall)
+              case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
+              case None                                                   => Redirect(clientTypeCall)
           }
         )
     }
