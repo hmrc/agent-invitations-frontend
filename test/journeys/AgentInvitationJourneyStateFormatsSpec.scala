@@ -74,7 +74,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"PersonalServiceSelected", "properties": {"basket": [], "service": "HMRC-MTD-IT"}}""")
           .as[State] shouldBe PersonalServiceSelected(HMRCMTDIT, Nil)
       }
-
       "BusinessServiceSelected" in {
         Json.toJson(BusinessServiceSelected(Nil)) shouldBe Json.obj(
           "state"      -> "BusinessServiceSelected",
@@ -83,6 +82,57 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"BusinessServiceSelected", "properties": {"basket": []}}""")
           .as[State] shouldBe BusinessServiceSelected(Seq.empty)
+      }
+      "IdentifyClient" in {
+        Json.toJson(IdentifyClient(HMRCMTDIT, Nil)) shouldBe Json.obj(
+          "state"      -> "IdentifyClient",
+          "properties" -> Json.obj("service" -> "HMRC-MTD-IT", "basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"IdentifyClient", "properties": {"basket": [], "service": "HMRC-MTD-IT"}}""")
+          .as[State] shouldBe IdentifyClient(HMRCMTDIT, Nil)
+      }
+      "ItsaIdentifiedClient" in {
+        Json.toJson(ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil)) shouldBe Json.obj(
+          "state" -> "ItsaIdentifiedClient",
+          "properties" -> Json.obj(
+            "service"          -> "HMRC-MTD-IT",
+            "clientIdentifier" -> "AB123456A",
+            "postcode"         -> "BN114AW",
+            "basket"           -> JsArray())
+        )
+        Json
+          .parse(
+            """{"state":"ItsaIdentifiedClient", "properties": {"basket": [], "service": "HMRC-MTD-IT", "clientIdentifier": "AB123456A", "postcode": "BN114AW"}}""")
+          .as[State] shouldBe ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil)
+      }
+      "VatIdentifiedClient" in {
+        Json.toJson(VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-01-01"), Nil)) shouldBe Json.obj(
+          "state" -> "VatIdentifiedClient",
+          "properties" -> Json.obj(
+            "service"          -> "HMRC-MTD-VAT",
+            "clientIdentifier" -> "123456",
+            "registrationDate" -> "2010-01-01",
+            "basket"           -> JsArray())
+        )
+        Json
+          .parse(
+            """{"state":"VatIdentifiedClient", "properties": {"basket": [], "service": "HMRC-MTD-VAT", "clientIdentifier": "123456", "registrationDate": "2010-01-01"}}""")
+          .as[State] shouldBe VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-01-01"), Nil)
+      }
+      "IrvIdentifiedClient" in {
+        Json.toJson(IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil)) shouldBe Json.obj(
+          "state" -> "IrvIdentifiedClient",
+          "properties" -> Json.obj(
+            "service"          -> "PERSONAL-INCOME-RECORD",
+            "clientIdentifier" -> "AB123456A",
+            "dob"              -> "1990-10-10",
+            "basket"           -> JsArray())
+        )
+        Json
+          .parse(
+            """{"state":"IrvIdentifiedClient", "properties": {"basket": [], "service": "PERSONAL-INCOME-RECORD", "clientIdentifier": "AB123456A", "dob": "1990-10-10"}}""")
+          .as[State] shouldBe IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil)
       }
     }
 

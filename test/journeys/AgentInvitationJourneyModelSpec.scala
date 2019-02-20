@@ -20,7 +20,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, Error, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -92,12 +92,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when startJourney should thenGo(
           Start)
       }
-      "transition to SelectPersonalService given showSelectPersonalService" in {
+      "transition to PersonalServiceSelected given showSelectPersonalService" in {
         await(
           given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
             authorisedAgent)(HMRCMTDIT)) should thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
       }
-      "throw an InvalidService error when the service is invalid" in {
+      "transition to SelectPersonalService when the service is invalid" in {
         await(
           given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
             authorisedAgent)("foo")) should thenGo(
@@ -115,6 +115,48 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       "transition to SelectClientType given selectedBusinessService when no is selected" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType)
+      }
+    }
+    "at PersonalServiceSelected" should {
+      "transition to Start given startJourney" in {
+        given(PersonalServiceSelected(HMRCMTDIT, Nil)) when startJourney should thenGo(Start)
+      }
+      "transition to IdentifyClient given showIdentifyClient for ITSA service" in {
+        given(PersonalServiceSelected(HMRCMTDIT, Nil)) when showIdentifyClient(authorisedAgent) should thenGo(
+          IdentifyClient(HMRCMTDIT, Nil))
+      }
+      "transition to IdentifyClient given showIdentifyClient for IRV service" in {
+        given(PersonalServiceSelected(HMRCPIR, Nil)) when showIdentifyClient(authorisedAgent) should thenGo(
+          IdentifyClient(HMRCPIR, Nil))
+      }
+    }
+    "at BusinessServiceSelected" should {
+      "transition to Start given startJourney" in {
+        given(BusinessServiceSelected(Nil)) when startJourney should thenGo(Start)
+      }
+      "transition to IdentifyClient given showIdentifyClient" in {
+        given(BusinessServiceSelected(Nil)) when showIdentifyClient(authorisedAgent) should thenGo(
+          IdentifyClient(HMRCMTDVAT, Nil))
+      }
+    }
+    "at IdentifyClient" should {
+      "transition to Start given startJournye" in {
+        given(IdentifyClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to SubmitIdentifyItsaClient given submitIdentifyItsaClient" in {
+        given(IdentifyClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(authorisedAgent)(
+          ItsaClient("AB123456A", Some("BN114AW"))) should
+          thenGo(ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil))
+      }
+      "transition to SubmitIdentifyVatClient given submitIdentifyVatClient" in {
+        given(IdentifyClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should
+          thenGo(VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-10-10"), Nil))
+      }
+      "transition to SubmitIdentifyIrvClient given submitIdentifyIrvClient" in {
+        given(IdentifyClient(HMRCPIR, emptyBasket)) when identifyIrvClient(authorisedAgent)(
+          IrvClient("AB123456A", Some("1990-10-10"))) should
+          thenGo(IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil))
       }
     }
   }

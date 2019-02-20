@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, AuthorisedAgent, ClientType, Confirmation}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -46,6 +46,16 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class PersonalServiceSelected(service: String, basket: Basket) extends State
     case class BusinessServiceSelected(basket: Basket) extends State
     case class IdentifyClient(service: String, basket: Basket) extends State
+    case class ItsaIdentifiedClient(service: String, clientIdentifier: String, postcode: Option[String], basket: Basket)
+        extends State
+    case class VatIdentifiedClient(
+      service: String,
+      clientIdentifier: String,
+      registrationDate: Option[String],
+      basket: Basket)
+        extends State
+    case class IrvIdentifiedClient(service: String, clientIdentifier: String, dob: Option[String], basket: Basket)
+        extends State
   }
 
   object Transitions {
@@ -87,6 +97,21 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def showIdentifyClient(agent: AuthorisedAgent) = Transition {
       case PersonalServiceSelected(service, basket) => goto(IdentifyClient(service, basket))
       case BusinessServiceSelected(basket: Basket)  => goto(IdentifyClient(HMRCMTDVAT, basket))
+    }
+
+    def identifiedItsaClient(agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
+      case IdentifyClient(HMRCMTDIT, basket) =>
+        goto(ItsaIdentifiedClient(HMRCMTDIT, itsaClient.clientIdentifier, itsaClient.postcode, basket))
+    }
+
+    def identifiedVatClient(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
+      case IdentifyClient(HMRCMTDVAT, basket) =>
+        goto(VatIdentifiedClient(HMRCMTDVAT, vatClient.clientIdentifier, vatClient.registrationDate, basket))
+    }
+
+    def identifyIrvClient(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
+      case IdentifyClient(HMRCPIR, basket) =>
+        goto(IrvIdentifiedClient(HMRCPIR, irvClient.clientIdentifier, irvClient.dob, basket))
     }
 
   }

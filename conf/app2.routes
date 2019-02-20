@@ -10,3 +10,6 @@ GET         /agents/select-service                              @uk.gov.hmrc.age
 POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitPersonalSelectService
 POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitBusinessSelectService
 GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showIdentifyClient
+POST        /agents/identify-itsa-client                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitIdentifyItsaClient
+POST        /agents/identify-vat-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitIdentifyVatClient
+POST        /agents/identify-irv-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitIdentifyIrvClient

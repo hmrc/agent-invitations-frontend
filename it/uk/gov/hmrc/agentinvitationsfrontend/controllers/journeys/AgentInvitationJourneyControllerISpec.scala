@@ -128,6 +128,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get shouldBe Some(
         PersonalServiceSelected(HMRCMTDIT, Nil),
@@ -139,4 +140,35 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       )
     }
   }
-}
+
+  "GET /agents/identify-client" should {
+    val request = FakeRequest("GET", "/agents/identify-client")
+
+    "show identify client page" in {
+      journeyState.set(
+        PersonalServiceSelected(HMRCMTDIT, Nil),
+        List(
+          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          ClientTypeSelected(ClientType.personal),
+          SelectClientType,
+          Start))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-client.header",
+        "identify-client.itsa.p1",
+        "identify-client.nino.label",
+        "identify-client.nino.hint",
+        "identify-client.postcode.label",
+        "identify-client.postcode.hint"
+      )
+
+      journeyState.get shouldBe Some(
+          IdentifyClient(HMRCMTDIT, Nil),
+          List(PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+    }
+  }
+  }

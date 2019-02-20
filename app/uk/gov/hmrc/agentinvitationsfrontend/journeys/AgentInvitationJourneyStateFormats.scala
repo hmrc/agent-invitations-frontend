@@ -28,6 +28,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val SelectBusinessServiceFormat = Json.format[SelectBusinessService]
   val SelectedBusinessServiceFormat = Json.format[BusinessServiceSelected]
   val IdentifyClientFormat = Json.format[IdentifyClient]
+  val ItsaIdentifiedClientFormat = Json.format[ItsaIdentifiedClient]
+  val VatIdentifiedClientFormat = Json.format[VatIdentifiedClient]
+  val IrvIdentifiedClientFormat = Json.format[IrvIdentifiedClient]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: ClientTypeSelected      => SelectedClientTypeFormat.writes(s)
@@ -36,6 +39,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: SelectBusinessService   => SelectBusinessServiceFormat.writes(s)
     case s: BusinessServiceSelected => SelectedBusinessServiceFormat.writes(s)
     case s: IdentifyClient          => IdentifyClientFormat.writes(s)
+    case s: ItsaIdentifiedClient    => ItsaIdentifiedClientFormat.writes(s)
+    case s: VatIdentifiedClient     => VatIdentifiedClientFormat.writes(s)
+    case s: IrvIdentifiedClient     => IrvIdentifiedClientFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -47,6 +53,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "SelectBusinessService"   => SelectBusinessServiceFormat.reads(properties)
     case "BusinessServiceSelected" => SelectedBusinessServiceFormat.reads(properties)
     case "IdentifyClient"          => IdentifyClientFormat.reads(properties)
+    case "ItsaIdentifiedClient"    => ItsaIdentifiedClientFormat.reads(properties)
+    case "VatIdentifiedClient"     => VatIdentifiedClientFormat.reads(properties)
+    case "IrvIdentifiedClient"     => IrvIdentifiedClientFormat.reads(properties)
     case _                         => JsError(s"Unknown state name $stateName")
   }
 
