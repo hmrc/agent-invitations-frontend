@@ -41,4 +41,6 @@ case class SelectServicePageConfig(basketFlag: Boolean, featureFlags: FeatureFla
 
   val submitCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
 
+  val submitCallDeAuth: Call = routes.AgentLedDeAuthController.submitSelectPersonalService()
+
 }

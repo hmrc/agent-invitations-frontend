@@ -18,7 +18,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-  "POST /agents/select-service" should {
+  "POST /agents/select-personal-service" should {
     val request = FakeRequest("POST", "/agents/select-personal-service")
     val submitService = controller.submitSelectPersonalService()
 

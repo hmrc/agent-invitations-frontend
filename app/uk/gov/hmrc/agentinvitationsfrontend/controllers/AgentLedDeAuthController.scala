@@ -95,8 +95,7 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def submitSelectPersonalService: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(
-      handleSubmitSelectServicePersonal(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
+    ifShowDeAuthFlag(handleSubmitSelectServicePersonal)
   }
 
   def submitSelectBusinessService: Action[AnyContent] = Action.async { implicit request =>

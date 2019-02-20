@@ -93,7 +93,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitSelectPersonalService: Action[AnyContent] = Action.async { implicit request =>
-    handleSubmitSelectServicePersonal(agentConfirmationForm("error.business-service.required"))
+    handleSubmitSelectServicePersonal
   }
 
   val submitSelectBusinessService: Action[AnyContent] = Action.async { implicit request =>
