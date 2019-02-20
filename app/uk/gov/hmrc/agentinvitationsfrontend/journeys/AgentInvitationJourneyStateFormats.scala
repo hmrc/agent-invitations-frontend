@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
+
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
@@ -26,6 +27,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val SelectedPersonalServiceFormat = Json.format[PersonalServiceSelected]
   val SelectBusinessServiceFormat = Json.format[SelectBusinessService]
   val SelectedBusinessServiceFormat = Json.format[BusinessServiceSelected]
+  val IdentifyClientFormat = Json.format[IdentifyClient]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: ClientTypeSelected      => SelectedClientTypeFormat.writes(s)
@@ -33,6 +35,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: PersonalServiceSelected => SelectedPersonalServiceFormat.writes(s)
     case s: SelectBusinessService   => SelectBusinessServiceFormat.writes(s)
     case s: BusinessServiceSelected => SelectedBusinessServiceFormat.writes(s)
+    case s: IdentifyClient          => IdentifyClientFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -43,6 +46,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "PersonalServiceSelected" => SelectedPersonalServiceFormat.reads(properties)
     case "SelectBusinessService"   => SelectBusinessServiceFormat.reads(properties)
     case "BusinessServiceSelected" => SelectedBusinessServiceFormat.reads(properties)
+    case "IdentifyClient"          => IdentifyClientFormat.reads(properties)
     case _                         => JsError(s"Unknown state name $stateName")
   }
 

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.mvc.{Action, AnyContent, Call}
@@ -27,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
@@ -70,6 +71,7 @@ class AgentInvitationJourneyController @Inject()(
     Transitions.selectedPersonalService)(SelectPersonalServiceFormValidationFailed)
   val submitBusinessSelectService = authorisedAgentActionWithForm(SelectBusinessServiceForm)(
     Transitions.selectedBusinessService)(SelectBusinessServiceFormValidationFailed)
+  val showIdentifyClient = authorisedAgentAction(Transitions.showIdentifyClient)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -101,8 +103,10 @@ class AgentInvitationJourneyController @Inject()(
               routes.AgentInvitationJourneyController.submitBusinessSelectService(),
               backLinkFor(breadcrumbs))
           ))
-      case PersonalServiceSelected(service, basket) => NotImplemented
-      case BusinessServiceSelected(basket)          => NotImplemented
+      case PersonalServiceSelected(_, _) =>
+        Redirect(routes.AgentInvitationJourneyController.showIdentifyClient())
+      case BusinessServiceSelected(_) =>
+        Redirect(routes.AgentInvitationJourneyController.showIdentifyClient())
     }
   }
 
@@ -120,6 +124,7 @@ class AgentInvitationJourneyController @Inject()(
     case SelectClientType            => routes.AgentInvitationJourneyController.showClientType()
     case SelectPersonalService(_, _) => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService(_)    => routes.AgentInvitationJourneyController.showSelectService()
+    case IdentifyClient(_, _)        => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _                           => throw new Exception(s"Link not found for $state")
   }
 

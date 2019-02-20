@@ -45,6 +45,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class SelectBusinessService(basket: Basket) extends State
     case class PersonalServiceSelected(service: String, basket: Basket) extends State
     case class BusinessServiceSelected(basket: Basket) extends State
+    case class IdentifyClient(service: String, basket: Basket) extends State
   }
 
   object Transitions {
@@ -81,6 +82,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
       case SelectBusinessService(basket) =>
         if (confirmed.choice) goto(BusinessServiceSelected(basket))
         else goto(SelectClientType)
+    }
+
+    def showIdentifyClient(agent: AuthorisedAgent) = Transition {
+      case PersonalServiceSelected(service, basket) => goto(IdentifyClient(service, basket))
+      case BusinessServiceSelected(basket: Basket)  => goto(IdentifyClient(HMRCMTDVAT, basket))
     }
 
   }

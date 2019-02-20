@@ -9,3 +9,4 @@ POST        /agents/client-type                                 @uk.gov.hmrc.age
 GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSelectService
 POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitPersonalSelectService
 POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitBusinessSelectService
+GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showIdentifyClient
