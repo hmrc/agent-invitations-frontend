@@ -122,7 +122,8 @@ abstract class BaseInvitationController(
   private def getSelectServicePage(
     isWhitelisted: Boolean,
     form: Form[String] = ServiceTypeForm.form,
-    businessForm: Form[Confirmation])(implicit request: Request[_]): Future[Result] =
+    businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
+    implicit request: Request[_]): Future[Result] =
     agentSessionCache.fetch.flatMap {
       case Some(cache) =>
         cache.clientType match {
@@ -135,13 +136,12 @@ abstract class BaseInvitationController(
       case _ => Redirect(clientTypeCall)
     }
 
-  protected def handleSubmitSelectServicePersonal(
-    businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  protected def handleSubmitSelectServicePersonal()(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (arn, isWhitelisted) =>
       ServiceTypeForm.form
         .bindFromRequest()
         .fold(
-          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors, businessForm),
+          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
           serviceInput => {
             def updateSessionAndRedirect(agentSession: Option[AgentSession]): Future[Result] =
               agentSession match {
@@ -726,7 +726,7 @@ abstract class BaseInvitationController(
 
   def submitServicePersonalCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
 
-  def submitServiceBusinessCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
+  def submitServiceBusinessCall: Call = routes.AgentsInvitationController.submitSelectBusinessService()
 
   def selectServicePage(form: Form[String] = ServiceTypeForm.form, enabledServices: Set[String], basketFlag: Boolean)(
     implicit request: Request[_]): Appendable =
