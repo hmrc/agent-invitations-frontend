@@ -33,4 +33,7 @@ case class AgentSession(
 
 object AgentSession {
   implicit val format: Format[AgentSession] = Json.format[AgentSession]
+
+  val emptyAgentSession = AgentSession()
+
 }

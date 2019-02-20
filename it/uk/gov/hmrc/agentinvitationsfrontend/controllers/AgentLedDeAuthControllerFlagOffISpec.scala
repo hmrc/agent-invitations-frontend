@@ -120,8 +120,8 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST /agents/cancel-authorisation/identify-client" when {
 
     "return 401 when flag is off" in {
-        val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-client")
-        val submitIdentifyClient = controller.submitIdentifyClient()
+        val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-itsa-client")
+        val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
         val requestWithForm =
           request.withFormUrlEncodedBody(

@@ -84,8 +84,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
   }
 
   "POST /agents/identify-client" when {
-    val request = FakeRequest("POST", "/agents/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/identify-vat-client")
+    val submitIdentifyClient = controller.submitIdentifyClientVat()
 
     behave like anAuthorisedAgentEndpoint(request, submitIdentifyClient)
 
@@ -224,7 +224,9 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
 
         val requestWithForm = request.withFormUrlEncodedBody(
           "clientIdentifier" -> validVrn.value,
-          "registrationDate"        -> validRegistrationDate)
+          "registrationDate.year"  -> "2007",
+          "registrationDate.month" -> "10",
+          "registrationDate.day"   -> "07")
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303

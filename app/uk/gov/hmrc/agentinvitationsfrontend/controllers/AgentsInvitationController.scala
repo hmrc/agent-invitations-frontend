@@ -104,8 +104,16 @@ class AgentsInvitationController @Inject()(
     handleShowIdentifyClient
   }
 
-  val submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
-    handleSubmitIdentifyClient
+  val submitIdentifyClientItsa: Action[AnyContent] = Action.async { implicit request =>
+    identifyItsaClient
+  }
+
+  val submitIdentifyClientIrv: Action[AnyContent] = Action.async { implicit request =>
+    identifyIrvClient
+  }
+
+  val submitIdentifyClientVat: Action[AnyContent] = Action.async { implicit request =>
+    identifyVatClient
   }
 
   val showConfirmClient: Action[AnyContent] = Action.async { implicit request =>

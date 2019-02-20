@@ -67,8 +67,8 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
   }
 
   "POST /agents/identify-client" when {
-    val request = FakeRequest("POST", "/agents/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/identify-itsa-client")
+    val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
     behave like anAuthorisedAgentEndpoint(request, submitIdentifyClient)
 
@@ -115,14 +115,12 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, serviceITSA)
 
         val requestWithForm = request.withFormUrlEncodedBody(
-          "clientType"       -> "personal",
-          "service"          -> "HMRC-MTD-IT",
           "clientIdentifier" -> validNino.value,
-          "knownFact"        -> validPostcode)
+          "postcode"        -> validPostcode)
         val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result).get shouldBe routes.AgentsInvitationController.showSelectService().url
+        redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
       }
 
       "redisplay page with errors when an empty NINO is submitted" in {

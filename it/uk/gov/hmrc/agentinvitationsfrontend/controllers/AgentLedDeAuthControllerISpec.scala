@@ -206,8 +206,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
   }
 
   "POST /agents/cancel-authorisation/identify-client" when {
-    val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-client")
-    val submitIdentifyClient = controller.submitIdentifyClient()
+    val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-irv-client")
+    val submitIdentifyClient = controller.submitIdentifyClientIrv()
 
     "service is PERSONAL-INCOME-RECORD" should {
       "handle the form correctly and redirect" in {
@@ -271,7 +271,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             "postcode"         -> s"$validPostcode"
           )
 
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = controller.submitIdentifyClientItsa(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmClient().url)
@@ -294,7 +294,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             "registrationDate.day"   -> "7"
           )
 
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = controller.submitIdentifyClientVat(authorisedAsValidAgent(requestWithForm,    arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmClient().url)

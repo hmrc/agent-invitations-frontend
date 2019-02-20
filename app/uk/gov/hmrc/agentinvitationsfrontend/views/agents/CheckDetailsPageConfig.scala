@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Services}
 
 case class CheckDetailsPageConfig(agentSession: AgentSession, featureFlags: FeatureFlags) {
 
@@ -39,7 +39,13 @@ case class CheckDetailsPageConfig(agentSession: AgentSession, featureFlags: Feat
 
   val knownFactUrl: Call = routes.AgentsFastTrackInvitationController.showKnownFact()
 
-  val changeDetailsUrl: Call = routes.AgentsInvitationController.submitIdentifyClient()
+  def changeDetailsUrl(service: String): Call =
+    service match {
+      case Services.HMRCMTDIT  => routes.AgentsInvitationController.submitIdentifyClientItsa()
+      case Services.HMRCPIR    => routes.AgentsInvitationController.submitIdentifyClientIrv()
+      case Services.HMRCMTDVAT => routes.AgentsInvitationController.submitIdentifyClientVat()
+      case _                   => throw new Exception("service not supported")
+    }
 
   val showKnownFact: Boolean = agentSession.knownFact.getOrElse("").nonEmpty && shouldShowKF
 
