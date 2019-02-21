@@ -35,8 +35,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentInvitationJourneyController @Inject()(
@@ -61,7 +62,7 @@ class AgentInvitationJourneyController @Inject()(
   import journeyService.model.States._
   import journeyService.model.{Error, Errors, State, Transitions}
 
-  /* Here we decide how to handle HTTP request and transition the state of the journey */
+  /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
   val agentsRoot = simpleAction(Transitions.startJourney)
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)
   val submitClientType =
@@ -80,6 +81,11 @@ class AgentInvitationJourneyController @Inject()(
   val submitIdentifyIrvClient =
     authorisedAgentActionWithForm(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
       Transitions.identifyIrvClient)(IdentifyIrvClientFormValidationFailed)
+  val showConfirmClient = authorisedAgentActionWithHC { implicit hc: HeaderCarrier =>
+    Transitions.showConfirmClient(invitationsService.getClientNameByService)
+  }
+
+  val clientConfirmed = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -139,9 +145,19 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
           ))
-      case ItsaIdentifiedClient(Services.HMRCMTDIT, clientId, postcode, _) => ???
-      case VatIdentifiedClient(Services.HMRCMTDVAT, clientId, regDate, _)  => ???
-      case IrvIdentifiedClient(Services.HMRCPIR, clientId, dob, _)         => ???
+      case ItsaIdentifiedClient(Services.HMRCMTDIT, clientId, postcode, _) =>
+        Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
+      case VatIdentifiedClient(Services.HMRCMTDVAT, clientId, regDate, _) =>
+        Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
+      case IrvIdentifiedClient(Services.HMRCPIR, clientId, dob, _) =>
+        Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
+      case ConfirmClient(_, _, _, clientName, _) =>
+        Ok(
+          confirm_client(
+            clientName,
+            ConfirmClientForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+      case ClientConfirmed(_) => NotImplemented
     }
   }
 
@@ -184,13 +200,15 @@ object AgentInvitationJourneyController {
     )
   )
 
-  val SelectBusinessServiceForm: Form[Confirmation] =
+  def confirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
       mapping(
         "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
-          .verifying(confirmationChoice("error.business-service.required"))
+          .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+
+  val SelectBusinessServiceForm = confirmationForm("error.business-service.required")
 
   def IdentifyItsaClientForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
     mapping(
@@ -213,11 +231,14 @@ object AgentInvitationJourneyController {
     )(IrvClient.apply)(IrvClient.unapply)
   )
 
+  val ConfirmClientForm = confirmationForm("error.confirm-client.required")
+
   case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
   case class SelectPersonalServiceFormValidationFailed(form: Form[String]) extends FormValidationError
   case class SelectBusinessServiceFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
   case class IdentifyItsaClientFormValidationFailed(form: Form[ItsaClient]) extends FormValidationError
   case class IdentifyVatClientFormValidationFailed(form: Form[VatClient]) extends FormValidationError
   case class IdentifyIrvClientFormValidationFailed(form: Form[IrvClient]) extends FormValidationError
+  case class ConfirmClientFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
 
 }

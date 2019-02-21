@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import javax.inject.Inject
+
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisedAgent
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -73,6 +76,13 @@ abstract class JourneyController(implicit ec: ExecutionContext)
     Action.async { implicit request =>
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
         apply(transition(AuthorisedAgent(arn, isWhitelisted)))
+      }
+    }
+
+  protected final def authorisedAgentActionWithHC(transition: HeaderCarrier => AuthorisedAgent => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        apply(transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)))
       }
     }
 

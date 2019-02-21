@@ -26,6 +26,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error, State] {
 
@@ -40,6 +41,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
 
   val emptyBasket: Basket = Nil
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
+
+  val nino = "AB123456A"
+  val postCode = Some("BN114AW")
+
+  val vrn = "123456"
+  val vatRegDate = Some("2010-10-10")
+
+  val dob = Some("1990-10-10")
 
   "AgentInvitationJourneyService" when {
     "at state Start" should {
@@ -140,7 +149,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       }
     }
     "at IdentifyClient" should {
-      "transition to Start given startJournye" in {
+      "transition to Start given startJourney" in {
         given(IdentifyClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to SubmitIdentifyItsaClient given submitIdentifyItsaClient" in {
@@ -159,6 +168,37 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
           thenGo(IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil))
       }
     }
+    "at ItsaIdentifiedClient" should {
+      "transition to Start given startJourney" in {
+        given(ItsaIdentifiedClient(HMRCMTDIT, nino, postCode, emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to ConfirmClient given ItsaIdentifiedClient" in {
+        def clientName(service: String, clientId: String) = Future(Some("Piglet"))
+        given(ItsaIdentifiedClient(HMRCMTDIT, nino, postCode, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), "Piglet", Nil))
+      }
+    }
+    "at VatIdentifiedClient" should {
+      "transition to Start given startJourney" in {
+        given(VatIdentifiedClient(HMRCMTDVAT, vrn, vatRegDate, emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to ConfirmClient given VatIdentifiedClient" in {
+        def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
+        given(VatIdentifiedClient(HMRCMTDVAT, vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCMTDVAT, vrn, vatRegDate, "Piglet LTD", Nil))
+      }
+    }
+    "at IrvIdentifiedClient" should {
+      "transition to Start given startJourney" in {
+        given(IrvIdentifiedClient(HMRCPIR, nino, dob, emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to ConfirmClient given IrvIdentifiedClient" in {
+        def clientName(service: String, clientId: String) = Future(Some("Piglet Junior"))
+        given(IrvIdentifiedClient(HMRCPIR, nino, dob, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCPIR, nino, dob, "Piglet Junior", Nil))
+      }
+    }
+
   }
 
 }
