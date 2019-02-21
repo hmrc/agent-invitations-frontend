@@ -34,6 +34,8 @@
 
     @if(hasJourneyCache && (fromFastTrack == false)) {
         <p class="margin-top-30"><a id="showReviewAuthLink" class="button" href=@routes.AgentsInvitationController.showReviewAuthorisations()>@Messages("cannot-create-request.review-auth")</a></p>
+    } else {
+        <p class="margin-top-30"><a id="showClientType" class="button" href=@routes.AgentsInvitationController.showClientType()>@Messages("cannot-create-request.start-again")</a></p>
     }
 
 }
