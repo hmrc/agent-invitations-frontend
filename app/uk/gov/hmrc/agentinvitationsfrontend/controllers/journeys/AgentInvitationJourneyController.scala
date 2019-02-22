@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 
 import javax.inject.{Inject, Named, Singleton}
 
+import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.mvc.Call
@@ -28,15 +29,18 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -62,6 +66,10 @@ class AgentInvitationJourneyController @Inject()(
   import journeyService.model.States._
   import journeyService.model.{Error, Errors, State, Transitions}
 
+  private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
+
+  val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+
   /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
   val agentsRoot = simpleAction(Transitions.startJourney)
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)
@@ -84,8 +92,14 @@ class AgentInvitationJourneyController @Inject()(
   val showConfirmClient = authorisedAgentActionWithHC { implicit hc: HeaderCarrier =>
     Transitions.showConfirmClient(invitationsService.getClientNameByService)
   }
-
-  val clientConfirmed = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)(ConfirmClientFormValidationFailed)
+  val clientConfirmed =
+    authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)(ConfirmClientFormValidationFailed)
+  val showReviewAuthorisations = authorisedAgentAction(Transitions.showReviewAuthorisations)
+  val authorisationsReviewed = authorisedAgentActionWithForm(ReviewAuthorisationsForm)(
+    Transitions.authorisationsReviewed)(ReviewAuthorisationsFormValidationFailed)
+  val showInvitationSent = authorisedAgentActionWithHC { implicit hc: HeaderCarrier =>
+    Transitions.showInvitationSent(invitationsService.createAgentLink)
+  }
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -121,7 +135,7 @@ class AgentInvitationJourneyController @Inject()(
         Redirect(routes.AgentInvitationJourneyController.showIdentifyClient())
       case BusinessServiceSelected(_) =>
         Redirect(routes.AgentInvitationJourneyController.showIdentifyClient())
-      case IdentifyClient(Services.HMRCMTDIT, _) =>
+      case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
         Ok(
           identify_client_itsa(
             IdentifyItsaClientForm(featureFlags.showKfcMtdIt),
@@ -129,7 +143,7 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
           ))
-      case IdentifyClient(Services.HMRCMTDVAT, _) =>
+      case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
         Ok(
           identify_client_vat(
             IdentifyVatClientForm(featureFlags.showKfcMtdVat),
@@ -137,7 +151,7 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
           ))
-      case IdentifyClient(Services.HMRCPIR, _) =>
+      case IdentifyPersonalClient(Services.HMRCPIR, _) =>
         Ok(
           identify_client_irv(
             IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome),
@@ -145,19 +159,82 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
           ))
+      case IdentifyBusinessClient(_) =>
+        Ok(
+          identify_client_vat(
+            IdentifyVatClientForm(featureFlags.showKfcMtdVat),
+            featureFlags.showKfcMtdVat,
+            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+          ))
       case ItsaIdentifiedClient(clientId, postcode, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
-      case VatIdentifiedClient(clientId, regDate, _) =>
+      case VatIdentifiedPersonalClient(clientId, regDate, _) =>
+        Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
+      case VatIdentifiedBusinessClient(clientId, regDate, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
       case IrvIdentifiedClient(clientId, dob, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
-      case ConfirmClient(_, clientName, _) =>
+      case ConfirmClientItsa(clientName, _) =>
         Ok(
           confirm_client(
             clientName,
             ConfirmClientForm,
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
-      case ClientConfirmed(_) => NotImplemented
+      case ConfirmClientIrv(clientName, _) =>
+        Ok(
+          confirm_client(
+            clientName,
+            ConfirmClientForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+      case ConfirmClientPersonalVat(clientName, _) =>
+        Ok(
+          confirm_client(
+            clientName,
+            ConfirmClientForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+      case ConfirmClientBusinessVat(clientName, _) =>
+        Ok(
+          confirm_client(
+            clientName,
+            ConfirmClientForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+      case ClientConfirmedPersonal(_) => Redirect(routes.AgentInvitationJourneyController.showReviewAuthorisations.url)
+      case ClientConfirmedBusiness(_) => Redirect(routes.AgentInvitationJourneyController.showReviewAuthorisations.url)
+      case ReviewAuthorisationsPersonal(basket) =>
+        Ok(
+          review_authorisations(
+            ReviewAuthorisationsPageConfig(basket, featureFlags),
+            ReviewAuthorisationsForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+          ))
+      case ReviewAuthorisationsBusiness(basket) =>
+        Ok(
+          review_authorisations(
+            ReviewAuthorisationsPageConfig(basket, featureFlags),
+            ReviewAuthorisationsForm,
+            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+          ))
+      case AuthorisationsReviewedPersonal => Redirect(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      case AuthorisationsReviewedBusiness => Redirect(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      case InvitationSentPersonal(invitationLink, continueUrl) =>
+        Ok(
+          invitation_sent(
+            InvitationSentPageConfig(
+              invitationLink,
+              continueUrl.isDefined,
+              featureFlags.enableTrackRequests,
+              ClientType.fromEnum(personal),
+              inferredExpiryDate)))
+      case InvitationSentBusiness(invitationLink, continueUrl) =>
+        Ok(
+          invitation_sent(
+            InvitationSentPageConfig(
+              invitationLink,
+              continueUrl.isDefined,
+              featureFlags.enableTrackRequests,
+              ClientType.fromEnum(business),
+              inferredExpiryDate)))
     }
   }
 
@@ -171,19 +248,31 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   private def getLinkTo(state: State): Call = state match {
-    case Start                         => routes.AgentInvitationJourneyController.agentsRoot()
-    case SelectClientType              => routes.AgentInvitationJourneyController.showClientType()
-    case SelectPersonalService(_, _)   => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService(_)      => routes.AgentInvitationJourneyController.showSelectService()
-    case PersonalServiceSelected(_, _) => routes.AgentInvitationJourneyController.showSelectService()
-    case BusinessServiceSelected(_)    => routes.AgentInvitationJourneyController.showSelectService()
-    case IdentifyClient(_, _)          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case ItsaIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case VatIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IrvIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case ConfirmClient(_,_,_)          => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ClientConfirmed(_)            => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _                             => throw new Exception(s"Link not found for $state")
+    case Start                                => routes.AgentInvitationJourneyController.agentsRoot()
+    case SelectClientType                     => routes.AgentInvitationJourneyController.showClientType()
+    case SelectPersonalService(_, _)          => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService(_)             => routes.AgentInvitationJourneyController.showSelectService()
+    case PersonalServiceSelected(_, _)        => routes.AgentInvitationJourneyController.showSelectService()
+    case BusinessServiceSelected(_)           => routes.AgentInvitationJourneyController.showSelectService()
+    case IdentifyPersonalClient(_, _)         => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient(_)            => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ItsaIdentifiedClient(_, _, _)        => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case VatIdentifiedPersonalClient(_, _, _) => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case VatIdentifiedBusinessClient(_, _, _) => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IrvIdentifiedClient(_, _, _)         => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ConfirmClientItsa(_, _)              => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientIrv(_, _)               => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientPersonalVat(_, _)       => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientBusinessVat(_, _)       => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ClientConfirmedPersonal(_)           => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ClientConfirmedBusiness(_)           => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ReviewAuthorisationsPersonal(_)      => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case ReviewAuthorisationsBusiness(_)      => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case AuthorisationsReviewedPersonal       => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case AuthorisationsReviewedBusiness       => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case InvitationSentPersonal(_, _)         => routes.AgentInvitationJourneyController.showInvitationSent()
+    case InvitationSentBusiness(_, _)         => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _                                    => throw new Exception(s"Link not found for $state")
   }
 
   private def backLinkFor(breadcrumbs: List[State]): Option[String] =
@@ -238,12 +327,22 @@ object AgentInvitationJourneyController {
 
   val ConfirmClientForm = confirmationForm("error.confirm-client.required")
 
+  val ReviewAuthorisationsForm = confirmationForm("error.review-authorisation.required")
+
   case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
+
   case class SelectPersonalServiceFormValidationFailed(form: Form[String]) extends FormValidationError
+
   case class SelectBusinessServiceFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
+
   case class IdentifyItsaClientFormValidationFailed(form: Form[ItsaClient]) extends FormValidationError
+
   case class IdentifyVatClientFormValidationFailed(form: Form[VatClient]) extends FormValidationError
+
   case class IdentifyIrvClientFormValidationFailed(form: Form[IrvClient]) extends FormValidationError
+
   case class ConfirmClientFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
+
+  case class ReviewAuthorisationsFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
 
 }

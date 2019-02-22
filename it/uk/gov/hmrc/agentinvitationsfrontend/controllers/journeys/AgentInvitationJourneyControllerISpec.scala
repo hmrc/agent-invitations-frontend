@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, ClientType, Invitation}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
@@ -112,7 +112,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       )
       journeyState.get shouldBe Some(
         (
-          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
           List(ClientTypeSelected(ClientType.personal), SelectClientType, Start)))
     }
   }
@@ -122,7 +122,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
     "accept valid service choice and redirect" in {
       journeyState.set(
-        SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+        SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
         List(ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.submitPersonalSelectService(
@@ -132,9 +132,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get shouldBe Some(
-        PersonalServiceSelected(HMRCMTDIT, Nil),
+        PersonalServiceSelected(HMRCMTDIT, Set.empty),
         List(
-          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
           ClientTypeSelected(ClientType.personal),
           SelectClientType,
           Start)
@@ -147,9 +147,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
 
     "show identify client page" in {
       journeyState.set(
-        PersonalServiceSelected(HMRCMTDIT, Nil),
+        PersonalServiceSelected(HMRCMTDIT, Set.empty),
         List(
-          SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+          SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
           ClientTypeSelected(ClientType.personal),
           SelectClientType,
           Start))
@@ -168,8 +168,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       )
 
       journeyState.get shouldBe Some(
-          IdentifyClient(HMRCMTDIT, Nil),
-          List(PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+          IdentifyPersonalClient(HMRCMTDIT, Set.empty),
+          List(PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
   }
 
@@ -177,8 +177,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-itsa-client")
 
     "redirect to confirm client" in {
-      journeyState.set(IdentifyClient(HMRCMTDIT, Nil),
-        List(PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(IdentifyPersonalClient(HMRCMTDIT, Set.empty),
+        List(PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.submitIdentifyItsaClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB123456A", "postcode" -> "BN114AW"), arn.value))
 
@@ -186,8 +186,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get shouldBe Some(
-        ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil),
-        List(IdentifyClient(HMRCMTDIT, Nil), PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+        ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty),
+        List(IdentifyPersonalClient(HMRCMTDIT, Set.empty), PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
   }
 
@@ -195,8 +195,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-vat-client")
 
     "redirect to confirm client" in {
-      journeyState.set(IdentifyClient(HMRCMTDVAT, Nil),
-        List(PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(IdentifyBusinessClient(Set.empty),
+        List(PersonalServiceSelected(HMRCMTDVAT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.submitIdentifyVatClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "202949960", "registrationDate.year" -> "2010", "registrationDate.month" -> "10", "registrationDate.day" -> "10"), arn.value))
 
@@ -204,8 +204,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get shouldBe Some(
-        VatIdentifiedClient("202949960", Some("2010-10-10"), Nil),
-        List(IdentifyClient(HMRCMTDVAT, Nil), PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+        VatIdentifiedBusinessClient("202949960", Some("2010-10-10"), Set.empty),
+        List(IdentifyBusinessClient(Set.empty), PersonalServiceSelected(HMRCMTDVAT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
   }
 
@@ -214,8 +214,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
     val request = FakeRequest("POST", "/agents/identify-irv-client")
 
     "redirect to confirm client" in {
-      journeyState.set(IdentifyClient(HMRCPIR, Nil),
-        List(PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(IdentifyPersonalClient(HMRCPIR, Set.empty),
+        List(PersonalServiceSelected(HMRCPIR, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.submitIdentifyIrvClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB123456A", "dob.year" -> "1990",  "dob.month" -> "10",  "dob.day" -> "10"), arn.value))
 
@@ -223,49 +223,97 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get shouldBe Some(
-        IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil),
-        List(IdentifyClient(HMRCPIR, Nil), PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+        IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty),
+        List(IdentifyPersonalClient(HMRCPIR, Set.empty), PersonalServiceSelected(HMRCPIR, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
   }
 
   "GET /agents/confirm-client" should {
-    val request = FakeRequest("POST", "/agents/confirm-client")
+    val request = FakeRequest("GET", "/agents/confirm-client")
 
     "show the confirm client page for ITSA service" in {
       givenTradingName(validNino, "Sylvia Plath")
-      journeyState.set(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil),
-        List(IdentifyClient(HMRCMTDIT, Nil), PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty),
+        List(IdentifyPersonalClient(HMRCMTDIT, Set.empty), PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Sylvia Plath")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+
+      journeyState.get shouldBe Some(ConfirmClientItsa("Sylvia Plath", Set.empty),
+        List(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty), IdentifyPersonalClient(HMRCMTDIT, Set.empty), PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
 
     "show the confirm client page for IRV service" in {
       givenCitizenDetailsAreKnownFor(validNino.value, "Virginia", "Woolf")
-      journeyState.set(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil),
-        List(IdentifyClient(HMRCPIR, Nil), PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty),
+        List(IdentifyPersonalClient(HMRCPIR, Set.empty), PersonalServiceSelected(HMRCPIR, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Virginia Woolf")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+
+      journeyState.get shouldBe Some(ConfirmClientIrv("Virginia Woolf", Set.empty),
+        List(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty), IdentifyPersonalClient(HMRCPIR, Set.empty), PersonalServiceSelected(HMRCPIR, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
 
     "show the confirm client page for VAT service" in {
       givenClientDetails(Vrn("202949960"))
-      journeyState.set(VatIdentifiedClient("202949960", Some("2010-10-10"), Nil),
-        List(IdentifyClient(HMRCMTDVAT, Nil), PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+      journeyState.set(VatIdentifiedBusinessClient("202949960", Some("2010-10-10"), Set.empty),
+        List(IdentifyBusinessClient(Set.empty), BusinessServiceSelected(Set.empty), SelectBusinessService(Set.empty), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
 
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "GDT")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+
+      journeyState.get shouldBe Some(ConfirmClientBusinessVat("GDT", Set.empty),
+        List(VatIdentifiedBusinessClient("202949960", Some("2010-10-10"), Set.empty), IdentifyBusinessClient(Set.empty), BusinessServiceSelected(Set.empty), SelectBusinessService(Set.empty), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+    }
+  }
+
+  "POST /agents/confirm-client" should {
+    val request = FakeRequest("POST", "/agents/confirm-client")
+
+    "redirect to the review authorisations page when yes is selected" in {
+      journeyState.set(ConfirmClientPersonalVat("GDT", Set.empty),
+        List(VatIdentifiedPersonalClient("202949960", Some("2010-10-10"), Set.empty), IdentifyPersonalClient(HMRCMTDVAT, Set.empty), PersonalServiceSelected(HMRCMTDVAT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.clientConfirmed(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+      journeyState.get shouldBe Some((ClientConfirmedPersonal(Set.empty),
+        List(ConfirmClientPersonalVat("GDT", Set.empty), VatIdentifiedPersonalClient("202949960", Some("2010-10-10"), Set.empty), IdentifyPersonalClient(HMRCMTDVAT, Set.empty), PersonalServiceSelected(HMRCMTDVAT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start)))
+    }
+  }
+
+  "GET /agents/review-authorisations" should {
+    val request = FakeRequest("GET", "/agents/review-authorisations")
+
+    "show the review authorisations page" in {
+      journeyState.set(ClientConfirmedPersonal(Set(AuthorisationRequest("James Client", Invitation(Some(ClientType.personal), HMRCMTDIT, "AB123456A", Some("BN114AW"))))),
+        List(ConfirmClientItsa("GDT", Set.empty), ItsaIdentifiedClient("202949960", Some("2010-10-10"), Set.empty), IdentifyPersonalClient(HMRCMTDIT, Set.empty), PersonalServiceSelected(HMRCMTDIT, Set.empty), SelectPersonalService(Set.empty, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result,
+        "Review your authorisation requests",
+        "You have added 1 authorisation request.",
+        "Report their income and expenses through software",
+        "James Client",
+        "Do you need to add another authorisation for this client?"
+      )
     }
 
   }
-  }
+}

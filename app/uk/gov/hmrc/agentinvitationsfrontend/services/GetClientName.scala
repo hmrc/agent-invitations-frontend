@@ -50,7 +50,7 @@ trait GetClientName {
         case name if name.isDefined => {
           Future successful name
         }
-        case None                   => {
+        case None => {
           getCitizenName(nino)
         }
       }

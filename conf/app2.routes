@@ -14,3 +14,7 @@ POST        /agents/identify-itsa-client                        @uk.gov.hmrc.age
 POST        /agents/identify-vat-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitIdentifyVatClient
 POST        /agents/identify-irv-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitIdentifyIrvClient
 GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showConfirmClient
+POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.clientConfirmed
+GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showReviewAuthorisations
+POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.authorisationsReviewed
+GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showInvitationSent

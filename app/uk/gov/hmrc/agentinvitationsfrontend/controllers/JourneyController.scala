@@ -79,7 +79,8 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       }
     }
 
-  protected final def authorisedAgentActionWithHC(transition: HeaderCarrier => AuthorisedAgent => Transition): Action[AnyContent] =
+  protected final def authorisedAgentActionWithHC(
+    transition: HeaderCarrier => AuthorisedAgent => Transition): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
         apply(transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)))
