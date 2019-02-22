@@ -85,7 +85,7 @@ class AgentInvitationJourneyController @Inject()(
     Transitions.showConfirmClient(invitationsService.getClientNameByService)
   }
 
-  val clientConfirmed = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)
+  val clientConfirmed = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)(ConfirmClientFormValidationFailed)
 
   /* Here we handle errors thrown during state transition */
   override def handleError(error: Error): Route = { implicit request =>
@@ -145,13 +145,13 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
             backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
           ))
-      case ItsaIdentifiedClient(Services.HMRCMTDIT, clientId, postcode, _) =>
+      case ItsaIdentifiedClient(clientId, postcode, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
-      case VatIdentifiedClient(Services.HMRCMTDVAT, clientId, regDate, _) =>
+      case VatIdentifiedClient(clientId, regDate, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
-      case IrvIdentifiedClient(Services.HMRCPIR, clientId, dob, _) =>
+      case IrvIdentifiedClient(clientId, dob, _) =>
         Redirect(routes.AgentInvitationJourneyController.showConfirmClient())
-      case ConfirmClient(_, _, _, clientName, _) =>
+      case ConfirmClient(_, clientName, _) =>
         Ok(
           confirm_client(
             clientName,
@@ -178,6 +178,11 @@ class AgentInvitationJourneyController @Inject()(
     case PersonalServiceSelected(_, _) => routes.AgentInvitationJourneyController.showSelectService()
     case BusinessServiceSelected(_)    => routes.AgentInvitationJourneyController.showSelectService()
     case IdentifyClient(_, _)          => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ItsaIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case VatIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IrvIdentifiedClient(_,_,_)    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ConfirmClient(_,_,_)          => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ClientConfirmed(_)            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _                             => throw new Exception(s"Link not found for $state")
   }
 

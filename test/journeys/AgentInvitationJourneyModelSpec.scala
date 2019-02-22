@@ -15,6 +15,7 @@
  */
 
 package journeys
+
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, Error, State, Transition}
@@ -155,50 +156,65 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       "transition to SubmitIdentifyItsaClient given submitIdentifyItsaClient" in {
         given(IdentifyClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(authorisedAgent)(
           ItsaClient("AB123456A", Some("BN114AW"))) should
-          thenGo(ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil))
+          thenGo(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil))
       }
       "transition to SubmitIdentifyVatClient given submitIdentifyVatClient" in {
         given(IdentifyClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(authorisedAgent)(
           VatClient("123456", Some("2010-10-10"))) should
-          thenGo(VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-10-10"), Nil))
+          thenGo(VatIdentifiedClient("123456", Some("2010-10-10"), Nil))
       }
       "transition to SubmitIdentifyIrvClient given submitIdentifyIrvClient" in {
         given(IdentifyClient(HMRCPIR, emptyBasket)) when identifyIrvClient(authorisedAgent)(
           IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil))
+          thenGo(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil))
       }
     }
     "at ItsaIdentifiedClient" should {
       "transition to Start given startJourney" in {
-        given(ItsaIdentifiedClient(HMRCMTDIT, nino, postCode, emptyBasket)) when startJourney should thenGo(Start)
+        given(ItsaIdentifiedClient(nino, postCode, emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to ConfirmClient given ItsaIdentifiedClient" in {
         def clientName(service: String, clientId: String) = Future(Some("Piglet"))
-        given(ItsaIdentifiedClient(HMRCMTDIT, nino, postCode, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
-          thenGo(ConfirmClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), "Piglet", Nil))
+
+        given(ItsaIdentifiedClient(nino, postCode, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCMTDIT, "Piglet", Nil))
       }
     }
     "at VatIdentifiedClient" should {
       "transition to Start given startJourney" in {
-        given(VatIdentifiedClient(HMRCMTDVAT, vrn, vatRegDate, emptyBasket)) when startJourney should thenGo(Start)
+        given(VatIdentifiedClient(vrn, vatRegDate, emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to ConfirmClient given VatIdentifiedClient" in {
         def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
-        given(VatIdentifiedClient(HMRCMTDVAT, vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
-          thenGo(ConfirmClient(HMRCMTDVAT, vrn, vatRegDate, "Piglet LTD", Nil))
+
+        given(VatIdentifiedClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCMTDVAT, "Piglet LTD", Nil))
       }
     }
     "at IrvIdentifiedClient" should {
       "transition to Start given startJourney" in {
-        given(IrvIdentifiedClient(HMRCPIR, nino, dob, emptyBasket)) when startJourney should thenGo(Start)
+        given(IrvIdentifiedClient(nino, dob, emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to ConfirmClient given IrvIdentifiedClient" in {
         def clientName(service: String, clientId: String) = Future(Some("Piglet Junior"))
-        given(IrvIdentifiedClient(HMRCPIR, nino, dob, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
-          thenGo(ConfirmClient(HMRCPIR, nino, dob, "Piglet Junior", Nil))
+
+        given(IrvIdentifiedClient(nino, dob, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+          thenGo(ConfirmClient(HMRCPIR, "Piglet Junior", Nil))
       }
     }
-
+    "at ConfirmClient" should {
+      "transition to Start given startJourney" in {
+        given(ConfirmClient(HMRCMTDIT, "Piglet", emptyBasket)) when startJourney should thenGo(Start)
+      }
+      "transition to ClientConfirmed given ConfirmClient when confirmation is true" in {
+        given(ConfirmClient(HMRCMTDIT, "Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
+          thenGo(ClientConfirmed(emptyBasket))
+      }
+      "transition to IdentifyClient given ConfirmClient when confirmation is false" in {
+        given(ConfirmClient(HMRCMTDIT, "Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyClient(HMRCMTDIT, emptyBasket))
+      }
+    }
   }
 
 }

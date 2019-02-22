@@ -5,6 +5,7 @@ import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -170,5 +171,101 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec {
           IdentifyClient(HMRCMTDIT, Nil),
           List(PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
     }
+  }
+
+  "POST /agents/identify-itsa-client" should {
+    val request = FakeRequest("POST", "/agents/identify-itsa-client")
+
+    "redirect to confirm client" in {
+      journeyState.set(IdentifyClient(HMRCMTDIT, Nil),
+        List(PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.submitIdentifyItsaClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB123456A", "postcode" -> "BN114AW"), arn.value))
+
+    status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get shouldBe Some(
+        ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil),
+        List(IdentifyClient(HMRCMTDIT, Nil), PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+    }
+  }
+
+  "POST /agents/identify-vat-client" should {
+    val request = FakeRequest("POST", "/agents/identify-vat-client")
+
+    "redirect to confirm client" in {
+      journeyState.set(IdentifyClient(HMRCMTDVAT, Nil),
+        List(PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.submitIdentifyVatClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "202949960", "registrationDate.year" -> "2010", "registrationDate.month" -> "10", "registrationDate.day" -> "10"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get shouldBe Some(
+        VatIdentifiedClient("202949960", Some("2010-10-10"), Nil),
+        List(IdentifyClient(HMRCMTDVAT, Nil), PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+    }
+  }
+
+
+  "POST /agents/identify-irv-client" should {
+    val request = FakeRequest("POST", "/agents/identify-irv-client")
+
+    "redirect to confirm client" in {
+      journeyState.set(IdentifyClient(HMRCPIR, Nil),
+        List(PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.submitIdentifyIrvClient(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientIdentifier" -> "AB123456A", "dob.year" -> "1990",  "dob.month" -> "10",  "dob.day" -> "10"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get shouldBe Some(
+        IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil),
+        List(IdentifyClient(HMRCPIR, Nil), PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+    }
+  }
+
+  "GET /agents/confirm-client" should {
+    val request = FakeRequest("POST", "/agents/confirm-client")
+
+    "show the confirm client page for ITSA service" in {
+      givenTradingName(validNino, "Sylvia Plath")
+      journeyState.set(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil),
+        List(IdentifyClient(HMRCMTDIT, Nil), PersonalServiceSelected(HMRCMTDIT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Sylvia Plath")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+    }
+
+    "show the confirm client page for IRV service" in {
+      givenCitizenDetailsAreKnownFor(validNino.value, "Virginia", "Woolf")
+      journeyState.set(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil),
+        List(IdentifyClient(HMRCPIR, Nil), PersonalServiceSelected(HMRCPIR, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Virginia Woolf")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+    }
+
+    "show the confirm client page for VAT service" in {
+      givenClientDetails(Vrn("202949960"))
+      journeyState.set(VatIdentifiedClient("202949960", Some("2010-10-10"), Nil),
+        List(IdentifyClient(HMRCMTDVAT, Nil), PersonalServiceSelected(HMRCMTDVAT, Nil), SelectPersonalService(Nil, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)), ClientTypeSelected(ClientType.personal), SelectClientType, Start))
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "GDT")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+    }
+
   }
   }

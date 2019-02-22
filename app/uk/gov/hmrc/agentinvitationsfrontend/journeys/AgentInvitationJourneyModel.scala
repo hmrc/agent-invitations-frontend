@@ -15,13 +15,11 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
-import play.mvc.Result
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 
-import scala.concurrent.Future
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -51,24 +49,21 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class PersonalServiceSelected(service: String, basket: Basket) extends State
     case class BusinessServiceSelected(basket: Basket) extends State
     case class IdentifyClient(service: String, basket: Basket) extends State
-    case class ItsaIdentifiedClient(service: String, clientIdentifier: String, postcode: Option[String], basket: Basket)
+    case class ItsaIdentifiedClient(clientIdentifier: String, postcode: Option[String], basket: Basket)
         extends State
     case class VatIdentifiedClient(
-      service: String,
       clientIdentifier: String,
       registrationDate: Option[String],
       basket: Basket)
         extends State
-    case class IrvIdentifiedClient(service: String, clientIdentifier: String, dob: Option[String], basket: Basket)
+    case class IrvIdentifiedClient(clientIdentifier: String, dob: Option[String], basket: Basket)
         extends State
-    case class ConfirmClient(
-      service: String,
-      clientIdentifier: String,
-      knownFact: Option[String],
+    case class ConfirmClient(service: String,
       clientName: String,
       basket: Basket)
         extends State
     case class ClientConfirmed(basket: Basket) extends State
+    case class ReviewAuthorisations() extends State
   }
 
   object Transitions {
@@ -114,43 +109,43 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def identifiedItsaClient(agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
       case IdentifyClient(HMRCMTDIT, basket) =>
-        goto(ItsaIdentifiedClient(HMRCMTDIT, itsaClient.clientIdentifier, itsaClient.postcode, basket))
+        goto(ItsaIdentifiedClient(itsaClient.clientIdentifier, itsaClient.postcode, basket))
     }
 
     def identifiedVatClient(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
       case IdentifyClient(HMRCMTDVAT, basket) =>
-        goto(VatIdentifiedClient(HMRCMTDVAT, vatClient.clientIdentifier, vatClient.registrationDate, basket))
+        goto(VatIdentifiedClient(vatClient.clientIdentifier, vatClient.registrationDate, basket))
     }
 
     def identifyIrvClient(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyClient(HMRCPIR, basket) =>
-        goto(IrvIdentifiedClient(HMRCPIR, irvClient.clientIdentifier, irvClient.dob, basket))
+        goto(IrvIdentifiedClient(irvClient.clientIdentifier, irvClient.dob, basket))
     }
 
     def showConfirmClient(getClientName: (String,String) => Future[Option[String]])(agent: AuthorisedAgent) =
       Transition {
-        case ItsaIdentifiedClient(service, clientId, postcode, basket) => {
-          getClientName(service, clientId).flatMap { clientNameOpt =>
+        case ItsaIdentifiedClient(clientId, postcode, basket) => {
+          getClientName(clientId, HMRCMTDIT).flatMap { clientNameOpt =>
             val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClient(service, clientId, postcode, clientName, basket))
+            goto(ConfirmClient(HMRCMTDIT, clientName, basket))
           }
         }
-        case VatIdentifiedClient(service, clientId, registrationDate, basket) => {
-          getClientName(service, clientId).flatMap { clientNameOpt =>
+        case VatIdentifiedClient(clientId, registrationDate, basket) => {
+          getClientName(clientId, HMRCMTDVAT).flatMap { clientNameOpt =>
             val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClient(service, clientId, registrationDate, clientName, basket))
+            goto(ConfirmClient(HMRCMTDVAT, clientName, basket))
           }
         }
-        case IrvIdentifiedClient(service, clientId, dob, basket) => {
-          getClientName(service, clientId).flatMap { clientNameOpt =>
+        case IrvIdentifiedClient(clientId, dob, basket) => {
+          getClientName(clientId, HMRCPIR).flatMap { clientNameOpt =>
             val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClient(service, clientId, dob, clientName, basket))
+            goto(ConfirmClient(HMRCPIR, clientName, basket))
           }
         }
       }
 
     def clientConfirmed(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
-      case ConfirmClient(service, _, _, _, basket) => if(confirmation.choice) goto(ClientConfirmed(basket))
+      case ConfirmClient(service, _, basket) => if(confirmation.choice) goto(ClientConfirmed(basket))
       else goto(IdentifyClient(service, basket))
     }
 

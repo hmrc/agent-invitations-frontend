@@ -93,46 +93,67 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe IdentifyClient(HMRCMTDIT, Nil)
       }
       "ItsaIdentifiedClient" in {
-        Json.toJson(ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil)) shouldBe Json.obj(
+        Json.toJson(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil)) shouldBe Json.obj(
           "state" -> "ItsaIdentifiedClient",
           "properties" -> Json.obj(
-            "service"          -> "HMRC-MTD-IT",
             "clientIdentifier" -> "AB123456A",
             "postcode"         -> "BN114AW",
             "basket"           -> JsArray())
         )
         Json
           .parse(
-            """{"state":"ItsaIdentifiedClient", "properties": {"basket": [], "service": "HMRC-MTD-IT", "clientIdentifier": "AB123456A", "postcode": "BN114AW"}}""")
-          .as[State] shouldBe ItsaIdentifiedClient(HMRCMTDIT, "AB123456A", Some("BN114AW"), Nil)
+            """{"state":"ItsaIdentifiedClient", "properties": {"basket": [], "clientIdentifier": "AB123456A", "postcode": "BN114AW"}}""")
+          .as[State] shouldBe ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Nil)
       }
       "VatIdentifiedClient" in {
-        Json.toJson(VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-01-01"), Nil)) shouldBe Json.obj(
+        Json.toJson(VatIdentifiedClient("123456", Some("2010-01-01"), Nil)) shouldBe Json.obj(
           "state" -> "VatIdentifiedClient",
           "properties" -> Json.obj(
-            "service"          -> "HMRC-MTD-VAT",
             "clientIdentifier" -> "123456",
             "registrationDate" -> "2010-01-01",
             "basket"           -> JsArray())
         )
         Json
           .parse(
-            """{"state":"VatIdentifiedClient", "properties": {"basket": [], "service": "HMRC-MTD-VAT", "clientIdentifier": "123456", "registrationDate": "2010-01-01"}}""")
-          .as[State] shouldBe VatIdentifiedClient(HMRCMTDVAT, "123456", Some("2010-01-01"), Nil)
+            """{"state":"VatIdentifiedClient", "properties": {"basket": [], "clientIdentifier": "123456", "registrationDate": "2010-01-01"}}""")
+          .as[State] shouldBe VatIdentifiedClient("123456", Some("2010-01-01"), Nil)
       }
       "IrvIdentifiedClient" in {
-        Json.toJson(IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil)) shouldBe Json.obj(
+        Json.toJson(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil)) shouldBe Json.obj(
           "state" -> "IrvIdentifiedClient",
           "properties" -> Json.obj(
-            "service"          -> "PERSONAL-INCOME-RECORD",
             "clientIdentifier" -> "AB123456A",
             "dob"              -> "1990-10-10",
             "basket"           -> JsArray())
         )
         Json
           .parse(
-            """{"state":"IrvIdentifiedClient", "properties": {"basket": [], "service": "PERSONAL-INCOME-RECORD", "clientIdentifier": "AB123456A", "dob": "1990-10-10"}}""")
-          .as[State] shouldBe IrvIdentifiedClient(HMRCPIR, "AB123456A", Some("1990-10-10"), Nil)
+            """{"state":"IrvIdentifiedClient", "properties": {"basket": [], "clientIdentifier": "AB123456A", "dob": "1990-10-10"}}""")
+          .as[State] shouldBe IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Nil)
+      }
+      "ConfirmClient" in {
+        Json.toJson(ConfirmClient(HMRCMTDIT, "Piglet", Nil)) shouldBe Json.obj(
+          "state" -> "ConfirmClient",
+          "properties" -> Json.obj(
+            "service" -> "HMRC-MTD-IT",
+            "clientName"              -> "Piglet",
+            "basket"           -> JsArray())
+        )
+        Json
+          .parse(
+            """{"state":"ConfirmClient", "properties": {"basket": [], "service": "HMRC-MTD-IT", "clientName": "Piglet"}}""")
+          .as[State] shouldBe ConfirmClient(HMRCMTDIT, "Piglet", Nil)
+      }
+      "ClientConfirmed" in {
+        Json.toJson(ClientConfirmed(Nil)) shouldBe Json.obj(
+          "state" -> "ClientConfirmed",
+          "properties" -> Json.obj(
+            "basket"           -> JsArray())
+        )
+        Json
+          .parse(
+            """{"state":"ClientConfirmed", "properties": {"basket": []}}""")
+          .as[State] shouldBe ClientConfirmed(Nil)
       }
     }
 
