@@ -357,9 +357,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("We are processing this client's sign-up to Making Tax Digital for VAT."),
         "Once this is done, you can ask the client to authorise you for this service.",
         "This may take up to 72 hours, so try again later.",
-        "Start a new request"
+
       )
       checkHtmlResultWithNotBodyText(result, "Return to your authorisation requests")
+      checkHtmlResultWithNotBodyText(result, "Start a new request")
     }
   }
 }
