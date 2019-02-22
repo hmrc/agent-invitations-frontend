@@ -178,7 +178,7 @@ class AgentsInvitationController @Inject()(
           case Some(cache) if cache.requests.nonEmpty =>
             Ok(
               review_authorisations(
-                ReviewAuthorisationsPageConfig(cache, featureFlags),
+                ReviewAuthorisationsPageConfig(cache.requests, featureFlags),
                 agentConfirmationForm("error.review-authorisation.required"),
                 backLinkForReviewAuthorisationsPage(cache.service.getOrElse(""))
               ))
@@ -196,12 +196,11 @@ class AgentsInvitationController @Inject()(
           .bindFromRequest()
           .fold(
             formWithErrors => {
-              Future.successful(
-                Ok(
-                  review_authorisations(
-                    ReviewAuthorisationsPageConfig(sessionCache, featureFlags),
-                    formWithErrors,
-                    backLinkForReviewAuthorisationsPage(sessionCache.service.getOrElse("")))))
+              Future.successful(Ok(review_authorisations(
+                ReviewAuthorisationsPageConfig(sessionCache.requests, featureFlags),
+                formWithErrors,
+                backLinkForReviewAuthorisationsPage(sessionCache.service.getOrElse(""))
+              )))
             },
             input => {
               if (input.choice) {
