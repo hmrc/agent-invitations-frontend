@@ -57,11 +57,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case class IdentifyBusinessClient(basket: Basket) extends State
     case class ItsaIdentifiedClient(clientIdentifier: String, postcode: Option[String], basket: Basket) extends State
+    case class IrvIdentifiedClient(clientIdentifier: String, dob: Option[String], basket: Basket) extends State
     case class VatIdentifiedPersonalClient(clientIdentifier: String, registrationDate: Option[String], basket: Basket)
         extends State
     case class VatIdentifiedBusinessClient(clientIdentifier: String, registrationDate: Option[String], basket: Basket)
         extends State
-    case class IrvIdentifiedClient(clientIdentifier: String, dob: Option[String], basket: Basket) extends State
 
     case class ConfirmClientItsa(clientName: String, basket: Basket) extends State
     case class ConfirmClientIrv(clientName: String, basket: Basket) extends State
@@ -160,7 +160,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         case VatIdentifiedBusinessClient(clientId, _, basket) => {
           getClientName(clientId, HMRCMTDVAT).flatMap { clientNameOpt =>
             val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClientPersonalVat(clientName, basket))
+            goto(ConfirmClientBusinessVat(clientName, basket))
           }
         }
       }
@@ -176,7 +176,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
         else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
       case ConfirmClientBusinessVat(_, basket) =>
-        if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
+        if (confirmation.choice) goto(ClientConfirmedBusiness(basket))
         else goto(IdentifyBusinessClient(basket))
     }
 
