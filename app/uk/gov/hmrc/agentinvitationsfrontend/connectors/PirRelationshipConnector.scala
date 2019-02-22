@@ -89,7 +89,9 @@ class PirRelationshipConnector @Inject()(
       baseUrl,
       s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
 
-  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
       http
         .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)

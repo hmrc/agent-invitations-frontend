@@ -16,10 +16,15 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Json, OFormat}
+case class AgentFastTrackRequest(
+  clientType: Option[ClientType],
+  service: String,
+  clientIdentifierType: String,
+  clientIdentifier: String,
+  knownFact: Option[String])
 
-case class AgentMultiAuthorisationJourneyState(clientType: String, requests: Set[AuthorisationRequest])
+object AgentFastTrackRequest {
 
-object AgentMultiAuthorisationJourneyState {
-  implicit val format: OFormat[AgentMultiAuthorisationJourneyState] = Json.format[AgentMultiAuthorisationJourneyState]
+  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
+    AgentFastTrackRequest(clientType, service, "", "", None)
 }

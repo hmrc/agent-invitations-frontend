@@ -18,29 +18,35 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Services}
 
-case class CheckDetailsPageConfig(currentInvitationInput: CurrentAuthorisationRequest, featureFlags: FeatureFlags) {
+case class CheckDetailsPageConfig(agentSession: AgentSession, featureFlags: FeatureFlags) {
 
   private val shouldShowKF: Boolean = {
-    currentInvitationInput.service match {
-      case "HMRC-MTD-IT" if featureFlags.showKfcMtdIt                     => true
-      case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
-      case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat                   => true
-      case _                                                              => false
+    agentSession.service match {
+      case Some("HMRC-MTD-IT") if featureFlags.showKfcMtdIt                     => true
+      case Some("PERSONAL-INCOME-RECORD") if featureFlags.showKfcPersonalIncome => true
+      case Some("HMRC-MTD-VAT") if featureFlags.showKfcMtdVat                   => true
+      case _                                                                    => false
     }
   }
 
-  val needClientType: Boolean = currentInvitationInput.clientType.isEmpty
+  val needClientType: Boolean = agentSession.clientType.isEmpty
 
-  val needKnownFact: Boolean = shouldShowKF && currentInvitationInput.knownFact.getOrElse("").isEmpty
+  val needKnownFact: Boolean = shouldShowKF && agentSession.knownFact.getOrElse("").isEmpty
 
   val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
 
   val knownFactUrl: Call = routes.AgentsFastTrackInvitationController.showKnownFact()
 
-  val changeDetailsUrl: Call = routes.AgentsInvitationController.submitIdentifyClient()
+  def changeDetailsUrl(service: String): Call =
+    service match {
+      case Services.HMRCMTDIT  => routes.AgentsInvitationController.submitIdentifyClientItsa()
+      case Services.HMRCPIR    => routes.AgentsInvitationController.submitIdentifyClientIrv()
+      case Services.HMRCMTDVAT => routes.AgentsInvitationController.submitIdentifyClientVat()
+      case _                   => throw new Exception("service not supported")
+    }
 
-  val showKnownFact: Boolean = currentInvitationInput.knownFact.getOrElse("").nonEmpty && shouldShowKF
+  val showKnownFact: Boolean = agentSession.knownFact.getOrElse("").nonEmpty && shouldShowKF
 
 }

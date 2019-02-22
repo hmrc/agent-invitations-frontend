@@ -1,12 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.AbstractModule
+import java.util.UUID
+
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
-import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -41,23 +42,13 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         "features.show-kfc-mtd-vat"                                           -> false,
         "features.enable-fast-track"                                          -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
-      .overrides(new TestGuiceModule)
 
-  lazy val fastTrackController: AgentsFastTrackInvitationController = app.injector.instanceOf[AgentsFastTrackInvitationController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    testCurrentAuthorisationRequestCache.clear()
-  }
-
-  private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
-  }
+  lazy val fastTrackController: AgentsFastTrackInvitationController =
+    app.injector.instanceOf[AgentsFastTrackInvitationController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "Show Feature Flags are switched off" should {
     val request = FakeRequest("POST", "/agents/fast-track")
@@ -67,7 +58,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an ITSA invitation" in {
         val formData =
-          CurrentAuthorisationRequest(personal, serviceITSA, "ni", validNino.value, Some(validPostcode))
+          AgentFastTrackRequest(Some(personal), serviceITSA, "ni", nino, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -77,7 +68,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
       }
 
       "creating an IRV invitation" in {
-        val formData = CurrentAuthorisationRequest(personal, servicePIR, "ni", validNino.value, None)
+        val formData = AgentFastTrackRequest(Some(personal), servicePIR, "ni", nino, Some(validPostcode))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)
@@ -88,7 +79,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
 
       "creating an VAT invitation" in {
         val formData =
-          CurrentAuthorisationRequest(business, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+          AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
         val fastTrackFormData = agentFastTrackForm.fill(formData)
         val result = fastTrack(
           authorisedAsValidAgent(request, arn.value)

@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.agentinvitationsfrontend.services.{ContinueUrlCache, HostnameWhiteListService}
+import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.binders.ContinueUrl
@@ -28,9 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 @Singleton
-class ContinueUrlActions @Inject()(
-  whiteListService: HostnameWhiteListService,
-  continueUrlStoreService: ContinueUrlCache) {
+class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
   def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[ContinueUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))

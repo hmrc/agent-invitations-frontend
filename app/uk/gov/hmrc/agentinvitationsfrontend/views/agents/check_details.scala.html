@@ -23,14 +23,14 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 
-@import uk.gov.hmrc.agentinvitationsfrontend.models.CurrentAuthorisationRequest
+@import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 
-
-@(confirmForm: Form[ConfirmForm], currentInvitationInput: CurrentAuthorisationRequest, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+@(confirmForm: Form[ConfirmForm], currentInvitationInput: AgentSession, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
@@ -57,7 +57,7 @@
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service}")</p>
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service.getOrElse("")}")</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
@@ -69,8 +69,8 @@
             </dt>
             <dd class="cya-answer" id="client-type">
                 @{currentInvitationInput.clientType match {
-                    case Some("personal") => Messages("check-details.client-type.personal")
-                    case Some("business") => Messages("check-details.client-type.business")
+                    case Some(ClientType.personal) => Messages("check-details.client-type.personal")
+                    case Some(ClientType.business) => Messages("check-details.client-type.business")
                     case _ => throw new IllegalArgumentException("client type not found")
                 }}
             </dd>
@@ -79,16 +79,16 @@
         <div>
             <dt class="cya-question">
                 @{currentInvitationInput.clientIdentifierType match {
-                    case "ni" => Messages("check-details.nino")
-                    case "vrn" => Messages("check-details.vrn")
+                    case Some("ni") => Messages("check-details.nino")
+                    case Some("vrn") => Messages("check-details.vrn")
                     case _ => throw new IllegalArgumentException("client identifier type not supported")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
-                @if(currentInvitationInput.service == "HMRC-MTD-VAT") {
+                @if(currentInvitationInput.service == Some("HMRC-MTD-VAT")) {
                     @currentInvitationInput.clientIdentifier
                 }else{
-                    @currentInvitationInput.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                    @currentInvitationInput.clientIdentifier.getOrElse("").replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
                 }
             </dd>
         </div>
@@ -97,9 +97,9 @@
                 <dt class="cya-question">
                 @{
                     currentInvitationInput.service match {
-                        case "HMRC-MTD-IT" => Messages("check-details.postcode")
-                        case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
-                        case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
+                        case Some("HMRC-MTD-IT") => Messages("check-details.postcode")
+                        case Some("PERSONAL-INCOME-RECORD") => Messages("check-details.dob")
+                        case Some("HMRC-MTD-VAT") => Messages("check-details.vat-reg-date")
                     }
                 }
                 </dt>
@@ -120,14 +120,14 @@
 
     @if(pageConfig.needClientType) {
 
-        <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl">@Messages("check-details.change.link")</a></div>
+        <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl(currentInvitationInput.service.getOrElse(""))">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
 
         <a href="@pageConfig.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
     }else {
         @if(pageConfig.needKnownFact) {
-            <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl">@Messages("check-details.change.link")</a></div>
+            <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl(currentInvitationInput.service.getOrElse(""))">@Messages("check-details.change.link")</a></div>
 
             <p>@Messages("check-details.change.p1")</p>
 

@@ -17,23 +17,23 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import play.twirl.api.HtmlFormat
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{business_select_service, cancelAuthorisation}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, SelectServicePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
@@ -50,8 +50,7 @@ class AgentLedDeAuthController @Inject()(
   relationshipsService: RelationshipsService,
   relationshipsConnector: RelationshipsConnector,
   pirRelationshipConnector: PirRelationshipConnector,
-  journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
-  val currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  val agentSessionCache: AgentSessionCache,
   auditService: AuditService)(
   implicit featureFlags: FeatureFlags,
   externalUrls: ExternalUrls,
@@ -64,8 +63,8 @@ class AgentLedDeAuthController @Inject()(
       invitationsService,
       invitationsConnector,
       relationshipsService,
-      journeyStateCache,
-      currentAuthorisationRequestCache,
+      agentSessionCache,
+      relationshipsConnector,
       auditService
     ) {
 
@@ -83,7 +82,7 @@ class AgentLedDeAuthController @Inject()(
     }
 
   def showClientType: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(handleGetClientType)
+    ifShowDeAuthFlag(handleGetClientType(true))
   }
 
   def submitClientType: Action[AnyContent] = Action.async { implicit request =>
@@ -95,17 +94,29 @@ class AgentLedDeAuthController @Inject()(
       handleGetSelectServicePage(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
   }
 
-  def submitSelectService: Action[AnyContent] = Action.async { implicit request =>
+  def submitSelectPersonalService: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(handleSubmitSelectServicePersonal)
+  }
+
+  def submitSelectBusinessService: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(
-      handleSubmitSelectService(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
+      handleSubmitSelectServiceBusiness(agentConfirmationForm("cancel-authorisation.error.business-service.required")))
   }
 
   def showIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(handleShowIdentifyClient)
   }
 
-  def submitIdentifyClient: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(handleSubmitIdentifyClient)
+  def submitIdentifyClientItsa: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyItsaClient)
+  }
+
+  def submitIdentifyClientIrv: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyIrvClient)
+  }
+
+  def submitIdentifyClientVat: Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(identifyVatClient)
   }
 
   def showConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
@@ -113,27 +124,34 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def submitConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      agentSessionCache.fetch.flatMap {
         case Some(cache) =>
+          val service = cache.service.getOrElse("")
+          val clientId = cache.clientIdentifier.getOrElse("")
           //TODO: Fix this , its a duplicated call to getClientNameByService, we could cache the clientName instead of calling the endpoint twice
-          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap {
-            name =>
-              val clientName = name.getOrElse("")
-              agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
-                .bindFromRequest()
-                .fold(
-                  formWithErrors =>
-                    Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
-                  data => {
-                    if (data.choice) {
-                      Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
-                    } else {
-                      Redirect(agentsLedDeAuthRootUrl)
+          invitationsService
+            .getClientNameByService(clientId, service)
+            .flatMap {
+              name =>
+                val clientName = name.getOrElse("")
+                agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
+                  .bindFromRequest()
+                  .fold(
+                    formWithErrors =>
+                      Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
+                    data => {
+                      if (data.choice) {
+                        checkRelationshipExistsForService(arn, service, clientId).map {
+                          case true  => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+                          case false => Redirect(routes.AgentsErrorController.notAuthorised())
+                        }
+                      } else {
+                        Redirect(agentsLedDeAuthRootUrl)
+                      }
                     }
-                  }
-                )
-          }
+                  )
+            }
         case None => Redirect(agentsLedDeAuthRootUrl)
       }
     })
@@ -141,17 +159,19 @@ class AgentLedDeAuthController @Inject()(
 
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
+      agentSessionCache.fetch.flatMap {
         case Some(cache) =>
-          invitationsService.getClientNameByService(cache.clientIdentifier, cache.service).flatMap { name =>
-            val clientName = name.getOrElse("")
-            Ok(
-              cancelAuthorisation.confirm_cancel(
-                cache.service,
+          invitationsService
+            .getClientNameByService(cache.clientIdentifier.getOrElse(""), cache.service.getOrElse(""))
+            .flatMap { name =>
+              val clientName = name.getOrElse("")
+              Ok(cancelAuthorisation.confirm_cancel(
+                cache.service.getOrElse(""),
                 clientName,
                 agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required"),
-                backLinkForConfirmCancelPage(cache.service)))
-          }
+                backLinkForConfirmCancelPage(cache.service.getOrElse(""))
+              ))
+            }
         case None => Redirect(agentsLedDeAuthRootUrl)
       }
     })
@@ -159,10 +179,10 @@ class AgentLedDeAuthController @Inject()(
 
   def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
+      agentSessionCache.fetch.flatMap {
         case Some(cache) =>
-          val service = cache.service
-          val clientId = cache.clientIdentifier
+          val service = cache.service.getOrElse("")
+          val clientId = cache.clientIdentifier.getOrElse("")
           invitationsService.getClientNameByService(clientId, service).flatMap {
             name =>
               val clientName = name.getOrElse("")
@@ -171,14 +191,14 @@ class AgentLedDeAuthController @Inject()(
                 .fold(
                   formWithErrors => {
                     Ok(cancelAuthorisation
-                      .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(cache.service)))
+                      .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(service)))
                   },
                   data => {
                     if (data.choice) {
                       deleteRelationshipForService(service, arn, clientId).map {
                         case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
                         case Some(false) => NotFound //TODO: should be fixed in Sprint 36
-                        case _           => InternalServerError //TODO: should be fixed in Sprint 36
+                        case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
                       }
                     } else {
                       Redirect(agentsLedDeAuthRootUrl)
@@ -193,10 +213,10 @@ class AgentLedDeAuthController @Inject()(
 
   def showCancelled: Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
-      currentAuthorisationRequestCache.fetch.flatMap {
+      agentSessionCache.fetch.flatMap {
         case Some(cache) =>
-          val service = cache.service
-          val clientId = cache.clientIdentifier
+          val service = cache.service.getOrElse("")
+          val clientId = cache.clientIdentifier.getOrElse("")
 
           val result = for {
             clientName <- invitationsService.getClientNameByService(clientId, service)
@@ -221,51 +241,70 @@ class AgentLedDeAuthController @Inject()(
       case e          => throw new Error(s"Unsupported service for deleting relationship: $e")
     }
 
-  override def redirectOrShowConfirmClient(
-    currentAuthorisationRequest: CurrentAuthorisationRequest,
-    featureFlags: FeatureFlags)(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
+  override def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(
+    body: => Future[Result])(implicit request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { (_, _) =>
-      currentAuthorisationRequest.service match {
-        case HMRCMTDIT if featureFlags.enableMtdItToConfirm   => Redirect(confirmClientCall)
-        case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm => Redirect(confirmClientCall)
-        case HMRCPIR if featureFlags.enableIrvToConfirm       => Redirect(confirmClientCall)
-        case _                                                =>
+      agentSession.service match {
+        case Some(HMRCMTDIT) if featureFlags.enableMtdItToConfirm   => Redirect(confirmClientCall)
+        case Some(HMRCMTDVAT) if featureFlags.enableMtdVatToConfirm => Redirect(confirmClientCall)
+        case Some(HMRCPIR) if featureFlags.enableIrvToConfirm       => Redirect(confirmClientCall)
+        case _                                                      =>
           //TODO: Fix this loose check
-          currentAuthorisationRequest.clientType match {
-            case Some("personal") => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
-            case Some("business") => Redirect(confirmClientCall)
-            case _                => Redirect(clientTypeCall)
+          agentSession.clientType match {
+            case Some(ClientType.personal) => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
+            case Some(ClientType.business) => Redirect(confirmClientCall)
+            case _                         => Redirect(clientTypeCall)
           }
       }
     }
 
+  def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.no_client_found())
+    })
+  }
+
+  def responseFailed(): Action[AnyContent] = Action.async { implicit request =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+      Ok(cancelAuthorisation.response_failed())
+    })
+  }
+
   override def clientTypeCall: Call = agentsLedDeAuthRootUrl
 
-  override def clientTypePage(form: Form[String], backLinkUrl: String)(
+  override def clientTypePage(form: Form[ClientType], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
-    cancelAuthorisation.client_type(form, clientTypes)
+    cancelAuthorisation.client_type(form, ClientTypePageConfig(None))
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
-  override def submitServiceCall: Call = routes.AgentLedDeAuthController.submitSelectService()
+  override def submitServicePersonalCall: Call = routes.AgentLedDeAuthController.submitSelectPersonalService()
+
+  override def submitServiceBusinessCall: Call = routes.AgentLedDeAuthController.submitSelectBusinessService()
 
   override def selectServicePage(
     form: Form[String] = ServiceTypeForm.form,
-    enabledServices: Seq[(String, String)],
+    enabledServices: Set[String],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.select_service(form, enabledServices, false)
+    cancelAuthorisation.select_service(form, SelectServicePageConfig(false, featureFlags, enabledServices))
 
   override def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
     basketFlag: Boolean,
     backLink: String)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceCall)
+    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceBusinessCall)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 
-  override def submitIdentifyClientCall: Call = routes.AgentLedDeAuthController.submitIdentifyClient()
+  override def submitIdentifyClientItsaCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientItsa()
+
+  override def submitIdentifyClientIrvCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientIrv()
+
+  override def submitIdentifyClientVatCall: Call = routes.AgentLedDeAuthController.submitIdentifyClientVat()
 
   override def confirmClientCall: Call = routes.AgentLedDeAuthController.showConfirmClient()
+
+  override def notMatchedCall: Call = routes.AgentLedDeAuthController.noClientFound()
 
   override def showConfirmClientPage(name: Option[String], backLinkUrl: String)(
     implicit request: Request[_]): Appendable =

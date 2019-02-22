@@ -21,13 +21,13 @@ import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.play.test.UnitSpec
 
 class TrackInformationFormSpec extends UnitSpec {
 
   val itsaService = "HMRC-MTD-IT"
-  val clientTypePersonal = Some("personal")
+  val clientTypePersonal = "personal"
   val expiryDate = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
 
   "ConfirmInvite form" should {
@@ -65,7 +65,7 @@ class TrackInformationFormSpec extends UnitSpec {
 
     "return no errors when unbinding the form" in {
       val unboundForm =
-        testTrackInformationForm.mapping.unbind(TrackResendForm(itsaService, clientTypePersonal, expiryDate))
+        testTrackInformationForm.mapping.unbind(TrackResendForm(itsaService, Some(ClientType.personal), expiryDate))
       unboundForm("service") shouldBe itsaService
       unboundForm("clientType") shouldBe "personal"
       unboundForm("expiryDate") shouldBe expiryDate

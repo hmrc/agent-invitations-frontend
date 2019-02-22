@@ -16,10 +16,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
+import java.util.UUID
+
 import org.joda.time.{DateTimeZone, LocalDate}
 import org.jsoup.Jsoup
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -29,8 +32,7 @@ import uk.gov.hmrc.http.logging.SessionId
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /track/" should {
 
@@ -173,10 +175,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val postResendLink = controller.submitToResendLink
 
     "return 200 and go to resend link page" in {
-      givenAgentReference(arn, "uid", "personal")
+      givenAgentReference(arn, "uid", personal)
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(14).toString
       val formData =
-        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some("personal"), expirationDate))
+        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -195,25 +197,25 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 400 BadRequest when form data contains errors in service" in {
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
-      val formData = controller.trackInformationForm.fill(TrackResendForm("foo", Some("personal"), expirationDate))
+      val formData = controller.trackInformationForm.fill(TrackResendForm("foo", Some(personal), expirationDate))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
     }
 
-    "return 400 BadRequest when form data contains errors in invitationId" in {
-      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
-      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some("foo"), expirationDate))
+    "return 400 BadRequest when form data contains errors in clientType" in {
+      val dataForm = controller.trackInformationForm.bind(
+        Map("service" -> "HMRC-MTD-IT", "clientType" -> "foo", "expiryDate" -> "2019-01-01"))
       val result =
-        postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+        postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(dataForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
     }
 
     "return 400 BadRequest when form data contains errors in expiryDate" in {
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
-      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some("personal"), "foo"))
+      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), "foo"))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 

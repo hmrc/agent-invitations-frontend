@@ -1,17 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import akka.util.Timeout
+import java.util.UUID
+
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-import uk.gov.hmrc.agentinvitationsfrontend.services.CurrentAuthorisationRequestCache
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-
-import scala.concurrent.duration._
 
 class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours {
 
@@ -51,20 +49,18 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
         "features.redirect-to-confirm-mtd-vat"                                -> false,
         "features.show-agent-led-de-auth"                                     -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl"
+        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri" -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[CurrentAuthorisationRequestCache]).toInstance(testCurrentAuthorisationRequestCache)
+    override def configure(): Unit = {
+    }
   }
 
   lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
-  implicit val timeout: Timeout = 2.seconds
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   "GET /cancel-authorisation/client-type" should {
 
@@ -102,8 +98,8 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST /cancel-authorisation/select-service" should {
 
     "return 401 when flag is off" in {
-      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-service")
-      val submitSelectService = controller.submitSelectService()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
+      val submitSelectService = controller.submitSelectPersonalService()
 
       val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 501
@@ -124,8 +120,8 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST /agents/cancel-authorisation/identify-client" when {
 
     "return 401 when flag is off" in {
-        val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-client")
-        val submitIdentifyClient = controller.submitIdentifyClient()
+        val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-itsa-client")
+        val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
         val requestWithForm =
           request.withFormUrlEncodedBody(

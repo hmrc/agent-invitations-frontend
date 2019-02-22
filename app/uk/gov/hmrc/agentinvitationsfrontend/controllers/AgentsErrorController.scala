@@ -18,16 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.google.inject.Provider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentMultiAuthorisationJourneyState
-import uk.gov.hmrc.agentinvitationsfrontend.services.{AgentMultiAuthorisationJourneyStateCache, CurrentAuthorisationRequestCache}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
+import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_matched}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_authorised, not_matched}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -36,8 +35,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class AgentsErrorController @Inject()(
   auditService: AuditService,
-  journeyStateCache: AgentMultiAuthorisationJourneyStateCache,
-  currentAuthorisationRequestCache: CurrentAuthorisationRequestCache,
+  agentSessionCache: AgentSessionCache,
   val messagesApi: play.api.i18n.MessagesApi,
   val env: Environment,
   val authConnector: AuthConnector,
@@ -50,8 +48,8 @@ class AgentsErrorController @Inject()(
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      journeyStateCache.fetch.map { aggregateOpt =>
-        val aggregate = aggregateOpt.getOrElse(AgentMultiAuthorisationJourneyState("", Set.empty))
+      agentSessionCache.fetch.map { aggregateOpt =>
+        val aggregate = aggregateOpt.getOrElse(AgentSession())
         Forbidden(not_matched(aggregate.requests.nonEmpty))
       }
     }
@@ -59,14 +57,14 @@ class AgentsErrorController @Inject()(
 
   val allCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      journeyStateCache.get.map(cacheItem =>
+      agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
 
   val someCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      journeyStateCache.get.map(cacheItem =>
+      agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
@@ -74,17 +72,22 @@ class AgentsErrorController @Inject()(
   val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
-        journeyStateCacheNonEmpty <- journeyStateCache.fetch.map {
-                                      case Some(cache) => cache.requests.nonEmpty
-                                      case None        => false
-                                    }
-        currentCacheItem <- currentAuthorisationRequestCache.get
+        agentSession <- agentSessionCache.hardGet
       } yield
         Ok(
           active_authorisation_exists(
-            journeyStateCacheNonEmpty,
-            currentCacheItem.service,
-            currentCacheItem.fromFastTrack))
+            agentSession.requests.nonEmpty,
+            agentSession.service.getOrElse(""),
+            agentSession.fromFastTrack))
+    }
+  }
+
+  val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      agentSessionCache.get.map {
+        case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
+        case Left(_)             => Ok(not_authorised("")) //TODO
+      }
     }
   }
 
