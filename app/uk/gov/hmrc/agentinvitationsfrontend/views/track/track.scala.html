@@ -28,53 +28,56 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
-   @back_link(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+    @back_link(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
-   <div class="text">
-       <h1 class="heading-xlarge margin-bottom-40">@Messages(s"recent-invitations.header")</h1>
+    <div class="text">
+        <h1 class="heading-xlarge margin-bottom-40">@Messages(s"recent-invitations.header")</h1>
     </div>
-    @if(config.hasInvitationsOrRelationships) {
 
-        <table class="text-small">
-            <caption class="caption-normal text margin-bottom-40">
-                @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
-            </caption>
-            <col style="width: 22%">
-            <col style="width: 30%">
-            <col style="width: 28%">
-            <col style="width: 20%">
-            <thead>
-                <tr>
-                    <th scope="col">@Messages("recent-invitations.table-row-header.clientName")</th>
-                    <th scope="col">@Messages("recent-invitations.table-row-header.service")</th>
-                    <th scope="col">@Messages("recent-invitations.table-row-header.status")</th>
-                    <th scope="col">@Messages("recent-invitations.table-row-header.actions")</th>
-                </tr>
-            </thead>
-            <tbody >
-                @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
-                    <tr class="row-@index">
-                        <td class="taxpayerName">
-                            <span>@invitationOrRelationship.clientName.getOrElse("")</span>
-                        </td>
-                        <td class="serviceInfo">
-                            <span>@Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
-                        </td>
-                        <td class="status">
-                            @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
-                            <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
-                        </td>
-                        <td class="action">
-                            @{invitationOrRelationship.status match {
-                                case "Pending" => pending_form(invitationOrRelationship, index)
-                                case "Accepted" => if(config.cancelAuthActionFlag){cancel_authorisation_form(invitationOrRelationship, index)}
-                                case _ => new_request_form(invitationOrRelationship, index)
-                                }}
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+
+    <p class="margin-bottom-40">
+    @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
+    </p>
+
+    @if(config.hasInvitationsOrRelationships) {
+        <div class="table text-small">
+            <div class="table-row table-head">
+                <div class="table-cell column-22">@Messages("recent-invitations.table-row-header.clientName")</div>
+                <div class="table-cell column-30">@Messages("recent-invitations.table-row-header.service")</div>
+                <div class="table-cell column-28">@Messages("recent-invitations.table-row-header.status")</div>
+                <div class="table-cell column-20">@Messages("recent-invitations.table-row-header.actions")</div>
+            </div>
+            @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
+            <div id="row-@index" class="table-row">
+                <div class="table-cell taxpayerName">
+                    <h2 class="sr-only">Row @index</h2>
+                    <h3 class="context">@Messages("recent-invitations.table-row-header.clientName")</h3>
+                    <span>@invitationOrRelationship.clientName.getOrElse("")</span>
+                </div>
+                <div class="table-cell serviceInfo">
+                    <h3 class="context">@Messages("recent-invitations.table-row-header.service")</h3>
+                    <span>@Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
+                </div>
+                <div class="table-cell status">
+                    <h3 class="context">@Messages("recent-invitations.table-row-header.status")</h3>
+                    @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
+                    <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
+                </div>
+                <div class="table-cell action @invitationOrRelationship.status.toLowerCase()">
+                    <h3 class="context">@Messages("recent-invitations.table-row-header.actions")</h3>
+                    @{
+                        invitationOrRelationship.status match {
+                            case "Pending" => pending_form(invitationOrRelationship, index)
+                            case "Accepted" => if(config.cancelAuthActionFlag) {
+                                cancel_authorisation_form(invitationOrRelationship, index)
+                            }
+                            case _ => new_request_form(invitationOrRelationship, index)
+                        }
+                    }
+                </div>
+            </div>
+            }
+        </div>
     } else {
         <p class="text">@Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)</p>
         <p>@Messages(s"recent-invitations.empty")</p>
@@ -85,20 +88,23 @@
 }
 
 @dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
-    @if(invitation.status=="Pending") {
-        <span>@Messages("recent-invitations.invitation.expires")</span> @displayDate(invitation.expiryDate)
+@if(invitation.status == "Pending") {
+    <span>@Messages("recent-invitations.invitation.expires")</span>
+    @displayDate(invitation.expiryDate)
+} else {
+    @if(invitation.status == "Expired") {
+        @displayDate(invitation.expiryDate)
     } else {
-        @if(invitation.status=="Expired") {
-            @displayDate(invitation.expiryDate)
-        } else {
-            @displayDate(invitation.date)
-        }
+        @displayDate(invitation.date)
     }
+}
 }
 
 @displayDate(date: Option[LocalDate]) = {
-    @{date match {
+@{
+    date match {
         case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
         case None => ""
-    }}
+    }
+}
 }
