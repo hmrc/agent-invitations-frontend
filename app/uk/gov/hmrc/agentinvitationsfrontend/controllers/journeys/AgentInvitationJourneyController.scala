@@ -36,12 +36,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentInvitationJourneyController @Inject()(
@@ -114,13 +113,13 @@ class AgentInvitationJourneyController @Inject()(
   override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
     state match {
       case Start => Redirect(routes.AgentInvitationJourneyController.showClientType())
-      case SelectClientType =>
+      case SelectClientType(_) =>
         Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
-      case ClientTypeSelected(ClientType.personal) =>
+      case ClientTypeSelected(ClientType.personal, _) =>
         Redirect(routes.AgentInvitationJourneyController.showSelectService())
-      case ClientTypeSelected(ClientType.business) =>
+      case ClientTypeSelected(ClientType.business, _) =>
         Redirect(routes.AgentInvitationJourneyController.showSelectService())
-      case SelectPersonalService(basket, services) =>
+      case SelectPersonalService(services, basket) =>
         Ok(select_service(SelectPersonalServiceForm, SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
       case SelectBusinessService(basket) =>
         Ok(
@@ -249,7 +248,7 @@ class AgentInvitationJourneyController @Inject()(
 
   private def getLinkTo(state: State): Call = state match {
     case Start                                => routes.AgentInvitationJourneyController.agentsRoot()
-    case SelectClientType                     => routes.AgentInvitationJourneyController.showClientType()
+    case SelectClientType(_)                  => routes.AgentInvitationJourneyController.showClientType()
     case SelectPersonalService(_, _)          => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService(_)             => routes.AgentInvitationJourneyController.showSelectService()
     case PersonalServiceSelected(_, _)        => routes.AgentInvitationJourneyController.showSelectService()

@@ -22,7 +22,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
-  val SelectedClientTypeFormat = Json.format[ClientTypeSelected]
+  val SelectClientTypeFormat = Json.format[SelectClientType]
+  val ClientTypeSelectedFormat = Json.format[ClientTypeSelected]
   val SelectPersonalServiceFormat = Json.format[SelectPersonalService]
   val SelectedPersonalServiceFormat = Json.format[PersonalServiceSelected]
   val SelectBusinessServiceFormat = Json.format[SelectBusinessService]
@@ -45,7 +46,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: ClientTypeSelected           => SelectedClientTypeFormat.writes(s)
+    case s: SelectClientType             => SelectClientTypeFormat.writes(s)
+    case s: ClientTypeSelected           => ClientTypeSelectedFormat.writes(s)
     case s: SelectPersonalService        => SelectPersonalServiceFormat.writes(s)
     case s: PersonalServiceSelected      => SelectedPersonalServiceFormat.writes(s)
     case s: SelectBusinessService        => SelectBusinessServiceFormat.writes(s)
@@ -70,8 +72,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "Start"                          => JsSuccess(Start)
-    case "SelectClientType"               => JsSuccess(SelectClientType)
-    case "ClientTypeSelected"             => SelectedClientTypeFormat.reads(properties)
+    case "SelectClientType"               => SelectClientTypeFormat.reads(properties)
+    case "ClientTypeSelected"             => ClientTypeSelectedFormat.reads(properties)
     case "SelectPersonalService"          => SelectPersonalServiceFormat.reads(properties)
     case "PersonalServiceSelected"        => SelectedPersonalServiceFormat.reads(properties)
     case "SelectBusinessService"          => SelectBusinessServiceFormat.reads(properties)

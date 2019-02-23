@@ -57,7 +57,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(Start) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        given(Start) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType)
+        given(Start) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType(emptyBasket))
       }
       "return error given selectedClientType(Personal)" in {
         val selectedClientTypeT = selectedClientType(authorisedAgent)(ClientType.personal)
@@ -66,52 +66,53 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
     }
     "at state SelectClientType" should {
       "transition to Start given startJourney" in {
-        given(SelectClientType) when startJourney should thenGo(Start)
+        given(SelectClientType(emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        given(SelectClientType) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType)
+        given(SelectClientType(emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
+          SelectClientType(emptyBasket))
       }
       "transition to SelectPersonalService given selectedClientType(personal)" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
-          ClientTypeSelected(ClientType.personal))
+        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
+          ClientTypeSelected(ClientType.personal, emptyBasket))
       }
       "transition to SelectBusinessService given selectedClientType(business)" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
-          ClientTypeSelected(ClientType.business))
+        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
+          ClientTypeSelected(ClientType.business, emptyBasket))
       }
     }
     "at state ClientTypeSelected" should {
       "transition to Start given startJourney" in {
-        given(ClientTypeSelected(ClientType.business)) when startJourney should thenGo(Start)
+        given(ClientTypeSelected(ClientType.business, emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to SelectClientType given showSelectClientType" in {
-        given(ClientTypeSelected(ClientType.business)) when showSelectClientType(authorisedAgent) should thenGo(
-          SelectClientType)
+        given(ClientTypeSelected(ClientType.business, emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
+          SelectClientType(emptyBasket))
       }
       "transition to SelectPersonalService with empty basket given showSelectService" in {
-        given(ClientTypeSelected(ClientType.personal)) when showSelectService(authorisedAgent) should thenGo(
-          SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
+        given(ClientTypeSelected(ClientType.personal, emptyBasket)) when showSelectService(authorisedAgent) should thenGo(
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket))
       }
       "transition to SelectBusinessService with empty basket given ClientTypeSelected(business)" in {
-        given(ClientTypeSelected(ClientType.business)) when showSelectService(authorisedAgent) should thenGo(
+        given(ClientTypeSelected(ClientType.business, emptyBasket)) when showSelectService(authorisedAgent) should thenGo(
           SelectBusinessService(emptyBasket))
       }
     }
     "at state SelectPersonalService" should {
       "transition to Start given startJourney" in {
-        given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when startJourney should thenGo(
+        given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when startJourney should thenGo(
           Start)
       }
       "transition to PersonalServiceSelected given showSelectPersonalService" in {
         await(
-          given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
+          given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when selectedPersonalService(
             authorisedAgent)(HMRCMTDIT)) should thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
       }
       "transition to SelectPersonalService when the service is invalid" in {
         await(
-          given(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT))) when selectedPersonalService(
+          given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when selectedPersonalService(
             authorisedAgent)("foo")) should thenGo(
-          SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket))
       }
     }
     "at state SelectBusinessService" should {
@@ -122,9 +123,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
           BusinessServiceSelected(emptyBasket))
       }
-      "transition to SelectClientType given selectedBusinessService when no is selected" in {
+      "transition to Start given selectedBusinessService when no is selected" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType)
+          Start)
       }
     }
     "at state PersonalServiceSelected" should {
@@ -208,7 +209,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       "transition to ConfirmClientPersonalVat" in {
         def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
 
-        given(VatIdentifiedPersonalClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+        given(VatIdentifiedPersonalClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(
+          authorisedAgent) should
           thenGo(ConfirmClientPersonalVat("Piglet LTD", Set.empty))
       }
     }
@@ -219,7 +221,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       "transition to ConfirmClientBusinessVat" in {
         def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
 
-        given(VatIdentifiedBusinessClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
+        given(VatIdentifiedBusinessClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(
+          authorisedAgent) should
           thenGo(ConfirmClientBusinessVat("Piglet LTD", Set.empty))
       }
     }
@@ -231,9 +234,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ConfirmClientItsa("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
           thenGo(ClientConfirmedPersonal(emptyBasket))
       }
-      "transition to IdentifyPersonalClient" in {
+      "transition to PersonalServiceSelected" in {
         given(ConfirmClientItsa("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
+          thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
       }
     }
     "at ConfirmClientIrv" should {
@@ -244,9 +247,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ConfirmClientIrv("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
           thenGo(ClientConfirmedPersonal(emptyBasket))
       }
-      "transition to IdentifyPersonalClient" in {
+      "transition to PersonalServiceSelected" in {
         given(ConfirmClientIrv("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
+          thenGo(PersonalServiceSelected(HMRCPIR, emptyBasket))
       }
     }
     "at ConfirmClientPersonalVat" should {
@@ -257,9 +260,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
           thenGo(ClientConfirmedPersonal(emptyBasket))
       }
-      "transition to IdentifyPersonalClient" in {
-        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
+      "transition to PersonalServiceSelected" in {
+        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(PersonalServiceSelected(HMRCMTDVAT, emptyBasket))
       }
     }
     "at ConfirmClientBusinessVat" should {
@@ -270,9 +274,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
           thenGo(ClientConfirmedBusiness(emptyBasket))
       }
-      "transition to IdentifyPersonalClient" in {
-        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyBusinessClient(emptyBasket))
+      "transition to BusinessServiceSelected" in {
+        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(BusinessServiceSelected(emptyBasket))
       }
     }
     "at ClientConfirmedPersonal" should {
@@ -280,7 +285,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ClientConfirmedPersonal(emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to ReviewAuthorisations" in {
-        given(ClientConfirmedPersonal(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(ReviewAuthorisationsPersonal(emptyBasket))
+        given(ClientConfirmedPersonal(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(
+          ReviewAuthorisationsPersonal(emptyBasket))
       }
     }
     "at ClientConfirmedBusiness" should {
@@ -288,19 +294,22 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         given(ClientConfirmedBusiness(emptyBasket)) when startJourney should thenGo(Start)
       }
       "transition to ReviewAuthorisations" in {
-        given(ClientConfirmedBusiness(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(ReviewAuthorisationsBusiness(emptyBasket))
+        given(ClientConfirmedBusiness(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(
+          ReviewAuthorisationsBusiness(emptyBasket))
       }
     }
     "at ReviewAuthorisationsPersonal" should {
       "transition to Start" in {
         given(ReviewAuthorisationsPersonal(emptyBasket)) when startJourney should thenGo(Start)
       }
-      "transition to SelectPersonalService" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(Confirmation(true)) should
-          thenGo(SelectPersonalService(emptyBasket, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
+      "transition to ClientTypeSelected" in {
+        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+          Confirmation(true)) should
+          thenGo(ClientTypeSelected(ClientType.personal, emptyBasket))
       }
       "transition to AuthorisationsReviewedPersonal" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(Confirmation(false)) should
+        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+          Confirmation(false)) should
           thenGo(AuthorisationsReviewedPersonal)
       }
     }
@@ -308,12 +317,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
       "transition to Start" in {
         given(ReviewAuthorisationsBusiness(emptyBasket)) when startJourney should thenGo(Start)
       }
-      "transition to SelectBusinessService" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(Confirmation(true)) should
-          thenGo(SelectBusinessService(emptyBasket))
+      "transition to ClientTypeSelected" in {
+        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+          Confirmation(true)) should
+          thenGo(ClientTypeSelected(ClientType.business, emptyBasket))
       }
       "transition to AuthorisationsReviewedBusiness" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(Confirmation(false)) should
+        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+          Confirmation(false)) should
           thenGo(AuthorisationsReviewedBusiness)
       }
     }
@@ -325,7 +336,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
         def invitationLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
 
         given(AuthorisationsReviewedPersonal) when showInvitationSent(invitationLink)(authorisedAgent) should
-         thenGo(InvitationSentPersonal("invitation/link", Some("continue-url")))
+          thenGo(InvitationSentPersonal("invitation/link", Some("continue-url")))
       }
     }
     "at AuthorisationsReviewedBusiness" should {

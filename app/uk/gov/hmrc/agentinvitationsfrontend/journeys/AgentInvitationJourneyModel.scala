@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
-import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -23,7 +22,6 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 
 object AgentInvitationJourneyModel extends JourneyModel {
 
@@ -46,10 +44,10 @@ object AgentInvitationJourneyModel extends JourneyModel {
   /* State should contain only minimal set of data required to proceed */
   object States {
     case object Start extends State
-    case object SelectClientType extends State
-    case class ClientTypeSelected(clientType: ClientType) extends State
+    case class SelectClientType(basket: Basket) extends State
+    case class ClientTypeSelected(clientType: ClientType, basket: Basket) extends State
 
-    case class SelectPersonalService(basket: Basket, services: Set[String]) extends State
+    case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case class SelectBusinessService(basket: Basket) extends State
     case class PersonalServiceSelected(service: String, basket: Basket) extends State
     case class BusinessServiceSelected(basket: Basket) extends State
@@ -87,32 +85,36 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {
-      case _ => goto(SelectClientType) // clears basket
+      case _ => goto(SelectClientType(Set.empty)) // clears basket
     }
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType => goto(ClientTypeSelected(clientType))
+      case SelectClientType(basket) => goto(ClientTypeSelected(clientType, basket))
     }
 
     def showSelectService(agent: AuthorisedAgent) = Transition {
-      case ClientTypeSelected(ClientType.personal) =>
+      case ClientTypeSelected(ClientType.personal, basket) =>
         goto(
           SelectPersonalService(
-            Set.empty,
-            if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT)))
-      case ClientTypeSelected(ClientType.business) => goto(SelectBusinessService(Set.empty))
+            if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
+            basket
+          ))
+      case ClientTypeSelected(ClientType.business, basket) => goto(SelectBusinessService(basket))
     }
 
     def selectedPersonalService(agent: AuthorisedAgent)(service: String) = Transition {
-      case SelectPersonalService(basket, services) =>
+      case SelectPersonalService(services, basket) =>
         if (services.contains(service)) goto(PersonalServiceSelected(service, basket))
-        else goto(SelectPersonalService(basket, services))
+        else goto(SelectPersonalService(services, basket))
     }
 
     def selectedBusinessService(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectBusinessService(basket) =>
-        if (confirmed.choice) goto(BusinessServiceSelected(basket))
-        else goto(SelectClientType)
+        if (confirmed.choice) {
+          goto(BusinessServiceSelected(basket))
+        } else {
+          goto(Start)
+        }
     }
 
     def showIdentifyClient(agent: AuthorisedAgent) = Transition {
@@ -168,16 +170,16 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def clientConfirmed(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case ConfirmClientItsa(_, basket) =>
         if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
+        else goto(PersonalServiceSelected(HMRCMTDIT, basket))
       case ConfirmClientIrv(_, basket) =>
         if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(IdentifyPersonalClient(HMRCPIR, basket))
+        else goto(PersonalServiceSelected(HMRCPIR, basket))
       case ConfirmClientPersonalVat(_, basket) =>
         if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
+        else goto(PersonalServiceSelected(HMRCMTDVAT, basket))
       case ConfirmClientBusinessVat(_, basket) =>
         if (confirmation.choice) goto(ClientConfirmedBusiness(basket))
-        else goto(IdentifyBusinessClient(basket))
+        else goto(BusinessServiceSelected(basket))
     }
 
     def showReviewAuthorisations(agent: AuthorisedAgent) =
@@ -189,14 +191,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def authorisationsReviewed(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case ReviewAuthorisationsPersonal(basket) =>
         if (confirmation.choice) {
-          goto(
-            SelectPersonalService(
-              Set.empty,
-              if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT)))
+          goto(ClientTypeSelected(personal, basket))
         } else goto(AuthorisationsReviewedPersonal)
       case ReviewAuthorisationsBusiness(basket) =>
         if (confirmation.choice) {
-          goto(SelectBusinessService(Set.empty))
+          goto(ClientTypeSelected(business, basket))
         } else goto(AuthorisationsReviewedBusiness)
     }
 
