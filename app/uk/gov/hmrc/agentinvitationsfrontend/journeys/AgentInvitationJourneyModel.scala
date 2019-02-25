@@ -211,7 +211,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
           if (confirmation.choice)
             goto(
               SelectPersonalService(
-                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
+                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT), //FIXME shall we remove existing service from the list?
                 basket))
           else
             getAgentLink(agent.arn, Some(personal)).flatMap { invitationLink =>
