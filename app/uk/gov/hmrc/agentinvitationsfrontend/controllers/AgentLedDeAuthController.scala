@@ -181,31 +181,35 @@ class AgentLedDeAuthController @Inject()(
     ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
-          val service = cache.service.getOrElse("")
-          val clientId = cache.clientIdentifier.getOrElse("")
-          invitationsService.getClientNameByService(clientId, service).flatMap {
-            name =>
-              val clientName = name.getOrElse("")
-              agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
-                .bindFromRequest()
-                .fold(
-                  formWithErrors => {
-                    Ok(cancelAuthorisation
-                      .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(service)))
-                  },
-                  data => {
-                    if (data.choice) {
-                      deleteRelationshipForService(service, arn, clientId).map {
-                        case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
-                        case Some(false) => NotFound //TODO: should be fixed in Sprint 36
-                        case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
+          (cache.service, cache.clientIdentifier) match {
+            case (Some(service), Some(clientId)) =>
+              invitationsService.getClientNameByService(clientId, service).flatMap {
+                name =>
+                  val clientName = name.getOrElse("")
+                  agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required")
+                    .bindFromRequest()
+                    .fold(
+                      formWithErrors => {
+                        Ok(cancelAuthorisation
+                          .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(service)))
+                      },
+                      data => {
+                        if (data.choice) {
+                          deleteRelationshipForService(service, arn, clientId).map {
+                            case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
+                            case Some(false) => NotFound //TODO: should be fixed in Sprint 36
+                            case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
+                          }
+                        } else {
+                          Redirect(agentsLedDeAuthRootUrl)
+                        }
                       }
-                    } else {
-                      Redirect(agentsLedDeAuthRootUrl)
-                    }
-                  }
-                )
+                    )
+              }
+
+            case (_, _) => Redirect(agentsLedDeAuthRootUrl)
           }
+
         case None => Redirect(agentsLedDeAuthRootUrl)
       }
     })

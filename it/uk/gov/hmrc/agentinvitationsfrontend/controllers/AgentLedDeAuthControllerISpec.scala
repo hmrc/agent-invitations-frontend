@@ -496,6 +496,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         "cancel-authorisation.response-failed.advice",
         "cancel-authorisation.response-failed.tryAgain"
       )
+
+      checkHtmlResultWithBodyText(result, """<input id="confirmCancel" type="hidden" value="true" name="accepted"/>""")
     }
   }
 }
