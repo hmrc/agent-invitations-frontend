@@ -15,10 +15,12 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
+import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.domain.Nino
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -28,7 +30,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   sealed trait State
   sealed trait Error
 
-  def root: State = States.Start
+  def root: State = States.SelectClientType(Set.empty)
 
   def errorFor(ex: Exception): Error = Errors.GenericError(ex)
   def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error =
@@ -43,36 +45,22 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   /* State should contain only minimal set of data required to proceed */
   object States {
-    case object Start extends State
     case class SelectClientType(basket: Basket) extends State
-    case class ClientTypeSelected(clientType: ClientType, basket: Basket) extends State
-
     case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case class SelectBusinessService(basket: Basket) extends State
-    case class PersonalServiceSelected(service: String, basket: Basket) extends State
-    case class BusinessServiceSelected(basket: Basket) extends State
-
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case class IdentifyBusinessClient(basket: Basket) extends State
-    case class ItsaIdentifiedClient(clientIdentifier: String, postcode: Option[String], basket: Basket) extends State
-    case class IrvIdentifiedClient(clientIdentifier: String, dob: Option[String], basket: Basket) extends State
-    case class VatIdentifiedPersonalClient(clientIdentifier: String, registrationDate: Option[String], basket: Basket)
-        extends State
-    case class VatIdentifiedBusinessClient(clientIdentifier: String, registrationDate: Option[String], basket: Basket)
-        extends State
-
+    case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
+    case class ActiveRelationshipExists(clientType: ClientType, basket: Basket) extends State
+    case class KnownFactNotMatched(basket: Basket) extends State
     case class ConfirmClientItsa(clientName: String, basket: Basket) extends State
     case class ConfirmClientIrv(clientName: String, basket: Basket) extends State
     case class ConfirmClientPersonalVat(clientName: String, basket: Basket) extends State
     case class ConfirmClientBusinessVat(clientName: String, basket: Basket) extends State
-    case class ClientConfirmedPersonal(basket: Basket) extends State
-    case class ClientConfirmedBusiness(basket: Basket) extends State
-
     case class ReviewAuthorisationsPersonal(basket: Basket) extends State
     case class ReviewAuthorisationsBusiness(basket: Basket) extends State
-    case object AuthorisationsReviewedPersonal extends State
-    case object AuthorisationsReviewedBusiness extends State
-
+    case class SomeAuthorisationsFailed(basket: Basket) extends State
+    case class AllAuthorisationsFailed(basket: Basket) extends State
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String]) extends State
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String]) extends State
   }
@@ -81,7 +69,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     import States._
 
     val startJourney = Transition {
-      case _ => goto(Start)
+      case _ => goto(SelectClientType(Set.empty))
     }
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {
@@ -89,128 +77,154 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType(basket) => goto(ClientTypeSelected(clientType, basket))
-    }
-
-    def showSelectService(agent: AuthorisedAgent) = Transition {
-      case ClientTypeSelected(ClientType.personal, basket) =>
-        goto(
-          SelectPersonalService(
-            if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
-            basket
-          ))
-      case ClientTypeSelected(ClientType.business, basket) => goto(SelectBusinessService(basket))
+      case SelectClientType(basket) =>
+        clientType match {
+          case ClientType.personal =>
+            goto(
+              SelectPersonalService(
+                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
+                basket
+              ))
+          case ClientType.business => goto(SelectBusinessService(basket))
+        }
     }
 
     def selectedPersonalService(agent: AuthorisedAgent)(service: String) = Transition {
       case SelectPersonalService(services, basket) =>
-        if (services.contains(service)) goto(PersonalServiceSelected(service, basket))
+        if (services.contains(service)) goto(IdentifyPersonalClient(service, basket))
         else goto(SelectPersonalService(services, basket))
     }
 
     def selectedBusinessService(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectBusinessService(basket) =>
         if (confirmed.choice) {
-          goto(BusinessServiceSelected(basket))
+          goto(IdentifyBusinessClient(basket))
         } else {
-          goto(Start)
+          goto(root)
         }
     }
 
-    def showIdentifyClient(agent: AuthorisedAgent) = Transition {
-      case PersonalServiceSelected(service, basket) => goto(IdentifyPersonalClient(service, basket))
-      case BusinessServiceSelected(basket: Basket)  => goto(IdentifyBusinessClient(basket))
-    }
+    type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
+    type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
+    type GetClientName = (String, String) => Future[Option[String]]
 
-    def identifiedItsaClient(agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
+    def identifiedItsaClient(checkPostcodeMatches: (Nino, String) => Future[Option[Boolean]])(
+      hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
+      getClientName: GetClientName)(agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDIT, basket) =>
-        goto(ItsaIdentifiedClient(itsaClient.clientIdentifier, itsaClient.postcode, basket))
+        checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode.getOrElse("")).flatMap {
+          case Some(true) => {
+            for {
+              hasPendingInvitations <- if (basket.exists(_.invitation.service == HMRCMTDIT) &&
+                                           basket.exists(_.invitation.clientId == itsaClient.clientIdentifier))
+                                        Future.successful(true)
+                                      else
+                                        hasPendingInvitationsFor(agent.arn, itsaClient.clientIdentifier, HMRCMTDIT)
+              result <- if (hasPendingInvitations) {
+                         goto(PendingInvitationExists(personal, basket))
+                       } else {
+                         hasActiveRelationshipFor(agent.arn, itsaClient.clientIdentifier, HMRCMTDIT).flatMap {
+                           case true => goto(ActiveRelationshipExists(personal, basket))
+                           case false =>
+                             getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientNameOpt =>
+                               val clientName = clientNameOpt.getOrElse("")
+                               goto(ConfirmClientItsa(clientName, basket))
+                             }
+                         }
+                       }
+            } yield result
+          }
+          case Some(false) => goto(KnownFactNotMatched(basket))
+        }
     }
 
-    def identifiedVatClient(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
+    def identifiedVatClient(checkRegDateMatches: (Vrn, LocalDate) => Future[Option[Boolean]])(
+      getClientName: GetClientName)(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
-        goto(VatIdentifiedPersonalClient(vatClient.clientIdentifier, vatClient.registrationDate, basket))
+        checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
+          .flatMap {
+            case Some(true) =>
+              getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
+                val clientName = clientNameOpt.getOrElse("")
+                goto(ConfirmClientPersonalVat(clientName, basket))
+              }
+            case Some(false) => goto(KnownFactNotMatched(basket))
+          }
       case IdentifyBusinessClient(basket) =>
-        goto(VatIdentifiedBusinessClient(vatClient.clientIdentifier, vatClient.registrationDate, basket))
+        checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
+          .flatMap {
+            case Some(true) =>
+              getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
+                val clientName = clientNameOpt.getOrElse("")
+                goto(ConfirmClientBusinessVat(clientName, basket))
+              }
+            case Some(false) => goto(KnownFactNotMatched(basket))
+          }
     }
 
-    def identifyIrvClient(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
+    def identifiedIrvClient(checkDobMatches: (Nino, LocalDate) => Future[Option[Boolean]])(
+      getClientName: GetClientName)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) =>
-        goto(IrvIdentifiedClient(irvClient.clientIdentifier, irvClient.dob, basket))
+        checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse(""))).flatMap {
+          case Some(true) =>
+            getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientNameOpt =>
+              val clientName = clientNameOpt.getOrElse("")
+              goto(ConfirmClientIrv(clientName, basket))
+            }
+          case Some(false) => goto(KnownFactNotMatched(basket))
+        }
     }
-
-    def showConfirmClient(getClientName: (String, String) => Future[Option[String]])(agent: AuthorisedAgent) =
-      Transition {
-        case ItsaIdentifiedClient(clientId, _, basket) => {
-          getClientName(clientId, HMRCMTDIT).flatMap { clientNameOpt =>
-            val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClientItsa(clientName, basket))
-          }
-        }
-        case IrvIdentifiedClient(clientId, _, basket) => {
-          getClientName(clientId, HMRCPIR).flatMap { clientNameOpt =>
-            val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClientIrv(clientName, basket))
-          }
-        }
-        case VatIdentifiedPersonalClient(clientId, _, basket) => {
-          getClientName(clientId, HMRCMTDVAT).flatMap { clientNameOpt =>
-            val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClientPersonalVat(clientName, basket))
-          }
-        }
-        case VatIdentifiedBusinessClient(clientId, _, basket) => {
-          getClientName(clientId, HMRCMTDVAT).flatMap { clientNameOpt =>
-            val clientName = clientNameOpt.getOrElse("")
-            goto(ConfirmClientBusinessVat(clientName, basket))
-          }
-        }
-      }
 
     def clientConfirmed(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case ConfirmClientItsa(_, basket) =>
-        if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(PersonalServiceSelected(HMRCMTDIT, basket))
+        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket))
+        else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
       case ConfirmClientIrv(_, basket) =>
-        if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(PersonalServiceSelected(HMRCPIR, basket))
+        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket))
+        else goto(IdentifyPersonalClient(HMRCPIR, basket))
       case ConfirmClientPersonalVat(_, basket) =>
-        if (confirmation.choice) goto(ClientConfirmedPersonal(basket))
-        else goto(PersonalServiceSelected(HMRCMTDVAT, basket))
+        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket))
+        else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
       case ConfirmClientBusinessVat(_, basket) =>
-        if (confirmation.choice) goto(ClientConfirmedBusiness(basket))
-        else goto(BusinessServiceSelected(basket))
+        if (confirmation.choice) goto(ReviewAuthorisationsBusiness(basket))
+        else goto(IdentifyBusinessClient(basket))
     }
 
-    def showReviewAuthorisations(agent: AuthorisedAgent) =
-      Transition {
-        case ClientConfirmedPersonal(basket) => goto(ReviewAuthorisationsPersonal(basket))
-        case ClientConfirmedBusiness(basket) => goto(ReviewAuthorisationsBusiness(basket))
-      }
+    type CreateMultipleInvitations =
+      (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
+    type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
 
-    def authorisationsReviewed(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
-      case ReviewAuthorisationsPersonal(basket) =>
-        if (confirmation.choice) {
-          goto(ClientTypeSelected(personal, basket))
-        } else goto(AuthorisationsReviewedPersonal)
-      case ReviewAuthorisationsBusiness(basket) =>
-        if (confirmation.choice) {
-          goto(ClientTypeSelected(business, basket))
-        } else goto(AuthorisationsReviewedBusiness)
+    def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
+      agent: AuthorisedAgent)(confirmation: Confirmation) = {
+
+      def createAndProcessInvitations(successState: State, basket: Basket) =
+        for {
+          processedRequests <- createMultipleInvitations(agent.arn, Some(personal), basket)
+          result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
+                   else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
+                     goto(AllAuthorisationsFailed(basket))
+                   else goto(SomeAuthorisationsFailed(basket))
+        } yield result
+
+      Transition {
+        case ReviewAuthorisationsPersonal(basket) =>
+          if (confirmation.choice)
+            goto(
+              SelectPersonalService(
+                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
+                basket))
+          else
+            getAgentLink(agent.arn, Some(personal)).flatMap { invitationLink =>
+              createAndProcessInvitations(InvitationSentPersonal(invitationLink, None), basket)
+            }
+        case ReviewAuthorisationsBusiness(basket) =>
+          if (confirmation.choice) goto(SelectBusinessService(basket))
+          else
+            getAgentLink(agent.arn, Some(personal)).flatMap { invitationLink =>
+              createAndProcessInvitations(InvitationSentBusiness(invitationLink, None), basket)
+            }
+      }
     }
-
-    //Continue url is only when coming from fast
-    def showInvitationSent(getAgentLink: (Arn, Option[ClientType]) => Future[String])(agent: AuthorisedAgent) =
-      Transition {
-        case AuthorisationsReviewedPersonal =>
-          getAgentLink(agent.arn, Some(personal)).flatMap { invitationLink =>
-            goto(InvitationSentPersonal(invitationLink, Some("continue-url")))
-          }
-        case AuthorisationsReviewedBusiness =>
-          getAgentLink(agent.arn, Some(business)).flatMap { invitationLink =>
-            goto(InvitationSentBusiness(invitationLink, Some("continue-url")))
-          }
-      }
   }
 
 }

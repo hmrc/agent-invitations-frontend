@@ -16,13 +16,16 @@
 
 package journeys
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, Error, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -42,6 +45,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
 
   val emptyBasket: Basket = Set.empty
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
+  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
 
   val nino = "AB123456A"
   val postCode = Some("BN114AW")
@@ -52,304 +56,272 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error,
   val dob = Some("1990-10-10")
 
   "AgentInvitationJourneyService" when {
-    "at state Start" should {
-      "transition to Start given startJourney" in {
-        given(Start) when startJourney should thenGo(Start)
-      }
-      "transition to SelectClientType given showSelectClientType" in {
-        given(Start) when showSelectClientType(authorisedAgent) should thenGo(SelectClientType(emptyBasket))
-      }
-      "return error given selectedClientType(Personal)" in {
-        val selectedClientTypeT = selectedClientType(authorisedAgent)(ClientType.personal)
-        given(Start) when selectedClientTypeT should transitionBeNotAllowed
-      }
-    }
     "at state SelectClientType" should {
-      "transition to Start given startJourney" in {
-        given(SelectClientType(emptyBasket)) when startJourney should thenGo(Start)
+      "transition to SelectClientType" in {
+        given(SelectClientType(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "transition to SelectClientType given showSelectClientType" in {
         given(SelectClientType(emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
           SelectClientType(emptyBasket))
       }
-      "transition to SelectPersonalService given selectedClientType(personal)" in {
+      "transition to SelectPersonalService" in {
         given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
-          ClientTypeSelected(ClientType.personal, emptyBasket))
+          SelectPersonalService(availableServices, emptyBasket))
       }
-      "transition to SelectBusinessService given selectedClientType(business)" in {
+      "transition to SelectBusinessService" in {
         given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
-          ClientTypeSelected(ClientType.business, emptyBasket))
-      }
-    }
-    "at state ClientTypeSelected" should {
-      "transition to Start given startJourney" in {
-        given(ClientTypeSelected(ClientType.business, emptyBasket)) when startJourney should thenGo(Start)
-      }
-      "transition to SelectClientType given showSelectClientType" in {
-        given(ClientTypeSelected(ClientType.business, emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
-          SelectClientType(emptyBasket))
-      }
-      "transition to SelectPersonalService with empty basket given showSelectService" in {
-        given(ClientTypeSelected(ClientType.personal, emptyBasket)) when showSelectService(authorisedAgent) should thenGo(
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket))
-      }
-      "transition to SelectBusinessService with empty basket given ClientTypeSelected(business)" in {
-        given(ClientTypeSelected(ClientType.business, emptyBasket)) when showSelectService(authorisedAgent) should thenGo(
           SelectBusinessService(emptyBasket))
       }
     }
     "at state SelectPersonalService" should {
-      "transition to Start given startJourney" in {
-        given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when startJourney should thenGo(
-          Start)
+      "transition to SelectClientType" in {
+        given(SelectPersonalService(availableServices, emptyBasket)) when startJourney should thenGo(
+          SelectClientType(emptyBasket))
       }
-      "transition to PersonalServiceSelected given showSelectPersonalService" in {
+      "transition to IdentifyPersonalClient" in {
         await(
-          given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when selectedPersonalService(
-            authorisedAgent)(HMRCMTDIT)) should thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
+          given(SelectPersonalService(availableServices, emptyBasket)) when selectedPersonalService(
+            authorisedAgent)(HMRCMTDIT)) should thenGo(IdentifyPersonalClient(HMRCMTDIT, Set.empty))
       }
-      "transition to SelectPersonalService when the service is invalid" in {
+      "transition to SelectPersonalService" in {
         await(
-          given(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket)) when selectedPersonalService(
+          given(SelectPersonalService(availableServices, emptyBasket)) when selectedPersonalService(
             authorisedAgent)("foo")) should thenGo(
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket))
+          SelectPersonalService(availableServices, emptyBasket))
       }
     }
     "at state SelectBusinessService" should {
-      "transition to Start given startJourney" in {
-        given(SelectBusinessService(emptyBasket)) when startJourney should thenGo(Start)
+      "transition to SelectClientType" in {
+        given(SelectBusinessService(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to SelectBusinessService given selectedBusinessService when yes is selected" in {
+      "after selectedBusinessService(true) transition to IdentifyBusinessClient" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
-          BusinessServiceSelected(emptyBasket))
-      }
-      "transition to Start given selectedBusinessService when no is selected" in {
-        given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
-          Start)
-      }
-    }
-    "at state PersonalServiceSelected" should {
-      "transition to Start given startJourney" in {
-        given(PersonalServiceSelected(HMRCMTDIT, Set.empty)) when startJourney should thenGo(Start)
-      }
-      "transition to IdentifyClient given showIdentifyClient for ITSA service" in {
-        given(PersonalServiceSelected(HMRCMTDIT, Set.empty)) when showIdentifyClient(authorisedAgent) should thenGo(
-          IdentifyPersonalClient(HMRCMTDIT, Set.empty))
-      }
-      "transition to IdentifyClient given showIdentifyClient for IRV service" in {
-        given(PersonalServiceSelected(HMRCPIR, Set.empty)) when showIdentifyClient(authorisedAgent) should thenGo(
-          IdentifyPersonalClient(HMRCPIR, Set.empty))
-      }
-    }
-    "at state BusinessServiceSelected" should {
-      "transition to Start given startJourney" in {
-        given(BusinessServiceSelected(Set.empty)) when startJourney should thenGo(Start)
-      }
-      "transition to IdentifyClient given showIdentifyClient" in {
-        given(BusinessServiceSelected(Set.empty)) when showIdentifyClient(authorisedAgent) should thenGo(
           IdentifyBusinessClient(Set.empty))
+      }
+      "after selectedBusinessService(false) transition to SelectClientType" in {
+        given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
+          SelectClientType(emptyBasket))
       }
     }
     "at state IdentifyPersonalClient" should {
-      "transition to Start" in {
-        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(Start)
-      }
-      "transition to ItsaIdentifiedClient" in {
-        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should
-          thenGo(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty))
-      }
-      "transition to VatIdentifiedPersonalClient" in {
-        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(authorisedAgent)(
-          VatClient("123456", Some("2010-10-10"))) should
-          thenGo(VatIdentifiedPersonalClient("123456", Some("2010-10-10"), Set.empty))
-      }
-      "transition to IrvIdentifiedClient" in {
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifyIrvClient(authorisedAgent)(
-          IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty))
-      }
-    }
-    "at state IdentifyBusinessClient" should {
-      "transition to Start" in {
-        given(IdentifyBusinessClient(emptyBasket)) when startJourney should thenGo(Start)
-      }
-      "transition to VatIdentifiedBusinessClient" in {
-        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(authorisedAgent)(
-          VatClient("123456", Some("2010-10-10"))) should
-          thenGo(VatIdentifiedBusinessClient("123456", Some("2010-10-10"), Set.empty))
-      }
-    }
-    "at ItsaIdentifiedClient" should {
-      "transition to Start" in {
-        given(ItsaIdentifiedClient(nino, postCode, emptyBasket)) when startJourney should thenGo(Start)
+      def clientName(service: String, clientId: String) = Future(Some("Piglet"))
+      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(false)
+      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(false)
+      "transition to SelectClientType" in {
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ConfirmClientItsa" in {
-        def clientName(service: String, clientId: String) = Future(Some("Piglet"))
+        def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
+          authorisedAgent)(ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ConfirmClientItsa("Piglet", Set.empty))
+      }
+      "transition to KnownFactsNotMatched when the nino and postcode do not match" in {
+        def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(false))
 
-        given(ItsaIdentifiedClient(nino, postCode, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
-          thenGo(ConfirmClientItsa("Piglet", Set.empty))
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
+          authorisedAgent)(ItsaClient("AB123456A", Some("BN114AW"))) should
+          thenGo(KnownFactNotMatched(Set.empty))
       }
-    }
-    "at IrvIdentifiedClient" should {
-      "transition to Start" in {
-        given(IrvIdentifiedClient(nino, dob, emptyBasket)) when startJourney should thenGo(Start)
+      "transition to PendingInvitationExists" in {
+        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitation)(hasNoActiveRelationship)(clientName)(
+          authorisedAgent)(ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(PendingInvitationExists(personal, Set.empty))
       }
-      "transition to ConfirmClientIrv" in {
-        def clientName(service: String, clientId: String) = Future(Some("Piglet Junior"))
-
-        given(IrvIdentifiedClient(nino, dob, emptyBasket)) when showConfirmClient(clientName)(authorisedAgent) should
-          thenGo(ConfirmClientIrv("Piglet Junior", Set.empty))
-      }
-    }
-    "at VatIdentifiedPersonalClient" should {
-      "transition to Start" in {
-        given(VatIdentifiedPersonalClient(vrn, vatRegDate, emptyBasket)) when startJourney should thenGo(Start)
+      "transition to ActiveRElationshipExists" in {
+        def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(hasNoPendingInvitation)(hasActiveRelationship)(clientName)(
+          authorisedAgent)(ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ActiveRelationshipExists(personal, Set.empty))
       }
       "transition to ConfirmClientPersonalVat" in {
-        def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
-
-        given(VatIdentifiedPersonalClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(
-          authorisedAgent) should
-          thenGo(ConfirmClientPersonalVat("Piglet LTD", Set.empty))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
+          authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
+          thenGo(ConfirmClientPersonalVat("Piglet", Set.empty))
       }
+      "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
+          authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
+          thenGo(KnownFactNotMatched(Set.empty))
+      }
+      "transition to ConfirmClientIrv" in {
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(authorisedAgent)(
+          IrvClient("AB123456A", Some("1990-10-10"))) should
+          thenGo(ConfirmClientIrv("Piglet", Set.empty))
+      }
+      "transition to KnownFactNotMatched when the nino and dob don't match" in {
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(authorisedAgent)(
+          IrvClient("AB123456A", Some("1990-10-10"))) should
+          thenGo(KnownFactNotMatched(Set.empty))
+      }
+
     }
-    "at VatIdentifiedBusinessClient" should {
-      "transition to Start" in {
-        given(VatIdentifiedBusinessClient(vrn, vatRegDate, emptyBasket)) when startJourney should thenGo(Start)
+    "at state IdentifyBusinessClient" should {
+      def clientName(service: String, clientId: String) = Future(Some("Piglet"))
+      "transition to SelectClientType" in {
+        given(IdentifyBusinessClient(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ConfirmClientBusinessVat" in {
-        def clientName(service: String, clientId: String) = Future(Some("Piglet LTD"))
-
-        given(VatIdentifiedBusinessClient(vrn, vatRegDate, emptyBasket)) when showConfirmClient(clientName)(
-          authorisedAgent) should
-          thenGo(ConfirmClientBusinessVat("Piglet LTD", Set.empty))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should
+          thenGo(ConfirmClientBusinessVat("Piglet", Set.empty))
+      }
+      "transition to KnownFactNotMatched client" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should
+          thenGo(KnownFactNotMatched(Set.empty))
       }
     }
     "at ConfirmClientItsa" should {
-      "transition to Start" in {
-        given(ConfirmClientItsa("Piglet", emptyBasket)) when startJourney should thenGo(Start)
+      "transition to SelectClientType" in {
+        given(ConfirmClientItsa("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to ClientConfirmedPersonal" in {
+      "transition to ReviewAuthorisationsPersonal" in {
         given(ConfirmClientItsa("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ClientConfirmedPersonal(emptyBasket))
+          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
       }
-      "transition to PersonalServiceSelected" in {
+      "transition to SelectPersonalService" in {
         given(ConfirmClientItsa("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(PersonalServiceSelected(HMRCMTDIT, emptyBasket))
+          thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
     }
     "at ConfirmClientIrv" should {
-      "transition to Start" in {
-        given(ConfirmClientIrv("Piglet", emptyBasket)) when startJourney should thenGo(Start)
+      "transition to SelectClientType" in {
+        given(ConfirmClientIrv("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to ClientConfirmedPersonal" in {
+      "transition to ReviewAuthorisationsPersonal" in {
         given(ConfirmClientIrv("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ClientConfirmedPersonal(emptyBasket))
+          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
       }
-      "transition to PersonalServiceSelected" in {
+      "transition to SelectPersonalService" in {
         given(ConfirmClientIrv("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
-          thenGo(PersonalServiceSelected(HMRCPIR, emptyBasket))
+          thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
       }
     }
     "at ConfirmClientPersonalVat" should {
       "transition to Start" in {
-        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when startJourney should thenGo(Start)
+        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ClientConfirmedPersonal" in {
         given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ClientConfirmedPersonal(emptyBasket))
+          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
       }
       "transition to PersonalServiceSelected" in {
         given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(
           Confirmation(false)) should
-          thenGo(PersonalServiceSelected(HMRCMTDVAT, emptyBasket))
+          thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
     }
     "at ConfirmClientBusinessVat" should {
-      "transition to Start" in {
-        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when startJourney should thenGo(Start)
+      "after startJourney transition to Start" in {
+        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to ClientConfirmedBusiness" in {
+      "after clientConfirmed(true) transition to ReviewAuthorisationsBusiness" in {
         given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ClientConfirmedBusiness(emptyBasket))
+          thenGo(ReviewAuthorisationsBusiness(emptyBasket))
       }
-      "transition to BusinessServiceSelected" in {
+      "after clientConfirmed(false) transition to IdentifyBusinessClient" in {
         given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(
           Confirmation(false)) should
-          thenGo(BusinessServiceSelected(emptyBasket))
-      }
-    }
-    "at ClientConfirmedPersonal" should {
-      "transition to Start" in {
-        given(ClientConfirmedPersonal(emptyBasket)) when startJourney should thenGo(Start)
-      }
-      "transition to ReviewAuthorisations" in {
-        given(ClientConfirmedPersonal(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(
-          ReviewAuthorisationsPersonal(emptyBasket))
-      }
-    }
-    "at ClientConfirmedBusiness" should {
-      "transition to Start" in {
-        given(ClientConfirmedBusiness(emptyBasket)) when startJourney should thenGo(Start)
-      }
-      "transition to ReviewAuthorisations" in {
-        given(ClientConfirmedBusiness(emptyBasket)) when showReviewAuthorisations(authorisedAgent) should thenGo(
-          ReviewAuthorisationsBusiness(emptyBasket))
+          thenGo(IdentifyBusinessClient(emptyBasket))
       }
     }
     "at ReviewAuthorisationsPersonal" should {
-      "transition to Start" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when startJourney should thenGo(Start)
+      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      "after startJourney transition to Start" in {
+        given(ReviewAuthorisationsPersonal(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to ClientTypeSelected" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+      "after authorisationsReviewed(true) transition to SelectPersonalService" in {
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(Set.empty)
+
+        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
           Confirmation(true)) should
-          thenGo(ClientTypeSelected(ClientType.personal, emptyBasket))
+          thenGo(SelectPersonalService(availableServices,emptyBasket)) //FIXME check basket has invitation added
       }
-      "transition to AuthorisationsReviewedPersonal" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+      "after authorisationsReviewed(false) transition to InvitationSentPersonal" in {
+        val authorisationRequestNew = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestCreated = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.CREATED, "ABC123")
+
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestCreated))
+
+        given(ReviewAuthorisationsPersonal(Set(authorisationRequestNew))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
           Confirmation(false)) should
-          thenGo(AuthorisationsReviewedPersonal)
+          thenGo(InvitationSentPersonal("invitation/link", None))
+      }
+      "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
+        val authorisationRequestNew = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestFailed = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.FAILED, "ABC123")
+
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestFailed))
+
+        given(ReviewAuthorisationsPersonal(Set(authorisationRequestNew))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(AllAuthorisationsFailed(Set(authorisationRequestNew)))
+      }
+
+      "after authorisationsReviewed(false) when some fail transition to AuthorisationReviewedSomeFailed" in {
+        val authorisationRequestNew1 = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestNew2 = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456B", Some("BN114AT")), AuthorisationRequest.NEW, "ABC124")
+        val authorisationRequestSuccess1 = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")), AuthorisationRequest.CREATED, "ABC123")
+        val authorisationRequestFailed2 = AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456B", Some("BN114AT")), AuthorisationRequest.FAILED, "ABC124")
+
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestSuccess1, authorisationRequestFailed2))
+
+        given(ReviewAuthorisationsPersonal(Set(authorisationRequestNew1, authorisationRequestNew2))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(SomeAuthorisationsFailed(Set(authorisationRequestNew1, authorisationRequestNew2)))
       }
     }
     "at ReviewAuthorisationsBusiness" should {
-      "transition to Start" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when startJourney should thenGo(Start)
+      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      "after startJourney transition to Start" in {
+        given(ReviewAuthorisationsBusiness(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to ClientTypeSelected" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+      "after authorisationsReviewed(true) transition to ClientTypeSelected" in {
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(Set.empty)
+
+        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
           Confirmation(true)) should
-          thenGo(ClientTypeSelected(ClientType.business, emptyBasket))
+          thenGo(SelectBusinessService(emptyBasket))
       }
-      "transition to AuthorisationsReviewedBusiness" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(authorisedAgent)(
+      "after authorisationsReviewed(false) transition to AuthorisationsReviewedBusiness" in {
+        val authorisationRequestNew = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestCreated = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.CREATED, "ABC123")
+
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestCreated))
+
+        given(ReviewAuthorisationsBusiness(Set(authorisationRequestNew))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
           Confirmation(false)) should
-          thenGo(AuthorisationsReviewedBusiness)
+          thenGo(InvitationSentBusiness("invitation/link", None))
       }
-    }
-    "at AuthorisationsReviewedPersonal" should {
-      "transition to Start" in {
-        given(AuthorisationsReviewedPersonal) when startJourney should thenGo(Start)
-      }
-      "transition to InvitationSentPersonal" in {
-        def invitationLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
+        val authorisationRequestNew = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestCreated = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.FAILED, "ABC123")
 
-        given(AuthorisationsReviewedPersonal) when showInvitationSent(invitationLink)(authorisedAgent) should
-          thenGo(InvitationSentPersonal("invitation/link", Some("continue-url")))
-      }
-    }
-    "at AuthorisationsReviewedBusiness" should {
-      "transition to Start" in {
-        given(AuthorisationsReviewedBusiness) when startJourney should thenGo(Start)
-      }
-      "transition to InvitationSentBusiness" in {
-        def invitationLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestCreated))
 
-        given(AuthorisationsReviewedBusiness) when showInvitationSent(invitationLink)(authorisedAgent) should
-          thenGo(InvitationSentBusiness("invitation/link", Some("continue-url")))
+        given(ReviewAuthorisationsBusiness(Set(authorisationRequestNew))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(AllAuthorisationsFailed(Set(authorisationRequestNew)))
+      }
+      "after authorisationsReviewed(false) when some fail transition to AuthorisationReviewedSomeFailed" in {
+        val authorisationRequestNew1 = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.NEW, "ABC123")
+        val authorisationRequestNew2 = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123457", Some("2010-10-10")), AuthorisationRequest.NEW, "ABC124")
+        val authorisationRequestCreated = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123456", Some("2010-10-10")), AuthorisationRequest.CREATED, "ABC123")
+        val authorisationRequestFailed = AuthorisationRequest("Mr Client", Invitation(Some(business), HMRCMTDVAT, "123457", Some("2010-10-10")), AuthorisationRequest.FAILED, "ABC124")
+
+        def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest]) = Future(Set(authorisationRequestCreated, authorisationRequestFailed))
+
+        given(ReviewAuthorisationsBusiness(Set(authorisationRequestNew1, authorisationRequestNew2))) when authorisationsReviewed(createMultipleInvitations)(getAgentLink)(authorisedAgent)(
+          Confirmation(false)) should
+          thenGo(SomeAuthorisationsFailed(Set(authorisationRequestNew1, authorisationRequestNew2)))
       }
     }
   }
-
 }

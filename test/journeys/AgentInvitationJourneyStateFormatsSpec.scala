@@ -29,10 +29,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
   "AgentsInvitationJourneyFormats" should {
     "serialize and deserialize state" when {
-      "Start" in {
-        Json.toJson(Start) shouldBe Json.obj("state" -> "Start")
-        Json.parse("""{"state":"Start"}""").as[State] shouldBe Start
-      }
       "SelectClientType" in {
         Json.toJson(SelectClientType(Set.empty)) shouldBe Json
           .obj("state" -> "SelectClientType", "properties" -> Json.obj("basket" -> JsArray()))
@@ -42,18 +38,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"SelectClientType", "properties": {"basket": []}}""")
           .as[State] shouldBe SelectClientType(Set.empty)
-      }
-      "ClientTypeSelected" in {
-        Json.toJson(ClientTypeSelected(ClientType.personal, Set.empty)) shouldBe Json
-          .obj(
-            "state"      -> "ClientTypeSelected",
-            "properties" -> Json.obj("clientType" -> "personal", "basket" -> JsArray()))
-        Json
-          .parse("""{"state":"ClientTypeSelected", "properties": {"clientType": "personal", "basket": []}}""")
-          .as[State] shouldBe ClientTypeSelected(ClientType.personal, Set.empty)
-        Json
-          .parse("""{"state":"ClientTypeSelected", "properties": {"clientType": "business", "basket": []}}""")
-          .as[State] shouldBe ClientTypeSelected(ClientType.business, Set.empty)
       }
       "SelectPersonalService" in {
         Json.toJson(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)) shouldBe Json.obj(
@@ -73,24 +57,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"SelectBusinessService", "properties": {"basket": []}}""")
           .as[State] shouldBe SelectBusinessService(Set.empty)
       }
-      "PersonalServiceSelected" in {
-        Json.toJson(PersonalServiceSelected(HMRCMTDIT, Set.empty)) shouldBe Json.obj(
-          "state"      -> "PersonalServiceSelected",
-          "properties" -> Json.obj("service" -> "HMRC-MTD-IT", "basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"PersonalServiceSelected", "properties": {"basket": [], "service": "HMRC-MTD-IT"}}""")
-          .as[State] shouldBe PersonalServiceSelected(HMRCMTDIT, Set.empty)
-      }
-      "BusinessServiceSelected" in {
-        Json.toJson(BusinessServiceSelected(Set.empty)) shouldBe Json.obj(
-          "state"      -> "BusinessServiceSelected",
-          "properties" -> Json.obj("basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"BusinessServiceSelected", "properties": {"basket": []}}""")
-          .as[State] shouldBe BusinessServiceSelected(Set.empty)
-      }
       "IdentifyPersonalClient" in {
         Json.toJson(IdentifyPersonalClient(HMRCMTDIT, Set.empty)) shouldBe Json.obj(
           "state"      -> "IdentifyPersonalClient",
@@ -108,48 +74,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"IdentifyBusinessClient", "properties": {"basket": []}}""")
           .as[State] shouldBe IdentifyBusinessClient(Set.empty)
-      }
-      "ItsaIdentifiedClient" in {
-        Json.toJson(ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty)) shouldBe Json.obj(
-          "state"      -> "ItsaIdentifiedClient",
-          "properties" -> Json.obj("clientIdentifier" -> "AB123456A", "postcode" -> "BN114AW", "basket" -> JsArray())
-        )
-        Json
-          .parse(
-            """{"state":"ItsaIdentifiedClient", "properties": {"basket": [], "clientIdentifier": "AB123456A", "postcode": "BN114AW"}}""")
-          .as[State] shouldBe ItsaIdentifiedClient("AB123456A", Some("BN114AW"), Set.empty)
-      }
-      "IrvIdentifiedClient" in {
-        Json.toJson(IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty)) shouldBe Json.obj(
-          "state"      -> "IrvIdentifiedClient",
-          "properties" -> Json.obj("clientIdentifier" -> "AB123456A", "dob" -> "1990-10-10", "basket" -> JsArray())
-        )
-        Json
-          .parse(
-            """{"state":"IrvIdentifiedClient", "properties": {"basket": [], "clientIdentifier": "AB123456A", "dob": "1990-10-10"}}""")
-          .as[State] shouldBe IrvIdentifiedClient("AB123456A", Some("1990-10-10"), Set.empty)
-      }
-      "VatIdentifiedPersonalClient" in {
-        Json.toJson(VatIdentifiedPersonalClient("123456", Some("2010-01-01"), Set.empty)) shouldBe Json.obj(
-          "state" -> "VatIdentifiedPersonalClient",
-          "properties" -> Json
-            .obj("clientIdentifier" -> "123456", "registrationDate" -> "2010-01-01", "basket" -> JsArray())
-        )
-        Json
-          .parse(
-            """{"state":"VatIdentifiedPersonalClient", "properties": {"basket": [], "clientIdentifier": "123456", "registrationDate": "2010-01-01"}}""")
-          .as[State] shouldBe VatIdentifiedPersonalClient("123456", Some("2010-01-01"), Set.empty)
-      }
-      "VatIdentifiedBusinessClient" in {
-        Json.toJson(VatIdentifiedBusinessClient("123456", Some("2010-01-01"), Set.empty)) shouldBe Json.obj(
-          "state" -> "VatIdentifiedBusinessClient",
-          "properties" -> Json
-            .obj("clientIdentifier" -> "123456", "registrationDate" -> "2010-01-01", "basket" -> JsArray())
-        )
-        Json
-          .parse(
-            """{"state":"VatIdentifiedBusinessClient", "properties": {"basket": [], "clientIdentifier": "123456", "registrationDate": "2010-01-01"}}""")
-          .as[State] shouldBe VatIdentifiedBusinessClient("123456", Some("2010-01-01"), Set.empty)
       }
       "ConfirmClientItsa" in {
         Json.toJson(ConfirmClientItsa("Piglet", Set.empty)) shouldBe Json.obj(
@@ -187,24 +111,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"ConfirmClientBusinessVat", "properties": {"basket": [], "clientName": "Piglet"}}""")
           .as[State] shouldBe ConfirmClientBusinessVat("Piglet", Set.empty)
       }
-      "ClientConfirmedPersonal" in {
-        Json.toJson(ClientConfirmedPersonal(Set.empty)) shouldBe Json.obj(
-          "state"      -> "ClientConfirmedPersonal",
-          "properties" -> Json.obj("basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ClientConfirmedPersonal", "properties": {"basket": []}}""")
-          .as[State] shouldBe ClientConfirmedPersonal(Set.empty)
-      }
-      "ClientConfirmedBusiness" in {
-        Json.toJson(ClientConfirmedBusiness(Set.empty)) shouldBe Json.obj(
-          "state"      -> "ClientConfirmedBusiness",
-          "properties" -> Json.obj("basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ClientConfirmedBusiness", "properties": {"basket": []}}""")
-          .as[State] shouldBe ClientConfirmedBusiness(Set.empty)
-      }
       "ReviewAuthorisationsPersonal" in {
         Json.toJson(ReviewAuthorisationsPersonal(Set.empty)) shouldBe Json.obj(
           "state"      -> "ReviewAuthorisationsPersonal",
@@ -222,14 +128,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"ReviewAuthorisationsBusiness", "properties": {"basket": []}}""")
           .as[State] shouldBe ReviewAuthorisationsBusiness(Set.empty)
-      }
-      "AuthorisationsReviewedPersonal" in {
-        Json.toJson(AuthorisationsReviewedPersonal) shouldBe Json.obj("state" -> "AuthorisationsReviewedPersonal")
-        Json.parse("""{"state":"AuthorisationsReviewedPersonal"}""").as[State] shouldBe AuthorisationsReviewedPersonal
-      }
-      "AuthorisationsReviewedBusiness" in {
-        Json.toJson(AuthorisationsReviewedBusiness) shouldBe Json.obj("state" -> "AuthorisationsReviewedBusiness")
-        Json.parse("""{"state":"AuthorisationsReviewedBusiness"}""").as[State] shouldBe AuthorisationsReviewedBusiness
       }
       "InvitationSentPersonal" in {
         Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"))) shouldBe Json.obj(
@@ -250,6 +148,33 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse(
             """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url"}}""")
           .as[State] shouldBe InvitationSentBusiness("invitation/link", Some("continue/url"))
+      }
+      "KnownFactNotMatched" in {
+        Json.toJson(KnownFactNotMatched(Set.empty)) shouldBe Json.obj(
+          "state"      -> "KnownFactNotMatched",
+          "properties" -> Json.obj("basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"KnownFactNotMatched", "properties": {"basket": []}}""")
+          .as[State] shouldBe KnownFactNotMatched(Set.empty)
+      }
+      "SomeAuthorisationsFailed" in {
+        Json.toJson(SomeAuthorisationsFailed(Set.empty)) shouldBe Json.obj(
+          "state"      -> "SomeAuthorisationsFailed",
+          "properties" -> Json.obj("basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"SomeAuthorisationsFailed", "properties": {"basket": []}}""")
+          .as[State] shouldBe SomeAuthorisationsFailed(Set.empty)
+      }
+      "AllAuthorisationsFailed" in {
+        Json.toJson(AllAuthorisationsFailed(Set.empty)) shouldBe Json.obj(
+          "state"      -> "AllAuthorisationsFailed",
+          "properties" -> Json.obj("basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"AllAuthorisationsFailed", "properties": {"basket": []}}""")
+          .as[State] shouldBe AllAuthorisationsFailed(Set.empty)
       }
     }
 
