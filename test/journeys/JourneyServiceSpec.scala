@@ -105,16 +105,9 @@ class JourneyServiceSpec extends UnitSpec {
 class TestJourneyModel extends JourneyModel {
 
   type State = String
-  type Error = Int
 
   /** Where your journey starts by default */
   override def root: State = "start"
-
-  /** Error to report an attempt to make invalid transition */
-  override def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error = -1
-
-  /** Converts or wraps exception thrown during transition into an Error */
-  override def errorFor(ex: Exception): Error = -2
 
   object Transitions {
 

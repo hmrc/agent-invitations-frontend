@@ -21,7 +21,7 @@ import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.mvc.Call
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
@@ -62,27 +62,26 @@ class AgentInvitationJourneyController @Inject()(
 
   import AgentInvitationJourneyController._
   import journeyService.model.States._
-  import journeyService.model.{Error, Errors, State, Transitions}
+  import journeyService.model.{State, Transitions}
+  import OptionalFormOps._
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
-
-  val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+  private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
   val agentsRoot = simpleAction(Transitions.startJourney)(redirect)
-  val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(show)
-  val submitClientType =
-    authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)(
-      SelectClientTypeFormValidationFailed)
 
-  val showSelectService = authorisedAgentRenderCurrentState
+  val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(display)
+  val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
 
-  val submitPersonalSelectService = authorisedAgentActionWithForm(SelectPersonalServiceForm)(
-    Transitions.selectedPersonalService)(SelectPersonalServiceFormValidationFailed)
-  val submitBusinessSelectService = authorisedAgentActionWithForm(SelectBusinessServiceForm)(
-    Transitions.selectedBusinessService)(SelectBusinessServiceFormValidationFailed)
+  val showSelectService = authorisedAgentCurrentStateAction(display)
 
-  val showIdentifyClient = authorisedAgentRenderCurrentState
+  val submitPersonalSelectService =
+    authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedPersonalService)
+  val submitBusinessSelectService =
+    authorisedAgentActionWithForm(SelectBusinessServiceForm)(Transitions.selectedBusinessService)
+
+  val showIdentifyClient = authorisedAgentCurrentStateAction(display)
 
   val submitIdentifyItsaClient =
     authorisedAgentActionWithFormWithHC(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)) {
@@ -90,36 +89,37 @@ class AgentInvitationJourneyController @Inject()(
         Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
           invitationsService.getClientNameByService)
-    }(IdentifyItsaClientFormValidationFailed)
+    }
   val submitIdentifyVatClient = authorisedAgentActionWithFormWithHC(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
     implicit hc: HeaderCarrier =>
       Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
         invitationsService.getClientNameByService)
-  }(IdentifyVatClientFormValidationFailed)
+  }
   val submitIdentifyIrvClient =
     authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
       Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
         invitationsService.getClientNameByService)
-    }(IdentifyIrvClientFormValidationFailed)
+    }
 
-  val showConfirmClient = authorisedAgentRenderCurrentState
+  val showConfirmClient = authorisedAgentCurrentStateAction(display)
 
-  val submitConfirmClient =
-    authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)(ConfirmClientFormValidationFailed)
-  val showReviewAuthorisations = authorisedAgentRenderCurrentState
+  val submitConfirmClient = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)
+
+  val showReviewAuthorisations = authorisedAgentCurrentStateAction(display)
+
   val authorisationsReviewed = authorisedAgentActionWithFormWithHCWithRequest(ReviewAuthorisationsForm) {
     implicit hc => implicit request =>
       Transitions.authorisationsReviewed(invitationsService.createMultipleInvitations)(
         invitationsService.createAgentLink)
-  }(ReviewAuthorisationsFormValidationFailed)
+  }
 
-  val showInvitationSent = authorisedAgentRenderCurrentState
-  val showNotMatched = authorisedAgentRenderCurrentState
-  val showSomeAuthorisationsFailed = authorisedAgentRenderCurrentState
-  val showAllAuthorisationsFailed = authorisedAgentRenderCurrentState
+  val showInvitationSent = authorisedAgentCurrentStateAction(display)
+  val showNotMatched = authorisedAgentCurrentStateAction(display)
+  val showSomeAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
+  val showAllAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
-  override def routeTo(state: State): Call = state match {
+  override def getCallFor(state: State): Call = state match {
     case SelectClientType(_)             => routes.AgentInvitationJourneyController.showClientType()
     case SelectPersonalService(_, _)     => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService(_)        => routes.AgentInvitationJourneyController.showSelectService()
@@ -137,157 +137,148 @@ class AgentInvitationJourneyController @Inject()(
     case _                               => throw new Exception(s"Link not found for $state")
   }
 
+  private def backLinkFor(breadcrumbs: List[State]): Option[String] =
+    breadcrumbs.headOption.map(getCallFor).map(_.url)
+
   /* Here we decide how to render or where to redirect after state transition */
-  override def renderState(state: State, breadcrumbs: List[State]): Route = { implicit request =>
-    state match {
-      case SelectClientType(_) =>
-        Ok(client_type(SelectClientTypeForm, ClientTypePageConfig(backLinkFor(breadcrumbs))))
-
-      case SelectPersonalService(services, basket) =>
-        Ok(select_service(SelectPersonalServiceForm, SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
-
-      case SelectBusinessService(basket) =>
-        Ok(
-          business_select_service(
-            SelectBusinessServiceForm,
-            BusinessSelectServicePageConfig(
-              basket.nonEmpty,
-              routes.AgentInvitationJourneyController.submitBusinessSelectService(),
-              backLinkFor(breadcrumbs))
-          ))
-
-      case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
-        Ok(
-          identify_client_itsa(
-            IdentifyItsaClientForm(featureFlags.showKfcMtdIt),
-            featureFlags.showKfcMtdIt,
-            routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
-        Ok(
-          identify_client_vat(
-            IdentifyVatClientForm(featureFlags.showKfcMtdVat),
-            featureFlags.showKfcMtdVat,
-            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case IdentifyPersonalClient(Services.HMRCPIR, _) =>
-        Ok(
-          identify_client_irv(
-            IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome),
-            featureFlags.showKfcPersonalIncome,
-            routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case IdentifyBusinessClient(_) =>
-        Ok(
-          identify_client_vat(
-            IdentifyVatClientForm(featureFlags.showKfcMtdVat),
-            featureFlags.showKfcMtdVat,
-            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case ConfirmClientItsa(clientName, _) =>
-        Ok(
-          confirm_client(
-            clientName,
-            ConfirmClientForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
-
-      case ConfirmClientIrv(clientName, _) =>
-        Ok(
-          confirm_client(
-            clientName,
-            ConfirmClientForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
-
-      case ConfirmClientPersonalVat(clientName, _) =>
-        Ok(
-          confirm_client(
-            clientName,
-            ConfirmClientForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
-
-      case ConfirmClientBusinessVat(clientName, _) =>
-        Ok(
-          confirm_client(
-            clientName,
-            ConfirmClientForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
-
-      case ReviewAuthorisationsPersonal(basket) =>
-        Ok(
-          review_authorisations(
-            ReviewAuthorisationsPageConfig(basket, featureFlags),
-            ReviewAuthorisationsForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case ReviewAuthorisationsBusiness(basket) =>
-        Ok(
-          review_authorisations(
-            ReviewAuthorisationsPageConfig(basket, featureFlags),
-            ReviewAuthorisationsForm,
-            backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
-          ))
-
-      case InvitationSentPersonal(invitationLink, continueUrl) =>
-        Ok(
-          invitation_sent(
-            InvitationSentPageConfig(
-              invitationLink,
-              continueUrl.isDefined,
-              featureFlags.enableTrackRequests,
-              ClientType.fromEnum(personal),
-              inferredExpiryDate)))
-
-      case InvitationSentBusiness(invitationLink, continueUrl) =>
-        Ok(
-          invitation_sent(
-            InvitationSentPageConfig(
-              invitationLink,
-              continueUrl.isDefined,
-              featureFlags.enableTrackRequests,
-              ClientType.fromEnum(business),
-              inferredExpiryDate)))
-
-      case KnownFactNotMatched(basket) =>
-        Ok(not_matched(basket.nonEmpty))
-
-      case SomeAuthorisationsFailed(basket) =>
-        Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
-
-      case AllAuthorisationsFailed(basket) =>
-        Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
-    }
-  }
-
-  /* Here we handle form validation errors */
-  override def handleFormValidationError(error: FormValidationError, breadcrumbs: List[State]): Route = {
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]]): Route = {
     implicit request =>
-      error match {
-        case SelectClientTypeFormValidationFailed(form) =>
-          Ok(client_type(form, ClientTypePageConfig(backLinkFor(breadcrumbs))))
+      state match {
+        case SelectClientType(_) =>
+          Ok(client_type(formWithErrors.or(SelectClientTypeForm), ClientTypePageConfig(backLinkFor(breadcrumbs))))
+
+        case SelectPersonalService(services, basket) =>
+          Ok(
+            select_service(
+              formWithErrors.or(SelectPersonalServiceForm),
+              SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
+
+        case SelectBusinessService(basket) =>
+          Ok(
+            business_select_service(
+              formWithErrors.or(SelectBusinessServiceForm),
+              BusinessSelectServicePageConfig(
+                basket.nonEmpty,
+                routes.AgentInvitationJourneyController.submitBusinessSelectService(),
+                backLinkFor(breadcrumbs))
+            ))
+
+        case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
+          Ok(
+            identify_client_itsa(
+              formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
+              featureFlags.showKfcMtdIt,
+              routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
+          Ok(
+            identify_client_vat(
+              formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+              featureFlags.showKfcMtdVat,
+              routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case IdentifyPersonalClient(Services.HMRCPIR, _) =>
+          Ok(
+            identify_client_irv(
+              formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
+              featureFlags.showKfcPersonalIncome,
+              routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case IdentifyBusinessClient(_) =>
+          Ok(
+            identify_client_vat(
+              formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+              featureFlags.showKfcMtdVat,
+              routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case ConfirmClientItsa(clientName, _) =>
+          Ok(
+            confirm_client(
+              clientName,
+              formWithErrors.or(ConfirmClientForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+
+        case ConfirmClientIrv(clientName, _) =>
+          Ok(
+            confirm_client(
+              clientName,
+              formWithErrors.or(ConfirmClientForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+
+        case ConfirmClientPersonalVat(clientName, _) =>
+          Ok(
+            confirm_client(
+              clientName,
+              formWithErrors.or(ConfirmClientForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+
+        case ConfirmClientBusinessVat(clientName, _) =>
+          Ok(
+            confirm_client(
+              clientName,
+              formWithErrors.or(ConfirmClientForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+
+        case ReviewAuthorisationsPersonal(basket) =>
+          Ok(
+            review_authorisations(
+              ReviewAuthorisationsPageConfig(basket, featureFlags),
+              formWithErrors.or(ReviewAuthorisationsForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case ReviewAuthorisationsBusiness(basket) =>
+          Ok(
+            review_authorisations(
+              ReviewAuthorisationsPageConfig(basket, featureFlags),
+              formWithErrors.or(ReviewAuthorisationsForm),
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+            ))
+
+        case InvitationSentPersonal(invitationLink, continueUrl) =>
+          Ok(
+            invitation_sent(
+              InvitationSentPageConfig(
+                invitationLink,
+                continueUrl.isDefined,
+                featureFlags.enableTrackRequests,
+                ClientType.fromEnum(personal),
+                inferredExpiryDate)))
+
+        case InvitationSentBusiness(invitationLink, continueUrl) =>
+          Ok(
+            invitation_sent(
+              InvitationSentPageConfig(
+                invitationLink,
+                continueUrl.isDefined,
+                featureFlags.enableTrackRequests,
+                ClientType.fromEnum(business),
+                inferredExpiryDate)))
+
+        case KnownFactNotMatched(basket) =>
+          Ok(not_matched(basket.nonEmpty))
+
+        case SomeAuthorisationsFailed(basket) =>
+          Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
+
+        case AllAuthorisationsFailed(basket) =>
+          Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
+
+        case ActiveRelationshipExists(_, _) =>
+          NotImplemented
+
+        case PendingInvitationExists(_, _) =>
+          NotImplemented
       }
   }
-
-  /* Here we handle errors thrown during state transition */
-  override def handleError(error: Error): Route = { implicit request =>
-    error match {
-      case Errors.TransitionNotAllowed(origin, breadcrumbs, _) =>
-        Logger(getClass).warn(s"Illegal state transition attempt from $origin")
-        renderState(origin, breadcrumbs)(request) // renders current state back
-      case Errors.GenericError(ex) => throw ex //delegates to the global ErrorHandler
-    }
-  }
-
-  private def backLinkFor(breadcrumbs: List[State]): Option[String] =
-    breadcrumbs.headOption.map(routeTo).map(_.url)
 
 }
 
@@ -339,21 +330,4 @@ object AgentInvitationJourneyController {
   val ConfirmClientForm = confirmationForm("error.confirm-client.required")
 
   val ReviewAuthorisationsForm = confirmationForm("error.review-authorisation.required")
-
-  case class SelectClientTypeFormValidationFailed(form: Form[ClientType]) extends FormValidationError
-
-  case class SelectPersonalServiceFormValidationFailed(form: Form[String]) extends FormValidationError
-
-  case class SelectBusinessServiceFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
-
-  case class IdentifyItsaClientFormValidationFailed(form: Form[ItsaClient]) extends FormValidationError
-
-  case class IdentifyVatClientFormValidationFailed(form: Form[VatClient]) extends FormValidationError
-
-  case class IdentifyIrvClientFormValidationFailed(form: Form[IrvClient]) extends FormValidationError
-
-  case class ConfirmClientFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
-
-  case class ReviewAuthorisationsFormValidationFailed(form: Form[Confirmation]) extends FormValidationError
-
 }

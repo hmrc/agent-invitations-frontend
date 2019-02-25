@@ -19,7 +19,7 @@ package journeys
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, Error, State, Transition}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
@@ -32,14 +32,14 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[Error, State] {
+class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State] {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   case class given(initialState: State) extends AgentInvitationJourneyService with TestStorage[(State, List[State])] {
     await(save((initialState, Nil)))
 
-    def when(transition: Transition): Either[Error, (State, List[State])] =
+    def when(transition: Transition): (State, List[State]) =
       await(super.apply(transition))
   }
 

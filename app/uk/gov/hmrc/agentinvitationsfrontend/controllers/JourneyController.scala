@@ -16,130 +16,102 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.Inject
-
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisedAgent
-import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait FormValidationError
-
 /**
   * Base controller for journeys based on Finite State Machine.
   *
-  * Provides 3 extension points:
-  *   - renderState: how to represent current state
-  *   - handleError: how to handle transition error
-  *   - handleFormValidationError: how to handle form validation error
+  * Provides 2 extension points:
+  *   - getCallFor: what is the endpoint representing given state
+  *   - renderState: how to render given state
   *
   * and few action creation helpers:
   *   - simpleAction
+  *   - authorisedAgentCurrentStateAction
   *   - authorisedAgentAction
+  *   - authorisedAgentActionWithHC
   *   - authorisedAgentActionWithForm
+  *   - authorisedAgentActionWithFormWithHC
+  *   - authorisedAgentActionWithFormWithHCWithRequest
   */
 abstract class JourneyController(implicit ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   val journeyService: JourneyService
 
-  import journeyService.model.{Error, State, Transition}
+  import journeyService.model.{State, Transition, TransitionNotAllowed}
+  import journeyService.StateAndBreadcrumbs
 
   type Route = Request[_] => Result
 
-  def renderState(state: State, breadcrumbs: List[State]): Route // implement this to render state after transition
-  def routeTo(state: State): Call
-  def handleError(error: Error): Route // implement this to handle model errors
-  def handleFormValidationError(error: FormValidationError, breadcrumbs: List[State]): Route // implement this to handle form validation errors
+  /** implement this to map states into endpoints for redirection and back linking */
+  def getCallFor(state: State): Call
 
-  type AfterTransition = (State, List[State]) => Route
+  /** implement this to render state after transition or when form validation fails */
+  def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]]): Route
 
-  final val show: AfterTransition = (state: State, breadcrumbs: List[State]) =>
-    (request: Request[_]) => renderState(state, breadcrumbs)(request)
-  final val redirect: AfterTransition = (state: State, _: List[State]) => (_: Request[_]) => Redirect(routeTo(state))
+  type RouteFactory = StateAndBreadcrumbs => Route
 
-  protected final def apply(transition: Transition, afterTransition: AfterTransition)(
+  /** displays template for the state and breadcrumbs */
+  final val display: RouteFactory = (state: StateAndBreadcrumbs) =>
+    (request: Request[_]) => renderState(state._1, state._2, None)(request)
+
+  /** redirects to the endpoint matching state */
+  final val redirect: RouteFactory =
+    (state: StateAndBreadcrumbs) => (_: Request[_]) => Redirect(getCallFor(state._1))
+
+  private def apply(transition: Transition, routeFactory: RouteFactory)(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =
     journeyService
       .apply(transition)
+      .map(routeFactory)
+      .map(_(request))
       .recover {
-        case e: Exception => Left(journeyService.model.errorFor(e))
+        case TransitionNotAllowed(origin, breadcrumbs, _) =>
+          renderState(origin, breadcrumbs, None)(request) // renders current state back
       }
-      .map(_.fold(
-        error => handleError(error)(request), {
-          case (state, breadcrumbs) => afterTransition(state, breadcrumbs)(request)
-        }
-      ))
 
-  protected final def simpleAction(transition: Transition)(afterTransition: AfterTransition): Action[AnyContent] =
+  protected final def simpleAction(transition: Transition)(afterTransition: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
       apply(transition, afterTransition)
     }
 
-  protected final def authorisedAgentRenderCurrentState: Action[AnyContent] =
+  protected final def authorisedAgentCurrentStateAction(routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (_, _) =>
         journeyService.currentState.map {
-          case Some((state, breadcrumbs)) => renderState(state, breadcrumbs)(request)
-          case None                       => renderState(journeyService.model.root, Nil)(request)
+          case Some(stateAndBreadcrumbs) => routeFactory(stateAndBreadcrumbs)(request)
+          case None                      => renderState(journeyService.model.root, Nil, None)(request)
         }
       }
     }
 
   protected final def authorisedAgentAction(transition: AuthorisedAgent => Transition)(
-    afterTransition: AfterTransition): Action[AnyContent] =
+    routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        apply(transition(AuthorisedAgent(arn, isWhitelisted)), afterTransition)
+        apply(transition(AuthorisedAgent(arn, isWhitelisted)), routeFactory)
       }
     }
 
   protected final def authorisedAgentActionWithHC(transition: HeaderCarrier => AuthorisedAgent => Transition)(
-    afterTransition: AfterTransition): Action[AnyContent] =
+    routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        apply(transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)), afterTransition)
+        apply(transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)), routeFactory)
       }
     }
 
-  protected final def authorisedAgentActionWithForm[T](form: Form[T])(transition: AuthorisedAgent => T => Transition)(
-    validationError: Form[T] => FormValidationError): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(form, transition(AuthorisedAgent(arn, isWhitelisted)), validationError)
-      }
-    }
-
-  protected final def authorisedAgentActionWithFormWithHC[T](form: Form[T])(
-    transition: HeaderCarrier => AuthorisedAgent => T => Transition)(
-    validationError: Form[T] => FormValidationError): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(form, transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)), validationError)
-      }
-    }
-
-  protected final def authorisedAgentActionWithFormWithHCWithRequest[T](form: Form[T])(
-    transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition)(
-    validationError: Form[T] => FormValidationError): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(
-          form,
-          transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(AuthorisedAgent(arn, isWhitelisted)),
-          validationError)
-      }
-    }
-
-  private def bindForm[T](form: Form[T], transition: T => Transition, validationError: Form[T] => FormValidationError)(
+  private def bindForm[T](form: Form[T], transition: T => Transition)(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =
     form
@@ -147,11 +119,44 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       .fold(
         formWithErrors =>
           journeyService.currentState.map {
-            case Some((_, breadcrumbs)) =>
-              handleFormValidationError(validationError(formWithErrors), breadcrumbs)(request)
-            case None => handleFormValidationError(validationError(formWithErrors), Nil)(request)
+            case Some((state, breadcrumbs)) =>
+              renderState(state, breadcrumbs, Some(formWithErrors))(request)
+            case None =>
+              renderState(journeyService.model.root, Nil, None)(request)
         },
         userInput => apply(transition(userInput), redirect)
       )
 
+  protected final def authorisedAgentActionWithForm[T](form: Form[T])(
+    transition: AuthorisedAgent => T => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        bindForm(form, transition(AuthorisedAgent(arn, isWhitelisted)))
+      }
+    }
+
+  protected final def authorisedAgentActionWithFormWithHC[T](form: Form[T])(
+    transition: HeaderCarrier => AuthorisedAgent => T => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        bindForm(form, transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)))
+      }
+    }
+
+  protected final def authorisedAgentActionWithFormWithHCWithRequest[T](form: Form[T])(
+    transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        bindForm(
+          form,
+          transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(AuthorisedAgent(arn, isWhitelisted)))
+      }
+    }
+
+}
+
+object OptionalFormOps {
+  implicit class OptionalForm(val formOpt: Option[Form[_]]) extends AnyVal {
+    def or[T](other: Form[T]): Form[T] = formOpt.map(_.asInstanceOf[Form[T]]).getOrElse(other)
+  }
 }

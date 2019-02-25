@@ -32,15 +32,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   def root: State = States.SelectClientType(Set.empty)
 
-  def errorFor(ex: Exception): Error = Errors.GenericError(ex)
-  def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error =
-    Errors.TransitionNotAllowed(state, breadcrumbs, transition)
-
-  object Errors {
-    case class TransitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition) extends Error
-    case class GenericError(ex: Exception) extends Error
-  }
-
   type Basket = Set[AuthorisationRequest]
 
   /* State should contain only minimal set of data required to proceed */
@@ -135,6 +126,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             } yield result
           }
           case Some(false) => goto(KnownFactNotMatched(basket))
+          case None        => ??? //FIXME
         }
     }
 
@@ -149,6 +141,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 goto(ConfirmClientPersonalVat(clientName, basket))
               }
             case Some(false) => goto(KnownFactNotMatched(basket))
+            case None        => ??? //FIXME
           }
       case IdentifyBusinessClient(basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
@@ -159,6 +152,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 goto(ConfirmClientBusinessVat(clientName, basket))
               }
             case Some(false) => goto(KnownFactNotMatched(basket))
+            case None        => ??? //FIXME
           }
     }
 
@@ -172,6 +166,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               goto(ConfirmClientIrv(clientName, basket))
             }
           case Some(false) => goto(KnownFactNotMatched(basket))
+          case None        => ??? //FIXME
         }
     }
 

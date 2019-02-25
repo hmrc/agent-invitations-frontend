@@ -25,25 +25,18 @@ import scala.concurrent.Future
 trait JourneyModel {
 
   type State
-  type Error
 
-  class Transition private (val apply: PartialFunction[State, Future[Either[Error, State]]])
+  class Transition private (val apply: PartialFunction[State, Future[State]])
 
   protected object Transition {
-    def apply(rules: PartialFunction[State, Future[Either[Error, State]]]): Transition = new Transition(rules)
+    def apply(rules: PartialFunction[State, Future[State]]): Transition = new Transition(rules)
   }
 
   /** Where your journey starts by default */
   def root: State
 
-  /** Error to report an attempt to make invalid transition */
-  def transitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition): Error
+  final def goto(state: State): Future[State] = Future.successful(state)
+  final def fail[T](exception: Exception): Future[T] = Future.failed(exception)
 
-  /** Converts or wraps exception thrown during transition into an Error */
-  def errorFor(ex: Exception): Error
-
-  final def goto(state: State): Future[Either[Error, State]] = Future.successful(Right(state))
-
-  final def fail(error: Error): Future[Either[Error, State]] = Future.successful(Left(error))
-
+  case class TransitionNotAllowed(state: State, breadcrumbs: List[State], transition: Transition) extends Exception
 }

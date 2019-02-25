@@ -31,9 +31,7 @@ trait JourneyService {
   /**
     * Applies transition to the current state and returns new state or error.
     */
-  def apply(transition: model.Transition)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]]
+  def apply(transition: model.Transition)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs]
 
   def currentState(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]]
 
@@ -45,30 +43,20 @@ trait PersistentJourneyService extends JourneyService {
   protected def save(
     state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs]
 
-  override def apply(transition: model.Transition)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Either[model.Error, StateAndBreadcrumbs]] =
+  override def apply(
+    transition: model.Transition)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     for {
       initialState <- fetch
       endStateOrError <- initialState.getOrElse((model.root, Nil)) match {
                           case (state, breadcrumbs) =>
-                            if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap {
-                              case Right(endState) =>
-                                save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs.take(9)))
-                                  .map(x => Right.apply(x))
-                              case Left(error) => model.fail(error).map(repack)
+                            if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap { endState =>
+                              save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs.take(9)))
                             } else
-                              model.fail(model.transitionNotAllowed(state, breadcrumbs, transition)).map(repack)
+                              model.fail(model.TransitionNotAllowed(state, breadcrumbs, transition))
                         }
     } yield endStateOrError
 
   override def currentState(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
     fetch
-
-  private def repack(either: Either[model.Error, model.State]): Either[model.Error, StateAndBreadcrumbs] =
-    either match {
-      case Left(e)  => Left(e)
-      case Right(s) => Right((s, Nil))
-    }
 
 }
