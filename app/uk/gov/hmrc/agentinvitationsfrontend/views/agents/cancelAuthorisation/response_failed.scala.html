@@ -18,17 +18,22 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.response-failed.header"), ""))) {
 
-<h1 id="responseFailedHeader" class="heading-large">@Messages("cancel-authorisation.response-failed.header")</h1>
+<h1 id="responseFailedHeader" class="heading-xlarge margin-top-20">@Messages("cancel-authorisation.response-failed.header")</h1>
 
 <p id="responseFailed">@Messages("cancel-authorisation.response-failed.description")</p>
 
 <p id="responseFailedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
 
-<a id="showClientTypeButton" href="@routes.AgentLedDeAuthController.showClientType()" class="button">@Messages("cancel-authorisation.response-failed.tryAgain")</a>
+@form(action = routes.AgentLedDeAuthController.submitConfirmCancel(), 'class -> "form js-form" ) {
+ <input id="confirmCancel" type="hidden" value="true" name="accepted"/>
+ <button class="button" type="submit" id="continue">@Messages("cancel-authorisation.response-failed.tryAgain")</button>
+}
 
 }
