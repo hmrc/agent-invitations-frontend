@@ -21,7 +21,7 @@
 
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.not-matched.description"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.not-matched.header"), ""))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.not-matched.header"), ""))) {
 
 <h1 id="notMatchedHeader" class="heading-xlarge">@Messages("cancel-authorisation.not-matched.header")</h1>
 
