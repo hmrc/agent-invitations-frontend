@@ -478,6 +478,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         "cancel-authorisation.not-matched.advice",
         "cancel-authorisation.start-over.button"
       )
+
+      checkResultBodyContainsTitle(result, problemHeader)
     }
   }
 

@@ -40,6 +40,8 @@ abstract class BaseISpec
   lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
 
+  val problemHeader = "There is a problem - Agent services account - GOV.UK"
+
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
@@ -147,6 +149,11 @@ abstract class BaseISpec
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {
     val element = s"""<a id="identifiersBackLink" href="$backLinkUrl" class="link-back">Back</a>"""
+    checkHtmlResultWithBodyText(result, element)
+  }
+
+  def checkResultBodyContainsTitle(result: Future[Result], title: String) = {
+    val element = s"""<title>$title</title>"""
     checkHtmlResultWithBodyText(result, element)
   }
 
