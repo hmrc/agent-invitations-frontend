@@ -44,13 +44,16 @@ trait MongoSessionStore[T] {
           .flatMap(_.flatMap(_.data))
           .flatMap {
             case Some(cache) =>
-              (cache \ sessionName).validate[T] match {
-                case JsSuccess(p, _) => Right(Some(p))
-                case JsError(errors) =>
-                  val allErrors = errors.map(_._2.map(_.message).mkString(",")).mkString(",")
-                  Left(allErrors)
+              (cache \ sessionName).asOpt[JsObject] match {
+                case None => Right(None)
+                case Some(obj) =>
+                  obj.validate[T] match {
+                    case JsSuccess(p, _) => Right(Some(p))
+                    case JsError(errors) =>
+                      val allErrors = errors.map(_._2.map(_.message).mkString(",")).mkString(",")
+                      Left(allErrors)
+                  }
               }
-
             case None => Right(None)
           }
           .recover {
