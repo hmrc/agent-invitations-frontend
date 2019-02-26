@@ -93,11 +93,13 @@ class AgentInvitationJourneyController @Inject()(
   val submitIdentifyVatClient = authorisedAgentActionWithFormWithHC(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
     implicit hc: HeaderCarrier =>
       Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
+        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
         invitationsService.getClientNameByService)
   }
   val submitIdentifyIrvClient =
     authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
       Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
+        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
         invitationsService.getClientNameByService)
     }
 
@@ -117,6 +119,7 @@ class AgentInvitationJourneyController @Inject()(
   val showNotMatched = authorisedAgentCurrentStateAction(display)
   val showSomeAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
   val showAllAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
+  val showClientNotSignedUp = authorisedAgentCurrentStateAction(display)
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
@@ -272,14 +275,20 @@ class AgentInvitationJourneyController @Inject()(
         case AllAuthorisationsFailed(basket) =>
           Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
 
-        case ActiveRelationshipExists(_, _) =>
-          NotImplemented
+        case ActiveRelationshipExists(_, service, basket) =>
+          Ok(active_authorisation_exists(basket.nonEmpty, service, false))
 
-        case PendingInvitationExists(_, _) =>
-          NotImplemented
+        case PendingInvitationExists(_, basket) =>
+          Ok(
+            pending_authorisation_exists(
+              basket.nonEmpty,
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              fromFastTrack = false))
+
+        case ClientNotSignedUp(service, basket) =>
+          Ok(not_signed_up(service, basket.nonEmpty))
       }
   }
-
 }
 
 object AgentInvitationJourneyController {

@@ -43,7 +43,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case class IdentifyBusinessClient(basket: Basket) extends State
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
-    case class ActiveRelationshipExists(clientType: ClientType, basket: Basket) extends State
+    case class ActiveRelationshipExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class ConfirmClientItsa(clientName: String, basket: Basket) extends State
     case class ConfirmClientIrv(clientName: String, basket: Basket) extends State
@@ -117,7 +117,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                          goto(PendingInvitationExists(personal, basket))
                        } else {
                          hasActiveRelationshipFor(agent.arn, itsaClient.clientIdentifier, HMRCMTDIT).flatMap {
-                           case true => goto(ActiveRelationshipExists(personal, basket))
+                           case true => goto(ActiveRelationshipExists(personal, HMRCMTDIT, basket))
                            case false =>
                              getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientNameOpt =>
                                val clientName = clientNameOpt.getOrElse("")
@@ -133,42 +133,92 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def identifiedVatClient(checkRegDateMatches: (Vrn, LocalDate) => Future[Option[Boolean]])(
+      hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
       getClientName: GetClientName)(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           .flatMap {
-            case Some(true) =>
-              getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
-                val clientName = clientNameOpt.getOrElse("")
-                goto(ConfirmClientPersonalVat(clientName, basket))
-              }
+            case Some(true) => {
+              for {
+                hasPendingInvitations <- if (basket.exists(_.invitation.service == HMRCMTDVAT) &&
+                                             basket.exists(_.invitation.clientId == vatClient.clientIdentifier))
+                                          Future.successful(true)
+                                        else
+                                          hasPendingInvitationsFor(agent.arn, vatClient.clientIdentifier, HMRCMTDVAT)
+                result <- if (hasPendingInvitations) {
+                           goto(PendingInvitationExists(personal, basket))
+                         } else {
+                           hasActiveRelationshipFor(agent.arn, vatClient.clientIdentifier, HMRCMTDVAT).flatMap {
+                             case true => goto(ActiveRelationshipExists(personal, HMRCMTDVAT, basket))
+                             case false =>
+                               getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
+                                 val clientName = clientNameOpt.getOrElse("")
+                                 goto(ConfirmClientPersonalVat(clientName, basket))
+                               }
+                           }
+                         }
+              } yield result
+            }
             case Some(false) => goto(KnownFactNotMatched(basket))
             case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
       case IdentifyBusinessClient(basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           .flatMap {
-            case Some(true) =>
-              getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
-                val clientName = clientNameOpt.getOrElse("")
-                goto(ConfirmClientBusinessVat(clientName, basket))
-              }
+            case Some(true) => {
+              for {
+                hasPendingInvitations <- if (basket.exists(_.invitation.service == HMRCMTDVAT) &&
+                                             basket.exists(_.invitation.clientId == vatClient.clientIdentifier))
+                                          Future.successful(true)
+                                        else
+                                          hasPendingInvitationsFor(agent.arn, vatClient.clientIdentifier, HMRCMTDVAT)
+                result <- if (hasPendingInvitations) {
+                           goto(PendingInvitationExists(personal, basket))
+                         } else {
+                           hasActiveRelationshipFor(agent.arn, vatClient.clientIdentifier, HMRCMTDVAT).flatMap {
+                             case true => goto(ActiveRelationshipExists(personal, HMRCMTDVAT, basket))
+                             case false =>
+                               getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientNameOpt =>
+                                 val clientName = clientNameOpt.getOrElse("")
+                                 goto(ConfirmClientBusinessVat(clientName, basket))
+                               }
+                           }
+                         }
+              } yield result
+            }
             case Some(false) => goto(KnownFactNotMatched(basket))
             case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
     }
 
     def identifiedIrvClient(checkDobMatches: (Nino, LocalDate) => Future[Option[Boolean]])(
+      hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
       getClientName: GetClientName)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) =>
         checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse(""))).flatMap {
-          case Some(true) =>
-            getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientNameOpt =>
-              val clientName = clientNameOpt.getOrElse("")
-              goto(ConfirmClientIrv(clientName, basket))
-            }
+          case Some(true) => {
+            for {
+              hasPendingInvitations <- if (basket.exists(_.invitation.service == HMRCPIR) &&
+                                           basket.exists(_.invitation.clientId == irvClient.clientIdentifier))
+                                        Future.successful(true)
+                                      else
+                                        hasPendingInvitationsFor(agent.arn, irvClient.clientIdentifier, HMRCPIR)
+              result <- if (hasPendingInvitations) {
+                         goto(PendingInvitationExists(personal, basket))
+                       } else {
+                         hasActiveRelationshipFor(agent.arn, irvClient.clientIdentifier, HMRCPIR).flatMap {
+                           case true => goto(ActiveRelationshipExists(personal, HMRCPIR, basket))
+                           case false =>
+                             getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientNameOpt =>
+                               val clientName = clientNameOpt.getOrElse("")
+                               goto(ConfirmClientIrv(clientName, basket))
+                             }
+                         }
+                       }
+            } yield result
+          }
           case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => goto(ClientNotSignedUp(HMRCPIR, basket)) //dubious?
+          case None        => goto(ClientNotSignedUp(HMRCPIR, basket)) //dubious? citizen record not found
         }
     }
 

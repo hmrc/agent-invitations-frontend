@@ -36,12 +36,12 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ReviewAuthorisationsBusinessFormat = Json.format[ReviewAuthorisationsBusiness]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
-  val ClientNotSignedUp = Json.format[ClientNotSignedUp]
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
   val SomeAuthorisationsFailedFormat = Json.format[SomeAuthorisationsFailed]
   val AllAuthorisationsFailedFormat = Json.format[AllAuthorisationsFailed]
+  val ClientNotSignedUp = Json.format[ClientNotSignedUp]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType             => SelectClientTypeFormat.writes(s)

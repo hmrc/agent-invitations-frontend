@@ -129,48 +129,83 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           ItsaClient("AB123456A", Some("BN114AW"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
-      "transition to PendingInvitationExists" in {
+      "transition to PendingInvitationExists for itsa service" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
           ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(PendingInvitationExists(personal, emptyBasket))
       }
-      "transition to ActiveRElationshipExists" in {
+      "transition to ActiveRelationshipExists for itsa service" in {
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasNoPendingInvitation)(hasActiveRelationship)(clientName)(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ActiveRelationshipExists(personal, emptyBasket))
+          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ActiveRelationshipExists(personal, HMRCMTDIT, emptyBasket))
       }
       "transition to ConfirmClientPersonalVat" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(
           clientName)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(ConfirmClientPersonalVat("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(
           clientName)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
+      "transition to PendingInvitationExists for vat service" in {
+        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should thenGo(PendingInvitationExists(personal, emptyBasket))
+      }
+      "transition to ActiveRelationshipExists for vat service" in {
+        def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+          Future.successful(true)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasActiveRelationship)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should thenGo(ActiveRelationshipExists(personal, HMRCMTDVAT, emptyBasket))
+      }
       "transition to ConfirmClientIrv" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
           authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
           thenGo(ConfirmClientIrv("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched when the nino and dob don't match" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
           authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
+      "transition to PendingInvitationExists for irv service" in {
+        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
+          IrvClient("AB123456A", Some("1990-10-10"))) should thenGo(PendingInvitationExists(personal, emptyBasket))
+      }
+      "transition to ActiveRelationshipExists for irv service" in {
+        def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+          Future.successful(true)
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasNoPendingInvitation)(hasActiveRelationship)(clientName)(authorisedAgent)(
+          IrvClient("AB123456A", Some("1990-10-10"))) should thenGo(ActiveRelationshipExists(personal, HMRCPIR, emptyBasket))
+      }
       "transition to ClientNotSignedUp when client not found" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
           authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
           thenGo(ClientNotSignedUp(HMRCPIR, emptyBasket))
       }
@@ -179,20 +214,49 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state IdentifyBusinessClient" should {
       def clientName(service: String, clientId: String) = Future(Some("Piglet"))
+      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+
       "transition to SelectClientType" in {
         given(IdentifyBusinessClient(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ConfirmClientBusinessVat" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
-        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
           authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(ConfirmClientBusinessVat("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched client" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
-        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
           authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
+      }
+      "transition to PendingInvitationExists" in {
+        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should thenGo(PendingInvitationExists(personal, emptyBasket))
+      }
+      "transition to ActiveRelationshipExists" in {
+        def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+          Future.successful(true)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasActiveRelationship)(clientName)(authorisedAgent)(
+          VatClient("123456", Some("2010-10-10"))) should thenGo(ActiveRelationshipExists(personal, HMRCMTDVAT, emptyBasket))
+      }
+      "transition to ClientNotSignedUp" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(None)
+        given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(
+          authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
+          thenGo(ClientNotSignedUp(HMRCMTDVAT, emptyBasket))
       }
     }
 

@@ -22,3 +22,4 @@ GET         /agents/invitation-sent                             @uk.gov.hmrc.age
 GET         /agents/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showNotMatched
 GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSomeAuthorisationsFailed
 GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsFailed
+GET         /agents/not-signed-up                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showClientNotSignedUp
