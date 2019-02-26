@@ -278,7 +278,8 @@ class AgentLedDeAuthController @Inject()(
 
   override def clientTypePage(form: Form[ClientType], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
-    cancelAuthorisation.client_type(form, ClientTypePageConfig(None))
+    cancelAuthorisation
+      .client_type(form, ClientTypePageConfig(None, routes.AgentLedDeAuthController.submitClientType()))
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
@@ -290,7 +291,8 @@ class AgentLedDeAuthController @Inject()(
     form: Form[String] = ServiceTypeForm.form,
     enabledServices: Set[String],
     basketFlag: Boolean)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.select_service(form, SelectServicePageConfig(false, featureFlags, enabledServices))
+    cancelAuthorisation
+      .select_service(form, SelectServicePageConfig(false, featureFlags, enabledServices, submitServicePersonalCall))
 
   override def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),

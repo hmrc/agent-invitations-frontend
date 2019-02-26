@@ -20,7 +20,10 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, AuthorisationRequest}
 
-case class ReviewAuthorisationsPageConfig(requests: Set[AuthorisationRequest], featureFlags: FeatureFlags) {
+case class ReviewAuthorisationsPageConfig(
+  requests: Set[AuthorisationRequest],
+  featureFlags: FeatureFlags,
+  submitCall: Call) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String) =
     authorisationRequest.invitation.service match {
@@ -34,5 +37,4 @@ case class ReviewAuthorisationsPageConfig(requests: Set[AuthorisationRequest], f
 
   val clientNamesAreDifferent: Boolean = requests.toSeq.map(_.clientName).distinct.length != 1
 
-  val submitUrl: Call = routes.AgentsInvitationController.submitReviewAuthorisations()
 }
