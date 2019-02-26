@@ -69,7 +69,7 @@ class AgentsErrorController @Inject()(
     }
   }
 
-  def activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
+  val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
       for {
         agentSession <- agentSessionCache.hardGet
