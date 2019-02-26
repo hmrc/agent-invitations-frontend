@@ -49,10 +49,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   val nino = "AB123456A"
   val postCode = Some("BN114AW")
-
   val vrn = "123456"
   val vatRegDate = Some("2010-10-10")
-
   val dob = Some("1990-10-10")
 
   "AgentInvitationJourneyService" when {
@@ -73,6 +71,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           SelectBusinessService(emptyBasket))
       }
     }
+
     "at state SelectPersonalService" should {
       "transition to SelectClientType" in {
         given(SelectPersonalService(availableServices, emptyBasket)) when startJourney should thenGo(
@@ -81,7 +80,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyPersonalClient" in {
         await(
           given(SelectPersonalService(availableServices, emptyBasket)) when selectedPersonalService(authorisedAgent)(
-            HMRCMTDIT)) should thenGo(IdentifyPersonalClient(HMRCMTDIT, Set.empty))
+            HMRCMTDIT)) should thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
       "transition to SelectPersonalService" in {
         await(
@@ -89,25 +88,29 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             "foo")) should thenGo(SelectPersonalService(availableServices, emptyBasket))
       }
     }
+
     "at state SelectBusinessService" should {
       "transition to SelectClientType" in {
         given(SelectBusinessService(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
       }
       "after selectedBusinessService(true) transition to IdentifyBusinessClient" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
-          IdentifyBusinessClient(Set.empty))
+          IdentifyBusinessClient(emptyBasket))
       }
       "after selectedBusinessService(false) transition to SelectClientType" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType(emptyBasket))
       }
     }
+
     "at state IdentifyPersonalClient" should {
+
       def clientName(service: String, clientId: String) = Future(Some("Piglet"))
       def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
+
       "transition to SelectClientType" in {
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(
           SelectClientType(emptyBasket))
@@ -116,7 +119,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ConfirmClientItsa("Piglet", Set.empty))
+          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ConfirmClientItsa("Piglet", emptyBasket))
       }
       "transition to KnownFactsNotMatched when the nino and postcode do not match" in {
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(false))
@@ -124,14 +127,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
           ItsaClient("AB123456A", Some("BN114AW"))) should
-          thenGo(KnownFactNotMatched(Set.empty))
+          thenGo(KnownFactNotMatched(emptyBasket))
       }
       "transition to PendingInvitationExists" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(PendingInvitationExists(personal, Set.empty))
+          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(PendingInvitationExists(personal, emptyBasket))
       }
       "transition to ActiveRElationshipExists" in {
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
@@ -139,34 +142,41 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasNoPendingInvitation)(hasActiveRelationship)(clientName)(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ActiveRelationshipExists(personal, Set.empty))
+          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ActiveRelationshipExists(personal, emptyBasket))
       }
       "transition to ConfirmClientPersonalVat" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
           clientName)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
-          thenGo(ConfirmClientPersonalVat("Piglet", Set.empty))
+          thenGo(ConfirmClientPersonalVat("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
           clientName)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
-          thenGo(KnownFactNotMatched(Set.empty))
+          thenGo(KnownFactNotMatched(emptyBasket))
       }
       "transition to ConfirmClientIrv" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
           authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(ConfirmClientIrv("Piglet", Set.empty))
+          thenGo(ConfirmClientIrv("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched when the nino and dob don't match" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
           authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(KnownFactNotMatched(Set.empty))
+          thenGo(KnownFactNotMatched(emptyBasket))
+      }
+      "transition to ClientNotSignedUp when client not found" in {
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(clientName)(
+          authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
+          thenGo(ClientNotSignedUp(HMRCPIR, emptyBasket))
       }
 
     }
+
     "at state IdentifyBusinessClient" should {
       def clientName(service: String, clientId: String) = Future(Some("Piglet"))
       "transition to SelectClientType" in {
@@ -176,15 +186,16 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
         given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
           authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
-          thenGo(ConfirmClientBusinessVat("Piglet", Set.empty))
+          thenGo(ConfirmClientBusinessVat("Piglet", emptyBasket))
       }
       "transition to KnownFactNotMatched client" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
         given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(clientName)(
           authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
-          thenGo(KnownFactNotMatched(Set.empty))
+          thenGo(KnownFactNotMatched(emptyBasket))
       }
     }
+
     "at ConfirmClientItsa" should {
       "transition to SelectClientType" in {
         given(ConfirmClientItsa("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
@@ -198,6 +209,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
     }
+
     "at ConfirmClientIrv" should {
       "transition to SelectClientType" in {
         given(ConfirmClientIrv("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
@@ -211,6 +223,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
       }
     }
+
     "at ConfirmClientPersonalVat" should {
       "transition to Start" in {
         given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when startJourney should thenGo(
@@ -226,6 +239,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
     }
+
     "at ConfirmClientBusinessVat" should {
       "after startJourney transition to Start" in {
         given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when startJourney should thenGo(
@@ -241,6 +255,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyBusinessClient(emptyBasket))
       }
     }
+
     "at ReviewAuthorisationsPersonal" should {
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       "after startJourney transition to Start" in {
@@ -250,7 +265,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createMultipleInvitations(
           arn: Arn,
           clientType: Option[ClientType],
-          requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(Set.empty)
+          requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
 
         given(ReviewAuthorisationsPersonal(emptyBasket)) when authorisationsReviewed(createMultipleInvitations)(
           getAgentLink)(authorisedAgent)(Confirmation(true)) should
@@ -294,7 +309,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           createMultipleInvitations)(getAgentLink)(authorisedAgent)(Confirmation(false)) should
           thenGo(AllAuthorisationsFailed(Set(authorisationRequestNew)))
       }
-
       "after authorisationsReviewed(false) when some fail transition to AuthorisationReviewedSomeFailed" in {
         val authorisationRequestNew1 = AuthorisationRequest(
           "Mr Client",
@@ -325,6 +339,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SomeAuthorisationsFailed(Set(authorisationRequestNew1, authorisationRequestNew2)))
       }
     }
+
     "at ReviewAuthorisationsBusiness" should {
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       "after startJourney transition to Start" in {
@@ -334,7 +349,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createMultipleInvitations(
           arn: Arn,
           clientType: Option[ClientType],
-          requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(Set.empty)
+          requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
 
         given(ReviewAuthorisationsBusiness(emptyBasket)) when authorisationsReviewed(createMultipleInvitations)(
           getAgentLink)(authorisedAgent)(Confirmation(true)) should

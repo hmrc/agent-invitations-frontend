@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.goto
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -54,6 +55,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class AllAuthorisationsFailed(basket: Basket) extends State
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String]) extends State
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String]) extends State
+    case class ClientNotSignedUp(service: String, basket: Basket) extends State
   }
 
   object Transitions {
@@ -126,7 +128,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             } yield result
           }
           case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => ??? //FIXME
+          case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket))
         }
     }
 
@@ -141,7 +143,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 goto(ConfirmClientPersonalVat(clientName, basket))
               }
             case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => ??? //FIXME
+            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
       case IdentifyBusinessClient(basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
@@ -152,7 +154,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 goto(ConfirmClientBusinessVat(clientName, basket))
               }
             case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => ??? //FIXME
+            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
     }
 
@@ -166,7 +168,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               goto(ConfirmClientIrv(clientName, basket))
             }
           case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => ??? //FIXME
+          case None        => goto(ClientNotSignedUp(HMRCPIR, basket)) //dubious?
         }
     }
 
@@ -206,7 +208,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
           if (confirmation.choice)
             goto(
               SelectPersonalService(
-                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT), //FIXME shall we remove existing service from the list?
+                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT), //shall we remove existing service from the list?
                 basket))
           else
             getAgentLink(agent.arn, Some(personal)).flatMap { invitationLink =>

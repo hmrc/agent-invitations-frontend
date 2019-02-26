@@ -36,6 +36,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ReviewAuthorisationsBusinessFormat = Json.format[ReviewAuthorisationsBusiness]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
+  val ClientNotSignedUp = Json.format[ClientNotSignedUp]
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
@@ -59,6 +60,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: KnownFactNotMatched          => KnownFactNotMatchedFormat.writes(s)
     case s: SomeAuthorisationsFailed     => SomeAuthorisationsFailedFormat.writes(s)
     case s: AllAuthorisationsFailed      => AllAuthorisationsFailedFormat.writes(s)
+    case s: ClientNotSignedUp            => ClientNotSignedUp.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -78,6 +80,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "KnownFactNotMatched"          => KnownFactNotMatchedFormat.reads(properties)
     case "SomeAuthorisationsFailed"     => SomeAuthorisationsFailedFormat.reads(properties)
     case "AllAuthorisationsFailed"      => AllAuthorisationsFailedFormat.reads(properties)
+    case "ClientNotSignedUp"            => ClientNotSignedUp.reads(properties)
     case _                              => JsError(s"Unknown state name $stateName")
   }
 
