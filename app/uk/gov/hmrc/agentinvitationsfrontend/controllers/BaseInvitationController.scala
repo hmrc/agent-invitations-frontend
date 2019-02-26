@@ -721,7 +721,14 @@ abstract class BaseInvitationController(
 
   def selectServicePage(form: Form[String] = ServiceTypeForm.form, enabledServices: Set[String], basketFlag: Boolean)(
     implicit request: Request[_]): Appendable =
-    select_service(form, SelectServicePageConfig(basketFlag, featureFlags, enabledServices, submitServicePersonalCall))
+    select_service(
+      form,
+      SelectServicePageConfig(
+        basketFlag,
+        featureFlags,
+        enabledServices,
+        submitServicePersonalCall,
+        routes.AgentsInvitationController.showClientType()))
 
   def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
