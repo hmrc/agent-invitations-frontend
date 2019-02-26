@@ -134,7 +134,13 @@ class AgentsInvitationController @Inject()(
               agentConfirmationForm("error.confirm-client.required")
                 .bindFromRequest()
                 .fold(
-                  formWithErrors => Ok(confirm_client(clientName, formWithErrors, identifyClientCall.url)),
+                  formWithErrors =>
+                    Ok(
+                      confirm_client(
+                        clientName,
+                        formWithErrors,
+                        identifyClientCall.url,
+                        routes.AgentsInvitationController.submitConfirmClient())),
                   data =>
                     if (data.choice) {
                       maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, clientId, service, existingSession)
@@ -178,7 +184,10 @@ class AgentsInvitationController @Inject()(
           case Some(cache) if cache.requests.nonEmpty =>
             Ok(
               review_authorisations(
-                ReviewAuthorisationsPageConfig(cache.requests, featureFlags),
+                ReviewAuthorisationsPageConfig(
+                  cache.requests,
+                  featureFlags,
+                  routes.AgentsInvitationController.submitReviewAuthorisations()),
                 agentConfirmationForm("error.review-authorisation.required"),
                 backLinkForReviewAuthorisationsPage(cache.service.getOrElse(""))
               ))
@@ -197,7 +206,10 @@ class AgentsInvitationController @Inject()(
           .fold(
             formWithErrors => {
               Future.successful(Ok(review_authorisations(
-                ReviewAuthorisationsPageConfig(sessionCache.requests, featureFlags),
+                ReviewAuthorisationsPageConfig(
+                  sessionCache.requests,
+                  featureFlags,
+                  routes.AgentsInvitationController.submitReviewAuthorisations()),
                 formWithErrors,
                 backLinkForReviewAuthorisationsPage(sessionCache.service.getOrElse(""))
               )))

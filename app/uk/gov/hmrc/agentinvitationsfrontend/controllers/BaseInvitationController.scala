@@ -711,7 +711,7 @@ abstract class BaseInvitationController(
 
   def clientTypePage(form: Form[ClientType] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
     implicit request: Request[_]): Appendable =
-    client_type(form, ClientTypePageConfig(Some(backLinkUrl)))
+    client_type(form, ClientTypePageConfig(Some(backLinkUrl), routes.AgentsInvitationController.submitClientType()))
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
@@ -721,7 +721,7 @@ abstract class BaseInvitationController(
 
   def selectServicePage(form: Form[String] = ServiceTypeForm.form, enabledServices: Set[String], basketFlag: Boolean)(
     implicit request: Request[_]): Appendable =
-    select_service(form, SelectServicePageConfig(basketFlag, featureFlags, enabledServices))
+    select_service(form, SelectServicePageConfig(basketFlag, featureFlags, enabledServices, submitServicePersonalCall))
 
   def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
@@ -742,7 +742,11 @@ abstract class BaseInvitationController(
   def notMatchedCall: Call = routes.AgentsErrorController.notMatched()
 
   def showConfirmClientPage(name: Option[String], backLinkUrl: String)(implicit request: Request[_]): Appendable =
-    confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)
+    confirm_client(
+      name.getOrElse(""),
+      agentConfirmationForm("error.confirm-client.required"),
+      backLinkUrl,
+      routes.AgentsInvitationController.submitConfirmClient())
 
   protected def backLinkForConfirmCancelPage(service: String): String =
     if (service == HMRCPIR) identifyClientCall.url else confirmClientCall.url

@@ -17,8 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
+import play.api.mvc.Call
 
-case class ClientTypePageConfig(backLinkUrl: Option[String])(implicit messages: Messages) {
+case class ClientTypePageConfig(backLinkUrl: Option[String], submitCall: Call)(implicit messages: Messages) {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))

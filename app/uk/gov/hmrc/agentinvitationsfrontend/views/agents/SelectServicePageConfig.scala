@@ -21,8 +21,11 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
-case class SelectServicePageConfig(basketFlag: Boolean, featureFlags: FeatureFlags, services: Set[String])(
-  implicit messages: Messages) {
+case class SelectServicePageConfig(
+  basketFlag: Boolean,
+  featureFlags: FeatureFlags,
+  services: Set[String],
+  submitCall: Call)(implicit messages: Messages) {
 
   val enabledPersonalServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()
@@ -38,9 +41,5 @@ case class SelectServicePageConfig(basketFlag: Boolean, featureFlags: FeatureFla
 
     map.toSeq
   }
-
-  val submitCall: Call = routes.AgentsInvitationController.submitSelectPersonalService()
-
-  val submitCallDeAuth: Call = routes.AgentLedDeAuthController.submitSelectPersonalService()
 
 }
