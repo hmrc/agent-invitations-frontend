@@ -62,7 +62,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     import States._
 
     val startJourney = Transition {
-      case _ => goto(SelectClientType(Set.empty))
+      case _ => goto(root)
     }
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {

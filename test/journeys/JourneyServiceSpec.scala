@@ -100,6 +100,31 @@ class JourneyServiceSpec extends UnitSpec {
     }
   }
 
+  "return current state and breadcrumbs" in {
+    await(testService.save(("foo", Nil)))
+    await(testService.save(("bar", List("foo"))))
+    await(testService.save(("zoo", List("bar", "foo"))))
+    await(testService.fetch) shouldBe Some(("zoo", List("bar", "foo")))
+  }
+
+  "step back and return previous state and breadcrumbs" in {
+    await(testService.save(("foo", Nil)))
+    await(testService.save(("bar", List("foo"))))
+    await(testService.fetch) shouldBe Some(("bar", List("foo")))
+    await(testService.stepBack) shouldBe Some(("foo", Nil))
+    await(testService.stepBack) shouldBe None
+  }
+
+  "clean breadcrumbs" in {
+    await(testService.save(("foo", Nil)))
+    await(testService.save(("bar", List("foo"))))
+    await(testService.fetch) shouldBe Some(("bar", List("foo")))
+    await(testService.cleanBreadcrumbs) shouldBe List("foo")
+    await(testService.fetch) shouldBe Some(("bar", Nil))
+    await(testService.cleanBreadcrumbs) shouldBe Nil
+    await(testService.fetch) shouldBe Some(("bar", Nil))
+  }
+
 }
 
 class TestJourneyModel extends JourneyModel {

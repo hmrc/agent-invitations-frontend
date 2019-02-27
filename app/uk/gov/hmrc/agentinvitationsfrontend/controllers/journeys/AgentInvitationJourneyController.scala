@@ -70,18 +70,21 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
   val agentsRoot = simpleAction(Transitions.startJourney)(redirect)
-
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(display)
   val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
 
-  val showSelectService = authorisedAgentCurrentStateAction(display)
+  val showSelectService = authorisedAgentActionRenderStateWhen {
+    case _: SelectPersonalService | _: SelectBusinessService =>
+  }
 
   val submitPersonalSelectService =
     authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedPersonalService)
   val submitBusinessSelectService =
     authorisedAgentActionWithForm(SelectBusinessServiceForm)(Transitions.selectedBusinessService)
 
-  val showIdentifyClient = authorisedAgentCurrentStateAction(display)
+  val showIdentifyClient = authorisedAgentActionRenderStateWhen {
+    case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>
+  }
 
   val submitIdentifyItsaClient =
     authorisedAgentActionWithFormWithHC(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)) {
@@ -103,11 +106,19 @@ class AgentInvitationJourneyController @Inject()(
         invitationsService.getClientNameByService)
     }
 
-  val showConfirmClient = authorisedAgentCurrentStateAction(display)
+  val showConfirmClient = authorisedAgentActionRenderStateWhen {
+    case _: ConfirmClientItsa        =>
+    case _: ConfirmClientPersonalVat =>
+    case _: ConfirmClientBusinessVat =>
+    case _: ConfirmClientIrv         =>
+  }
 
   val submitConfirmClient = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)
 
-  val showReviewAuthorisations = authorisedAgentCurrentStateAction(display)
+  val showReviewAuthorisations = authorisedAgentActionRenderStateWhen {
+    case _: ReviewAuthorisationsPersonal =>
+    case _: ReviewAuthorisationsBusiness =>
+  }
 
   val authorisationsReviewed = authorisedAgentActionWithFormWithHCWithRequest(ReviewAuthorisationsForm) {
     implicit hc => implicit request =>
@@ -115,11 +126,11 @@ class AgentInvitationJourneyController @Inject()(
         invitationsService.createAgentLink)
   }
 
-  val showInvitationSent = authorisedAgentCurrentStateAction(display)
-  val showNotMatched = authorisedAgentCurrentStateAction(display)
-  val showSomeAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
-  val showAllAuthorisationsFailed = authorisedAgentCurrentStateAction(display)
-  val showClientNotSignedUp = authorisedAgentCurrentStateAction(display)
+  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal             => }
+  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                    => }
+  val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed => }
+  val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed   => }
+  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp               => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
@@ -137,6 +148,9 @@ class AgentInvitationJourneyController @Inject()(
     case InvitationSentPersonal(_, _)    => routes.AgentInvitationJourneyController.showInvitationSent()
     case InvitationSentBusiness(_, _)    => routes.AgentInvitationJourneyController.showInvitationSent()
     case KnownFactNotMatched(_)          => routes.AgentInvitationJourneyController.showNotMatched()
+    case SomeAuthorisationsFailed(_)     => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
+    case AllAuthorisationsFailed(_)      => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
+    case ClientNotSignedUp(_, _)         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
     case _                               => throw new Exception(s"Link not found for $state")
   }
 
@@ -148,13 +162,20 @@ class AgentInvitationJourneyController @Inject()(
     implicit request =>
       state match {
         case SelectClientType(_) =>
-          Ok(client_type(formWithErrors.or(SelectClientTypeForm), ClientTypePageConfig(backLinkFor(breadcrumbs))))
+          Ok(client_type(
+            formWithErrors.or(SelectClientTypeForm),
+            ClientTypePageConfig(backLinkFor(breadcrumbs), routes.AgentInvitationJourneyController.submitClientType())))
 
         case SelectPersonalService(services, basket) =>
           Ok(
             select_service(
               formWithErrors.or(SelectPersonalServiceForm),
-              SelectServicePageConfig(basket.nonEmpty, featureFlags, services)))
+              SelectServicePageConfig(
+                basket.nonEmpty,
+                featureFlags,
+                services,
+                routes.AgentInvitationJourneyController.submitPersonalSelectService())
+            ))
 
         case SelectBusinessService(basket) =>
           Ok(
@@ -207,33 +228,44 @@ class AgentInvitationJourneyController @Inject()(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              routes.AgentInvitationJourneyController.submitConfirmClient()
+            ))
 
         case ConfirmClientIrv(clientName, _) =>
           Ok(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              routes.AgentInvitationJourneyController.submitConfirmClient()
+            ))
 
         case ConfirmClientPersonalVat(clientName, _) =>
           Ok(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              routes.AgentInvitationJourneyController.submitConfirmClient()
+            ))
 
         case ConfirmClientBusinessVat(clientName, _) =>
           Ok(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)))
+              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              routes.AgentInvitationJourneyController.submitConfirmClient()
+            ))
 
         case ReviewAuthorisationsPersonal(basket) =>
           Ok(
             review_authorisations(
-              ReviewAuthorisationsPageConfig(basket, featureFlags),
+              ReviewAuthorisationsPageConfig(
+                basket,
+                featureFlags,
+                routes.AgentInvitationJourneyController.authorisationsReviewed()),
               formWithErrors.or(ReviewAuthorisationsForm),
               backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
             ))
@@ -241,7 +273,10 @@ class AgentInvitationJourneyController @Inject()(
         case ReviewAuthorisationsBusiness(basket) =>
           Ok(
             review_authorisations(
-              ReviewAuthorisationsPageConfig(basket, featureFlags),
+              ReviewAuthorisationsPageConfig(
+                basket,
+                featureFlags,
+                routes.AgentInvitationJourneyController.authorisationsReviewed()),
               formWithErrors.or(ReviewAuthorisationsForm),
               backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
             ))

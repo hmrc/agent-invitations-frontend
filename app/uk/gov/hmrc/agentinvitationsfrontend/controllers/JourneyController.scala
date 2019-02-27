@@ -24,7 +24,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisedAgent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
+import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.ClassTag
 
 /**
   * Base controller for journeys based on Finite State Machine.
@@ -35,7 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *
   * and few action creation helpers:
   *   - simpleAction
-  *   - authorisedAgentCurrentStateAction
+  *   - authorisedAgentActionRenderStateWhen
   *   - authorisedAgentAction
   *   - authorisedAgentActionWithHC
   *   - authorisedAgentActionWithForm
@@ -85,15 +87,23 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       apply(transition, afterTransition)
     }
 
-  protected final def authorisedAgentCurrentStateAction(routeFactory: RouteFactory): Action[AnyContent] =
+  protected final def authorisedAgentActionRenderStateWhen(filter: PartialFunction[State, Unit]): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (_, _) =>
-        journeyService.currentState.map {
-          case Some(stateAndBreadcrumbs) => routeFactory(stateAndBreadcrumbs)(request)
-          case None                      => renderState(journeyService.model.root, Nil, None)(request)
-        }
+        journeyService.currentState
+          .flatMap(findRoute(filter))
+          .map(_(request))
       }
     }
+
+  private def findRoute(filter: PartialFunction[State, Unit])(stateAndBreadcrumbsOpt: Option[StateAndBreadcrumbs])(
+    implicit hc: HeaderCarrier,
+    request: Request[_]): Future[Route] = stateAndBreadcrumbsOpt match {
+    case None => Future.successful(renderState(journeyService.model.root, Nil, None))
+    case Some((state, breadcrumbs)) =>
+      if (filter.isDefinedAt(state)) Future.successful(renderState(state, breadcrumbs, None))
+      else journeyService.stepBack.flatMap(findRoute(filter))
+  }
 
   protected final def authorisedAgentAction(transition: AuthorisedAgent => Transition)(
     routeFactory: RouteFactory): Action[AnyContent] =

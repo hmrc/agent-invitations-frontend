@@ -133,6 +133,30 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         journeyState.get shouldBe Some(
           (SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket))))
       }
+
+      "go back to the select service page" in {
+        journeyState.set(
+          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket))
+        )
+        val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage(
+            "generic.title",
+            htmlEscapedMessage("select-service.header"),
+            htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("personal-select-service.itsa"),
+          htmlEscapedMessage("personal-select-service.personal-income-viewer"),
+          htmlEscapedMessage("select-service.vat")
+        )
+        journeyState.get should have[State](
+          SelectPersonalService(availableServices, emptyBasket),
+          List(SelectClientType(emptyBasket)))
+      }
     }
 
     "POST /agents/select-personal-service" should {
@@ -271,8 +295,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
-        givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
-        givenCheckRelationshipItsaWithStatus(arn, vrn, 404)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, "202949960", HMRCMTDVAT)
+        givenCheckRelationshipVatWithStatus(arn, "202949960", 404)
         givenClientDetails(Vrn("202949960"))
 
         journeyState.set(
@@ -336,9 +360,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
-        givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
-        givenCheckRelationshipItsaWithStatus(arn, vrn, 404)
-        givenCitizenDetailsAreKnownFor(validNino.value, "Virginia", "Woolf")
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
+        givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
+        givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
 
         journeyState.set(
           IdentifyPersonalClient(HMRCPIR, emptyBasket),
