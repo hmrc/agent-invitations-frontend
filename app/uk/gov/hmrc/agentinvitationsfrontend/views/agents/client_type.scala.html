@@ -29,7 +29,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(config.backLinkUrl.getOrElse(agentServicesCall))
+    @back_link(config.backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))

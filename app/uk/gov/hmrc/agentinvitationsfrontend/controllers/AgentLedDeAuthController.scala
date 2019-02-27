@@ -279,7 +279,7 @@ class AgentLedDeAuthController @Inject()(
   override def clientTypePage(form: Form[ClientType], backLinkUrl: String)(
     implicit request: Request[_]): HtmlFormat.Appendable =
     cancelAuthorisation
-      .client_type(form, ClientTypePageConfig(None, routes.AgentLedDeAuthController.submitClientType()))
+      .client_type(form, ClientTypePageConfig(backLinkUrl, routes.AgentLedDeAuthController.submitClientType()))
 
   override def selectServiceCall: Call = routes.AgentLedDeAuthController.showSelectService()
 
