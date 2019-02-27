@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(authRequestsExist: Boolean, service: String, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean, service: String, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
@@ -33,11 +33,11 @@
 
     @if(authRequestsExist && !fromFastTrack) {
 
-   <a href=@routes.AgentsInvitationController.showReviewAuthorisations() class="button">@Messages("active-authorisation-exists.return")</a>
+   <a href=@reviewAuthsCall class="button">@Messages("active-authorisation-exists.return")</a>
   }else {
 
      @if(!fromFastTrack) {
-      <div><a href=@routes.AgentsInvitationController.showClientType() class="button">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+      <div><a href=@clientTypeCall class="button">@Messages("pending-authorisation-exists.new-request.link")</a></div>
      }
   }
 
