@@ -29,4 +29,13 @@ trait StateMatchers[S] {
       }
     }
 
+  def thenMatch(statePF: PartialFunction[S,Unit]): Matcher[(S, List[S])] =
+    new Matcher[(S, List[S])] {
+      override def apply(result: (S, List[S])): MatchResult = result match {
+        case (thisState, _) if !statePF.isDefinedAt(thisState) =>
+          MatchResult(false, s"Matching state has been expected but got state $thisState", s"")
+        case _ => MatchResult(true, "", s"")
+      }
+    }
+
 }

@@ -118,7 +118,17 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when identifiedItsaClient(checkPostcodeMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
-          ItsaClient("AB123456A", Some("BN114AW"))) should thenGo(ConfirmClientItsa(AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), emptyBasket))
+          ItsaClient("AB123456A", Some("BN114AW"))) should matchPattern {
+          case (
+              ConfirmClientItsa(
+                AuthorisationRequest(
+                  "Piglet",
+                  ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW")), personal, HMRCMTDIT, "ni"),
+                  AuthorisationRequest.NEW,
+                  _),
+                `emptyBasket`),
+              _) =>
+        }
       }
       "transition to KnownFactsNotMatched when the nino and postcode do not match" in {
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(false))
@@ -149,7 +159,17 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
           VatClient("123456", Some("2010-10-10"))) should
-          thenGo(ConfirmClientPersonalVat(AuthorisationRequest("Piglet",VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket))
+          matchPattern {
+            case (
+                ConfirmClientPersonalVat(
+                  AuthorisationRequest(
+                    "Piglet",
+                    VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")), HMRCMTDVAT, "vrn"),
+                    AuthorisationRequest.NEW,
+                    _),
+                  `emptyBasket`),
+                _) =>
+          }
       }
       "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
@@ -178,8 +198,17 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
-          IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(ConfirmClientIrv(AuthorisationRequest("Piglet",PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))), emptyBasket))
+          IrvClient("AB123456A", Some("1990-10-10"))) should matchPattern {
+          case (
+              ConfirmClientIrv(
+                AuthorisationRequest(
+                  "Piglet",
+                  PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")), personal, HMRCPIR, "ni"),
+                  AuthorisationRequest.NEW,
+                  _),
+                `emptyBasket`),
+              _) =>
+        }
       }
       "transition to KnownFactNotMatched when the nino and dob don't match" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
@@ -228,8 +257,17 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
         given(IdentifyBusinessClient(emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(authorisedAgent)(
-          VatClient("123456", Some("2010-10-10"))) should
-          thenGo(ConfirmClientBusinessVat(AuthorisationRequest("Piglet",VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket))
+          VatClient("123456", Some("2010-10-10"))) should matchPattern {
+          case (
+              ConfirmClientBusinessVat(
+                AuthorisationRequest(
+                  "Piglet",
+                  VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")), HMRCMTDVAT, "vrn"),
+                  AuthorisationRequest.NEW,
+                  _),
+                `emptyBasket`),
+              _) =>
+        }
       }
       "transition to KnownFactNotMatched client" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(false))
@@ -265,58 +303,85 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ConfirmClientItsa" should {
       "transition to SelectClientType" in {
-        given(ConfirmClientItsa(AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
+        given(
+          ConfirmClientItsa(
+            AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW")))),
+            emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ReviewAuthorisationsPersonal" in {
-        given(ConfirmClientItsa(AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
+        given(
+          ConfirmClientItsa(
+            AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW")))),
+            emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should thenMatch { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => }
       }
       "transition to SelectPersonalService" in {
-        given(ConfirmClientItsa(AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
+        given(
+          ConfirmClientItsa(
+            AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW")))),
+            emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
     }
 
     "at ConfirmClientIrv" should {
       "transition to SelectClientType" in {
-        given(ConfirmClientIrv(AuthorisationRequest("Piglet",PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))), emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
+        given(
+          ConfirmClientIrv(
+            AuthorisationRequest("Piglet", PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))),
+            emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ReviewAuthorisationsPersonal" in {
-        given(ConfirmClientIrv(AuthorisationRequest("Piglet",PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
+        given(
+          ConfirmClientIrv(
+            AuthorisationRequest("Piglet", PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))),
+            emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
+          thenMatch { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => }
       }
       "transition to SelectPersonalService" in {
-        given(ConfirmClientIrv(AuthorisationRequest("Piglet",PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
+        given(
+          ConfirmClientIrv(
+            AuthorisationRequest("Piglet", PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10")))),
+            emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
       }
     }
 
     "at ConfirmClientPersonalVat" should {
       "transition to Start" in {
-        given(ConfirmClientPersonalVat(AuthorisationRequest("Piglet",VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
+        given(ConfirmClientPersonalVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ClientConfirmedPersonal" in {
-        given(ConfirmClientPersonalVat(AuthorisationRequest("Piglet",VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ReviewAuthorisationsPersonal(emptyBasket))
+        given(ConfirmClientPersonalVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
+          thenMatch { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => }
       }
       "transition to PersonalServiceSelected" in {
-        given(ConfirmClientPersonalVat(AuthorisationRequest("Piglet",VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(
-          Confirmation(false)) should
+        given(ConfirmClientPersonalVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
     }
 
     "at ConfirmClientBusinessVat" should {
       "after start transition to Start" in {
-        given(ConfirmClientBusinessVat(AuthorisationRequest("Piglet",VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
+        given(ConfirmClientBusinessVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "after clientConfirmed(true) transition to ReviewAuthorisationsBusiness" in {
-        given(ConfirmClientBusinessVat(AuthorisationRequest("Piglet",VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(ReviewAuthorisationsBusiness(emptyBasket))
+        given(ConfirmClientBusinessVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
+          thenMatch { case ReviewAuthorisationsBusiness(basket) if basket.nonEmpty => }
       }
       "after clientConfirmed(false) transition to IdentifyBusinessClient" in {
-        given(ConfirmClientBusinessVat(AuthorisationRequest("Piglet",VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))), emptyBasket)) when clientConfirmed(authorisedAgent)(
-          Confirmation(false)) should
+        given(ConfirmClientBusinessVat(
+          AuthorisationRequest("Piglet", VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
+          emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyBusinessClient(emptyBasket))
       }
     }

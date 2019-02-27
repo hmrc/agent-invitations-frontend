@@ -19,8 +19,10 @@ import play.api.libs.json.{Format, JsArray, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, ClientType, ItsaInvitation, Postcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -77,40 +79,53 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe IdentifyBusinessClient(Set.empty)
       }
       "ConfirmClientItsa" in {
-        Json.toJson(ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), Set.empty)) shouldBe Json.obj(
-          "state"      -> "ConfirmClientItsa",
-          "properties" -> Json.obj("clientName" -> "Piglet", "basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ConfirmClientItsa", "properties": {"basket": [], "clientName": "Piglet"}}""")
-          .as[State] shouldBe ConfirmClientItsa("Piglet", Set.empty)
+        val state = ConfirmClientItsa(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmClientItsa","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
       }
       "ConfirmClientIrv" in {
-        Json.toJson(ConfirmClientIrv("Piglet", Set.empty)) shouldBe Json.obj(
-          "state"      -> "ConfirmClientIrv",
-          "properties" -> Json.obj("clientName" -> "Piglet", "basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ConfirmClientIrv", "properties": {"basket": [], "clientName": "Piglet"}}""")
-          .as[State] shouldBe ConfirmClientIrv("Piglet", Set.empty)
+        val state = ConfirmClientIrv(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmClientIrv","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"PirInvitation","data":{"clientType":"personal","service":"PERSONAL-INCOME-RECORD","clientIdentifier":"AB123456A","clientIdentifierType":"ni","dob":{"value":"1990-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+
       }
       "ConfirmClientPersonalVat" in {
-        Json.toJson(ConfirmClientPersonalVat("Piglet", Set.empty)) shouldBe Json.obj(
-          "state"      -> "ConfirmClientPersonalVat",
-          "properties" -> Json.obj("clientName" -> "Piglet", "basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ConfirmClientPersonalVat", "properties": {"basket": [], "clientName": "Piglet"}}""")
-          .as[State] shouldBe ConfirmClientPersonalVat("Piglet", Set.empty)
+        val state = ConfirmClientPersonalVat(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmClientPersonalVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
       }
       "ConfirmClientBusinessVat" in {
-        Json.toJson(ConfirmClientBusinessVat("Piglet", Set.empty)) shouldBe Json.obj(
-          "state"      -> "ConfirmClientBusinessVat",
-          "properties" -> Json.obj("clientName" -> "Piglet", "basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"ConfirmClientBusinessVat", "properties": {"basket": [], "clientName": "Piglet"}}""")
-          .as[State] shouldBe ConfirmClientBusinessVat("Piglet", Set.empty)
+        val state = ConfirmClientBusinessVat(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
       }
       "ReviewAuthorisationsPersonal" in {
         Json.toJson(ReviewAuthorisationsPersonal(Set.empty)) shouldBe Json.obj(
