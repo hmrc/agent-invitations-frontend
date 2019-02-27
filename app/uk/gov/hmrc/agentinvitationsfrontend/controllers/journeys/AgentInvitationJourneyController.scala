@@ -154,8 +154,8 @@ class AgentInvitationJourneyController @Inject()(
     case _                               => throw new Exception(s"Link not found for $state")
   }
 
-  private def backLinkFor(breadcrumbs: List[State]): Option[String] =
-    breadcrumbs.headOption.map(getCallFor).map(_.url)
+  private def backLinkFor(breadcrumbs: List[State]): String =
+    breadcrumbs.headOption.map(getCallFor).getOrElse(routes.AgentInvitationJourneyController.showClientType()).url
 
   /* Here we decide how to render or where to redirect after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]]): Route = {
@@ -174,7 +174,8 @@ class AgentInvitationJourneyController @Inject()(
                 basket.nonEmpty,
                 featureFlags,
                 services,
-                routes.AgentInvitationJourneyController.submitPersonalSelectService())
+                routes.AgentInvitationJourneyController.submitPersonalSelectService(),
+                backLinkFor(breadcrumbs))
             ))
 
         case SelectBusinessService(basket) =>
@@ -193,7 +194,7 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
               featureFlags.showKfcMtdIt,
               routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs))
             ))
 
         case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
@@ -202,7 +203,7 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
               routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs))
             ))
 
         case IdentifyPersonalClient(Services.HMRCPIR, _) =>
@@ -211,7 +212,7 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
               featureFlags.showKfcPersonalIncome,
               routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs))
             ))
 
         case IdentifyBusinessClient(_) =>
@@ -220,7 +221,7 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
               routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs))
             ))
 
         case ConfirmClientItsa(clientName, _) =>
@@ -228,7 +229,7 @@ class AgentInvitationJourneyController @Inject()(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
@@ -237,7 +238,7 @@ class AgentInvitationJourneyController @Inject()(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
@@ -246,7 +247,7 @@ class AgentInvitationJourneyController @Inject()(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
@@ -255,7 +256,7 @@ class AgentInvitationJourneyController @Inject()(
             confirm_client(
               clientName,
               formWithErrors.or(ConfirmClientForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
@@ -267,7 +268,7 @@ class AgentInvitationJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationJourneyController.authorisationsReviewed()),
               formWithErrors.or(ReviewAuthorisationsForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs)
             ))
 
         case ReviewAuthorisationsBusiness(basket) =>
@@ -278,7 +279,7 @@ class AgentInvitationJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationJourneyController.authorisationsReviewed()),
               formWithErrors.or(ReviewAuthorisationsForm),
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url)
+              backLinkFor(breadcrumbs)
             ))
 
         case InvitationSentPersonal(invitationLink, continueUrl) =>
@@ -317,7 +318,7 @@ class AgentInvitationJourneyController @Inject()(
           Ok(
             pending_authorisation_exists(
               basket.nonEmpty,
-              backLinkFor(breadcrumbs).getOrElse(routes.AgentInvitationJourneyController.showClientType().url),
+              backLinkFor(breadcrumbs),
               fromFastTrack = false))
 
         case ClientNotSignedUp(service, basket) =>
