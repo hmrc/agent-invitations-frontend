@@ -711,7 +711,7 @@ abstract class BaseInvitationController(
 
   def clientTypePage(form: Form[ClientType] = ClientTypeForm.form, backLinkUrl: String = agentServicesAccountUrl)(
     implicit request: Request[_]): Appendable =
-    client_type(form, ClientTypePageConfig(Some(backLinkUrl), routes.AgentsInvitationController.submitClientType()))
+    client_type(form, ClientTypePageConfig(backLinkUrl, routes.AgentsInvitationController.submitClientType()))
 
   def selectServiceCall: Call = routes.AgentsInvitationController.showSelectService()
 
