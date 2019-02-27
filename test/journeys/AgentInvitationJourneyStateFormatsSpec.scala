@@ -19,8 +19,9 @@ import play.api.libs.json.{Format, JsArray, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, ClientType, ItsaInvitation, Postcode}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
@@ -76,7 +77,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe IdentifyBusinessClient(Set.empty)
       }
       "ConfirmClientItsa" in {
-        Json.toJson(ConfirmClientItsa("Piglet", Set.empty)) shouldBe Json.obj(
+        Json.toJson(ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"),Some(Postcode("BN114AW")))), Set.empty)) shouldBe Json.obj(
           "state"      -> "ConfirmClientItsa",
           "properties" -> Json.obj("clientName" -> "Piglet", "basket" -> JsArray())
         )

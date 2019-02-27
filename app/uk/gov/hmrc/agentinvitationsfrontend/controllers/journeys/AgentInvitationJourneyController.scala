@@ -231,37 +231,37 @@ class AgentInvitationJourneyController @Inject()(
             )
           )
 
-        case ConfirmClientItsa(clientName, _) =>
+        case ConfirmClientItsa(authorisationRequest, _) =>
           Ok(
             confirm_client(
-              clientName,
+              authorisationRequest.clientName,
               formWithErrors.or(ConfirmClientForm),
               backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
-        case ConfirmClientIrv(clientName, _) =>
+        case ConfirmClientIrv(authorisationRequest, _) =>
           Ok(
             confirm_client(
-              clientName,
+              authorisationRequest.clientName,
               formWithErrors.or(ConfirmClientForm),
               backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
-        case ConfirmClientPersonalVat(clientName, _) =>
+        case ConfirmClientPersonalVat(authorisationRequest, _) =>
           Ok(
             confirm_client(
-              clientName,
+              authorisationRequest.clientName,
               formWithErrors.or(ConfirmClientForm),
               backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
-        case ConfirmClientBusinessVat(clientName, _) =>
+        case ConfirmClientBusinessVat(authorisationRequest, _) =>
           Ok(
             confirm_client(
-              clientName,
+              authorisationRequest.clientName,
               formWithErrors.or(ConfirmClientForm),
               backLinkFor(breadcrumbs),
               routes.AgentInvitationJourneyController.submitConfirmClient()
