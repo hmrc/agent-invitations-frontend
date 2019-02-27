@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States.{PendingInvitationExists, _}
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
@@ -36,12 +36,13 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ReviewAuthorisationsBusinessFormat = Json.format[ReviewAuthorisationsBusiness]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
+  val PendingInvitationExistsFormat = Json.format[PendingInvitationExists]
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
   val SomeAuthorisationsFailedFormat = Json.format[SomeAuthorisationsFailed]
   val AllAuthorisationsFailedFormat = Json.format[AllAuthorisationsFailed]
-  val ClientNotSignedUp = Json.format[ClientNotSignedUp]
+  val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType             => SelectClientTypeFormat.writes(s)
@@ -60,7 +61,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: KnownFactNotMatched          => KnownFactNotMatchedFormat.writes(s)
     case s: SomeAuthorisationsFailed     => SomeAuthorisationsFailedFormat.writes(s)
     case s: AllAuthorisationsFailed      => AllAuthorisationsFailedFormat.writes(s)
-    case s: ClientNotSignedUp            => ClientNotSignedUp.writes(s)
+    case s: ClientNotSignedUp            => ClientNotSignedUpFormat.writes(s)
+    case s: PendingInvitationExists      => PendingInvitationExistsFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -80,7 +82,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "KnownFactNotMatched"          => KnownFactNotMatchedFormat.reads(properties)
     case "SomeAuthorisationsFailed"     => SomeAuthorisationsFailedFormat.reads(properties)
     case "AllAuthorisationsFailed"      => AllAuthorisationsFailedFormat.reads(properties)
-    case "ClientNotSignedUp"            => ClientNotSignedUp.reads(properties)
+    case "ClientNotSignedUp"            => ClientNotSignedUpFormat.reads(properties)
+    case "PendingInvitationExists"      => PendingInvitationExistsFormat.reads(properties)
     case _                              => JsError(s"Unknown state name $stateName")
   }
 

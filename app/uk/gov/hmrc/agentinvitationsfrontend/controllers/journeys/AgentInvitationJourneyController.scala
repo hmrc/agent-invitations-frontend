@@ -17,10 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
 
 import javax.inject.{Inject, Named, Singleton}
+
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
-import play.api.mvc.Call
+import play.api.mvc.{Action, Call}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -69,7 +70,7 @@ class AgentInvitationJourneyController @Inject()(
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
-  val agentsRoot = simpleAction(journeyService.model.start)(redirect)
+  val agentsRoot = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(display)
   val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
 
@@ -126,11 +127,12 @@ class AgentInvitationJourneyController @Inject()(
         invitationsService.createAgentLink)
   }
 
-  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal             => }
-  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                    => }
-  val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed => }
-  val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed   => }
-  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp               => }
+  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal              => }
+  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                     => }
+  val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed  => }
+  val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed    => }
+  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                => }
+  val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
@@ -151,13 +153,14 @@ class AgentInvitationJourneyController @Inject()(
     case SomeAuthorisationsFailed(_)     => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case AllAuthorisationsFailed(_)      => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
     case ClientNotSignedUp(_, _)         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
+    case PendingInvitationExists(_, _)   => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
     case _                               => throw new Exception(s"Link not found for $state")
   }
 
   private def backLinkFor(breadcrumbs: List[State]): String =
     breadcrumbs.headOption.map(getCallFor).getOrElse(routes.AgentInvitationJourneyController.showClientType()).url
 
-  /* Here we decide how to render or where to redirect after state transition */
+  /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]]): Route = {
     implicit request =>
       state match {
@@ -194,8 +197,9 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
               featureFlags.showKfcMtdIt,
               routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
-              backLinkFor(breadcrumbs))
-            ))
+              backLinkFor(breadcrumbs)
+            )
+          )
 
         case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
           Ok(
@@ -203,8 +207,9 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
               routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-              backLinkFor(breadcrumbs))
-            ))
+              backLinkFor(breadcrumbs)
+            )
+          )
 
         case IdentifyPersonalClient(Services.HMRCPIR, _) =>
           Ok(
@@ -212,8 +217,9 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
               featureFlags.showKfcPersonalIncome,
               routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
-              backLinkFor(breadcrumbs))
-            ))
+              backLinkFor(breadcrumbs)
+            )
+          )
 
         case IdentifyBusinessClient(_) =>
           Ok(
@@ -221,8 +227,9 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
               routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-              backLinkFor(breadcrumbs))
-            ))
+              backLinkFor(breadcrumbs)
+            )
+          )
 
         case ConfirmClientItsa(clientName, _) =>
           Ok(
@@ -315,11 +322,7 @@ class AgentInvitationJourneyController @Inject()(
           Ok(active_authorisation_exists(basket.nonEmpty, service, false))
 
         case PendingInvitationExists(_, basket) =>
-          Ok(
-            pending_authorisation_exists(
-              basket.nonEmpty,
-              backLinkFor(breadcrumbs),
-              fromFastTrack = false))
+          Ok(pending_authorisation_exists(basket.nonEmpty, backLinkFor(breadcrumbs), fromFastTrack = false))
 
         case ClientNotSignedUp(service, basket) =>
           Ok(not_signed_up(service, basket.nonEmpty))
