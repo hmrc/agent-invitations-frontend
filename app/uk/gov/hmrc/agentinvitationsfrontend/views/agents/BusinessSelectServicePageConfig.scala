@@ -19,5 +19,5 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.i18n.Messages
 import play.api.mvc.Call
 
-case class BusinessSelectServicePageConfig(basketFlag: Boolean, submitCall: Call, backLink: Option[String])(
+case class BusinessSelectServicePageConfig(basketFlag: Boolean, submitCall: Call, backLink: String)(
   implicit messages: Messages) {}
