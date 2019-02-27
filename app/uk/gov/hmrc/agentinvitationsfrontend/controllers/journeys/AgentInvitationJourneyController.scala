@@ -69,7 +69,7 @@ class AgentInvitationJourneyController @Inject()(
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
-  val agentsRoot = simpleAction(Transitions.startJourney)(redirect)
+  val agentsRoot = simpleAction(journeyService.model.start)(redirect)
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(display)
   val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
 

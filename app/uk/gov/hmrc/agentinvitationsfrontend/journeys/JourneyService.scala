@@ -52,12 +52,14 @@ trait PersistentJourneyService extends JourneyService {
     transition: model.Transition)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     for {
       initialStateAndBreadcrumbsOpt <- fetch
-      endStateOrError <- initialStateAndBreadcrumbsOpt.getOrElse((model.root, Nil)) match {
-                          case (state, breadcrumbs) =>
+      endStateOrError <- initialStateAndBreadcrumbsOpt match {
+                          case Some((state, breadcrumbs)) =>
                             if (transition.apply.isDefinedAt(state)) transition.apply(state) flatMap { endState =>
                               save((endState, if (endState == state) breadcrumbs else state :: breadcrumbs.take(9)))
                             } else
                               model.fail(model.TransitionNotAllowed(state, breadcrumbs, transition))
+                          case None =>
+                            save((model.root, Nil))
                         }
     } yield endStateOrError
 

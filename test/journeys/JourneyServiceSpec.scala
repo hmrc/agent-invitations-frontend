@@ -132,7 +132,7 @@ class TestJourneyModel extends JourneyModel {
   type State = String
 
   /** Where your journey starts by default */
-  override def root: State = "start"
+  override val root: State = "start"
 
   object Transitions {
 

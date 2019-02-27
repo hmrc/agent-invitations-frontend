@@ -33,7 +33,10 @@ trait JourneyModel {
   }
 
   /** Where your journey starts by default */
-  def root: State
+  val root: State
+  final def start: Transition = Transition {
+    case _ => goto(root)
+  }
 
   final def goto(state: State): Future[State] = Future.successful(state)
   final def fail[T](exception: Exception): Future[T] = Future.failed(exception)

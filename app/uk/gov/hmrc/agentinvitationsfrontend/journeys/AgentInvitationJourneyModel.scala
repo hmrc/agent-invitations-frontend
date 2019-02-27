@@ -31,7 +31,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   sealed trait State
   sealed trait Error
 
-  def root: State = States.SelectClientType(Set.empty)
+  val root: State = States.SelectClientType(Set.empty)
 
   type Basket = Set[AuthorisationRequest]
 
@@ -60,10 +60,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   object Transitions {
     import States._
-
-    val startJourney = Transition {
-      case _ => goto(root)
-    }
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {
       case _ => goto(SelectClientType(Set.empty)) // clears basket

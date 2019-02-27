@@ -19,7 +19,7 @@ package journeys
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition, start}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
@@ -56,7 +56,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   "AgentInvitationJourneyService" when {
     "at state SelectClientType" should {
       "transition to SelectClientType" in {
-        given(SelectClientType(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+        given(SelectClientType(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to SelectClientType given showSelectClientType" in {
         given(SelectClientType(emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
@@ -74,7 +74,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state SelectPersonalService" should {
       "transition to SelectClientType" in {
-        given(SelectPersonalService(availableServices, emptyBasket)) when startJourney should thenGo(
+        given(SelectPersonalService(availableServices, emptyBasket)) when start should thenGo(
           SelectClientType(emptyBasket))
       }
       "transition to IdentifyPersonalClient" in {
@@ -91,7 +91,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state SelectBusinessService" should {
       "transition to SelectClientType" in {
-        given(SelectBusinessService(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+        given(SelectBusinessService(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "after selectedBusinessService(true) transition to IdentifyBusinessClient" in {
         given(SelectBusinessService(emptyBasket)) when selectedBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
@@ -112,8 +112,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
 
       "transition to SelectClientType" in {
-        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when startJourney should thenGo(
-          SelectClientType(emptyBasket))
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ConfirmClientItsa" in {
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
@@ -223,7 +222,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
 
       "transition to SelectClientType" in {
-        given(IdentifyBusinessClient(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+        given(IdentifyBusinessClient(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ConfirmClientBusinessVat" in {
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(true))
@@ -266,7 +265,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ConfirmClientItsa" should {
       "transition to SelectClientType" in {
-        given(ConfirmClientItsa("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+        given(ConfirmClientItsa("Piglet", emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ReviewAuthorisationsPersonal" in {
         given(ConfirmClientItsa("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
@@ -280,7 +279,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ConfirmClientIrv" should {
       "transition to SelectClientType" in {
-        given(ConfirmClientIrv("Piglet", emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+        given(ConfirmClientIrv("Piglet", emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ReviewAuthorisationsPersonal" in {
         given(ConfirmClientIrv("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
@@ -294,8 +293,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ConfirmClientPersonalVat" should {
       "transition to Start" in {
-        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when startJourney should thenGo(
-          SelectClientType(emptyBasket))
+        given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to ClientConfirmedPersonal" in {
         given(ConfirmClientPersonalVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
@@ -309,9 +307,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     }
 
     "at ConfirmClientBusinessVat" should {
-      "after startJourney transition to Start" in {
-        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when startJourney should thenGo(
-          SelectClientType(emptyBasket))
+      "after start transition to Start" in {
+        given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "after clientConfirmed(true) transition to ReviewAuthorisationsBusiness" in {
         given(ConfirmClientBusinessVat("Piglet", emptyBasket)) when clientConfirmed(authorisedAgent)(Confirmation(true)) should
@@ -326,8 +323,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ReviewAuthorisationsPersonal" should {
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      "after startJourney transition to Start" in {
-        given(ReviewAuthorisationsPersonal(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+      "after start transition to Start" in {
+        given(ReviewAuthorisationsPersonal(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "after authorisationsReviewed(true) transition to SelectPersonalService" in {
         def createMultipleInvitations(
@@ -410,8 +407,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ReviewAuthorisationsBusiness" should {
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      "after startJourney transition to Start" in {
-        given(ReviewAuthorisationsBusiness(emptyBasket)) when startJourney should thenGo(SelectClientType(emptyBasket))
+      "after start transition to Start" in {
+        given(ReviewAuthorisationsBusiness(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "after authorisationsReviewed(true) transition to ClientTypeSelected" in {
         def createMultipleInvitations(
