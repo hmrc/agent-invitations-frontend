@@ -24,4 +24,5 @@ GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.age
 GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsFailed
 GET         /agents/not-signed-up                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showClientNotSignedUp
 GET         /agents/already-authorisation-pending               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showPendingAuthorisationExists
+GET         /agents/already-authorisation-present               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showActiveAuthorisationExists
 

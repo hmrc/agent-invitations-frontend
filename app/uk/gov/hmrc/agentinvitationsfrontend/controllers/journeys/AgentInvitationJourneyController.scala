@@ -127,34 +127,36 @@ class AgentInvitationJourneyController @Inject()(
         invitationsService.createAgentLink)
   }
 
-  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal              => }
-  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                     => }
-  val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed  => }
-  val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed    => }
-  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                => }
-  val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists => }
+  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal               => }
+  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                      => }
+  val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed   => }
+  val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed     => }
+  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                 => }
+  val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists  => }
+  val showActiveAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: ActiveAuthorisationExists => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
-    case SelectClientType(_)             => routes.AgentInvitationJourneyController.showClientType()
-    case SelectPersonalService(_, _)     => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService(_)        => routes.AgentInvitationJourneyController.showSelectService()
-    case IdentifyPersonalClient(_, _)    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyBusinessClient(_)       => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case ConfirmClientItsa(_, _)         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientIrv(_, _)          => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientPersonalVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientBusinessVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ReviewAuthorisationsPersonal(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case ReviewAuthorisationsBusiness(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case InvitationSentPersonal(_, _)    => routes.AgentInvitationJourneyController.showInvitationSent()
-    case InvitationSentBusiness(_, _)    => routes.AgentInvitationJourneyController.showInvitationSent()
-    case KnownFactNotMatched(_)          => routes.AgentInvitationJourneyController.showNotMatched()
-    case SomeAuthorisationsFailed(_)     => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
-    case AllAuthorisationsFailed(_)      => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
-    case ClientNotSignedUp(_, _)         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
-    case PendingInvitationExists(_, _)   => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
-    case _                               => throw new Exception(s"Link not found for $state")
+    case SelectClientType(_)                => routes.AgentInvitationJourneyController.showClientType()
+    case SelectPersonalService(_, _)        => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService(_)           => routes.AgentInvitationJourneyController.showSelectService()
+    case IdentifyPersonalClient(_, _)       => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient(_)          => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ConfirmClientItsa(_, _)            => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientIrv(_, _)             => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientPersonalVat(_, _)     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientBusinessVat(_, _)     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ReviewAuthorisationsPersonal(_)    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case ReviewAuthorisationsBusiness(_)    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case InvitationSentPersonal(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
+    case InvitationSentBusiness(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
+    case KnownFactNotMatched(_)             => routes.AgentInvitationJourneyController.showNotMatched()
+    case SomeAuthorisationsFailed(_)        => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
+    case AllAuthorisationsFailed(_)         => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
+    case ClientNotSignedUp(_, _)            => routes.AgentInvitationJourneyController.showClientNotSignedUp()
+    case PendingInvitationExists(_, _)      => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
+    case ActiveAuthorisationExists(_, _, _) => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case _                                  => throw new Exception(s"Link not found for $state")
   }
 
   private def backLinkFor(breadcrumbs: List[State]): String =
@@ -326,7 +328,7 @@ class AgentInvitationJourneyController @Inject()(
         case AllAuthorisationsFailed(basket) =>
           Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
 
-        case ActiveRelationshipExists(_, service, basket) =>
+        case ActiveAuthorisationExists(_, service, basket) =>
           Ok(
             active_authorisation_exists(
               basket.nonEmpty,

@@ -43,7 +43,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case class IdentifyBusinessClient(basket: Basket) extends State
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
-    case class ActiveRelationshipExists(clientType: ClientType, service: String, basket: Basket) extends State
+    case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientIrv(request: AuthorisationRequest, basket: Basket) extends State
@@ -116,7 +116,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                    goto(PendingInvitationExists(clientType, basket))
                  } else {
                    hasActiveRelationshipFor(arn, clientIdentifier, service).flatMap {
-                     case true => goto(ActiveRelationshipExists(clientType, service, basket))
+                     case true => goto(ActiveAuthorisationExists(clientType, service, basket))
                      case false =>
                        getClientName(clientIdentifier, service).flatMap { clientNameOpt =>
                          val clientName = clientNameOpt.getOrElse("")
