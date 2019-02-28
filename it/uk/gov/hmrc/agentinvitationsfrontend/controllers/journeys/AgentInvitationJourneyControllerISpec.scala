@@ -511,7 +511,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
-        journeyState.get should have[State](ReviewAuthorisationsPersonal(emptyBasket))
       }
 
       "redirect to the identify-client page when no is selected" in {
