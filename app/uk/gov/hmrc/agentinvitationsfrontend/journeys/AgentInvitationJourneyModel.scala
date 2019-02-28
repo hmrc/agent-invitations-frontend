@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.goto
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{States, goto}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -53,9 +53,14 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ReviewAuthorisationsBusiness(basket: Basket) extends State
     case class SomeAuthorisationsFailed(basket: Basket) extends State
     case class AllAuthorisationsFailed(basket: Basket) extends State
+    case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
+        extends State
+    case class DeleteAuthorisationRequestBusiness(authorisationRequest: AuthorisationRequest, basket: Basket)
+        extends State
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String]) extends State
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String]) extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
+    case class AllAuthorisationsRemoved() extends State
   }
 
   object Transitions {
@@ -278,6 +283,36 @@ object AgentInvitationJourneyModel extends JourneyModel {
             }
       }
     }
+
+    def deleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(itemId: String) =
+      Transition {
+        case ReviewAuthorisationsPersonal(basket) => {
+          val deleteItem: AuthorisationRequest =
+            basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+          goto(DeleteAuthorisationRequestPersonal(deleteItem, basket))
+        }
+        case ReviewAuthorisationsBusiness(basket) => {
+          val deleteItem: AuthorisationRequest =
+            basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
+          goto(DeleteAuthorisationRequestBusiness(deleteItem, basket))
+        }
+      }
+
+    def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
+      Transition {
+        case DeleteAuthorisationRequestPersonal(authorisationRequest, basket) =>
+          if (confirmation.choice) {
+            if ((basket - authorisationRequest).nonEmpty)
+              goto(ReviewAuthorisationsPersonal(basket - authorisationRequest))
+            else goto(AllAuthorisationsRemoved())
+          } else goto(ReviewAuthorisationsPersonal(basket))
+        case DeleteAuthorisationRequestBusiness(authorisationRequest, basket) =>
+          if (confirmation.choice) {
+            if ((basket - authorisationRequest).nonEmpty)
+              goto(ReviewAuthorisationsBusiness(basket - authorisationRequest))
+            else goto(AllAuthorisationsRemoved())
+          } else goto(ReviewAuthorisationsBusiness(basket))
+      }
   }
 
 }

@@ -127,6 +127,12 @@ class AgentInvitationJourneyController @Inject()(
         invitationsService.createAgentLink)
   }
 
+  def showDeleteAuthorisation(itemId: String) =
+    authorisedAgentActionWithString(Transitions.deleteAuthorisationRequest, itemId)(display)
+
+  def submitDeleteAuthorisation =
+    authorisedAgentActionWithForm(DeleteAuthorisationForm)(Transitions.confirmDeleteAuthorisationRequest)
+
   val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal               => }
   val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                      => }
   val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed   => }
@@ -134,20 +140,26 @@ class AgentInvitationJourneyController @Inject()(
   val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                 => }
   val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists  => }
   val showActiveAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: ActiveAuthorisationExists => }
+  val showAllAuthorisationsRemoved = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsRemoved   => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
-    case SelectClientType(_)                => routes.AgentInvitationJourneyController.showClientType()
-    case SelectPersonalService(_, _)        => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService(_)           => routes.AgentInvitationJourneyController.showSelectService()
-    case IdentifyPersonalClient(_, _)       => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyBusinessClient(_)          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case ConfirmClientItsa(_, _)            => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientIrv(_, _)             => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientPersonalVat(_, _)     => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientBusinessVat(_, _)     => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ReviewAuthorisationsPersonal(_)    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case ReviewAuthorisationsBusiness(_)    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case SelectClientType(_)             => routes.AgentInvitationJourneyController.showClientType()
+    case SelectPersonalService(_, _)     => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService(_)        => routes.AgentInvitationJourneyController.showSelectService()
+    case IdentifyPersonalClient(_, _)    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient(_)       => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case ConfirmClientItsa(_, _)         => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientIrv(_, _)          => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientPersonalVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientBusinessVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ReviewAuthorisationsPersonal(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case ReviewAuthorisationsBusiness(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case DeleteAuthorisationRequestPersonal(authorisationRequest, _) => {
+      routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
+    }
+    case DeleteAuthorisationRequestBusiness(authorisationRequest, _) =>
+      routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case InvitationSentPersonal(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case InvitationSentBusiness(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case KnownFactNotMatched(_)             => routes.AgentInvitationJourneyController.showNotMatched()
@@ -156,6 +168,7 @@ class AgentInvitationJourneyController @Inject()(
     case ClientNotSignedUp(_, _)            => routes.AgentInvitationJourneyController.showClientNotSignedUp()
     case PendingInvitationExists(_, _)      => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
     case ActiveAuthorisationExists(_, _, _) => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case AllAuthorisationsRemoved()         => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
     case _                                  => throw new Exception(s"Link not found for $state")
   }
 
@@ -295,6 +308,12 @@ class AgentInvitationJourneyController @Inject()(
               backLinkFor(breadcrumbs)
             ))
 
+        case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
+          Ok(delete(DeletePageConfig(authorisationRequest), DeleteAuthorisationForm))
+
+        case DeleteAuthorisationRequestBusiness(authorisationRequest, _) =>
+          Ok(delete(DeletePageConfig(authorisationRequest), DeleteAuthorisationForm))
+
         case InvitationSentPersonal(invitationLink, continueUrl) =>
           Ok(
             invitation_sent(
@@ -350,6 +369,9 @@ class AgentInvitationJourneyController @Inject()(
 
         case ClientNotSignedUp(service, basket) =>
           Ok(not_signed_up(service, basket.nonEmpty))
+
+        case AllAuthorisationsRemoved() =>
+          Ok(all_authorisations_removed(routes.AgentInvitationJourneyController.showClientType()))
       }
   }
 }
@@ -402,4 +424,6 @@ object AgentInvitationJourneyController {
   val ConfirmClientForm = confirmationForm("error.confirm-client.required")
 
   val ReviewAuthorisationsForm = confirmationForm("error.review-authorisation.required")
+
+  val DeleteAuthorisationForm = confirmationForm("error.delete.radio")
 }

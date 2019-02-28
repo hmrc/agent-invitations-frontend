@@ -43,4 +43,16 @@ class RelationshipsService @Inject()(
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
       case HMRCPIR    => checkPirRelationship(arn, Nino(clientId))
     }
+
+  def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    service match {
+      case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
+      case HMRCPIR    => checkPirRelationship(arn, Nino(clientId))
+      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
+      case e => {
+        throw new Error(s"Unsupported service for checking relationship: $e")
+      }
+    }
 }

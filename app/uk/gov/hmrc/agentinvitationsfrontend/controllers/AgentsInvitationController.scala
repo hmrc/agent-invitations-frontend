@@ -333,7 +333,7 @@ class AgentsInvitationController @Inject()(
 
   val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { (_, _) =>
-      Ok(all_authorisations_removed())
+      Ok(all_authorisations_removed(routes.AgentsInvitationController.showClientType()))
     }
   }
 

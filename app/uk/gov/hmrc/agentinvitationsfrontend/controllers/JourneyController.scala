@@ -143,6 +143,15 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       }
     }
 
+  protected final def authorisedAgentActionWithString(
+    transition: AuthorisedAgent => String => Transition,
+    aString: String)(routeFactory: RouteFactory): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+        apply(transition(AuthorisedAgent(arn, isWhitelisted))(aString: String), routeFactory)
+      }
+    }
+
   private def bindForm[T](form: Form[T], transition: T => Transition)(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =
