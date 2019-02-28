@@ -34,7 +34,7 @@ trait GetClientName {
     getClientNameByService(invitation.clientId, invitation.service)
 
   def getClientNameByService(clientId: String, service: String)(
-    implicit c: HeaderCarrier,
+    implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     service match {
       case Services.HMRCMTDIT if Nino.isValid(clientId) => getItsaTradingName(Nino(clientId))

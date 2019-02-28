@@ -220,11 +220,7 @@ class AgentsInvitationController @Inject()(
               } else {
                 for {
                   processedRequests <- invitationsService
-                                        .createMultipleInvitations(
-                                          arn,
-                                          sessionCache.clientType,
-                                          sessionCache.requests,
-                                          featureFlags)
+                                        .createMultipleInvitations(arn, sessionCache.clientType, sessionCache.requests)
                   _ <- agentSessionCache.save(sessionCache.copy(requests = processedRequests))
                   result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
                              Redirect(routes.AgentsInvitationController.showInvitationSent())
