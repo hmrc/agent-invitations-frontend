@@ -145,10 +145,10 @@ abstract class JourneyController(implicit ec: ExecutionContext)
 
   protected final def authorisedAgentActionWithString(
     transition: AuthorisedAgent => String => Transition,
-    aString: String)(routeFactory: RouteFactory): Action[AnyContent] =
+    stringParam: String)(routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        apply(transition(AuthorisedAgent(arn, isWhitelisted))(aString: String), routeFactory)
+        apply(transition(AuthorisedAgent(arn, isWhitelisted))(stringParam: String), routeFactory)
       }
     }
 

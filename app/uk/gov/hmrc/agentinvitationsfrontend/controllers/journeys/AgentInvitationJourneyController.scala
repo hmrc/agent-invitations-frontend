@@ -81,7 +81,9 @@ class AgentInvitationJourneyController @Inject()(
   val submitPersonalSelectService =
     authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedPersonalService)
   val submitBusinessSelectService =
-    authorisedAgentActionWithForm(SelectBusinessServiceForm)(Transitions.selectedBusinessService)
+    authorisedAgentActionWithForm(SelectBusinessServiceForm) {
+      (Transitions.selectedBusinessService, featureFlags.showHmrcMtdVat)
+    }
 
   val showIdentifyClient = authorisedAgentActionRenderStateWhen {
     case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>
@@ -92,19 +94,19 @@ class AgentInvitationJourneyController @Inject()(
       implicit hc: HeaderCarrier =>
         Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          invitationsService.getClientNameByService)
+          featureFlags.enableMtdItToConfirm)(invitationsService.getClientNameByService)
     }
   val submitIdentifyVatClient = authorisedAgentActionWithFormWithHC(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
     implicit hc: HeaderCarrier =>
       Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
         invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        invitationsService.getClientNameByService)
+        featureFlags.enableMtdVatToConfirm)(invitationsService.getClientNameByService)
   }
   val submitIdentifyIrvClient =
     authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
       Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
         invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        invitationsService.getClientNameByService)
+        featureFlags.enableIrvToConfirm)(invitationsService.getClientNameByService)
     }
 
   val showConfirmClient = authorisedAgentActionRenderStateWhen {
