@@ -728,12 +728,20 @@ abstract class BaseInvitationController(
         featureFlags,
         enabledServices,
         submitServicePersonalCall,
-        routes.AgentsInvitationController.showClientType().url)
+        routes.AgentsInvitationController.showClientType().url,
+        routes.AgentsInvitationController.showReviewAuthorisations()
+      )
     )
 
   def businessSelectServicePage(form: Form[Confirmation], basketFlag: Boolean, backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
-    business_select_service(form, BusinessSelectServicePageConfig(basketFlag, submitServiceBusinessCall, backLinkUrl))
+    business_select_service(
+      form,
+      BusinessSelectServicePageConfig(
+        basketFlag,
+        submitServiceBusinessCall,
+        backLinkUrl,
+        routes.AgentsInvitationController.showReviewAuthorisations()))
 
   def identifyClientCall: Call = routes.AgentsInvitationController.showIdentifyClient()
 

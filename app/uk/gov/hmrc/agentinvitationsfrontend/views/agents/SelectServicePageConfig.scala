@@ -26,7 +26,8 @@ case class SelectServicePageConfig(
   featureFlags: FeatureFlags,
   services: Set[String],
   submitCall: Call,
-  backLink: String)(implicit messages: Messages) {
+  backLink: String,
+  reviewAuthsCall: Call)(implicit messages: Messages) {
 
   val enabledPersonalServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()

@@ -64,7 +64,7 @@ action = config.submitCall,
 }
 
 @if(config.basketFlag) {
-<p class="margin-top-40"><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
+<p class="margin-top-40"><a class="text-link-small" href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a></p>
 }
 
 }

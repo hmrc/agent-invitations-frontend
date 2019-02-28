@@ -299,7 +299,10 @@ class AgentLedDeAuthController @Inject()(
           featureFlags,
           enabledServices,
           submitServicePersonalCall,
-          routes.AgentLedDeAuthController.showClientType().url))
+          routes.AgentLedDeAuthController.showClientType().url,
+          routes.AgentsInvitationController.showReviewAuthorisations()
+        )
+      )
 
   override def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),

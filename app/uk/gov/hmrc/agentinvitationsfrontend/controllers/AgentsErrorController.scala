@@ -50,7 +50,11 @@ class AgentsErrorController @Inject()(
     withAuthorisedAsAgent { (_, _) =>
       agentSessionCache.fetch.map { aggregateOpt =>
         val aggregate = aggregateOpt.getOrElse(AgentSession())
-        Forbidden(not_matched(aggregate.requests.nonEmpty))
+        Forbidden(
+          not_matched(
+            aggregate.requests.nonEmpty,
+            routes.AgentsInvitationController.showIdentifyClient(),
+            routes.AgentsInvitationController.showReviewAuthorisations()))
       }
     }
   }
@@ -78,7 +82,10 @@ class AgentsErrorController @Inject()(
           active_authorisation_exists(
             agentSession.requests.nonEmpty,
             agentSession.service.getOrElse(""),
-            agentSession.fromFastTrack))
+            agentSession.fromFastTrack,
+            routes.AgentsInvitationController.showReviewAuthorisations(),
+            routes.AgentsInvitationController.showClientType()
+          ))
     }
   }
 

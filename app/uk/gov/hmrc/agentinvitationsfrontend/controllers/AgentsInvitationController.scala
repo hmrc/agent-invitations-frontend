@@ -353,7 +353,14 @@ class AgentsInvitationController @Inject()(
           if (agentSession.fromFastTrack)
             routes.AgentsFastTrackInvitationController.showKnownFact().url
           else routes.AgentsInvitationController.showConfirmClient().url
-        Ok(pending_authorisation_exists(agentSession.requests.nonEmpty, backLinkUrl, agentSession.fromFastTrack))
+        Ok(
+          pending_authorisation_exists(
+            agentSession.requests.nonEmpty,
+            backLinkUrl,
+            agentSession.fromFastTrack,
+            routes.AgentsInvitationController.showReviewAuthorisations(),
+            routes.AgentsInvitationController.showClientType()
+          ))
       }
     }
   }
