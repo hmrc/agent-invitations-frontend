@@ -34,7 +34,6 @@ import scala.util.control.NonFatal
 
 @Singleton
 class InvitationsService @Inject()(
-  featureFlags: FeatureFlags,
   invitationsConnector: InvitationsConnector,
   featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,

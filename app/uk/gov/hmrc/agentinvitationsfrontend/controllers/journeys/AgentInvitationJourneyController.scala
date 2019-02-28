@@ -69,7 +69,7 @@ class AgentInvitationJourneyController @Inject()(
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
-  /* Here we decide how to handle HTTP re=quest and transition the state of the journey */
+  /* Here we decide how to handle HTTP request and transition the state of the journey */
   val agentsRoot = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
   val showClientType = authorisedAgentAction(Transitions.showSelectClientType)(display)
   val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
@@ -178,7 +178,9 @@ class AgentInvitationJourneyController @Inject()(
                 featureFlags,
                 services,
                 routes.AgentInvitationJourneyController.submitPersonalSelectService(),
-                backLinkFor(breadcrumbs))
+                backLinkFor(breadcrumbs),
+                routes.AgentInvitationJourneyController.showReviewAuthorisations()
+              )
             ))
 
         case SelectBusinessService(basket) =>
@@ -188,7 +190,9 @@ class AgentInvitationJourneyController @Inject()(
               BusinessSelectServicePageConfig(
                 basket.nonEmpty,
                 routes.AgentInvitationJourneyController.submitBusinessSelectService(),
-                backLinkFor(breadcrumbs))
+                backLinkFor(breadcrumbs),
+                routes.AgentInvitationJourneyController.showReviewAuthorisations()
+              )
             ))
 
         case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
@@ -310,7 +314,11 @@ class AgentInvitationJourneyController @Inject()(
                 inferredExpiryDate)))
 
         case KnownFactNotMatched(basket) =>
-          Ok(not_matched(basket.nonEmpty))
+          Ok(
+            not_matched(
+              basket.nonEmpty,
+              routes.AgentInvitationJourneyController.showIdentifyClient(),
+              routes.AgentInvitationJourneyController.showReviewAuthorisations()))
 
         case SomeAuthorisationsFailed(basket) =>
           Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
@@ -319,10 +327,24 @@ class AgentInvitationJourneyController @Inject()(
           Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
 
         case ActiveRelationshipExists(_, service, basket) =>
-          Ok(active_authorisation_exists(basket.nonEmpty, service, false))
+          Ok(
+            active_authorisation_exists(
+              basket.nonEmpty,
+              service,
+              false,
+              routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+              routes.AgentInvitationJourneyController.showClientType()
+            ))
 
         case PendingInvitationExists(_, basket) =>
-          Ok(pending_authorisation_exists(basket.nonEmpty, backLinkFor(breadcrumbs), fromFastTrack = false))
+          Ok(
+            pending_authorisation_exists(
+              basket.nonEmpty,
+              backLinkFor(breadcrumbs),
+              fromFastTrack = false,
+              routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+              routes.AgentInvitationJourneyController.showClientType()
+            ))
 
         case ClientNotSignedUp(service, basket) =>
           Ok(not_signed_up(service, basket.nonEmpty))

@@ -29,7 +29,7 @@ trait StateMatchers[S] {
       }
     }
 
-  def thenMatch(statePF: PartialFunction[S,Unit]): Matcher[(S, List[S])] =
+  def thenMatch(statePF: PartialFunction[S, Unit]): Matcher[(S, List[S])] =
     new Matcher[(S, List[S])] {
       override def apply(result: (S, List[S])): MatchResult = result match {
         case (thisState, _) if !statePF.isDefinedAt(thisState) =>

@@ -47,12 +47,8 @@ trait GetClientName {
     agentServicesAccountConnector
       .getTradingName(nino)
       .flatMap {
-        case name if name.isDefined => {
-          Future successful name
-        }
-        case None => {
-          getCitizenName(nino)
-        }
+        case name if name.isDefined => Future successful name
+        case None                   => getCitizenName(nino)
       }
 
   def getCitizenName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
