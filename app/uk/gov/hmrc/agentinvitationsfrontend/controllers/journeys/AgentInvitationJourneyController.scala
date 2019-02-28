@@ -79,11 +79,14 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitPersonalSelectService =
-    authorisedAgentActionWithForm(SelectPersonalServiceForm)(Transitions.selectedPersonalService)
+    authorisedAgentActionWithForm(SelectPersonalServiceForm)(
+      Transitions.selectedPersonalService(
+        featureFlags.showHmrcMtdIt,
+        featureFlags.showPersonalIncome,
+        featureFlags.showHmrcMtdVat))
   val submitBusinessSelectService =
-    authorisedAgentActionWithForm(SelectBusinessServiceForm) {
-      (Transitions.selectedBusinessService, featureFlags.showHmrcMtdVat)
-    }
+    authorisedAgentActionWithForm(SelectBusinessServiceForm)(
+      Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
 
   val showIdentifyClient = authorisedAgentActionRenderStateWhen {
     case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>

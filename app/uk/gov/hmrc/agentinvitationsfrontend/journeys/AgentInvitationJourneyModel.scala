@@ -85,8 +85,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    def selectedPersonalService(agent: AuthorisedAgent)(
-      service: String)(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean) = Transition {
+    def selectedPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean)(
+      agent: AuthorisedAgent)(service: String) = Transition {
       case SelectPersonalService(services, basket) =>
         if (services.contains(service)) {
           service match {
@@ -105,7 +105,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectPersonalService(services, basket))
     }
 
-    def selectedBusinessService(agent: AuthorisedAgent)(confirmed: Confirmation)(showVatFlag: Boolean) = Transition {
+    def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectBusinessService(basket) =>
         if (confirmed.choice) {
           if (showVatFlag) goto(IdentifyBusinessClient(basket))

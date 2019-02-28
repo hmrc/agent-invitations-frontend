@@ -358,7 +358,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "POST /agents/identify-irv-client" should {
       val request = FakeRequest("POST", "/agents/identify-irv-client")
 
-      "redirect to confirm client" in {
+      "redirect to reviewAuthorisations because flag is off" in {
         givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
         givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
         givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
@@ -378,10 +378,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
-        journeyState.get should havePattern[State](
-          { case  ConfirmClientIrv(AuthorisationRequest("Virginia Woolf", PirInvitation(Nino(`nino`), Some(DOB("1990-10-10")),_,_,_),_,_), `emptyBasket`) => },
+        journeyState.get should have[State](
+          ReviewAuthorisationsPersonal(emptyBasket),
           List(
             IdentifyPersonalClient(HMRCPIR, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
