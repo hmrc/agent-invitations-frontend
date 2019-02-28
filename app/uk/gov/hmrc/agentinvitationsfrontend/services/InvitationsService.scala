@@ -35,6 +35,7 @@ import scala.util.control.NonFatal
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
+  featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
   auditService: AuditService)
@@ -75,11 +76,7 @@ class InvitationsService @Inject()(
       }
   }
 
-  def createMultipleInvitations(
-    arn: Arn,
-    clientType: Option[ClientType],
-    requests: Set[AuthorisationRequest],
-    featureFlags: FeatureFlags)(
+  def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest])(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =

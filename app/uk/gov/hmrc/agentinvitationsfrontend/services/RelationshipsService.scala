@@ -37,7 +37,7 @@ class RelationshipsService @Inject()(
 
   def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) =
+    ec: ExecutionContext): Future[Boolean] =
     service match {
       case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
