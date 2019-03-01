@@ -54,8 +54,9 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
           htmlEscapedMessage("landing-page.itsa.header"),
           htmlEscapedMessage("title.suffix.client"),
           htmlEscapedMessage("landing-page.reminder"),
-          htmlEscapedMessage("landing-page.radio1"))
+          htmlEscapedMessage("landing-page.radio1")
         )
+      )
     }
 
     "show a signout url on the landing page if the user is authenticated" in {
@@ -68,24 +69,28 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
   "POST /:invitationId (making a choice on the landing page)" should {
     val submitStart: Action[AnyContent] = controller.submitStart(invitationIdITSA)
 
-      "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
-        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+    "redirect to /accept-tax-agent-invitation/consent/:invitationId when yes is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      val result =
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result).get shouldBe routes.ClientsInvitationController
-          .getConfirmTerms(invitationIdITSA)
-          .url
-      }
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController
+        .getConfirmTerms(invitationIdITSA)
+        .url
+    }
 
     "redirect to confirm-decline page when no is selected" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
       givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmDecline(invitationIdITSA)
@@ -96,35 +101,42 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
       givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getDecideLater(invitationIdITSA)
         .url
     }
 
-      "refresh the page with errors when no radio button is selected" in {
-        val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
-        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
-        val result =
-          submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
+    "refresh the page with errors when no radio button is selected" in {
+      val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
+      givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+      val result =
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
             .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
-        status(result) shouldBe OK
-        htmlEscapedMessage("error.summary.heading")
-        htmlEscapedMessage("error.confirmAuthorisation.invalid")
-        htmlEscapedMessage("landing-page.itsa.header")
-        htmlEscapedMessage("landing-page.radio1")
-        htmlEscapedMessage("landing-page.reminder")
-      }
+      status(result) shouldBe OK
+      htmlEscapedMessage("error.summary.heading")
+      htmlEscapedMessage("error.confirmAuthorisation.invalid")
+      htmlEscapedMessage("landing-page.itsa.header")
+      htmlEscapedMessage("landing-page.radio1")
+      htmlEscapedMessage("landing-page.reminder")
+    }
 
     "throw an error when the radio button selection is invalid" in {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("foo")))
       givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
 
-      an[Exception] should be thrownBy{
-        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
+      an[Exception] should be thrownBy {
+        await(
+          submitStart(
+            FakeRequest()
+              .withSession("agencyName" -> "My Agency")
+              .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
       }
     }
   }
@@ -149,8 +161,13 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.bullet2"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.itsa.p1"))
       checkHtmlResultWithBodyText(resultITSA, htmlEscapedMessage("confirm-terms.subheading1.p2"))
-      checkHtmlResultWithBodyText(resultITSA, "If you appoint someone overseas to act for you, we will need to share your data outside of the UK.")
-      checkHtmlResultWithBodyText(resultITSA, "https://www.gov.uk/government/publications/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you")
+      checkHtmlResultWithBodyText(
+        resultITSA,
+        "If you appoint someone overseas to act for you, we will need to share your data outside of the UK.")
+      checkHtmlResultWithBodyText(
+        resultITSA,
+        "https://www.gov.uk/government/publications/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you"
+      )
       checkHasClientSignOutUrl(resultITSA)
     }
 
@@ -189,7 +206,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -199,7 +217,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTD-IT-ID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -261,7 +280,9 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
 
       status(resultITSA) shouldBe SEE_OTHER
 
-      redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController.getConfirmDecline(invitationIdITSA).url
+      redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController
+        .getConfirmDecline(invitationIdITSA)
+        .url
     }
 
     "reshow the page when the radio buttons were not selected with an error message" in {
@@ -270,7 +291,7 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenGetAgencyNameClientStub(arn)
 
       val reqITSA = authorisedAsValidClientITSA(FakeRequest().withSession("agencyName" -> "My Agency"), mtdItId.value)
-        .withFormUrlEncodedBody("confirmTerms" -> "")
+        .withFormUrlEncodedBody("confirmTerms"                                  -> "")
       val resultITSA = submitConfirmTermsITSA(reqITSA).withSession("agencyName" -> "My Agency")
 
       status(resultITSA) shouldBe OK
@@ -325,7 +346,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -335,7 +357,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTD-IT-ID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -395,7 +418,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -405,7 +429,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTDITID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -443,7 +468,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmDecline(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -453,7 +479,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmDecline(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTDITID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -533,7 +560,9 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       val resultITSA = submitConfirmInvitationITSA(reqITSA)
 
       status(resultITSA) shouldBe SEE_OTHER
-      redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController.getInvitationDeclined(invitationIdITSA).url
+      redirectLocation(resultITSA).get shouldBe routes.ClientsInvitationController
+        .getInvitationDeclined(invitationIdITSA)
+        .url
     }
 
     "redirect to confirm terms when NO was selected" in {
@@ -562,7 +591,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmDecline(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -572,7 +602,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmDecline(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTDITID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -670,7 +701,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", mtdItId.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -680,7 +712,8 @@ class ClientsInvitationsITSAControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-MTD-IT", "MTDITID", mtdItId.value),
           "50"))
       status(result) shouldBe SEE_OTHER

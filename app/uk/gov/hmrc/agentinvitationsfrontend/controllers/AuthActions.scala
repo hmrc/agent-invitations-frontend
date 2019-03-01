@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.Logger
-import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -74,6 +73,8 @@ trait AuthActions extends AuthorisedFunctions {
         }
       case _: InsufficientConfidenceLevel =>
         Redirect(routes.ClientsInvitationController.notFoundInvitation())
+      case _: UnsupportedAffinityGroup =>
+        Redirect(routes.ClientsInvitationController.notAuthorised())
 
     }
 
@@ -104,6 +105,8 @@ trait AuthActions extends AuthorisedFunctions {
           Redirect(routes.ClientsInvitationController.notAuthorised())
         case _: InsufficientConfidenceLevel =>
           Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        case _: UnsupportedAffinityGroup =>
+          Redirect(routes.ClientsInvitationController.notAuthorised())
       }
 
   protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
