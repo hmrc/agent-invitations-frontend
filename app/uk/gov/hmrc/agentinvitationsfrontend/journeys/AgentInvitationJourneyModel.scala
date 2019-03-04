@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{States, goto}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
-
-import play.api.mvc.{Call, Request, Result}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -62,7 +59,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String]) extends State
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String]) extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
-    case class AllAuthorisationsRemoved() extends State
+    case object AllAuthorisationsRemoved extends State
   }
 
   object Transitions {
@@ -92,15 +89,15 @@ object AgentInvitationJourneyModel extends JourneyModel {
           service match {
             case HMRCMTDIT =>
               if (showItsaFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flagged is switched off"))
+              else fail(new Exception(s"Service: $service feature flag is switched off"))
 
             case HMRCPIR =>
               if (showPirFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flagged is switched off"))
+              else fail(new Exception(s"Service: $service feature flag is switched off"))
 
             case HMRCMTDVAT =>
               if (showVatFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flagged is switched off"))
+              else fail(new Exception(s"Service: $service feature flag is switched off"))
           }
         } else goto(SelectPersonalService(services, basket))
     }
@@ -109,7 +106,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       case SelectBusinessService(basket) =>
         if (confirmed.choice) {
           if (showVatFlag) goto(IdentifyBusinessClient(basket))
-          else fail(new Exception(s"Service: $HMRCMTDVAT feature flagged is switched off"))
+          else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
         } else {
           goto(root)
         }
@@ -119,16 +116,18 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
 
-    private def checkIfPendingOrActiveAndGoto(successState: String => State)(
+    private def checkIfPendingOrActiveThenKnownFactMatchAndGoto(successState: String => State)(
       clientType: ClientType,
       arn: Arn,
       clientIdentifier: String,
       service: String,
-      basket: Basket)(
+      basket: Basket,
+      knownFactMatches: Option[Boolean],
+      kfcFlag: Boolean)(
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship,
-      getClientName: GetClientName): Future[State] =
-      for {
+      getClientName: GetClientName): Future[State] = {
+      val checkIfPendingOrActive = for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
                                      basket.exists(_.invitation.clientId == clientIdentifier))
                                   Future.successful(true)
@@ -148,103 +147,127 @@ object AgentInvitationJourneyModel extends JourneyModel {
                  }
       } yield result
 
+      if (!kfcFlag) checkIfPendingOrActive
+      else {
+        knownFactMatches match {
+          case Some(true)  => checkIfPendingOrActive
+          case Some(false) => goto(KnownFactNotMatched(basket))
+          case None        => goto(ClientNotSignedUp(service, basket))
+        }
+
+      }
+    }
+
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
 
     def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)(
       hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
-      redirectToConfirmItsaFlag: Boolean)(getClientName: GetClientName)(agent: AuthorisedAgent)(
+      redirectToConfirmItsaFlag: Boolean)(showKfcItsa: Boolean)(getClientName: GetClientName)(agent: AuthorisedAgent)(
       itsaClient: ItsaClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDIT, basket) =>
         checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode.getOrElse("")).flatMap {
-          case Some(true) =>
-            checkIfPendingOrActiveAndGoto(clientName =>
-              if (redirectToConfirmItsaFlag) {
-                ConfirmClientItsa(
-                  AuthorisationRequest(
-                    clientName,
-                    ItsaInvitation(Nino(itsaClient.clientIdentifier), itsaClient.postcode.map(Postcode.apply))),
-                  basket)
-              } else ReviewAuthorisationsPersonal(basket))(
+          postcodeMatches =>
+            checkIfPendingOrActiveThenKnownFactMatchAndGoto(
+              clientName =>
+                if (redirectToConfirmItsaFlag) {
+                  ConfirmClientItsa(
+                    AuthorisationRequest(
+                      clientName,
+                      ItsaInvitation(Nino(itsaClient.clientIdentifier), itsaClient.postcode.map(Postcode.apply))),
+                    basket)
+                } else
+                  ReviewAuthorisationsPersonal(
+                    basket + AuthorisationRequest(
+                      clientName,
+                      ItsaInvitation(Nino(itsaClient.clientIdentifier), itsaClient.postcode.map(Postcode.apply)))))(
               personal,
               agent.arn,
               itsaClient.clientIdentifier,
               HMRCMTDIT,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
-
-          case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket))
+              basket,
+              postcodeMatches,
+              showKfcItsa)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
         }
     }
 
     type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Boolean]]
 
     def identifiedVatClient(checkRegDateMatches: CheckRegDateMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
-      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(getClientName: GetClientName)(
-      agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
+      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(showKfcVat: Boolean)(
+      getClientName: GetClientName)(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
 
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
-          .flatMap {
-            case Some(true) =>
-              checkIfPendingOrActiveAndGoto(clientName =>
-                if (redirectToConfirmVatFlag) {
-                  ConfirmClientPersonalVat(
-                    AuthorisationRequest(
-                      clientName,
-                      VatInvitation(
-                        Some(personal),
-                        Vrn(vatClient.clientIdentifier),
-                        vatClient.registrationDate.map(VatRegDate.apply))),
-                    basket
-                  )
-                } else ReviewAuthorisationsPersonal(basket))(
-                personal,
-                agent.arn,
-                vatClient.clientIdentifier,
-                HMRCMTDVAT,
-                basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
-
-            case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+          .flatMap { vatRegDateMatches =>
+            checkIfPendingOrActiveThenKnownFactMatchAndGoto(clientName =>
+              if (redirectToConfirmVatFlag) {
+                ConfirmClientPersonalVat(
+                  AuthorisationRequest(
+                    clientName,
+                    VatInvitation(
+                      Some(personal),
+                      Vrn(vatClient.clientIdentifier),
+                      vatClient.registrationDate.map(VatRegDate.apply))),
+                  basket
+                )
+              } else
+                ReviewAuthorisationsPersonal(
+                  basket + AuthorisationRequest(
+                    clientName,
+                    VatInvitation(
+                      Some(personal),
+                      Vrn(vatClient.clientIdentifier),
+                      vatClient.registrationDate.map(VatRegDate.apply)))))(
+              personal,
+              agent.arn,
+              vatClient.clientIdentifier,
+              HMRCMTDVAT,
+              basket,
+              vatRegDateMatches,
+              showKfcVat)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
           }
-
       case IdentifyBusinessClient(basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
-          .flatMap {
-            case Some(true) =>
-              checkIfPendingOrActiveAndGoto(clientName =>
-                if (redirectToConfirmVatFlag) {
-                  ConfirmClientBusinessVat(
-                    AuthorisationRequest(
-                      clientName,
-                      VatInvitation(
-                        Some(business),
-                        Vrn(vatClient.clientIdentifier),
-                        vatClient.registrationDate.map(VatRegDate.apply))),
-                    basket
-                  )
-                } else ReviewAuthorisationsBusiness(basket))(
-                business,
-                agent.arn,
-                vatClient.clientIdentifier,
-                HMRCMTDVAT,
-                basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
-
-            case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+          .flatMap { vatRegDateMatches =>
+            checkIfPendingOrActiveThenKnownFactMatchAndGoto(clientName =>
+              if (redirectToConfirmVatFlag) {
+                ConfirmClientBusinessVat(
+                  AuthorisationRequest(
+                    clientName,
+                    VatInvitation(
+                      Some(business),
+                      Vrn(vatClient.clientIdentifier),
+                      vatClient.registrationDate.map(VatRegDate.apply))),
+                  basket
+                )
+              } else
+                ReviewAuthorisationsBusiness(
+                  basket + AuthorisationRequest(
+                    clientName,
+                    VatInvitation(
+                      Some(business),
+                      Vrn(vatClient.clientIdentifier),
+                      vatClient.registrationDate.map(VatRegDate.apply)))))(
+              business,
+              agent.arn,
+              vatClient.clientIdentifier,
+              HMRCMTDVAT,
+              basket,
+              vatRegDateMatches,
+              showKfcVat)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
           }
+
     }
 
     type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
 
     def identifiedIrvClient(checkDobMatches: CheckDOBMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
-      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(getClientName: GetClientName)(
-      agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
-
+      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(showKfcPir: Boolean)(
+      getClientName: GetClientName)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) =>
         checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse(""))).flatMap {
-          case Some(true) =>
-            checkIfPendingOrActiveAndGoto(clientName =>
+          dobMatches =>
+            checkIfPendingOrActiveThenKnownFactMatchAndGoto(clientName =>
               if (redirectToConfirmVatFlag) {
                 ConfirmClientIrv(
                   AuthorisationRequest(
@@ -256,10 +279,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
               agent.arn,
               irvClient.clientIdentifier,
               HMRCPIR,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
-
-          case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => goto(ClientNotSignedUp(HMRCPIR, basket)) //dubious? citizen record not found
+              basket,
+              dobMatches,
+              showKfcPir)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
         }
     }
 
@@ -334,13 +356,13 @@ object AgentInvitationJourneyModel extends JourneyModel {
           if (confirmation.choice) {
             if ((basket - authorisationRequest).nonEmpty)
               goto(ReviewAuthorisationsPersonal(basket - authorisationRequest))
-            else goto(AllAuthorisationsRemoved())
+            else goto(AllAuthorisationsRemoved)
           } else goto(ReviewAuthorisationsPersonal(basket))
         case DeleteAuthorisationRequestBusiness(authorisationRequest, basket) =>
           if (confirmation.choice) {
             if ((basket - authorisationRequest).nonEmpty)
               goto(ReviewAuthorisationsBusiness(basket - authorisationRequest))
-            else goto(AllAuthorisationsRemoved())
+            else goto(AllAuthorisationsRemoved)
           } else goto(ReviewAuthorisationsBusiness(basket))
       }
   }

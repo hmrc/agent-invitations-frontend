@@ -97,19 +97,19 @@ class AgentInvitationJourneyController @Inject()(
       implicit hc: HeaderCarrier =>
         Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          featureFlags.enableMtdItToConfirm)(invitationsService.getClientNameByService)
+          featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)
     }
   val submitIdentifyVatClient = authorisedAgentActionWithFormWithHC(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
     implicit hc: HeaderCarrier =>
       Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
         invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdVatToConfirm)(invitationsService.getClientNameByService)
+        featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(invitationsService.getClientNameByService)
   }
   val submitIdentifyIrvClient =
     authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
       Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
         invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableIrvToConfirm)(invitationsService.getClientNameByService)
+        featureFlags.enableIrvToConfirm)(featureFlags.showKfcPersonalIncome)(invitationsService.getClientNameByService)
     }
 
   val showConfirmClient = authorisedAgentActionRenderStateWhen {
@@ -145,7 +145,7 @@ class AgentInvitationJourneyController @Inject()(
   val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                 => }
   val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists  => }
   val showActiveAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: ActiveAuthorisationExists => }
-  val showAllAuthorisationsRemoved = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsRemoved   => }
+  val showAllAuthorisationsRemoved = authorisedAgentActionRenderStateWhen { case AllAuthorisationsRemoved      => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
@@ -173,7 +173,7 @@ class AgentInvitationJourneyController @Inject()(
     case ClientNotSignedUp(_, _)            => routes.AgentInvitationJourneyController.showClientNotSignedUp()
     case PendingInvitationExists(_, _)      => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
     case ActiveAuthorisationExists(_, _, _) => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case AllAuthorisationsRemoved()         => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
+    case AllAuthorisationsRemoved           => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
     case _                                  => throw new Exception(s"Link not found for $state")
   }
 
@@ -375,7 +375,7 @@ class AgentInvitationJourneyController @Inject()(
         case ClientNotSignedUp(service, basket) =>
           Ok(not_signed_up(service, basket.nonEmpty))
 
-        case AllAuthorisationsRemoved() =>
+        case AllAuthorisationsRemoved =>
           Ok(all_authorisations_removed(routes.AgentInvitationJourneyController.showClientType()))
       }
   }

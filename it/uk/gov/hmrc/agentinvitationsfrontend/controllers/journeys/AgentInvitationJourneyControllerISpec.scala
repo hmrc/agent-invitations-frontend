@@ -616,5 +616,118 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       }
     }
+    "GET /invitation-sent" should {
+      "show the invitation sent page" in {
+        journeyState.set(
+          InvitationSentPersonal("invitation/link", None),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+        val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage(
+            "generic.title",
+            htmlEscapedMessage("invitation-sent-link.header"),
+            htmlEscapedMessage("title.suffix.agents")))
+
+        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None))
+      }
+    }
+    "GET /delete" should {
+      "show the delete page" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"), Set.empty),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+        val result = controller.showDeleteAuthorisation("ABC123")(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(
+          result,
+          "Are you sure you want to remove your authorisation request for Sylvia Plath?",
+          "You will not send them an authorisation request to report their income and expenses through software"
+        )
+
+        journeyState.get should have[State](DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"), Set.empty))
+      }
+    }
+    "POST /delete" should {
+      "redirect to review-authorisations when yes is selected and there is something left in the basket" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))),
+          List(
+            ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+        journeyState.get should have[State](ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))))
+      }
+      "redirect to all-authorisations-removed when yes is selected and there is nothing left in the basket" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved().url)
+
+        journeyState.get should have[State](AllAuthorisationsRemoved)
+      }
+      "redirect to review-authorisations when no is selected and keep basket the same" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+        journeyState.get should have[State](ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))))
+      }
+    }
   }
 }

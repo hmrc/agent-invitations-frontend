@@ -192,6 +192,63 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"AllAuthorisationsFailed", "properties": {"basket": []}}""")
           .as[State] shouldBe AllAuthorisationsFailed(Set.empty)
       }
+      "DeleteAuthorisationsPersonal" in {
+        val state = DeleteAuthorisationRequestPersonal(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"DeleteAuthorisationRequestPersonal","properties":{"authorisationRequest":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "DeleteAuthorisationsBusiness" in {
+        val state = DeleteAuthorisationRequestBusiness(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10"))),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{"state":"DeleteAuthorisationRequestBusiness","properties":{"authorisationRequest":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "AllAuthorisationsRemoved" in {
+        val state = AllAuthorisationsRemoved
+        val json = Json.parse("""{"state":"AllAuthorisationsRemoved"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ClientNotSignedUp" in {
+        val state = ClientNotSignedUp(HMRCMTDIT, Set.empty)
+        val json = Json.parse("""{"state":"ClientNotSignedUp","properties":{"service": "HMRC-MTD-IT", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "PendingInvitationExists" in {
+        val state = PendingInvitationExists(personal, Set.empty)
+        val json =
+          Json.parse("""{"state":"PendingInvitationExists","properties":{"clientType": "personal", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ActiveAuthorisationExists" in {
+        val state = ActiveAuthorisationExists(personal, HMRCMTDIT, Set.empty)
+        val json = Json.parse(
+          """{"state":"ActiveAuthorisationExists","properties":{"clientType": "personal", "service": "HMRC-MTD-IT", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
     }
 
   }

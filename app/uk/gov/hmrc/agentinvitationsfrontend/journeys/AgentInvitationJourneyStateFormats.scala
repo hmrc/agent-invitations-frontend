@@ -39,7 +39,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
   val PendingInvitationExistsFormat = Json.format[PendingInvitationExists]
-  val ActiveRelationshipExistsFormat = Json.format[ActiveAuthorisationExists]
+  val ActiveAuthorisationExistsFormat = Json.format[ActiveAuthorisationExists]
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
@@ -68,7 +68,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: AllAuthorisationsFailed            => AllAuthorisationsFailedFormat.writes(s)
     case s: ClientNotSignedUp                  => ClientNotSignedUpFormat.writes(s)
     case s: PendingInvitationExists            => PendingInvitationExistsFormat.writes(s)
-    case s: ActiveAuthorisationExists          => ActiveRelationshipExistsFormat.writes(s)
+    case s: ActiveAuthorisationExists          => ActiveAuthorisationExistsFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -92,7 +92,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "AllAuthorisationsFailed"            => AllAuthorisationsFailedFormat.reads(properties)
     case "ClientNotSignedUp"                  => ClientNotSignedUpFormat.reads(properties)
     case "PendingInvitationExists"            => PendingInvitationExistsFormat.reads(properties)
-    case "ActiveRelationshipExists"           => ActiveRelationshipExistsFormat.reads(properties)
+    case "ActiveAuthorisationExists"          => ActiveAuthorisationExistsFormat.reads(properties)
+    case "AllAuthorisationsRemoved"           => JsSuccess(AllAuthorisationsRemoved)
     case _                                    => JsError(s"Unknown state name $stateName")
   }
 
