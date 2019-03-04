@@ -16,7 +16,7 @@ POST        /agents/identify-irv-client                         @uk.gov.hmrc.age
 GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showConfirmClient
 POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitConfirmClient
 GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showReviewAuthorisations
-POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.authorisationsReviewed
+POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitReviewAuthorisations
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showInvitationSent
 GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
 POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitDeleteAuthorisation

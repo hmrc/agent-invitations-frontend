@@ -585,7 +585,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           )
         )
 
-        val result = controller.authorisationsReviewed(
+        val result = controller.submitReviewAuthorisations(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
         status(result) shouldBe 303
@@ -606,7 +606,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           )
         )
 
-        val result = controller.authorisationsReviewed(
+        val result = controller.submitReviewAuthorisations(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
         status(result) shouldBe 303

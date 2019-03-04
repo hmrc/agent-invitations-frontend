@@ -126,7 +126,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ReviewAuthorisationsBusiness =>
   }
 
-  val authorisationsReviewed = authorisedAgentActionWithFormWithHCWithRequest(ReviewAuthorisationsForm) {
+  val submitReviewAuthorisations = authorisedAgentActionWithFormWithHCWithRequest(ReviewAuthorisationsForm) {
     implicit hc => implicit request =>
       Transitions.authorisationsReviewed(invitationsService.createMultipleInvitations)(
         invitationsService.createAgentLink)
@@ -297,7 +297,7 @@ class AgentInvitationJourneyController @Inject()(
               ReviewAuthorisationsPageConfig(
                 basket,
                 featureFlags,
-                routes.AgentInvitationJourneyController.authorisationsReviewed()),
+                routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
               formWithErrors.or(ReviewAuthorisationsForm),
               backLinkFor(breadcrumbs)
             ))
@@ -308,7 +308,7 @@ class AgentInvitationJourneyController @Inject()(
               ReviewAuthorisationsPageConfig(
                 basket,
                 featureFlags,
-                routes.AgentInvitationJourneyController.authorisationsReviewed()),
+                routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
               formWithErrors.or(ReviewAuthorisationsForm),
               backLinkFor(breadcrumbs)
             ))
