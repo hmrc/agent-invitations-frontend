@@ -282,7 +282,6 @@ class AgentsInvitationController @Inject()(
           throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
         invitationsService.createAgentLink(arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
-          val invitationUrl: String = s"${externalUrls.agentInvitationsExternalUrl}$agentLink"
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
           //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
           agentSessionCache
@@ -294,7 +293,8 @@ class AgentsInvitationController @Inject()(
               Ok(
                 invitation_sent(
                   InvitationSentPageConfig(
-                    invitationUrl,
+                    agentLink,
+                    session.continueUrl,
                     continueUrlExists,
                     featureFlags.enableTrackRequests,
                     ClientType.fromEnum(clientTypeForInvitationSent),

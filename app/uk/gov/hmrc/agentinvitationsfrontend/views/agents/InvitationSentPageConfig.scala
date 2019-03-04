@@ -17,16 +17,21 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import org.joda.time.LocalDate
 import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 case class InvitationSentPageConfig(
-  invitationUrl: String,
+  relativeInvitationUrl: String,
+  continueUrlOpt: Option[String],
   hasContinueUrl: Boolean,
   trackRequests: Boolean,
   clientType: String,
-  expiryDate: LocalDate) {
+  expiryDate: LocalDate)(implicit externalUrls: ExternalUrls) {
 
-  val continueUrl: Call = routes.AgentsInvitationController.continueAfterInvitationSent()
+  val continueUrl: String = continueUrlOpt match {
+    case Some(url) => url
+    case None      => s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+  }
 
   val trackUrl: Call = routes.AgentsRequestTrackingController.showTrackRequests()
 

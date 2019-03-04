@@ -75,7 +75,7 @@ class AgentInvitationJourneyController @Inject()(
   val submitClientType = authorisedAgentActionWithForm(SelectClientTypeForm)(Transitions.selectedClientType)
 
   val showSelectService = authorisedAgentActionRenderStateWhen {
-    case _: SelectPersonalService | _: SelectBusinessService =>
+    case _: SelectPersonalService | SelectBusinessService =>
   }
 
   val submitPersonalSelectService =
@@ -89,7 +89,7 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
 
   val showIdentifyClient = authorisedAgentActionRenderStateWhen {
-    case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>
+    case _: IdentifyPersonalClient | IdentifyBusinessClient =>
   }
 
   val submitIdentifyItsaClient =
@@ -99,12 +99,14 @@ class AgentInvitationJourneyController @Inject()(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
           featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)
     }
-  val submitIdentifyVatClient = authorisedAgentActionWithFormWithHC(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
-    implicit hc: HeaderCarrier =>
-      Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(invitationsService.getClientNameByService)
-  }
+  val submitIdentifyVatClient =
+    authorisedAgentActionWithFormWithHCWithRequest(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
+      implicit hc: HeaderCarrier => implicit request =>
+        Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
+          featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(invitationsService.getClientNameByService)(
+          invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+    }
   val submitIdentifyIrvClient =
     authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
       Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
@@ -119,11 +121,13 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientIrv         =>
   }
 
-  val submitConfirmClient = authorisedAgentActionWithForm(ConfirmClientForm)(Transitions.clientConfirmed)
+  val submitConfirmClient = authorisedAgentActionWithFormWithHCWithRequest(ConfirmClientForm) {
+    implicit hc => implicit request =>
+      Transitions.clientConfirmed(invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+  }
 
   val showReviewAuthorisations = authorisedAgentActionRenderStateWhen {
     case _: ReviewAuthorisationsPersonal =>
-    case _: ReviewAuthorisationsBusiness =>
   }
 
   val submitReviewAuthorisations = authorisedAgentActionWithFormWithHCWithRequest(ReviewAuthorisationsForm) {
@@ -138,7 +142,9 @@ class AgentInvitationJourneyController @Inject()(
   def submitDeleteAuthorisation =
     authorisedAgentActionWithForm(DeleteAuthorisationForm)(Transitions.confirmDeleteAuthorisationRequest)
 
-  val showInvitationSent = authorisedAgentActionRenderStateWhen { case _: InvitationSentPersonal               => }
+  val showInvitationSent = authorisedAgentActionRenderStateWhen {
+    case _: InvitationSentPersonal | _: InvitationSentBusiness =>
+  }
   val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                      => }
   val showSomeAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: SomeAuthorisationsFailed   => }
   val showAllAuthorisationsFailed = authorisedAgentActionRenderStateWhen { case _: AllAuthorisationsFailed     => }
@@ -151,20 +157,17 @@ class AgentInvitationJourneyController @Inject()(
   override def getCallFor(state: State): Call = state match {
     case SelectClientType(_)             => routes.AgentInvitationJourneyController.showClientType()
     case SelectPersonalService(_, _)     => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService(_)        => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
     case IdentifyPersonalClient(_, _)    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyBusinessClient(_)       => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
     case ConfirmClientItsa(_, _)         => routes.AgentInvitationJourneyController.showConfirmClient()
     case ConfirmClientIrv(_, _)          => routes.AgentInvitationJourneyController.showConfirmClient()
     case ConfirmClientPersonalVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientBusinessVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
+    case ConfirmClientBusinessVat(_)     => routes.AgentInvitationJourneyController.showConfirmClient()
     case ReviewAuthorisationsPersonal(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case ReviewAuthorisationsBusiness(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) => {
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     }
-    case DeleteAuthorisationRequestBusiness(authorisationRequest, _) =>
-      routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case InvitationSentPersonal(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case InvitationSentBusiness(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case KnownFactNotMatched(_)             => routes.AgentInvitationJourneyController.showNotMatched()
@@ -203,12 +206,12 @@ class AgentInvitationJourneyController @Inject()(
               )
             ))
 
-        case SelectBusinessService(basket) =>
+        case SelectBusinessService =>
           Ok(
             business_select_service(
               formWithErrors.or(SelectBusinessServiceForm),
               BusinessSelectServicePageConfig(
-                basket.nonEmpty,
+                basketFlag = false,
                 routes.AgentInvitationJourneyController.submitBusinessSelectService(),
                 backLinkFor(breadcrumbs),
                 routes.AgentInvitationJourneyController.showReviewAuthorisations()
@@ -245,7 +248,7 @@ class AgentInvitationJourneyController @Inject()(
             )
           )
 
-        case IdentifyBusinessClient(_) =>
+        case IdentifyBusinessClient =>
           Ok(
             identify_client_vat(
               formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
@@ -282,7 +285,7 @@ class AgentInvitationJourneyController @Inject()(
               routes.AgentInvitationJourneyController.submitConfirmClient()
             ))
 
-        case ConfirmClientBusinessVat(authorisationRequest, _) =>
+        case ConfirmClientBusinessVat(authorisationRequest) =>
           Ok(
             confirm_client(
               authorisationRequest.clientName,
@@ -302,21 +305,7 @@ class AgentInvitationJourneyController @Inject()(
               backLinkFor(breadcrumbs)
             ))
 
-        case ReviewAuthorisationsBusiness(basket) =>
-          Ok(
-            review_authorisations(
-              ReviewAuthorisationsPageConfig(
-                basket,
-                featureFlags,
-                routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-              formWithErrors.or(ReviewAuthorisationsForm),
-              backLinkFor(breadcrumbs)
-            ))
-
         case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
-          Ok(delete(DeletePageConfig(authorisationRequest), DeleteAuthorisationForm))
-
-        case DeleteAuthorisationRequestBusiness(authorisationRequest, _) =>
           Ok(delete(DeletePageConfig(authorisationRequest), DeleteAuthorisationForm))
 
         case InvitationSentPersonal(invitationLink, continueUrl) =>
@@ -324,6 +313,7 @@ class AgentInvitationJourneyController @Inject()(
             invitation_sent(
               InvitationSentPageConfig(
                 invitationLink,
+                None,
                 continueUrl.isDefined,
                 featureFlags.enableTrackRequests,
                 ClientType.fromEnum(personal),
@@ -334,6 +324,7 @@ class AgentInvitationJourneyController @Inject()(
             invitation_sent(
               InvitationSentPageConfig(
                 invitationLink,
+                None,
                 continueUrl.isDefined,
                 featureFlags.enableTrackRequests,
                 ClientType.fromEnum(business),

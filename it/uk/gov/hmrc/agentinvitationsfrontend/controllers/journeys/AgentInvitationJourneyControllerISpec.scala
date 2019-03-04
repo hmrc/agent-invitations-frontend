@@ -95,7 +95,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      journeyState.get should have[State](SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+      journeyState.get should have[State](SelectBusinessService, List(SelectClientType(emptyBasket)))
     }
 
     "redisplay the page with errors if nothing is selected" in {
@@ -181,7 +181,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val request = FakeRequest("POST", "/agents/select-business-service")
 
       "redirect to identify-client when yes is selected" in {
-        journeyState.set(SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+        journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
         val result = controller.submitBusinessSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -190,11 +190,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
         journeyState.get should have[State](
-          IdentifyBusinessClient(emptyBasket),
-          List(SelectBusinessService(emptyBasket), SelectClientType(emptyBasket)))
+          IdentifyBusinessClient,
+          List(SelectBusinessService, SelectClientType(emptyBasket)))
       }
       "redirect to select-client-type when no is selected" in {
-        journeyState.set(SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+        journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
         val result = controller.submitBusinessSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
@@ -204,7 +204,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](
           SelectClientType(emptyBasket),
-          List(SelectBusinessService(emptyBasket), SelectClientType(emptyBasket)))
+          List(SelectBusinessService, SelectClientType(emptyBasket)))
       }
     }
 
@@ -475,8 +475,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "show the confirm client page for VAT service" in {
         givenClientDetails(Vrn("202949960"))
         journeyState.set(
-          ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")))), emptyBasket),
-          List(IdentifyBusinessClient(emptyBasket), SelectBusinessService(emptyBasket), SelectClientType(emptyBasket))
+          ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10"))))),
+          List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
         )
 
         val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
@@ -486,8 +486,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
 
         journeyState.get should havePattern[State](
-          { case  ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")),_,_),_,_), `emptyBasket`) => },
-          List(IdentifyBusinessClient(emptyBasket), SelectBusinessService(emptyBasket), SelectClientType(emptyBasket))
+          { case  ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")),_,_),_,_)) => },
+          List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
         )
       }
     }
