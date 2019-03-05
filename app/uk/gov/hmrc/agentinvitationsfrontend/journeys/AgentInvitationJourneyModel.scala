@@ -121,10 +121,12 @@ object AgentInvitationJourneyModel extends JourneyModel {
       service: String,
       basket: Basket = Set.empty,
       knownFactMatches: Option[Boolean],
-      kfcFlag: Boolean)(
+      kfcFlag: Boolean,
+      redirectToConfirmFlag: Boolean)(
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship,
       getClientName: GetClientName): Future[State] = {
+
       val checkIfPendingOrActive = for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
                                      basket.exists(_.invitation.clientId == clientIdentifier))
@@ -148,9 +150,14 @@ object AgentInvitationJourneyModel extends JourneyModel {
       if (!kfcFlag) checkIfPendingOrActive
       else {
         knownFactMatches match {
-          case Some(true)  => checkIfPendingOrActive
-          case Some(false) => goto(KnownFactNotMatched(basket))
-          case None        => goto(ClientNotSignedUp(service, basket))
+          case Some(true) if redirectToConfirmFlag =>
+            getClientName(clientIdentifier, service).flatMap { clientNameOpt =>
+              val clientName = clientNameOpt.getOrElse("")
+              goto(successState(clientName))
+            }
+          case Some(true) if !redirectToConfirmFlag => checkIfPendingOrActive
+          case Some(false)                          => goto(KnownFactNotMatched(basket))
+          case None                                 => goto(ClientNotSignedUp(service, basket))
         }
 
       }
@@ -184,7 +191,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
               HMRCMTDIT,
               basket,
               postcodeMatches,
-              showKfcItsa)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
+              showKfcItsa,
+              redirectToConfirmItsaFlag)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
         }
     }
 
@@ -225,7 +233,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
               HMRCMTDVAT,
               basket,
               vatRegDateMatches,
-              showKfcVat)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
+              showKfcVat,
+              redirectToConfirmVatFlag)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
           }
       case IdentifyBusinessClient =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
@@ -287,26 +296,32 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
 
     def identifiedIrvClient(checkDobMatches: CheckDOBMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
-      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(showKfcPir: Boolean)(
+      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmIrvFlag: Boolean)(showKfcPir: Boolean)(
       getClientName: GetClientName)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) =>
         checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse(""))).flatMap {
           dobMatches =>
-            checkIfPendingOrActiveThenKnownFactMatchAndGoto(clientName =>
-              if (redirectToConfirmVatFlag) {
-                ConfirmClientIrv(
-                  AuthorisationRequest(
-                    clientName,
-                    PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
-                  basket)
-              } else ReviewAuthorisationsPersonal(basket))(
+            checkIfPendingOrActiveThenKnownFactMatchAndGoto(
+              clientName =>
+                if (redirectToConfirmIrvFlag) {
+                  ConfirmClientIrv(
+                    AuthorisationRequest(
+                      clientName,
+                      PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
+                    basket)
+                } else
+                  ReviewAuthorisationsPersonal(
+                    basket + AuthorisationRequest(
+                      clientName,
+                      PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply)))))(
               personal,
               agent.arn,
               irvClient.clientIdentifier,
               HMRCPIR,
               basket,
               dobMatches,
-              showKfcPir)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
+              showKfcPir,
+              redirectToConfirmIrvFlag)(hasPendingInvitationsFor, hasActiveRelationshipFor, getClientName)
         }
     }
 
@@ -323,25 +338,75 @@ object AgentInvitationJourneyModel extends JourneyModel {
                  else goto(SomeAuthorisationsFailed(basket))
       } yield result
 
+    private def checkIfPendingOrActiveAndGoto(successState: State)(
+      clientType: ClientType,
+      arn: Arn,
+      clientIdentifier: String,
+      service: String,
+      basket: Basket = Set.empty)(
+      hasPendingInvitationsFor: HasPendingInvitations,
+      hasActiveRelationshipFor: HasActiveRelationship): Future[State] =
+      for {
+        hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
+                                     basket.exists(_.invitation.clientId == clientIdentifier))
+                                  Future.successful(true)
+                                else
+                                  hasPendingInvitationsFor(arn, clientIdentifier, service)
+        result <- if (hasPendingInvitations) {
+                   goto(PendingInvitationExists(clientType, basket))
+                 } else {
+                   hasActiveRelationshipFor(arn, clientIdentifier, service).flatMap {
+                     case true  => goto(ActiveAuthorisationExists(clientType, service, basket))
+                     case false => goto(successState)
+                   }
+                 }
+      } yield result
+
     def clientConfirmed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
+      hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
       authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case ConfirmClientItsa(request, basket) =>
-        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket + request))
-        else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+            personal,
+            authorisedAgent.arn,
+            request.invitation.clientId,
+            HMRCMTDIT,
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+        } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
       case ConfirmClientIrv(request, basket) =>
-        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket + request))
-        else goto(IdentifyPersonalClient(HMRCPIR, basket))
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+            personal,
+            authorisedAgent.arn,
+            request.invitation.clientId,
+            HMRCPIR,
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+        } else goto(IdentifyPersonalClient(HMRCPIR, basket))
       case ConfirmClientPersonalVat(request, basket) =>
-        if (confirmation.choice) goto(ReviewAuthorisationsPersonal(basket + request))
-        else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+            personal,
+            authorisedAgent.arn,
+            request.invitation.clientId,
+            HMRCMTDVAT,
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+        } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
       case ConfirmClientBusinessVat(request) =>
         if (confirmation.choice) {
-          getAgentLink(authorisedAgent.arn, Some(business)).flatMap { invitationLink =>
+          val successState = getAgentLink(authorisedAgent.arn, Some(business)).flatMap { invitationLink =>
             createAndProcessInvitations(
               InvitationSentBusiness(invitationLink, None),
               Set(request),
               createMultipleInvitations,
               authorisedAgent.arn)
+          }
+          successState.flatMap { state =>
+            checkIfPendingOrActiveAndGoto(state)(
+              business,
+              authorisedAgent.arn,
+              request.invitation.clientId,
+              HMRCMTDVAT)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           }
         } else goto(IdentifyBusinessClient)
     }

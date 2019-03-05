@@ -123,7 +123,8 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitConfirmClient = authorisedAgentActionWithFormWithHCWithRequest(ConfirmClientForm) {
     implicit hc => implicit request =>
-      Transitions.clientConfirmed(invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.clientConfirmed(invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)(
+        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
   }
 
   val showReviewAuthorisations = authorisedAgentActionRenderStateWhen {

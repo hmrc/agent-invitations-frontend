@@ -240,8 +240,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenMatchingClientIdAndPostcode(Nino(nino), "BN114AW")
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
-        givenCheckRelationshipItsaWithStatus(arn, nino, 404)
         givenTradingName(Nino(nino), "Sylvia Plath")
 
         journeyState.set(
@@ -295,8 +293,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
-        givenGetAllPendingInvitationsReturnsEmpty(arn, "202949960", HMRCMTDVAT)
-        givenCheckRelationshipVatWithStatus(arn, "202949960", 404)
         givenClientDetails(Vrn("202949960"))
 
         journeyState.set(
@@ -380,8 +376,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
-        journeyState.get should have[State](
-          ReviewAuthorisationsPersonal(emptyBasket),
+        journeyState.get should havePattern[State](
+          { case  ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => },
           List(
             IdentifyPersonalClient(HMRCPIR, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
@@ -496,6 +492,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val request = FakeRequest("POST", "/agents/confirm-client")
 
       "redirect to the review authorisations page when yes is selected" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+        givenCheckRelationshipVatWithStatus(arn, vrn, 404)
         journeyState.set(
           ConfirmClientPersonalVat(AuthorisationRequest("GDT",VatInvitation(Some(personal), Vrn(vrn), Some(VatRegDate("10/10/10")))), `emptyBasket`),
           List(
