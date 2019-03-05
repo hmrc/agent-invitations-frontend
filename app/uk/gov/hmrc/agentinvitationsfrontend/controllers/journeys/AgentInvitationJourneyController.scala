@@ -93,11 +93,12 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitIdentifyItsaClient =
-    authorisedAgentActionWithFormWithHC(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)) {
-      implicit hc: HeaderCarrier =>
+    authorisedAgentActionWithFormWithHCWithRequest(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)) {
+      implicit hc: HeaderCarrier => implicit request =>
         Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)
+          featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)(
+          invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
     }
   val submitIdentifyVatClient =
     authorisedAgentActionWithFormWithHCWithRequest(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
@@ -108,10 +109,13 @@ class AgentInvitationJourneyController @Inject()(
           invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
     }
   val submitIdentifyIrvClient =
-    authorisedAgentActionWithFormWithHC(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) { implicit hc =>
-      Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableIrvToConfirm)(featureFlags.showKfcPersonalIncome)(invitationsService.getClientNameByService)
+    authorisedAgentActionWithFormWithHCWithRequest(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) {
+      implicit hc => implicit request =>
+        Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
+          featureFlags.enableIrvToConfirm)(featureFlags.showKfcPersonalIncome)(
+          invitationsService.getClientNameByService)(invitationsService.createMultipleInvitations)(
+          invitationsService.createAgentLink)
     }
 
   val showConfirmClient = authorisedAgentActionRenderStateWhen {
