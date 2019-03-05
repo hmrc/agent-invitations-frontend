@@ -412,7 +412,7 @@ abstract class BaseInvitationController(
       case Some(vatRegDate) =>
         invitationsService
           .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, vatRegDate) flatMap {
-          case Some(true) =>
+          case Some(204) =>
             maybeResultIfPendingInvitationsOrRelationshipExistFor(
               arn,
               agentSession.clientIdentifier.getOrElse(""),
@@ -439,13 +439,18 @@ abstract class BaseInvitationController(
                     }
                   }
               }
-
-          case Some(false) =>
+          case Some(403) =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
             Redirect(notMatchedCall)
+            Redirect(routes.AgentsErrorController.notMatched())
+          case Some(423) =>
+            Logger(getClass).warn(
+              s"${arn.value}'s Invitation Creation Failed: Vat Details are currently being migrated.")
+            Redirect(routes.AgentsErrorController.cannotCreateRequest())
           case None =>
             Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
             Redirect(routes.AgentsInvitationController.notSignedUp())
+          case _ => throw new IllegalStateException("Unknown response occurred while verifying known facts for VAT")
         }
       case None =>
         redirectOrShowConfirmClient(agentSession, featureFlags) {

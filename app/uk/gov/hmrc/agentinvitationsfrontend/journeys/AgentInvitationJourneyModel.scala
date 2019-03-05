@@ -45,6 +45,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
     case class ActiveRelationshipExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
+    case class CannotCreateRequest(basket: Basket) extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientIrv(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
@@ -150,7 +151,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Boolean]]
+    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
 
     def identifiedVatClient(checkRegDateMatches: CheckRegDateMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(getClientName: GetClientName)(agent: AuthorisedAgent)(
@@ -159,7 +160,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           .flatMap {
-            case Some(true) =>
+            case Some(204) =>
               checkIfPendingOrActiveAndGoto(
                 clientName =>
                   ConfirmClientPersonalVat(
@@ -175,14 +176,15 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 hasActiveRelationshipFor,
                 getClientName)
 
-            case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+            case Some(403) => goto(KnownFactNotMatched(basket))
+            case Some(423) => goto(CannotCreateRequest(basket))
+            case None      => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
 
       case IdentifyBusinessClient(basket) =>
         checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           .flatMap {
-            case Some(true) =>
+            case Some(204) =>
               checkIfPendingOrActiveAndGoto(
                 clientName =>
                   ConfirmClientBusinessVat(
@@ -198,8 +200,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 hasActiveRelationshipFor,
                 getClientName)
 
-            case Some(false) => goto(KnownFactNotMatched(basket))
-            case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+            case Some(403) => goto(KnownFactNotMatched(basket))
+            case Some(423) => goto(CannotCreateRequest(basket))
+            case None      => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
           }
     }
 

@@ -58,6 +58,7 @@ GET         /agents/already-authorisation-present                            @uk
 GET         /agents/all-create-authorisation-failed                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.allCreateAuthorisationFailed
 GET         /agents/some-create-authorisation-failed                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.someCreateAuthorisationFailed
 GET         /agents/not-authorised                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notAuthorised
+GET         /agents/cannot-create-request                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.cannotCreateRequest
 
 # Request tracking
 GET         /track                                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
