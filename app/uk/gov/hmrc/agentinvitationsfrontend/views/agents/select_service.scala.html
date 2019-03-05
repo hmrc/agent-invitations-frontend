@@ -16,29 +16,29 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.UserInputNinoAndPostcode
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(agentInvitationsForm: Form[String], services: Seq[(String, String)], basketFlag: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
+@(agentInvitationsForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-@back_link(routes.AgentsInvitationController.showClientType().url)
+@back_link(config.backLink)
 
 @if(agentInvitationsForm.hasErrors) {
     @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
 }
 
 @form(
-action = routes.AgentsInvitationController.submitSelectService(),
+action = config.submitCall,
 'class -> "form js-form") {
 
 <div class="form-group">
     @input_radio_group(
     agentInvitationsForm("serviceType"),
-    services,
+    config.enabledPersonalServices,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
     """<span class="form-hint">""" + Messages("select-service.hint") + """</span>"""),
@@ -63,8 +63,8 @@ action = routes.AgentsInvitationController.submitSelectService(),
 <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
 }
 
-@if(basketFlag) {
-<p class="margin-top-40"><a class="text-link-small" href="@routes.AgentsInvitationController.showReviewAuthorisations()">@Messages("select-service.review-auth-link")</a></p>
+@if(config.basketFlag) {
+<p class="margin-top-40"><a class="text-link-small" href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a></p>
 }
 
 }

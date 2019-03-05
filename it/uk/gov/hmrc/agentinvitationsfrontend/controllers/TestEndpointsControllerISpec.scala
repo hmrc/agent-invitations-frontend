@@ -1,13 +1,19 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
 
 class TestEndpointsControllerISpec extends BaseISpec {
 
   lazy val controller: TestEndpointsController = app.injector.instanceOf[TestEndpointsController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
+
   val clientId = "AA123456A"
   val afiService = "PERSONAL-INCOME-RECORD"
   val relationshipForm = Seq(

@@ -28,7 +28,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FrontendPasscodeVerific
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.otac.OtacAuthConnector
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.cache.client.SessionCache
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -50,7 +49,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindProperty("appName")
 
-    bind(classOf[SessionCache]).to(classOf[InvitationsSessionCache])
     bind(classOf[HttpGet]).to(classOf[HttpVerbs])
     bind(classOf[HttpPost]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
@@ -102,6 +100,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.redirect-to-confirm-mtd-it")
     bindBooleanProperty("features.redirect-to-confirm-mtd-vat")
     bindBooleanProperty("features.show-agent-led-de-auth")
+
+    bindIntegerProperty("mongodb.session.expireAfterSeconds")
   }
 
   private def bindBaseUrl(serviceName: String) =
@@ -163,15 +163,4 @@ class HttpVerbs @Inject()(
   override val hooks = Seq(AuditingHook)
 
   override def configuration: Option[Config] = Some(config.underlying)
-}
-
-@Singleton
-class InvitationsSessionCache @Inject()(
-  val http: HttpVerbs,
-  @Named("appName") val appName: String,
-  @Named("cachable.session-cache-baseUrl") val baseUrl: URL,
-  @Named("cachable.session-cache.domain") val domain: String)
-    extends SessionCache {
-  override lazy val defaultSource = appName
-  override lazy val baseUri = baseUrl.toExternalForm
 }

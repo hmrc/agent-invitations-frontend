@@ -18,12 +18,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 
 object ClientTypeForm {
   val form = Form(
     single(
       "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    )
+    ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
 }

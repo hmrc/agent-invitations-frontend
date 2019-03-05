@@ -4,9 +4,10 @@ import java.net.URL
 
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentInvitation, AgentReferenceRecord, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,17 +23,17 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
       "return multi-invitation link for valid data" in {
 
-        givenAgentReference(arn, hash, personal.get)
+        givenAgentReference(arn, hash, personal)
 
         val result = await(connector.createAgentLink(arn, "personal"))
         result.isDefined shouldBe true
         result.get should include(
-          s"invitations/${personal.get}/$hash/99-with-flake"
+          s"invitations/$personal/$hash/99-with-flake"
         )
       }
 
       "return an error if unexpected response when creating multi-invitation link" in {
-        givenAgentReferenceNotFound(arn, personal.get)
+        givenAgentReferenceNotFound(arn, personal)
         intercept[NotFoundException] {
           await(connector.createAgentLink(arn, "personal"))
         }
@@ -52,11 +53,11 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation(Some("personal"), "HMRC-MTD-IT", "ni", "AB123456B")
+      val agentInvitationITSA = AgentInvitation(Some(personal), "HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           "AB123456B",
           invitationIdITSA,
           "AB123456B",
@@ -78,11 +79,11 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation(Some("personal"), "PERSONAL-INCOME-RECORD", "ni", "AB123456B")
+      val agentInvitationPIR = AgentInvitation(Some(personal), "PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          personal,
+          Some(personal),
           "AB123456B",
           invitationIdPIR,
           "AB123456B",
@@ -103,11 +104,11 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation(Some("business"), "HMRC-MTD-VAT", "vrn", validVrn.value)
+      val agentInvitationVAT = AgentInvitation(Some(business), "HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          business,
+          Some(business),
           validVrn.value,
           invitationIdVAT,
           validVrn.value,

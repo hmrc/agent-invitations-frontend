@@ -46,9 +46,9 @@ if(knownFactFlag) {"identify-client.header"}
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
-  @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-30">@Messages("identify-client.header")</h1>
+  @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
-  <p>@Messages("identify-client.itsa.p1")</p>}
+  <p class="hint-text">@Messages("identify-client.itsa.p1")</p>}
 
  @form(
   action = submitFormCall, 'class -> "form js-form") {
@@ -72,7 +72,7 @@ if(knownFactFlag) {"identify-client.header"}
          agentInvitationsForm("clientIdentifier"),
          '_label -> Messages("identify-client.nino.label"),
          '_inputClass -> "form-control",
-         '_labelTextClass -> "form-label-bold",
+         '_labelTextClass -> "form-label",
          '_inputHint -> Messages("identify-client.nino.hint"),
          '_labelClass -> "soft--ends"
      )
@@ -83,7 +83,7 @@ if(knownFactFlag) {"identify-client.header"}
              agentInvitationsForm("postcode"),
              '_label -> Messages("identify-client.postcode.label"),
              '_inputClass -> "form-control",
-             '_labelTextClass -> "form-label-bold",
+             '_labelTextClass -> "form-label",
              '_inputHint -> Messages("identify-client.postcode.hint"),
              '_labelClass -> "soft--ends"
          )

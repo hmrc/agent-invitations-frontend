@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{put, status, _}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -11,15 +11,14 @@ import uk.gov.hmrc.domain.Nino
 trait ACAStubs {
   me: WireMockSupport =>
 
-  def givenAgentReference(arn: Arn, uid: String, clientType: String): Any =
+  def givenAgentReference(arn: Arn, uid: String, clientType: ClientType): Any =
     stubFor(
       post(urlEqualTo(
         s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType"))
         .willReturn(
           aResponse()
             .withStatus(201)
-            .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")
-            .withHeader("sessionId", "Session12345")))
+            .withHeader("location", s"/invitations/$clientType/$uid/99-with-flake")))
 
   def givenAgentReferenceRecordExistsForUid(arn: Arn, uid: String): Unit =
     stubFor(
@@ -202,7 +201,7 @@ trait ACAStubs {
                          |[]
                          |""".stripMargin)))
 
-  def givenAgentReferenceNotFound(arn: Arn, clientType: String): Unit =
+  def givenAgentReferenceNotFound(arn: Arn, clientType: ClientType): Unit =
     stubFor(
       post(urlEqualTo(
         s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType"))
@@ -211,7 +210,7 @@ trait ACAStubs {
 
   def givenInvitationCreationSucceeds(
     arn: Arn,
-    clientType: Option[String],
+    clientType: Option[ClientType],
     clientId: String,
     invitationId: InvitationId,
     suppliedClientId: String,
@@ -243,7 +242,7 @@ trait ACAStubs {
 
   def givenInvitationCreationFailsForService(
                                        arn: Arn,
-                                       clientType: Option[String],
+                                       clientType: Option[ClientType],
                                        clientId: String,
                                        invitationId: InvitationId,
                                        suppliedClientId: String,

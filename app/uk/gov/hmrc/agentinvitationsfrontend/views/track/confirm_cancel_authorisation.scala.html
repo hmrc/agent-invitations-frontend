@@ -29,8 +29,8 @@
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
-@legend = @{"""<h1 class="heading-xlarge """ + marginTop + """">""" + Messages("confirm-authorisation-cancelled.header") + """</h1>""" +
-        """<p>""" + Messages(s"confirm-authorisation-cancelled.p1.$service") + """</p>""" + """<p class="panel panel-border-wide">""" +
+@legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-authorisation-cancelled.header") + """</h1>""" +
+        """<p class="hint-text">""" + Messages(s"confirm-authorisation-cancelled.p1.$service") + """</p>""" + """<p class="panel panel-border-wide">""" +
  Messages("confirm-authorisation-cancelled.warning") + """</p>"""}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
@@ -43,13 +43,15 @@
 
   @form(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
-   @input_radio_group(
-    confirmForm("confirmCancelAuthorisation"),
-    Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
-    '_legend -> Html(legend),
-    '_groupDivClass -> "form-group soft--ends",
-    '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
-   )
+    <div class="govuk-radios--inline">
+     @input_radio_group(
+      confirmForm("confirmCancelAuthorisation"),
+      Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
+      '_legend -> Html(legend),
+      '_groupDivClass -> "form-group soft--ends",
+      '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
+     )
+    </div>
 
    <div class="form-group">
     <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>

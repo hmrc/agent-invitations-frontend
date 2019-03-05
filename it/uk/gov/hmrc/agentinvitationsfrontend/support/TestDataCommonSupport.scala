@@ -30,9 +30,7 @@ trait TestDataCommonSupport {
   val validRegistrationDate = "2007-07-07"
   val dateOfBirth = "1980-07-07"
   val validVrn9755 = Vrn("101747641")
-
-  val personal = Some("personal")
-  val business = Some("business")
+  val vrn = "101747696"
 
   val uid = "X4BZC17W"
   val normalisedAgentName = "99-with-flake"

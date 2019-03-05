@@ -35,6 +35,7 @@ import scala.util.control.NonFatal
 @Singleton
 class InvitationsService @Inject()(
   invitationsConnector: InvitationsConnector,
+  featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
   auditService: AuditService)
@@ -75,11 +76,7 @@ class InvitationsService @Inject()(
       }
   }
 
-  def createMultipleInvitations(
-    arn: Arn,
-    clientType: String,
-    requests: Set[AuthorisationRequest],
-    featureFlags: FeatureFlags)(
+  def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest])(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =
@@ -120,11 +117,16 @@ class InvitationsService @Inject()(
         }
     }))
 
-  def createAgentLink(arn: Arn, clientType: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    invitationsConnector.createAgentLink(arn, clientType).map {
-      case Some(multiInv) => multiInv
-      case None           => throw new Exception("Creating multi-invitation link failed")
-    }
+  def createAgentLink(arn: Arn, clientType: Option[ClientType])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[String] =
+    clientType
+      .map(ct =>
+        invitationsConnector.createAgentLink(arn, ClientType.fromEnum(ct)).map {
+          case Some(multiInv) => multiInv
+          case None           => throw new Exception("Creating multi-invitation link failed")
+      })
+      .getOrElse(throw new Exception("Creating multi-invitation link failed because of missing clientType"))
 
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,

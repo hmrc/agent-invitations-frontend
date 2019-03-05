@@ -1,22 +1,22 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+import java.util.UUID
+
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import play.api.test.Helpers._
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session12345")))
-
   lazy val controller: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   val itsaInvitation = ItsaInvitation(validNino, Some(Postcode(validPostcode)))
   val pirInvitation = PirInvitation(validNino, Some(DOB(dateOfBirth)))
-  val vatInvitation = VatInvitation(business, validVrn, Some(VatRegDate(validRegistrationDate)))
+  val vatInvitation = VatInvitation( Some(business), validVrn, Some(VatRegDate(validRegistrationDate)))
 
   "GET /agents/not-matched" should {
     val request = FakeRequest("GET", "/agents/not-matched")
@@ -39,9 +39,9 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 403 for authorised Agent who submitted not matching known facts if they have a session with no basket" in {
-      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("", Set.empty))
+      await(sessionStore.save(AgentSession()))
 
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+      val result = notMatched(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -56,12 +56,8 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 403 for authorised Agent who submitted not matching known facts if they have a basket" in {
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState(
-          "personal",
-          Set(AuthorisationRequest("Gareth Gates", itsaInvitation))))
-
-      val result = notMatched(authorisedAsValidAgent(request, arn.value))
+      await(sessionStore.save(AgentSession( Some(personal), requests = Set(AuthorisationRequest("Gareth Gates", itsaInvitation)))))
+      val result = notMatched(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
@@ -97,10 +93,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           vatInvitation,
           state = AuthorisationRequest.FAILED)
 
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.allCreateAuthorisationFailed()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -145,10 +141,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           vatInvitation,
           state = AuthorisationRequest.FAILED)
 
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -183,10 +179,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           vatInvitation,
           state = AuthorisationRequest.CREATED)
 
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1, clientDetail2, clientDetail3)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), requests =  Set(clientDetail1, clientDetail2, clientDetail3))))
 
-      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.someCreateAuthorisationFailed()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -210,11 +206,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
   "GET /already-authorisation-present" should {
     val request = FakeRequest("GET", "/already-authorisation-present")
     "display the already authorisation present page when there are no requests in the journey cache" in {
-      testAgentMultiAuthorisationJourneyStateCache.save(AgentMultiAuthorisationJourneyState("personal", Set.empty))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -231,12 +226,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "Gareth Gates Sr",
           itsaInvitation,
           state = AuthorisationRequest.FAILED)
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), requests = Set(clientDetail1))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -248,10 +241,10 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "Display the page when there is nothing in the journeyStateCache" in {
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode)))
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode))))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -268,12 +261,11 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "Gareth Gates Sr",
           itsaInvitation,
           state = AuthorisationRequest.FAILED)
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceITSA, "ni", nino, Some(validPostcode), true))
 
-      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request, arn.value))
+      await(sessionStore.save(
+        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), requests = Set(clientDetail1), fromFastTrack = fromFastTrack)))
+
+      val result = controller.activeRelationshipExists()(authorisedAsValidAgent(request,    arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -303,10 +295,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
           "Gareth Gates Sr",
           vatInvitation,
           state = AuthorisationRequest.FAILED)
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set(clientDetail1)))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), false))
+      await(sessionStore.save(AgentSession(Some(ClientType.personal), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), requests = Set(clientDetail1))))
 
       val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
 
@@ -323,10 +312,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "display cannot-create-request page when the basket is empty" in {
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set.empty))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), false))
+      await(sessionStore.save(AgentSession(Some(ClientType.personal), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate))))
 
       val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
 
@@ -343,10 +329,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "display cannot-create-request page when going through fast-track" in {
-      testAgentMultiAuthorisationJourneyStateCache.save(
-        AgentMultiAuthorisationJourneyState("personal", Set.empty))
-      testCurrentAuthorisationRequestCache.save(
-        CurrentAuthorisationRequest(Some("personal"), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate), true))
+      await(sessionStore.save(AgentSession(Some(ClientType.personal), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), fromFastTrack = true)))
 
       val result = controller.cannotCreateRequest()(authorisedAsValidAgent(request, arn.value))
 

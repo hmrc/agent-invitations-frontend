@@ -55,7 +55,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "factCheck"            -> result,
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
-        "clientType"           -> invitation.clientType.getOrElse(""),
+        "clientType"           -> invitation.clientType.map(_.toString).getOrElse(""),
         "clientIdType"         -> invitation.clientIdentifierType,
         "clientId"             -> invitation.clientId,
         "service"              -> invitation.service,
