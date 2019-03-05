@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Call}
 import play.api.{Configuration, Environment}
@@ -25,8 +24,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, SomeInvitationCreationFailedPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{active_authorisation_exists, invitation_creation_failed, not_authorised, not_matched}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{AllInvitationCreationFailedPageConfig, CannotCreateRequestConfig, SomeInvitationCreationFailedPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -94,6 +93,26 @@ class AgentsErrorController @Inject()(
       agentSessionCache.get.map {
         case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
         case Left(_)             => Ok(not_authorised("")) //TODO
+      }
+    }
+  }
+
+  val cannotCreateRequest: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { (_, _) =>
+      agentSessionCache.fetch.map {
+        case Some(session) =>
+          val backLink =
+            if (session.fromFastTrack)
+              routes.AgentsFastTrackInvitationController.showCheckDetails().url
+            else routes.AgentsInvitationController.showIdentifyClient().url
+
+          Ok(
+            cannot_create_request(
+              CannotCreateRequestConfig(session.requests.nonEmpty, session.fromFastTrack, backLink)))
+        case None =>
+          Ok(
+            cannot_create_request(
+              CannotCreateRequestConfig(false, false, routes.AgentsInvitationController.showIdentifyClient().url)))
       }
     }
   }

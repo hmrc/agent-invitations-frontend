@@ -53,10 +53,10 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
           htmlEscapedMessage("landing-page.vat.header"),
           htmlEscapedMessage("title.suffix.client"),
           htmlEscapedMessage("landing-page.reminder"),
-          htmlEscapedMessage("landing-page.radio1")))
+          htmlEscapedMessage("landing-page.radio1")
+        )
+      )
     }
-
-
 
     "show a signout url on the landing page if the user is authenticated" in {
       val result = controller.start(invitationIdVAT)(FakeRequest().withCookies(Cookie("mdtp", "authToken=Bearer+")))
@@ -72,8 +72,10 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
       givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmTerms(invitationIdVAT)
@@ -84,8 +86,10 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
       givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmDecline(invitationIdVAT)
@@ -96,8 +100,10 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
       givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getDecideLater(invitationIdVAT)
@@ -108,8 +114,10 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
       givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
@@ -123,8 +131,11 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenInvitationExists(arn, nino, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
 
       an[Exception] should be thrownBy {
-        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
+        await(
+          submitStart(
+            FakeRequest()
+              .withSession("agencyName" -> "My Agency")
+              .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
       }
     }
   }
@@ -157,7 +168,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
     "show the invitation expired page when invitation has expired" in {
       givenInvitationExpired(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
-      val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName"   -> "My Agency"), validVrn.value)
+      val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
       val resultVAT = getConfirmTermsVAT(reqVAT)
 
       status(resultVAT) shouldBe SEE_OTHER
@@ -189,7 +200,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -199,7 +211,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -266,7 +279,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenGetAgencyNameClientStub(arn)
 
       val reqVAT = authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value)
-        .withFormUrlEncodedBody("confirmTerms" -> "")
+        .withFormUrlEncodedBody("confirmTerms"                               -> "")
       val resultVAT = submitConfirmTermsVAT(reqVAT).withSession("agencyName" -> "My Agency")
 
       status(resultVAT) shouldBe OK
@@ -297,7 +310,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenGetInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
       givenAcceptInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
       givenGetAgencyNameClientStub(arn)
-      val resultVAT= submitConfirmTermsVAT(reqVAT)
+      val resultVAT = submitConfirmTermsVAT(reqVAT)
 
       status(resultVAT) shouldBe SEE_OTHER
       redirectLocation(resultVAT) shouldBe Some(routes.ClientsInvitationController.invitationAlreadyResponded().url)
@@ -318,7 +331,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -328,7 +342,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -387,7 +402,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -397,7 +413,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -436,7 +453,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmDecline(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -490,7 +508,6 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val resultVAT = submitConfirmInvitationVAT(
         authorisedAsValidClientVAT(FakeRequest().withSession("agencyName" -> "My Agency"), validVrn.value))
 
-
       status(resultVAT) shouldBe OK
       checkHtmlResultWithBodyText(
         resultVAT,
@@ -509,7 +526,9 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val resultVAT = submitConfirmInvitationVAT(reqVAT)
 
       status(resultVAT) shouldBe SEE_OTHER
-      redirectLocation(resultVAT).get shouldBe routes.ClientsInvitationController.getInvitationDeclined(invitationIdVAT).url
+      redirectLocation(resultVAT).get shouldBe routes.ClientsInvitationController
+        .getInvitationDeclined(invitationIdVAT)
+        .url
     }
 
     "redirect to confirm terms when NO was selected" in {
@@ -522,8 +541,7 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       val resultVAT = controller.submitConfirmDecline(invitationIdVAT).apply(reqVAT)
 
       status(resultVAT) shouldBe SEE_OTHER
-      redirectLocation(resultVAT) shouldBe Some(
-        routes.ClientsInvitationController.getConfirmTerms(invitationIdVAT).url)
+      redirectLocation(resultVAT) shouldBe Some(routes.ClientsInvitationController.getConfirmTerms(invitationIdVAT).url)
     }
 
     "return exception when agency name retrieval fails" in {
@@ -539,7 +557,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdITSA)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", validVrn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
@@ -549,7 +568,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmDecline(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -631,7 +651,8 @@ class ClientsInvitationsVATControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdVAT)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Organisation",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Organisation",
           Enrolment("HMRC-MTD-VAT", "VRN", validVrn.value),
           "50"))
       status(result) shouldBe SEE_OTHER

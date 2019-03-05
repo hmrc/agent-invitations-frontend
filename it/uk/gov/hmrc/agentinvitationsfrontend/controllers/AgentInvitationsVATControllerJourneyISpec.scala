@@ -232,6 +232,39 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
       }
+
+      "redirect to /agents/cannot-create-request if migration is happening downstream" in {
+        await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT))))
+        givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 423)
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate.year"   -> "2007",
+          "registrationDate.month"  -> "07",
+          "registrationDate.day"    -> "07"
+        )
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.cannotCreateRequest().url)
+      }
+
+      "throw exception for /agents/cannot-create-request for unexpected response" in {
+        await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT))))
+        givenVatRegisteredClientReturns(validVrn, LocalDate.parse("2007-07-07"), 418)
+        val requestWithForm = request.withFormUrlEncodedBody(
+          "clientIdentifier" -> validVrn.value,
+          "registrationDate.year"   -> "2007",
+          "registrationDate.month"  -> "07",
+          "registrationDate.day"    -> "07"
+        )
+
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+
+        intercept[IllegalStateException] {
+          await(result)
+        }.getMessage shouldBe "Unknown response occurred while verifying known facts for VAT"
+
+      }
     }
   }
 
@@ -244,7 +277,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       await(sessionStore.save(
         AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate), clientTypeForInvitationSent = Some(business))))
 
-      val result = invitationSent(authorisedAsValidAgent(request,    arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,

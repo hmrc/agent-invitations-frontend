@@ -53,8 +53,9 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
           htmlEscapedMessage("landing-page.afi.header"),
           htmlEscapedMessage("title.suffix.client"),
           htmlEscapedMessage("landing-page.reminder"),
-          htmlEscapedMessage("landing-page.radio1"))
+          htmlEscapedMessage("landing-page.radio1")
         )
+      )
     }
 
     "show a signout url on the landing page if the user is authenticated" in {
@@ -71,8 +72,10 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("yes")))
       givenInvitationExists(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmTerms(invitationIdPIR)
@@ -83,8 +86,10 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("no")))
       givenInvitationExists(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getConfirmDecline(invitationIdPIR)
@@ -96,8 +101,10 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("maybe")))
       givenInvitationExists(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController
         .getDecideLater(invitationIdPIR)
@@ -109,8 +116,10 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val serviceForm = confirmAuthorisationForm.fill(ConfirmAuthForm(Some("")))
       givenInvitationExists(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
       val result =
-        submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
+        submitStart(
+          FakeRequest()
+            .withSession("agencyName" -> "My Agency")
+            .withFormUrlEncodedBody(serviceForm.data.toSeq: _*))
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.summary.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.confirmAuthorisation.invalid"))
@@ -123,8 +132,11 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenInvitationExists(arn, nino, invitationIdPIR, servicePIR, identifierPIR, "Pending")
 
       an[Exception] should be thrownBy {
-        await(submitStart(FakeRequest().withSession("agencyName" -> "My Agency")
-          .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
+        await(
+          submitStart(
+            FakeRequest()
+              .withSession("agencyName" -> "My Agency")
+              .withFormUrlEncodedBody(serviceForm.data.toSeq: _*)))
       }
     }
   }
@@ -156,7 +168,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
     "show the invitation expired page when invitation has expired" in {
       givenInvitationExpired(arn, nino, invitationIdPIR, servicePIR, identifierPIR)
       givenGetAgencyNameClientStub(arn)
-      val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName"   -> "My Agency"), nino)
+      val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
       val resultAFI = getConfirmTermsAFI(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
@@ -188,7 +200,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -198,7 +211,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -232,7 +246,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest(), nino)
         .withFormUrlEncodedBody("confirmTerms" -> "true")
-        .withSession("agencyName" -> "My Agency")
+        .withSession("agencyName"                                  -> "My Agency")
       await(submitConfirmTermsAFI(reqAFI).withSession("agencyName" -> "My Agency"))
 
       verifyAcceptInvitationAttempt(nino, invitationIdPIR, identifierPIR)
@@ -257,8 +271,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenGetAgencyNameClientStub(arn)
 
       val reqAFI = authorisedAsValidClientAFI(FakeRequest().withSession("agencyName" -> "My Agency"), nino)
-        .withFormUrlEncodedBody("confirmTerms"                                  -> "")
-      val resultAFI = submitConfirmTermsAFI(reqAFI).withSession("agencyName"    -> "My Agency")
+        .withFormUrlEncodedBody("confirmTerms"                               -> "")
+      val resultAFI = submitConfirmTermsAFI(reqAFI).withSession("agencyName" -> "My Agency")
 
       status(resultAFI) shouldBe OK
       checkHtmlResultWithBodyText(resultAFI, htmlEscapedMessage("confirm-terms.afi.bullet1"))
@@ -309,7 +323,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -319,7 +334,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -378,7 +394,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getCompletePage(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -388,7 +405,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getCompletePage(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -423,11 +441,20 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       verifyAuthoriseAttempt()
     }
 
+    "return 303 for Agent user and redirected to not authorised page for AFI" in {
+      givenUnauthorisedWith("UnsupportedAffinityGroup")
+      val result = await(getConfirmInvitationAFI(FakeRequest().withSession("agencyName" -> "My Agency")))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+      verifyAuthoriseAttempt()
+    }
+
     "redirect to /client/not-authorised if an authenticated user does not have the HMRC-NI Enrolment" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -437,7 +464,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -509,7 +537,9 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val resultAFI = submitConfirmInvitationAFI(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
-      redirectLocation(resultAFI).get shouldBe routes.ClientsInvitationController.getInvitationDeclined(invitationIdPIR).url
+      redirectLocation(resultAFI).get shouldBe routes.ClientsInvitationController
+        .getInvitationDeclined(invitationIdPIR)
+        .url
     }
 
     "redirect to confirm terms when NO was selected" in {
@@ -521,8 +551,7 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       val resultAFI = controller.submitConfirmDecline(invitationIdPIR).apply(reqAFI)
 
       status(resultAFI) shouldBe SEE_OTHER
-      redirectLocation(resultAFI) shouldBe Some(
-        routes.ClientsInvitationController.getConfirmTerms(invitationIdPIR).url)
+      redirectLocation(resultAFI) shouldBe Some(routes.ClientsInvitationController.getConfirmTerms(invitationIdPIR).url)
     }
 
     "return exception when agency name retrieval fails" in {
@@ -537,7 +566,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.submitConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -547,7 +577,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.submitConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
@@ -630,7 +661,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = controller.getInvitationDeclined(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Other Affinity Group",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Other Affinity Group",
           Enrolment("OtherEnrolment", "OtherValue", nino)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
@@ -640,7 +672,8 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       givenUnauthorisedForInsufficientConfidenceLevel()
       val result = controller.getInvitationDeclined(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"), "Individual",
+          FakeRequest().withSession("agencyName" -> "My Agency"),
+          "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
