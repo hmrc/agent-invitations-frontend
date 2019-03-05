@@ -67,7 +67,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
-    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Boolean]]
+    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
     type CreateMultipleInvitations =
       (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
@@ -199,7 +199,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              Vrn(vatClient.clientIdentifier),
                              LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           endState <- regDateMatches match {
-                       case Some(true) =>
+                       case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientPersonalVat(
@@ -212,8 +212,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                basket
                              ))
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
 
@@ -238,7 +238,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              LocalDate.parse(vatClient.registrationDate.getOrElse("")))
 
           endState <- regDateMatches match {
-                       case Some(true) =>
+                       case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            val newState = ConfirmClientPersonalVat(
                              AuthorisationRequest(
@@ -252,8 +252,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                            clientConfirmed(createMultipleInvitations)(getAgentLink)(hasPendingInvitationsFor)(
                              hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
 
@@ -278,7 +278,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              Vrn(vatClient.clientIdentifier),
                              LocalDate.parse(vatClient.registrationDate.getOrElse("")))
           endState <- regDateMatches match {
-                       case Some(true) =>
+                       case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientBusinessVat(
@@ -289,8 +289,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                    Vrn(vatClient.clientIdentifier),
                                    vatClient.registrationDate.map(VatRegDate.apply)))))
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
 
@@ -312,7 +312,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              LocalDate.parse(vatClient.registrationDate.getOrElse("")))
 
           endState <- regDateMatches match {
-                       case Some(true) =>
+                       case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            val newState = ConfirmClientBusinessVat(
                              AuthorisationRequest(
@@ -324,8 +324,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                            clientConfirmed(createMultipleInvitations)(getAgentLink)(hasPendingInvitationsFor)(
                              hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
       }
