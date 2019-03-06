@@ -98,14 +98,14 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
 
     "show error on the page when no radio button is selected" in {
       val formData =
-        AgentFastTrackRequest(
-          Some(business),
-          serviceVAT,
-          "vrn",
-          validVrn.value,
-          Some(validRegistrationDate))
-      await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate))))
-      val result = await(fastTrackController.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody(agentFastTrackForm.fill(formData).data.toSeq : _*), arn.value)))
+        AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
+      await(sessionStore.save(
+        AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate))))
+      val result = await(
+        fastTrackController.submitCheckDetails(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(agentFastTrackForm.fill(formData).data.toSeq: _*),
+            arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Select yes if the details are correct"))
     }
@@ -137,10 +137,12 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
         "NI")
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
 
-      await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(validPostcode))))
+      await(
+        sessionStore.save(
+          AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
       val requestWithForm = request.withFormUrlEncodedBody("foo" -> "bar")
-      val result = await(fastTrackController.submitKnownFact(authorisedAsValidAgent(requestWithForm, arn.value)))
+      val result = await(fastTrackController.submitKnownFactIrv(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "This field is required")
     }
