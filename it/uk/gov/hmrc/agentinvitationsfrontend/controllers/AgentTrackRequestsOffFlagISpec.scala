@@ -74,7 +74,6 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
         htmlEscapedMessage(
           s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
-      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       await(bodyOf(result)) should not include hasMessage("invitation-sent.continueToASAccount.button")
@@ -96,7 +95,6 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
         htmlEscapedMessage(
           s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
-      checkHtmlResultWithBodyText(result, routes.AgentsInvitationController.continueAfterInvitationSent().url)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")

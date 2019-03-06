@@ -142,7 +142,7 @@ class AgentLedDeAuthController @Inject()(
                       Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
                     data => {
                       if (data.choice) {
-                        checkRelationshipExistsForService(arn, service, clientId).map {
+                        relationshipsService.checkRelationshipExistsForService(arn, service, clientId).map {
                           case true  => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
                           case false => Redirect(routes.AgentsErrorController.notAuthorised())
                         }

@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"all-authorisations-removed.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
@@ -27,6 +27,6 @@
 
   <p>@Messages("all-authorisations-removed.p")</p>
 
-  <a href=@routes.AgentsInvitationController.showClientType() class="button">@Messages("new-request.button")</a>
+  <a href=@clientTypeCall class="button">@Messages("new-request.button")</a>
 
 }

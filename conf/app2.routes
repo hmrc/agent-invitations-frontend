@@ -16,12 +16,16 @@ POST        /agents/identify-irv-client                         @uk.gov.hmrc.age
 GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showConfirmClient
 POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitConfirmClient
 GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showReviewAuthorisations
-POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.authorisationsReviewed
+POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitReviewAuthorisations
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showInvitationSent
+GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
+POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.submitDeleteAuthorisation
 
-GET         /agents/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showNotMatched
-GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSomeAuthorisationsFailed
-GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsFailed
+#Error Agent Endpoints
 GET         /agents/not-signed-up                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showClientNotSignedUp
+GET         /agents/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showNotMatched
+GET         /agents/all-authorisations-removed                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsRemoved
 GET         /agents/already-authorisation-pending               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showPendingAuthorisationExists
-
+GET         /agents/already-authorisation-present               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showActiveAuthorisationExists
+GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsFailed
+GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSomeAuthorisationsFailed

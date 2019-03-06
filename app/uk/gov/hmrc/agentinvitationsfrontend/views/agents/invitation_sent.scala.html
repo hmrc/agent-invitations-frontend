@@ -29,6 +29,8 @@
     else config.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)
 }
 
+@invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
+
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
 
@@ -39,7 +41,7 @@
     <ol class="list list-number margin-left-0">
         <li class="margin-bottom-30">
             <p>@Messages("invitation-sent.l1")</p>
-            <p><span id="invitationUrl" class="word-wrap">@config.invitationUrl</span></p>
+            <p><span id="invitationUrl" class="word-wrap">@invitationLink</span></p>
             <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}"))</p>
         </li>
         <li>@Messages("invitation-sent.l2")</li>

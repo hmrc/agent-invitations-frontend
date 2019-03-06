@@ -51,7 +51,7 @@
             @Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}")
             </dd>
             <dd class="app-check-your-answers__change">
-                <a href="@routes.AgentsInvitationController.showDelete(authorisationRequest.itemId)">
+                <a href="@config.showDeleteCall(authorisationRequest.itemId)">
                     @Messages("review-authorisations.table.remove")
                     <span class="govuk-visually-hidden"> @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))</span>
                 </a>

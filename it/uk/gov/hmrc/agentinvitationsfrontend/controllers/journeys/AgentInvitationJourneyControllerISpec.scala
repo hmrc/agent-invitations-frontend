@@ -95,7 +95,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      journeyState.get should have[State](SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+      journeyState.get should have[State](SelectBusinessService, List(SelectClientType(emptyBasket)))
     }
 
     "redisplay the page with errors if nothing is selected" in {
@@ -181,7 +181,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val request = FakeRequest("POST", "/agents/select-business-service")
 
       "redirect to identify-client when yes is selected" in {
-        journeyState.set(SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+        journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
         val result = controller.submitBusinessSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -190,11 +190,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
         journeyState.get should have[State](
-          IdentifyBusinessClient(emptyBasket),
-          List(SelectBusinessService(emptyBasket), SelectClientType(emptyBasket)))
+          IdentifyBusinessClient,
+          List(SelectBusinessService, SelectClientType(emptyBasket)))
       }
       "redirect to select-client-type when no is selected" in {
-        journeyState.set(SelectBusinessService(emptyBasket), List(SelectClientType(emptyBasket)))
+        journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
         val result = controller.submitBusinessSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
@@ -204,7 +204,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](
           SelectClientType(emptyBasket),
-          List(SelectBusinessService(emptyBasket), SelectClientType(emptyBasket)))
+          List(SelectBusinessService, SelectClientType(emptyBasket)))
       }
     }
 
@@ -240,8 +240,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenMatchingClientIdAndPostcode(Nino(nino), "BN114AW")
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
-        givenCheckRelationshipItsaWithStatus(arn, nino, 404)
         givenTradingName(Nino(nino), "Sylvia Plath")
 
         journeyState.set(
@@ -295,8 +293,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       "redirect to confirm client" in {
         givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
-        givenGetAllPendingInvitationsReturnsEmpty(arn, "202949960", HMRCMTDVAT)
-        givenCheckRelationshipVatWithStatus(arn, "202949960", 404)
         givenClientDetails(Vrn("202949960"))
 
         journeyState.set(
@@ -358,7 +354,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "POST /agents/identify-irv-client" should {
       val request = FakeRequest("POST", "/agents/identify-irv-client")
 
-      "redirect to confirm client" in {
+      "redirect to reviewAuthorisations because flag is off" in {
         givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
         givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
         givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
@@ -378,10 +374,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
         journeyState.get should havePattern[State](
-          { case  ConfirmClientIrv(AuthorisationRequest("Virginia Woolf", PirInvitation(Nino(`nino`), Some(DOB("1990-10-10")),_,_,_),_,_), `emptyBasket`) => },
+          { case  ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => },
           List(
             IdentifyPersonalClient(HMRCPIR, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
@@ -475,8 +471,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "show the confirm client page for VAT service" in {
         givenClientDetails(Vrn("202949960"))
         journeyState.set(
-          ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")))), emptyBasket),
-          List(IdentifyBusinessClient(emptyBasket), SelectBusinessService(emptyBasket), SelectClientType(emptyBasket))
+          ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10"))))),
+          List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
         )
 
         val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
@@ -486,8 +482,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
 
         journeyState.get should havePattern[State](
-          { case  ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")),_,_),_,_), `emptyBasket`) => },
-          List(IdentifyBusinessClient(emptyBasket), SelectBusinessService(emptyBasket), SelectClientType(emptyBasket))
+          { case  ConfirmClientBusinessVat(AuthorisationRequest("GDT",VatInvitation(Some(business), Vrn(vrn), Some(VatRegDate("10/10/10")),_,_),_,_)) => },
+          List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
         )
       }
     }
@@ -496,6 +492,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val request = FakeRequest("POST", "/agents/confirm-client")
 
       "redirect to the review authorisations page when yes is selected" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+        givenCheckRelationshipVatWithStatus(arn, vrn, 404)
         journeyState.set(
           ConfirmClientPersonalVat(AuthorisationRequest("GDT",VatInvitation(Some(personal), Vrn(vrn), Some(VatRegDate("10/10/10")))), `emptyBasket`),
           List(
@@ -585,7 +583,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           )
         )
 
-        val result = controller.authorisationsReviewed(
+        val result = controller.submitReviewAuthorisations(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
         status(result) shouldBe 303
@@ -606,7 +604,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           )
         )
 
-        val result = controller.authorisationsReviewed(
+        val result = controller.submitReviewAuthorisations(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
         status(result) shouldBe 303
@@ -614,6 +612,119 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](SelectPersonalService(availableServices, emptyBasket)
         )
+      }
+    }
+    "GET /invitation-sent" should {
+      "show the invitation sent page" in {
+        journeyState.set(
+          InvitationSentPersonal("invitation/link", None),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+        val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage(
+            "generic.title",
+            htmlEscapedMessage("invitation-sent-link.header"),
+            htmlEscapedMessage("title.suffix.agents")))
+
+        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None))
+      }
+    }
+    "GET /delete" should {
+      "show the delete page" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"), Set.empty),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+        val result = controller.showDeleteAuthorisation("ABC123")(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(
+          result,
+          "Are you sure you want to remove your authorisation request for Sylvia Plath?",
+          "You will not send them an authorisation request to report their income and expenses through software"
+        )
+
+        journeyState.get should have[State](DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"), Set.empty))
+      }
+    }
+    "POST /delete" should {
+      "redirect to review-authorisations when yes is selected and there is something left in the basket" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))),
+          List(
+            ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+        journeyState.get should have[State](ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "itemId"))))
+      }
+      "redirect to all-authorisations-removed when yes is selected and there is nothing left in the basket" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved().url)
+
+        journeyState.get should have[State](AllAuthorisationsRemoved)
+      }
+      "redirect to review-authorisations when no is selected and keep basket the same" in {
+        journeyState.set(
+          DeleteAuthorisationRequestPersonal(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"), Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))),
+          List(
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW")))), emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitDeleteAuthorisation(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+        journeyState.get should have[State](ReviewAuthorisationsPersonal(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino),Some(Postcode("BN114AW"))), itemId = "ABC123"))))
       }
     }
   }

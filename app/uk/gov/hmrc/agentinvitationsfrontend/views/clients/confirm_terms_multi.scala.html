@@ -98,7 +98,7 @@
                         <h2 class="margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${consent.serviceKey}.heading")</h2>
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
-                            @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                            @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
                                 '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
                                 '_groupDivClass -> "div-underline",
                                 '_value -> "true")

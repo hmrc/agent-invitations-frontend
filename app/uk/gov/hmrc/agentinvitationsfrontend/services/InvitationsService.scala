@@ -17,11 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -38,7 +38,8 @@ class InvitationsService @Inject()(
   featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
-  auditService: AuditService)
+  auditService: AuditService,
+  externalUrls: ExternalUrls)
     extends GetClientName {
 
   def createInvitation(arn: Arn, invitation: Invitation, featureFlags: FeatureFlags)(
