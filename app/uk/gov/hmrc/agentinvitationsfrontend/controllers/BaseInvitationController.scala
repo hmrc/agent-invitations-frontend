@@ -707,7 +707,7 @@ abstract class BaseInvitationController(
   private[controllers] def createInvitation[T <: TaxIdentifier](arn: Arn, invitation: Invitation)(
     implicit request: Request[_]) =
     for {
-      _ <- invitationsService.createInvitation(arn, invitation, featureFlags)
+      _ <- invitationsService.createInvitation(arn, invitation)
     } yield Redirect(routes.AgentsInvitationController.showInvitationSent())
 
   def clientTypeCall: Call = routes.AgentsInvitationController.showClientType()

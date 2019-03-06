@@ -29,3 +29,19 @@ GET         /agents/already-authorisation-pending               @uk.gov.hmrc.age
 GET         /agents/already-authorisation-present               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showActiveAuthorisationExists
 GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showAllAuthorisationsFailed
 GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationJourneyController.showSomeAuthorisationsFailed
+
+#Fast Track Endpoints
+POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.agentFastTrack
+GET         /agents/fast-track/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showCheckDetails
+GET         /agents/fast-track/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showKnownFact
+POST        /agents/fast-track/more-details-itsa                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitKnownFactItsa
+POST        /agents/fast-track/more-details-irv                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitKnownFactIrv
+POST        /agents/fast-track/more-details-vat                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitKnownFactVat
+GET         /agents/fast-track/client-type                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showClientType
+GET         /agents/fast-track/invitation-sent                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showInvitationSent
+
+#Error Fast Track Endpoints
+GET         /agents/fat-track/not-signed-up                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showClientNotSignedUp
+GET         /agents/fast-track/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showNotMatched
+GET         /agents/fast-track/already-authorisation-pending               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
+GET         /agents/fast-track/already-authorisation-present               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists

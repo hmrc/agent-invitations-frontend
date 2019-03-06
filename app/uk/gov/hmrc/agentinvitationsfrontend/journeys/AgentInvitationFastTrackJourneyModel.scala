@@ -144,19 +144,20 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           if ftRequest.service == HMRCMTDVAT && ftRequest.clientType
             .contains(ClientType.personal) && ftRequest.knownFact.nonEmpty =>
         if (confirmation.choice) {
-          checkRegDateMatches(Vrn(ftRequest.clientIdentifier), ftRequest.knownFact.getOrElse("")).flatMap {
-            case Some(204) =>
-              checkIfPendingOrActiveAndGoto(
-                ftRequest,
-                agent.arn,
-                VatInvitation(
-                  Some(personal),
-                  Vrn(ftRequest.clientIdentifier),
-                  ftRequest.knownFact.map(VatRegDate.apply))
-              )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
-            case Some(_) => goto(KnownFactNotMatched(ftRequest))
-            case None    => goto(ClientNotSignedUp(ftRequest))
-          }
+          checkRegDateMatches(Vrn(ftRequest.clientIdentifier), LocalDate.parse(ftRequest.knownFact.getOrElse("")))
+            .flatMap {
+              case Some(204) =>
+                checkIfPendingOrActiveAndGoto(
+                  ftRequest,
+                  agent.arn,
+                  VatInvitation(
+                    Some(personal),
+                    Vrn(ftRequest.clientIdentifier),
+                    ftRequest.knownFact.map(VatRegDate.apply))
+                )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
+              case Some(_) => goto(KnownFactNotMatched(ftRequest))
+              case None    => goto(ClientNotSignedUp(ftRequest))
+            }
         } else {
           goto(IdentifyPersonalClient(ftRequest.service))
         }
@@ -165,19 +166,20 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           if ftRequest.service == HMRCMTDVAT && ftRequest.clientType
             .contains(ClientType.business) && ftRequest.knownFact.nonEmpty =>
         if (confirmation.choice) {
-          checkRegDateMatches(Vrn(ftRequest.clientIdentifier), ftRequest.knownFact.getOrElse("")).flatMap {
-            case Some(204) =>
-              checkIfPendingOrActiveAndGoto(
-                ftRequest,
-                agent.arn,
-                VatInvitation(
-                  Some(ClientType.business),
-                  Vrn(ftRequest.clientIdentifier),
-                  ftRequest.knownFact.map(VatRegDate.apply))
-              )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
-            case Some(_) => goto(KnownFactNotMatched(ftRequest))
-            case None    => goto(ClientNotSignedUp(ftRequest))
-          }
+          checkRegDateMatches(Vrn(ftRequest.clientIdentifier), LocalDate.parse(ftRequest.knownFact.getOrElse("")))
+            .flatMap {
+              case Some(204) =>
+                checkIfPendingOrActiveAndGoto(
+                  ftRequest,
+                  agent.arn,
+                  VatInvitation(
+                    Some(ClientType.business),
+                    Vrn(ftRequest.clientIdentifier),
+                    ftRequest.knownFact.map(VatRegDate.apply))
+                )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
+              case Some(_) => goto(KnownFactNotMatched(ftRequest))
+              case None    => goto(ClientNotSignedUp(ftRequest))
+            }
         } else {
           goto(IdentifyPersonalClient(ftRequest.service))
         }
@@ -189,7 +191,27 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         goto(SelectClientType(ftRequest))
     }
 
-    def moreDetails(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
+    def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
+      checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
+      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
+      agent: AuthorisedAgent)(suppliedKnownFact: Option[String]) = Transition {
+      case MoreDetails(ftRequest) =>
+        val newState = CheckDetails(ftRequest.copy(knownFact = suppliedKnownFact))
+        checkedDetails(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+          hasPendingInvitations)(hasActiveRelationship)(agent)(Confirmation(true)).apply(newState)
+    }
+
+    def moreDetailsIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
+      checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
+      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
+      agent: AuthorisedAgent)(suppliedKnownFact: Option[String]) = Transition {
+      case MoreDetails(ftRequest) =>
+        val newState = CheckDetails(ftRequest.copy(knownFact = suppliedKnownFact))
+        checkedDetails(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+          hasPendingInvitations)(hasActiveRelationship)(agent)(Confirmation(true)).apply(newState)
+    }
+
+    def moreDetailsVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
       agent: AuthorisedAgent)(suppliedKnownFact: Option[String]) = Transition {
