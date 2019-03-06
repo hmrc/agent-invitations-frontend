@@ -94,7 +94,7 @@ class TestEndpointsController @Inject()(
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       Future successful Ok(test_fast_track(testCurrentAuthorisationRequestForm, isDevEnv))
     }
   }

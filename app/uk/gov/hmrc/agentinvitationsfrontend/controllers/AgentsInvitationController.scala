@@ -121,7 +121,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val submitConfirmClient: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       agentSessionCache.fetch.flatMap {
         case Some(existingSession) =>
           val clientType = existingSession.clientType
@@ -143,7 +143,11 @@ class AgentsInvitationController @Inject()(
                         routes.AgentsInvitationController.submitConfirmClient())),
                   data =>
                     if (data.choice) {
-                      maybeResultIfPendingInvitationsOrRelationshipExistFor(arn, clientId, service, existingSession)
+                      maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                        agent.arn,
+                        clientId,
+                        service,
+                        existingSession)
                         .flatMap {
                           case Some(r) => r
                           case None =>
@@ -159,8 +163,9 @@ class AgentsInvitationController @Inject()(
                                 clientType match {
                                   case Some(ClientType.personal) =>
                                     Redirect(routes.AgentsInvitationController.showReviewAuthorisations())
-                                  case Some(ClientType.business) => confirmAndRedirect(arn, existingSession, false)
-                                  case _                         => toFuture(Redirect(agentsRootUrl))
+                                  case Some(ClientType.business) =>
+                                    confirmAndRedirect(agent.arn, existingSession, false)
+                                  case _ => toFuture(Redirect(agentsRootUrl))
                                 }
                               }
                         }
@@ -177,7 +182,7 @@ class AgentsInvitationController @Inject()(
   }
 
   def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { _ =>
       for {
         sessionCache <- agentSessionCache.fetch
         result = sessionCache match {
@@ -199,7 +204,7 @@ class AgentsInvitationController @Inject()(
   }
 
   def submitReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       agentSessionCache.hardGet.flatMap { sessionCache =>
         agentConfirmationForm("error.review-authorisation.required")
           .bindFromRequest()
@@ -220,7 +225,10 @@ class AgentsInvitationController @Inject()(
               } else {
                 for {
                   processedRequests <- invitationsService
-                                        .createMultipleInvitations(arn, sessionCache.clientType, sessionCache.requests)
+                                        .createMultipleInvitations(
+                                          agent.arn,
+                                          sessionCache.clientType,
+                                          sessionCache.requests)
                   _ <- agentSessionCache.save(sessionCache.copy(requests = processedRequests))
                   result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
                              Redirect(routes.AgentsInvitationController.showInvitationSent())
@@ -236,7 +244,7 @@ class AgentsInvitationController @Inject()(
   }
 
   def showDelete(itemId: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.hardGet.map { agentSession =>
         val deleteItem =
           agentSession.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
@@ -246,7 +254,7 @@ class AgentsInvitationController @Inject()(
   }
 
   def submitDelete(itemId: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentConfirmationForm("error.delete.radio")
         .bindFromRequest()
         .fold(
@@ -276,12 +284,12 @@ class AgentsInvitationController @Inject()(
   }
 
   val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       agentSessionCache.hardGet.flatMap { session =>
         val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
           throw new IllegalStateException("no client type found in cache"))
         val continueUrlExists = session.continueUrl.isDefined
-        invitationsService.createAgentLink(arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
+        invitationsService.createAgentLink(agent.arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
           val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
           //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
           agentSessionCache
@@ -306,7 +314,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.hardGet.map { agentSession =>
         val continueUrl = agentSession.continueUrl.getOrElse(agentServicesAccountUrl)
         agentSessionCache.save(agentSession.copy(continueUrl = None))
@@ -316,7 +324,7 @@ class AgentsInvitationController @Inject()(
   }
 
   val notSignedUp: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.hardGet.flatMap { agentSession =>
         val hasRequests = agentSession.requests.nonEmpty
         agentSession.service match {
@@ -332,13 +340,13 @@ class AgentsInvitationController @Inject()(
   }
 
   val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       Ok(all_authorisations_removed(routes.AgentsInvitationController.showClientType()))
     }
   }
 
   val pendingAuthorisationExists: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       for {
         agentSession <- agentSessionCache.fetch.map {
                          case Some(cache) => cache

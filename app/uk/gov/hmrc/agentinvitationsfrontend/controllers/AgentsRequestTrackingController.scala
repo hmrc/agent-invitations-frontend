@@ -68,12 +68,12 @@ class AgentsRequestTrackingController @Inject()(
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
+      withAuthorisedAsAgent { agent =>
         implicit val now: LocalDate = LocalDate.now()
         for {
           invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
-                                          arn,
-                                          isWhitelisted,
+                                          agent.arn,
+                                          agent.isWhitelisted,
                                           trackRequestsShowLastDays)
         } yield
           Ok(
@@ -90,7 +90,7 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def submitToResendLink: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       trackInformationForm
         .bindFromRequest()
         .fold(
@@ -100,7 +100,7 @@ class AgentsRequestTrackingController @Inject()(
           },
           data => {
             for {
-              agentLink <- invitationsService.createAgentLink(arn, data.clientType)
+              agentLink <- invitationsService.createAgentLink(agent.arn, data.clientType)
             } yield
               Ok(
                 resend_link(
@@ -115,7 +115,7 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def submitToConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       cancelRequestForm
         .bindFromRequest()
         .fold(
@@ -133,14 +133,14 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       Future successful Ok(confirm_cancel(service, confirmCancelForm))
     }
   }
 
   def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       request.session.get("invitationId") match {
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         case Some(id) =>
@@ -155,7 +155,7 @@ class AgentsRequestTrackingController @Inject()(
               data => {
                 if (data.value.getOrElse(true)) {
                   invitationsConnector
-                    .cancelInvitation(arn, invitationId)
+                    .cancelInvitation(agent.arn, invitationId)
                     .map {
                       case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
                       case Some(false) => NotFound
@@ -172,7 +172,7 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def showRequestCancelled: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
       Future successful Ok(request_cancelled(service, clientName))
@@ -180,7 +180,7 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def submitToCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       cancelAuthorisationForm
         .bindFromRequest()
         .fold(
@@ -196,14 +196,14 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       Future successful Ok(confirm_cancel_authorisation(confirmCancelAuthorisationForm, service))
     }
   }
 
   def submitCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       val clientId = request.session.get("clientId").getOrElse("")
       val service = request.session.get("service").getOrElse("")
       confirmCancelAuthorisationForm
@@ -212,7 +212,7 @@ class AgentsRequestTrackingController @Inject()(
           formWithErrors => Future successful Ok(confirm_cancel_authorisation(formWithErrors, service)),
           data =>
             if (data.value.getOrElse(true)) {
-              deleteRelationshipForService(service, arn, clientId).map {
+              deleteRelationshipForService(service, agent.arn, clientId).map {
                 case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
                 case Some(false) => NotFound
                 case _           => Ok(cancel_authorisation_problem())
@@ -223,7 +223,7 @@ class AgentsRequestTrackingController @Inject()(
   }
 
   def showAuthorisationCancelled: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
       val clientId = request.session.get("clientId").getOrElse("")

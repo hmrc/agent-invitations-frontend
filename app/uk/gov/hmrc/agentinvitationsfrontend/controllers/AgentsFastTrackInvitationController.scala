@@ -82,7 +82,7 @@ class AgentsFastTrackInvitationController @Inject()(
     knownFactsForm(vatRegDateMapping(featureFlags))
 
   val showKnownFact: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map {
         case Some(agentSession)
             if agentSession.clientIdentifier.nonEmpty && agentSession.clientIdentifierType.nonEmpty && agentSession.service.nonEmpty =>
@@ -100,7 +100,7 @@ class AgentsFastTrackInvitationController @Inject()(
   }
 
   val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       agentSessionCache.hardGet.flatMap(
         agentSession => {
           val service = agentSession.service.getOrElse("")
@@ -113,7 +113,7 @@ class AgentsFastTrackInvitationController @Inject()(
                 agentSessionCache
                   .save(updatedCache)
                   .flatMap { _ =>
-                    redirectFastTrackToNextPage(arn, updatedCache, isWhitelisted)
+                    redirectFastTrackToNextPage(agent.arn, updatedCache, agent.isWhitelisted)
                   }
               }
             )
@@ -131,7 +131,7 @@ class AgentsFastTrackInvitationController @Inject()(
     }
 
   def agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       if (featureFlags.enableFastTrack) {
         agentFastTrackForm
           .bindFromRequest()
@@ -157,7 +157,7 @@ class AgentsFastTrackInvitationController @Inject()(
               )
               agentSessionCache.save(agentSession).flatMap { _ =>
                 withMaybeContinueUrlCached {
-                  ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, isWhitelisted) {
+                  ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, agent.isWhitelisted) {
                     Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
                   }
                 }
@@ -172,7 +172,7 @@ class AgentsFastTrackInvitationController @Inject()(
   }
 
   val showCheckDetails: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map {
         case Some(agentSession) =>
           Ok(
@@ -189,7 +189,7 @@ class AgentsFastTrackInvitationController @Inject()(
   }
 
   val submitCheckDetails: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       val agentSession = agentSessionCache.fetch.map(_.getOrElse(AgentSession()))
       checkDetailsForm
         .bindFromRequest()
@@ -208,7 +208,7 @@ class AgentsFastTrackInvitationController @Inject()(
           },
           data => {
             if (data.value.getOrElse(false)) {
-              agentSession.flatMap(cacheItem => redirectFastTrackToNextPage(arn, cacheItem, isWhitelisted))
+              agentSession.flatMap(cacheItem => redirectFastTrackToNextPage(agent.arn, cacheItem, agent.isWhitelisted))
             } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
         )
