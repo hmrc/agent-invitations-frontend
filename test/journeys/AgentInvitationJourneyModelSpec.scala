@@ -598,8 +598,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           Invitation(Some(personal), HMRCMTDIT, "AB123456A", Some("BN114AW")),
           AuthorisationRequest.NEW,
           "ABC123")
-        given(ReviewAuthorisationsPersonal(Set(authorisationRequest))) when deleteAuthorisationRequest(authorisedAgent)(
-          "ABC123") should thenGo(DeleteAuthorisationRequestPersonal(authorisationRequest, Set(authorisationRequest)))
+        given(ReviewAuthorisationsPersonal(Set(authorisationRequest))) when deleteAuthorisationRequest("ABC123")(
+          authorisedAgent) should thenGo(
+          DeleteAuthorisationRequestPersonal(authorisationRequest, Set(authorisationRequest)))
       }
       "throw an Exception when there is no corresponding itemId in the basket" in {
         val authorisationRequest = AuthorisationRequest(
@@ -608,8 +609,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           AuthorisationRequest.NEW,
           "ABC123")
         intercept[Exception] {
-          given(ReviewAuthorisationsPersonal(Set(authorisationRequest))) when deleteAuthorisationRequest(
-            authorisedAgent)("XXX")
+          given(ReviewAuthorisationsPersonal(Set(authorisationRequest))) when deleteAuthorisationRequest("XXX")(
+            authorisedAgent)
         }.getMessage shouldBe "No Item to delete"
       }
     }

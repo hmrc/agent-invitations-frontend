@@ -142,7 +142,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def showDeleteAuthorisation(itemId: String) =
-    authorisedAgentActionWithString(Transitions.deleteAuthorisationRequest, itemId)(display)
+    authorisedAgentAction(Transitions.deleteAuthorisationRequest(itemId))(display)
 
   def submitDeleteAuthorisation =
     authorisedAgentActionWithForm(DeleteAuthorisationForm)(Transitions.confirmDeleteAuthorisationRequest)
@@ -170,9 +170,8 @@ class AgentInvitationJourneyController @Inject()(
     case ConfirmClientPersonalVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
     case ConfirmClientBusinessVat(_)     => routes.AgentInvitationJourneyController.showConfirmClient()
     case ReviewAuthorisationsPersonal(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case DeleteAuthorisationRequestPersonal(authorisationRequest, _) => {
+    case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    }
     case InvitationSentPersonal(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case InvitationSentBusiness(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
     case KnownFactNotMatched(_)             => routes.AgentInvitationJourneyController.showNotMatched()

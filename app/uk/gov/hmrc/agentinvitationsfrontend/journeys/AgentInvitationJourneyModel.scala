@@ -523,7 +523,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             }
       }
 
-    def deleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(itemId: String) =
+    def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent) =
       Transition {
         case ReviewAuthorisationsPersonal(basket) => {
           val deleteItem: AuthorisationRequest =
