@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.data.Forms.{boolean, mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
@@ -33,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, KnownFactPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, known_fact}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -89,8 +88,9 @@ class AgentsFastTrackInvitationController @Inject()(
           Ok(
             known_fact(
               getKnownFactFormForService(agentSession.service.getOrElse("")),
-              agentSession.service.getOrElse(""),
-              serviceToMessageKey(agentSession.service.getOrElse(""))
+              KnownFactPageConfig(
+                agentSession.service.getOrElse(""),
+                serviceToMessageKey(agentSession.service.getOrElse("")))
             ))
 
         case Some(_) => throw new Exception("no content in cache")
@@ -99,15 +99,64 @@ class AgentsFastTrackInvitationController @Inject()(
     }
   }
 
-  val submitKnownFact: Action[AnyContent] = Action.async { implicit request =>
+  val submitKnownFactItsa: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       agentSessionCache.hardGet.flatMap(
         agentSession => {
           val service = agentSession.service.getOrElse("")
-          getKnownFactFormForService(service)
+          agentFastTrackPostcodeForm
             .bindFromRequest()
             .fold(
-              formWithErrors => Ok(known_fact(formWithErrors, service, serviceToMessageKey(service))),
+              formWithErrors =>
+                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
+              kf => {
+                val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
+                agentSessionCache
+                  .save(updatedCache)
+                  .flatMap { _ =>
+                    redirectFastTrackToNextPage(agent.arn, updatedCache, agent.isWhitelisted)
+                  }
+              }
+            )
+        }
+      )
+    }
+  }
+
+  val submitKnownFactIrv: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { agent =>
+      agentSessionCache.hardGet.flatMap(
+        agentSession => {
+          val service = agentSession.service.getOrElse("")
+          agentFastTrackDateOfBirthForm
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
+              kf => {
+                val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
+                agentSessionCache
+                  .save(updatedCache)
+                  .flatMap { _ =>
+                    redirectFastTrackToNextPage(agent.arn, updatedCache, agent.isWhitelisted)
+                  }
+              }
+            )
+        }
+      )
+    }
+  }
+
+  val submitKnownFactVat: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { agent =>
+      agentSessionCache.hardGet.flatMap(
+        agentSession => {
+          val service = agentSession.service.getOrElse("")
+          agentFastTrackVatRegDateForm
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
               kf => {
                 val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
                 agentSessionCache

@@ -24,7 +24,9 @@ POST        /agents/delete                                      @uk.gov.hmrc.age
 # Fast Track Journey
 POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrack
 GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showKnownFact
-POST        /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFact
+POST        /agents/more-details-itsa                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactItsa
+POST        /agents/more-details-irv                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactIrv
+POST        /agents/more-details-vat                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactVat
 GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showCheckDetails
 POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitCheckDetails
 GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.continueAfterInvitationSent
