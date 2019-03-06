@@ -42,7 +42,7 @@ class InvitationsService @Inject()(
   externalUrls: ExternalUrls)
     extends GetClientName {
 
-  def createInvitation(arn: Arn, invitation: Invitation, featureFlags: FeatureFlags)(
+  def createInvitation(arn: Arn, invitation: Invitation)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[InvitationId] = {
