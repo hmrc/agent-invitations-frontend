@@ -124,7 +124,7 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def submitConfirmClient(): Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { agent =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
           val service = cache.service.getOrElse("")
@@ -142,7 +142,7 @@ class AgentLedDeAuthController @Inject()(
                       Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
                     data => {
                       if (data.choice) {
-                        relationshipsService.checkRelationshipExistsForService(arn, service, clientId).map {
+                        relationshipsService.checkRelationshipExistsForService(agent.arn, service, clientId).map {
                           case true  => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())
                           case false => Redirect(routes.AgentsErrorController.notAuthorised())
                         }
@@ -158,7 +158,7 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (_, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
           invitationsService
@@ -178,7 +178,7 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def submitConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { agent =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
           (cache.service, cache.clientIdentifier) match {
@@ -195,7 +195,7 @@ class AgentLedDeAuthController @Inject()(
                       },
                       data => {
                         if (data.choice) {
-                          deleteRelationshipForService(service, arn, clientId).map {
+                          deleteRelationshipForService(service, agent.arn, clientId).map {
                             case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
                             case Some(false) => NotFound //TODO: should be fixed in Sprint 36
                             case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
@@ -216,7 +216,7 @@ class AgentLedDeAuthController @Inject()(
   }
 
   def showCancelled: Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { agent =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
           val service = cache.service.getOrElse("")
@@ -224,7 +224,7 @@ class AgentLedDeAuthController @Inject()(
 
           val result = for {
             clientName <- invitationsService.getClientNameByService(clientId, service)
-            agencyName <- invitationsService.getAgencyName(arn)
+            agencyName <- invitationsService.getAgencyName(agent.arn)
           } yield (clientName.getOrElse(""), agencyName)
 
           result.map {
@@ -247,7 +247,7 @@ class AgentLedDeAuthController @Inject()(
 
   override def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(
     body: => Future[Result])(implicit request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSession.service match {
         case Some(HMRCMTDIT) if featureFlags.enableMtdItToConfirm   => Redirect(confirmClientCall)
         case Some(HMRCMTDVAT) if featureFlags.enableMtdVatToConfirm => Redirect(confirmClientCall)
@@ -263,13 +263,13 @@ class AgentLedDeAuthController @Inject()(
     }
 
   def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { _ =>
       Ok(cancelAuthorisation.no_client_found())
     })
   }
 
   def responseFailed(): Action[AnyContent] = Action.async { implicit request =>
-    ifShowDeAuthFlag(withAuthorisedAsAgent { (arn, _) =>
+    ifShowDeAuthFlag(withAuthorisedAsAgent { _ =>
       Ok(cancelAuthorisation.response_failed())
     })
   }

@@ -89,7 +89,7 @@ abstract class JourneyController(implicit ec: ExecutionContext)
 
   protected final def authorisedAgentActionRenderStateWhen(filter: PartialFunction[State, Unit]): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (_, _) =>
+      withAuthorisedAsAgent { _ =>
         for {
           stateAndBreadcrumbsOpt <- journeyService.currentState
           result <- stateAndBreadcrumbsOpt match {
@@ -130,16 +130,16 @@ abstract class JourneyController(implicit ec: ExecutionContext)
   protected final def authorisedAgentAction(transition: AuthorisedAgent => Transition)(
     routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        apply(transition(AuthorisedAgent(arn, isWhitelisted)), routeFactory)
+      withAuthorisedAsAgent { agent =>
+        apply(transition(agent), routeFactory)
       }
     }
 
   protected final def authorisedAgentActionWithHC(transition: HeaderCarrier => AuthorisedAgent => Transition)(
     routeFactory: RouteFactory): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        apply(transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)), routeFactory)
+      withAuthorisedAsAgent { agent =>
+        apply(transition(implicitly[HeaderCarrier])(agent), routeFactory)
       }
     }
 
@@ -162,26 +162,24 @@ abstract class JourneyController(implicit ec: ExecutionContext)
   protected final def authorisedAgentActionWithForm[T](form: Form[T])(
     transition: AuthorisedAgent => T => Transition): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(form, transition(AuthorisedAgent(arn, isWhitelisted)))
+      withAuthorisedAsAgent { agent =>
+        bindForm(form, transition(agent))
       }
     }
 
   protected final def authorisedAgentActionWithFormWithHC[T](form: Form[T])(
     transition: HeaderCarrier => AuthorisedAgent => T => Transition): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(form, transition(implicitly[HeaderCarrier])(AuthorisedAgent(arn, isWhitelisted)))
+      withAuthorisedAsAgent { agent =>
+        bindForm(form, transition(implicitly[HeaderCarrier])(agent))
       }
     }
 
   protected final def authorisedAgentActionWithFormWithHCWithRequest[T](form: Form[T])(
     transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        bindForm(
-          form,
-          transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(AuthorisedAgent(arn, isWhitelisted)))
+      withAuthorisedAsAgent { agent =>
+        bindForm(form, transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(agent))
       }
     }
 

@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
@@ -42,14 +42,14 @@ trait AuthActions extends AuthorisedFunctions {
       identifier <- enrolment.getIdentifier(identifierKey)
     } yield identifier.value
 
-  protected def withAuthorisedAsAgent[A](body: (Arn, Boolean) => Future[Result])(
+  protected def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode { isWhitelisted =>
       withEnrolledAsAgent {
         case Some(arn) =>
-          body(Arn(arn), isWhitelisted)
+          body(AuthorisedAgent(Arn(arn), isWhitelisted))
         case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
       } recoverWith {
         case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)

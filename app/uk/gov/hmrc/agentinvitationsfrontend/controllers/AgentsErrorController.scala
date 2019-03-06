@@ -46,7 +46,7 @@ class AgentsErrorController @Inject()(
     extends FrontendController with I18nSupport with AuthActions {
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map { aggregateOpt =>
         val aggregate = aggregateOpt.getOrElse(AgentSession())
         Forbidden(
@@ -59,21 +59,21 @@ class AgentsErrorController @Inject()(
   }
 
   val allCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
 
   val someCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.hardGet.map(cacheItem =>
         Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
     }
   }
 
   val activeRelationshipExists: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       for {
         agentSession <- agentSessionCache.hardGet
       } yield
@@ -89,7 +89,7 @@ class AgentsErrorController @Inject()(
   }
 
   val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.get.map {
         case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
         case Left(_)             => Ok(not_authorised("")) //TODO
@@ -98,7 +98,7 @@ class AgentsErrorController @Inject()(
   }
 
   val cannotCreateRequest: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map {
         case Some(session) =>
           val backLink =

@@ -26,8 +26,8 @@ class AuthActionsISpec extends BaseISpec {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     def withAuthorisedAsAgent[A]: Result =
-      await(super.withAuthorisedAsAgent { (arn, isWhitelisted) =>
-        Future.successful(Ok((arn.value, isWhitelisted).toString))
+      await(super.withAuthorisedAsAgent { agent =>
+        Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
       })
 
     def withAuthorisedAsClient[A](serviceName: String, identifierKey: String): Result =

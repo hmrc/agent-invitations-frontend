@@ -76,7 +76,7 @@ abstract class BaseInvitationController(
 
   protected def handleGetClientType(
     isDeAuthJourney: Boolean = false)(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) if cache.clientType.isEmpty && cache.fromFastTrack =>
           Ok(clientTypePage(backLinkUrl = routes.AgentsFastTrackInvitationController.showCheckDetails().url))
@@ -86,7 +86,7 @@ abstract class BaseInvitationController(
     }
 
   protected def handleSubmitClientType(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       ClientTypeForm.form
         .bindFromRequest()
         .fold(
@@ -103,7 +103,7 @@ abstract class BaseInvitationController(
               }
               .flatMap { updatedSession =>
                 if (updatedSession.fromFastTrack)
-                  redirectFastTrackToNextPage(arn, updatedSession, isWhitelisted)
+                  redirectFastTrackToNextPage(agent.arn, updatedSession, agent.isWhitelisted)
                 else
                   Redirect(selectServiceCall)
               }
@@ -115,8 +115,8 @@ abstract class BaseInvitationController(
     businessForm: Form[Confirmation] = agentConfirmationForm("error.business-service.required"))(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (_, isWhitelisted) =>
-      getSelectServicePage(isWhitelisted, businessForm = businessForm)
+    withAuthorisedAsAgent { agent =>
+      getSelectServicePage(agent.isWhitelisted, businessForm = businessForm)
     }
 
   private def getSelectServicePage(
@@ -137,11 +137,11 @@ abstract class BaseInvitationController(
     }
 
   protected def handleSubmitSelectServicePersonal()(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       ServiceTypeForm.form
         .bindFromRequest()
         .fold(
-          formWithErrors => getSelectServicePage(isWhitelisted, formWithErrors),
+          formWithErrors => getSelectServicePage(agent.isWhitelisted, formWithErrors),
           serviceInput => {
             def updateSessionAndRedirect(agentSession: Option[AgentSession]): Future[Result] =
               agentSession match {
@@ -149,8 +149,9 @@ abstract class BaseInvitationController(
                   agentSessionCache
                     .save(cache.copy(clientType = Some(ClientType.personal), service = Some(serviceInput)))
                     .flatMap(_ =>
-                      ifShouldShowService(serviceInput, featureFlags, isWhitelisted) {
-                        if (isSupportedWhitelistedService(serviceInput, isWhitelisted)) Redirect(identifyClientCall)
+                      ifShouldShowService(serviceInput, featureFlags, agent.isWhitelisted) {
+                        if (isSupportedWhitelistedService(serviceInput, agent.isWhitelisted))
+                          Redirect(identifyClientCall)
                         else Redirect(clientTypeCall)
                     })
                 case None => Redirect(clientTypeCall)
@@ -174,11 +175,11 @@ abstract class BaseInvitationController(
 
   protected def handleSubmitSelectServiceBusiness(
     businessForm: Form[Confirmation])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       businessForm
         .bindFromRequest()
         .fold(
-          formWithErrors => getSelectServicePage(isWhitelisted, businessForm = formWithErrors),
+          formWithErrors => getSelectServicePage(agent.isWhitelisted, businessForm = formWithErrors),
           data => {
             if (data.choice) {
               agentSessionCache.fetch.flatMap {
@@ -186,8 +187,8 @@ abstract class BaseInvitationController(
                   agentSessionCache
                     .save(cache.copy(clientType = Some(ClientType.business), service = Some(HMRCMTDVAT)))
                     .flatMap(_ =>
-                      ifShouldShowService(HMRCMTDVAT, featureFlags, isWhitelisted) {
-                        if (isSupportedWhitelistedService(HMRCMTDVAT, isWhitelisted)) Redirect(identifyClientCall)
+                      ifShouldShowService(HMRCMTDVAT, featureFlags, agent.isWhitelisted) {
+                        if (isSupportedWhitelistedService(HMRCMTDVAT, agent.isWhitelisted)) Redirect(identifyClientCall)
                         else Redirect(clientTypeCall)
                     })
                 case None => Redirect(clientTypeCall)
@@ -199,7 +200,7 @@ abstract class BaseInvitationController(
     }
 
   protected def handleShowIdentifyClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (_, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map {
         case Some(cache) =>
           cache.service match {
@@ -235,7 +236,7 @@ abstract class BaseInvitationController(
     }
 
   protected def handleShowConfirmClient(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.flatMap {
         case Some(cache) =>
           (cache.clientIdentifier, cache.service) match {
@@ -250,7 +251,7 @@ abstract class BaseInvitationController(
     }
 
   def identifyItsaClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       ItsaClientForm
         .form(featureFlags.showKfcMtdIt)
         .bindFromRequest()
@@ -276,7 +277,7 @@ abstract class BaseInvitationController(
                     val itsaInvitation = ItsaInvitation(
                       Nino(userInput.clientIdentifier),
                       if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
-                    knownFactCheckItsa(arn, updatedSession, itsaInvitation, isWhitelisted)
+                    knownFactCheckItsa(agent.arn, updatedSession, itsaInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
               case _ => {
@@ -287,7 +288,7 @@ abstract class BaseInvitationController(
     }
 
   def identifyVatClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       VatClientForm
         .form(featureFlags.showKfcMtdVat)
         .bindFromRequest()
@@ -315,7 +316,7 @@ abstract class BaseInvitationController(
                         updatedSession.clientType,
                         Vrn(userInput.clientIdentifier),
                         if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
-                    knownFactCheckVat(arn, updatedSession, vatInvitation, isWhitelisted)
+                    knownFactCheckVat(agent.arn, updatedSession, vatInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
               case None                                                   => Redirect(clientTypeCall)
@@ -324,7 +325,7 @@ abstract class BaseInvitationController(
     }
 
   def identifyIrvClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
-    withAuthorisedAsAgent { (arn, isWhitelisted) =>
+    withAuthorisedAsAgent { agent =>
       IrvClientForm
         .form(featureFlags.showKfcPersonalIncome)
         .bindFromRequest()
@@ -351,7 +352,7 @@ abstract class BaseInvitationController(
                       PirInvitation(
                         Nino(userInput.clientIdentifier),
                         if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
-                    knownFactCheckIrv(arn, updatedSession, pirInvitation, isWhitelisted)
+                    knownFactCheckIrv(agent.arn, updatedSession, pirInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
               case None                                                   => Redirect(clientTypeCall)
@@ -589,7 +590,7 @@ abstract class BaseInvitationController(
 
   def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(body: => Future[Result])(
     implicit request: Request[_]): Future[Result] =
-    withAuthorisedAsAgent { (arn, _) =>
+    withAuthorisedAsAgent { agent =>
       if (agentSession.fromFastTrack) body
       else {
         val clientType = agentSession.clientType
@@ -609,8 +610,10 @@ abstract class BaseInvitationController(
               existsInBasket <- invitationExistsInBasket(service, clientIdentifier, agentSession)
               hasPendingInvitations <- if (existsInBasket) Future.successful(true)
                                       else
-                                        invitationsService.hasPendingInvitationsFor(arn, clientIdentifier, service)
-              hasActiveRelationship <- relationshipsService.hasActiveRelationshipFor(arn, clientIdentifier, service)
+                                        invitationsService
+                                          .hasPendingInvitationsFor(agent.arn, clientIdentifier, service)
+              hasActiveRelationship <- relationshipsService
+                                        .hasActiveRelationshipFor(agent.arn, clientIdentifier, service)
             } yield (hasPendingInvitations, hasActiveRelationship)
 
             val serviceEnabled = (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
