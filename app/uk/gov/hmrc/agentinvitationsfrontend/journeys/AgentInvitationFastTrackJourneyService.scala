@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[MongoDBCachedAgentInvitationJourneyService])
+@ImplementedBy(classOf[MongoDBCachedAgentInvitationFastTrackJourneyService])
 trait AgentInvitationFastTrackJourneyService extends PersistentJourneyService {
 
   override val model = AgentInvitationFastTrackJourneyModel

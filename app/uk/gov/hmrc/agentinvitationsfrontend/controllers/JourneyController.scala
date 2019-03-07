@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisedAgent
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, FastTrackErrors}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -159,6 +159,22 @@ abstract class JourneyController(implicit ec: ExecutionContext)
         userInput => apply(transition(userInput), redirect)
       )
 
+  /*private def bindFormFailWithErrorUrl[T](continueUrlActions: ContinueUrlActions)(
+    form: Form[T],
+    transition: T => Transition)(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    form
+      .bindFromRequest()
+      .fold(
+        formErrors =>
+          continueUrlActions.withMaybeErrorUrl {
+            case None => throw new IllegalStateException("No Error Url Provided")
+            case Some(errorURL) =>
+              Future successful Redirect(
+                errorURL.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
+        },
+        userInput => apply(transition(userInput), redirect)
+      )*/
+
   protected final def authorisedAgentActionWithForm[T](form: Form[T])(
     transition: AuthorisedAgent => T => Transition): Action[AnyContent] =
     Action.async { implicit request =>
@@ -182,6 +198,28 @@ abstract class JourneyController(implicit ec: ExecutionContext)
         bindForm(form, transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(agent))
       }
     }
+
+  protected final def authorisedAgentActionWithBootstrapAndFormWithHCWithRequest[T](
+    bootstrap: Request[Any] => Transition)(form: Form[T])(
+    transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { agent =>
+        journeyService
+          .apply(bootstrap(implicitly[Request[Any]]))
+          .flatMap(_ => bindForm(form, transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(agent)))
+      }
+    }
+
+  /*protected final def authorisedAgentActionWithFormWithHCWithRequestErrorUrl[T](continueUrlActions: ContinueUrlActions)(
+    form: Form[T])(
+    transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { agent =>
+        bindFormFailWithErrorUrl(continueUrlActions)(
+          form,
+          transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(agent))
+      }
+    }*/
 
 }
 

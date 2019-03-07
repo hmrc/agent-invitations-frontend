@@ -80,6 +80,32 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     }
   }
 
+  def getContinueUrl[A](implicit request: Request[A]): Option[ContinueUrl] =
+    request.getQueryString("continue") match {
+      case Some(continueUrl) =>
+        Try(ContinueUrl(continueUrl)) match {
+          case Success(url) => Some(url)
+          case Failure(e) =>
+            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
+            None
+        }
+      case None =>
+        None
+    }
+
+  def getErrorUrl[A](implicit request: Request[A]): Option[ContinueUrl] =
+    request.getQueryString("error") match {
+      case Some(continueUrl) =>
+        Try(ContinueUrl(continueUrl)) match {
+          case Success(url) => Some(url)
+          case Failure(e) =>
+            Logger(getClass).warn(s"$continueUrl is not a valid error URL", e)
+            None
+        }
+      case None =>
+        None
+    }
+
   private def isRelativeOrAbsoluteWhiteListed(
     continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     if (!continueUrl.isRelativeUrl) whiteListService.isAbsoluteUrlWhiteListed(continueUrl)

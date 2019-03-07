@@ -27,6 +27,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val MoreDetailsFormat = Json.format[MoreDetails]
   val SelectClientTypeFormat = Json.format[SelectClientType]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
+  val IdentifyBusinessClientFormat = Json.format[IdentifyBusinessClient]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
   val PendingInvitationExistsFormat = Json.format[PendingInvitationExists]
@@ -41,6 +42,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: MoreDetails               => MoreDetailsFormat.writes(s)
     case s: SelectClientType          => SelectClientTypeFormat.writes(s)
     case s: IdentifyPersonalClient    => IdentifyPersonalClientFormat.writes(s)
+    case s: IdentifyBusinessClient    => IdentifyBusinessClientFormat.writes(s)
     case s: InvitationSentPersonal    => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness    => InvitationSentBusinessFormat.writes(s)
     case s: KnownFactNotMatched       => KnownFactNotMatchedFormat.writes(s)
@@ -54,7 +56,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "MoreDetails"               => MoreDetailsFormat.reads(properties)
     case "SelectClientType"          => SelectClientTypeFormat.reads(properties)
     case "IdentifyPersonalClient"    => IdentifyPersonalClientFormat.reads(properties)
-    case "IdentifyBusinessClient"    => JsSuccess(IdentifyBusinessClient)
+    case "IdentifyBusinessClient"    => IdentifyBusinessClientFormat.reads(properties)
     case "InvitationSentPersonal"    => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"    => InvitationSentBusinessFormat.reads(properties)
     case "KnownFactNotMatched"       => KnownFactNotMatchedFormat.reads(properties)

@@ -29,7 +29,6 @@ import scala.concurrent.Future
 object AgentInvitationJourneyModel extends JourneyModel {
 
   sealed trait State
-  sealed trait Error
 
   val root: State = States.SelectClientType(Set.empty)
 

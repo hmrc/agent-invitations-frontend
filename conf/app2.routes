@@ -33,6 +33,10 @@ GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.age
 #Fast Track Endpoints
 POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.agentFastTrack
 GET         /agents/fast-track/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showCheckDetails
+GET         /agents/fast-track/identify-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showIdentifyClient
+POST         /agents/fast-track/identify-itsa-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient
+POST         /agents/fast-track/identify-irv-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient
+POST         /agents/fast-track/identify-vat-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient
 GET         /agents/fast-track/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.showKnownFact
 POST        /agents/fast-track/more-details-itsa                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitKnownFactItsa
 POST        /agents/fast-track/more-details-irv                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.AgentInvitationFastTrackJourneyController.submitKnownFactIrv
