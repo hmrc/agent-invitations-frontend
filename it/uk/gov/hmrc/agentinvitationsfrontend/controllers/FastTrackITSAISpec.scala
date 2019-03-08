@@ -210,7 +210,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithBodyText(result, "DH14EJ")
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
       checkResultContainsBackLink(result, "/go/back/to/this")
     }
 
@@ -225,7 +225,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithNotBodyText(result, "Back")
-      checkHtmlResultWithBodyText(result, "DH14EJ")
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
     }
 
     "display the check details page when known fact is required and provided for ITSA for short postcode with spaces" in {
@@ -265,7 +265,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithBodyText(result, "BN114AW")
+      checkHtmlResultWithBodyText(result, "BN11 4AW")
     }
 
     "display alternate check details page when known fact is required but not provided for ITSA" in {
@@ -304,7 +304,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, "AB 12 34 56 A")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Postcode"))
-      checkHtmlResultWithBodyText(result, "DH14EJ")
+      checkHtmlResultWithBodyText(result, "DH1 4EJ")
       checkHtmlResultWithBodyText(result, "Change this information")
       checkHtmlResultWithBodyText(result, "We need some more details")
       checkHtmlResultWithNotBodyText(result, "Individual or sole trader")
