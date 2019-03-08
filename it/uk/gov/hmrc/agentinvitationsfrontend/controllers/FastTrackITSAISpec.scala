@@ -340,7 +340,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(formData))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -369,7 +369,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
@@ -391,7 +391,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
     }
@@ -412,7 +412,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(formData))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
     }
@@ -434,7 +434,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
@@ -461,7 +461,7 @@ class FastTrackITSAISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
