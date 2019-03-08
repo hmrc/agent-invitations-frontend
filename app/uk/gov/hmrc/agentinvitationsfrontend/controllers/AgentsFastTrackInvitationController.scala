@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
@@ -264,7 +265,7 @@ class AgentsFastTrackInvitationController @Inject()(
             }
           },
           data => {
-            if (data.value.getOrElse(false)) {
+            if (data.choice) {
               agentSession.flatMap(cacheItem => redirectFastTrackToNextPage(agent.arn, cacheItem, agent.isWhitelisted))
             } else Future successful Redirect(routes.AgentsInvitationController.showIdentifyClient())
           }
@@ -346,7 +347,5 @@ object AgentsFastTrackInvitationController {
       case _                        => None
     })
 
-  val checkDetailsForm: Form[ConfirmForm] = Form[ConfirmForm](
-    mapping("checkDetails" -> optional(boolean)
-      .verifying(detailsChoice))(ConfirmForm.apply)(ConfirmForm.unapply))
+  val checkDetailsForm: Form[Confirmation] = agentConfirmationForm("error.confirmDetails.invalid")
 }
