@@ -18,22 +18,25 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession, Services}
 
-case class CheckDetailsPageConfig(agentSession: AgentSession, featureFlags: FeatureFlags) {
+case class CheckDetailsPageConfig(
+  fastTrackRequest: AgentFastTrackRequest,
+  featureFlags: FeatureFlags,
+  serviceMessageKey: String) {
 
   private val shouldShowKF: Boolean = {
-    agentSession.service match {
-      case Some("HMRC-MTD-IT") if featureFlags.showKfcMtdIt                     => true
-      case Some("PERSONAL-INCOME-RECORD") if featureFlags.showKfcPersonalIncome => true
-      case Some("HMRC-MTD-VAT") if featureFlags.showKfcMtdVat                   => true
-      case _                                                                    => false
+    fastTrackRequest.service match {
+      case "HMRC-MTD-IT" if featureFlags.showKfcMtdIt                     => true
+      case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
+      case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat                   => true
+      case _                                                              => false
     }
   }
 
-  val needClientType: Boolean = agentSession.clientType.isEmpty
+  val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
-  val needKnownFact: Boolean = shouldShowKF && agentSession.knownFact.getOrElse("").isEmpty
+  val needKnownFact: Boolean = shouldShowKF && fastTrackRequest.knownFact.getOrElse("").isEmpty
 
   val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
 
@@ -47,6 +50,6 @@ case class CheckDetailsPageConfig(agentSession: AgentSession, featureFlags: Feat
       case _                   => throw new Exception("service not supported")
     }
 
-  val showKnownFact: Boolean = agentSession.knownFact.getOrElse("").nonEmpty && shouldShowKF
+  val showKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").nonEmpty && shouldShowKF
 
 }

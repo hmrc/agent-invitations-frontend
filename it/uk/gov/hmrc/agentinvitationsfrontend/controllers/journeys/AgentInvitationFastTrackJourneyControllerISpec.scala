@@ -34,7 +34,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
   "POST /agents/fast-track" should {
     val request = FakeRequest("POST", "/agents/fast-track")
 
-    "redirect to check-details if all values in request a`re valid" in {
+    "redirect to check-details if all values in request are valid with no continue url" in {
 
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
@@ -48,7 +48,78 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
         ))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
-      journeyState.get shouldBe None
+      journeyState.get shouldBe Some(
+        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")), None),
+        List(Prologue(None)))
+    }
+
+    "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
+
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "HMRC-MTD-IT",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "AB123456A",
+            "knownFact"            -> "BN32TN"),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+      journeyState.get shouldBe Some(
+        CheckDetails(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
+          Some("http://localhost:9996/tax-history/select-client")),
+        List(Prologue(Some("http://localhost:9996/tax-history/not-authorised")), Prologue(None))
+      )
+    }
+
+    "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
+
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "foo",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "AB123456A",
+            "knownFact"            -> "BN32TN"),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
+      journeyState.get shouldBe Some(
+        Prologue(Some("http://localhost:9996/tax-history/not-authorised")),
+        List(Prologue(None))
+      )
+    }
+  }
+
+  "GET /agents/fast-track/check-details" should {
+    val request = FakeRequest("GET", "/agents/fast-track/check-details")
+    "show the check-details page" in {
+      journeyState.set(
+        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")), None),
+        List(Prologue(None)))
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-IT",
+        "check-details.client-type.personal")
     }
   }
 }

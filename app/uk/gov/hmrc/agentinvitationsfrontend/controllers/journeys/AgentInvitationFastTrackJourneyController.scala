@@ -80,6 +80,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val showCheckDetails = authorisedAgentActionRenderStateWhen { case _: CheckDetails => }
 
+  val submitCheckDetails = authorisedAgentActionWithFormWithHCWithRequest(checkDetailsForm) {
+    implicit hc => implicit request =>
+      Transitions.checkedDetails(invitationsService.checkPostcodeMatches)(invitationsService.checkCitizenRecordMatches)(
+        invitationsService.checkVatRegistrationDateMatches)(invitationsService.createInvitation)(
+        invitationsService.createAgentLink)(invitationsService.hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags)
+  }
+
   val showIdentifyClient = authorisedAgentActionRenderStateWhen {
     case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>
   }
@@ -176,6 +184,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               Redirect(url + s"?issue=${formWithErrors.get.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
             case None => throw ???
           }
+
+//        case CheckDetails(_, _) =>
+//          Ok(check_details(checkDetailsForm, CheckDetailsPageConfig(AgentSession())))
 
         case SelectClientType(_, _) =>
           Ok(client_type(
@@ -305,6 +316,8 @@ object AgentInvitationFastTrackJourneyController {
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+
+  val checkDetailsForm = confirmationForm("error.confirmDetails.invalid")
 
   def IdentifyItsaClientForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
     mapping(
