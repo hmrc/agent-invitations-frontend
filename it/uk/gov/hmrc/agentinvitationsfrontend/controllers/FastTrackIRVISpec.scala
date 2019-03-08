@@ -181,7 +181,7 @@ class FastTrackIRVISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -201,7 +201,7 @@ class FastTrackIRVISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }
@@ -214,7 +214,7 @@ class FastTrackIRVISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
     }
@@ -227,7 +227,7 @@ class FastTrackIRVISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
     }
@@ -252,7 +252,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")

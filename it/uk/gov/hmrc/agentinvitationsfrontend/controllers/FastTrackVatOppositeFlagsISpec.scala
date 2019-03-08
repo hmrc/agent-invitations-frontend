@@ -234,7 +234,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
     }
@@ -258,7 +258,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
@@ -282,7 +282,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
     }
@@ -295,7 +295,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -321,7 +321,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "true")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
@@ -351,7 +351,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
 
       val result = await(
         fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("checkDetails" -> "false")))
+          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
     }

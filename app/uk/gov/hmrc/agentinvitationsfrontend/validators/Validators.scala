@@ -98,13 +98,6 @@ object Validators {
     }
   }
 
-  val detailsChoice: Constraint[Option[Boolean]] = Constraint[Option[Boolean]] { fieldValue: Option[Boolean] =>
-    if (fieldValue.isDefined)
-      Valid
-    else
-      Invalid(ValidationError("error.confirmDetails.invalid"))
-  }
-
   def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
     if (fieldValue.isDefined)
       Valid
