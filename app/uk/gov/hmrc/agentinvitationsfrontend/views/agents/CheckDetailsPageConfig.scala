@@ -20,10 +20,7 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession, Services}
 
-case class CheckDetailsPageConfig(
-  fastTrackRequest: AgentFastTrackRequest,
-  featureFlags: FeatureFlags,
-  serviceMessageKey: String) {
+case class CheckDetailsPageConfig(fastTrackRequest: AgentFastTrackRequest, featureFlags: FeatureFlags) {
 
   private val shouldShowKF: Boolean = {
     fastTrackRequest.service match {
@@ -31,6 +28,14 @@ case class CheckDetailsPageConfig(
       case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
       case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat                   => true
       case _                                                              => false
+    }
+  }
+
+  val serviceMessageKey: String = {
+    fastTrackRequest.service match {
+      case "HMRC-MTD-IT"            => "itsa"
+      case "PERSONAL-INCOME-RECORD" => "afi"
+      case "HMRC-MTD-VAT"           => "vat"
     }
   }
 
