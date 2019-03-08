@@ -117,7 +117,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
     }
 
-  val showKnownFact = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched => }
+  val showKnownFact = authorisedAgentActionRenderStateWhen { case _: MoreDetails => }
+
   val submitKnownFactItsa =
     authorisedAgentActionWithFormWithHCWithRequest(agentFastTrackPostcodeForm(featureFlags.showKfcMtdIt)) {
       implicit hc => implicit request =>
@@ -185,8 +186,17 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             case None => throw ???
           }
 
-//        case CheckDetails(_, _) =>
-//          Ok(check_details(checkDetailsForm, CheckDetailsPageConfig(AgentSession())))
+        case CheckDetails(fastTrackRequest, _) =>
+          Ok(check_details(checkDetailsForm, CheckDetailsPageConfig(fastTrackRequest, featureFlags)))
+
+        case MoreDetails(fastTrackRequest, _) =>
+          Ok(
+            known_fact(
+              getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+              KnownFactPageConfig(
+                fastTrackRequest.service,
+                Services.determineServiceMessageKeyFromService(fastTrackRequest.service))
+            ))
 
         case SelectClientType(_, _) =>
           Ok(client_type(
@@ -233,6 +243,17 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           )
 
+        case InvitationSentPersonal(invitationLink, continueUrl) =>
+          Ok(
+            invitation_sent(
+              InvitationSentPageConfig(
+                invitationLink,
+                None,
+                continueUrl.isDefined,
+                featureFlags.enableTrackRequests,
+                ClientType.fromEnum(business),
+                inferredExpiryDate)))
+
         case InvitationSentBusiness(invitationLink, continueUrl) =>
           Ok(
             invitation_sent(
@@ -271,8 +292,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               routes.AgentInvitationJourneyController.showClientType()
             ))
 
-        case ClientNotSignedUp(_) =>
-          Ok(not_signed_up("", hasRequests = false))
+        case ClientNotSignedUp(fastTrackRequest) =>
+          Ok(
+            not_signed_up(
+              Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+              hasRequests = false))
       }
   }
 }

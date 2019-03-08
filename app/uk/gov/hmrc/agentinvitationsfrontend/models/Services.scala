@@ -66,4 +66,11 @@ object Services {
       case 'C' => messageKeyForVAT
       case _   => "Service is missing"
     }
+
+  def determineServiceMessageKeyFromService(service: String): String =
+    service match {
+      case HMRCMTDIT  => messageKeyForITSA
+      case HMRCPIR    => messageKeyForAfi
+      case HMRCMTDVAT => messageKeyForVAT
+    }
 }

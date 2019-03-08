@@ -291,13 +291,9 @@ class FastTrackIRVISpec extends BaseISpec {
       givenAgentReferenceRecordExistsForArn(arn, "uid")
 
       val requestWithForm = request.withFormUrlEncodedBody(
-        "clientType"           -> "personal",
-        "service"              -> "PERSONAL-INCOME-RECORD",
-        "clientIdentifierType" -> "ni",
-        "clientIdentifier"     -> validNino.value,
-        "knownFact.year"       -> "1980",
-        "knownFact.month"      -> "07",
-        "knownFact.day"        -> "07"
+        "knownFact.year"  -> "1980",
+        "knownFact.month" -> "07",
+        "knownFact.day"   -> "07"
       )
 
       await(sessionStore.save(agentSession))
