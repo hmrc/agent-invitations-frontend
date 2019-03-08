@@ -224,13 +224,17 @@ class AgentsFastTrackInvitationController @Inject()(
     withAuthorisedAsAgent { _ =>
       agentSessionCache.fetch.map {
         case Some(agentSession) =>
+          val fastTrackRequest = AgentFastTrackRequest(
+            agentSession.clientType,
+            agentSession.service.getOrElse(""),
+            agentSession.clientIdentifierType.getOrElse(""),
+            agentSession.clientIdentifier.getOrElse(""),
+            agentSession.knownFact
+          )
           Ok(
             check_details(
               checkDetailsForm,
-              agentSession,
-              featureFlags,
-              serviceToMessageKey(agentSession.service.getOrElse("")),
-              CheckDetailsPageConfig(agentSession, featureFlags)
+              CheckDetailsPageConfig(fastTrackRequest, featureFlags)
             ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
       }
@@ -245,13 +249,17 @@ class AgentsFastTrackInvitationController @Inject()(
         .fold(
           formWithErrors => {
             agentSession.flatMap { session =>
+              val fastTrackRequest = AgentFastTrackRequest(
+                session.clientType,
+                session.service.getOrElse(""),
+                session.clientIdentifierType.getOrElse(""),
+                session.clientIdentifier.getOrElse(""),
+                session.knownFact
+              )
               Future successful Ok(
                 check_details(
                   formWithErrors,
-                  session,
-                  featureFlags,
-                  serviceToMessageKey(session.service.getOrElse("")),
-                  CheckDetailsPageConfig(session, featureFlags)
+                  CheckDetailsPageConfig(fastTrackRequest, featureFlags)
                 ))
             }
           },

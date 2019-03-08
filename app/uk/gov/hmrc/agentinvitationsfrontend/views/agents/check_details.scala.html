@@ -30,7 +30,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-@(confirmForm: Form[ConfirmForm], currentInvitationInput: AgentSession, featureFlags: FeatureFlags, serviceMessageKey: String, pageConfig: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmForm: Form[ConfirmForm], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
@@ -41,11 +41,11 @@
 
 
 @postcodeSpace = @{
-    if(currentInvitationInput.knownFact.get.replaceAll(" ", "").length == 6) 3
+    if(config.fastTrackRequest.knownFact.get.replaceAll(" ", "").length == 6) 3
     else 4
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), serviceMessageKey))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), config.serviceMessageKey))) {
 
     @if(request.headers.get("Referer").isDefined){
         @back_link_referer(request)
@@ -57,18 +57,18 @@
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${currentInvitationInput.service.getOrElse("")}")</p>
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
     <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
         <div>
-            @if(currentInvitationInput.clientType.nonEmpty){
+            @if(config.fastTrackRequest.clientType.nonEmpty){
             <dt class="cya-question">
                 @Messages("check-details.client-type")
             </dt>
             <dd class="cya-answer" id="client-type">
-                @{currentInvitationInput.clientType match {
+                @{config.fastTrackRequest.clientType match {
                     case Some(ClientType.personal) => Messages("check-details.client-type.personal")
                     case Some(ClientType.business) => Messages("check-details.client-type.business")
                     case _ => throw new IllegalArgumentException("client type not found")
@@ -78,60 +78,60 @@
         </div>
         <div>
             <dt class="cya-question">
-                @{currentInvitationInput.clientIdentifierType match {
-                    case Some("ni") => Messages("check-details.nino")
-                    case Some("vrn") => Messages("check-details.vrn")
+                @{config.fastTrackRequest.clientIdentifierType match {
+                    case "ni" => Messages("check-details.nino")
+                    case "vrn" => Messages("check-details.vrn")
                     case _ => throw new IllegalArgumentException("client identifier type not supported")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
-                @if(currentInvitationInput.service == Some("HMRC-MTD-VAT")) {
-                    @currentInvitationInput.clientIdentifier
+                @if(config.fastTrackRequest.service == "HMRC-MTD-VAT") {
+                    @config.fastTrackRequest.clientIdentifier
                 }else{
-                    @currentInvitationInput.clientIdentifier.getOrElse("").replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                    @config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
                 }
             </dd>
         </div>
-        @if(pageConfig.showKnownFact) {
+        @if(config.showKnownFact) {
             <div>
                 <dt class="cya-question">
                 @{
-                    currentInvitationInput.service match {
-                        case Some("HMRC-MTD-IT") => Messages("check-details.postcode")
-                        case Some("PERSONAL-INCOME-RECORD") => Messages("check-details.dob")
-                        case Some("HMRC-MTD-VAT") => Messages("check-details.vat-reg-date")
+                    config.fastTrackRequest.service match {
+                        case "HMRC-MTD-IT" => Messages("check-details.postcode")
+                        case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
+                        case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
                     }
                 }
                 </dt>
                 <dd class="cya-answer" id="known-fact">
-                @if(currentInvitationInput.service == "HMRC-MTD-IT") {
-                    @if(currentInvitationInput.knownFact.get.matches(postcodeRegex)) {
-                        @currentInvitationInput.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
+                @if(config.fastTrackRequest.service == "HMRC-MTD-IT") {
+                    @if(config.fastTrackRequest.knownFact.get.matches(postcodeRegex)) {
+                        @config.fastTrackRequest.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
                     }else{
-                        @currentInvitationInput.knownFact.get
+                        @config.fastTrackRequest.knownFact.get
                     }
                 } else {
-                    @displayDate(currentInvitationInput.knownFact.get)
+                    @displayDate(config.fastTrackRequest.knownFact.get)
                 }
                 </dd>
             </div>
         }
     </dl>
 
-    @if(pageConfig.needClientType) {
+    @if(config.needClientType) {
 
-        <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl(currentInvitationInput.service.getOrElse(""))">@Messages("check-details.change.link")</a></div>
+        <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsUrl(config.fastTrackRequest.service)">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
 
-        <a href="@pageConfig.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+        <a href="@config.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
     }else {
-        @if(pageConfig.needKnownFact) {
-            <div class="margin-top-40 margin-bottom-40"><a href="@pageConfig.changeDetailsUrl(currentInvitationInput.service.getOrElse(""))">@Messages("check-details.change.link")</a></div>
+        @if(config.needKnownFact) {
+            <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsUrl(config.fastTrackRequest.service)">@Messages("check-details.change.link")</a></div>
 
             <p>@Messages("check-details.change.p1")</p>
 
-            <a href="@pageConfig.knownFactUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+            <a href="@config.knownFactUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
         } else {
 
             @form(
