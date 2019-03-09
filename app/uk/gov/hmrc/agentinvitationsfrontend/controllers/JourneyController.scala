@@ -18,9 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc._
+import play.api.mvc.{Request, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisedAgent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -35,13 +34,10 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - renderState: how to render given state
   *
   * and few action creation helpers:
-  *   - simpleAction
-  *   - authorisedAgentActionRenderStateWhen
-  *   - authorisedAgentAction
-  *   - authorisedAgentActionWithHC
-  *   - authorisedAgentActionWithForm
-  *   - authorisedAgentActionWithFormWithHC
-  *   - authorisedAgentActionWithFormWithHCWithRequest
+  *   - action
+  *   - authorised
+  *   - authorisedWithForm
+  *   - authorisedShowCurrentStateWhen
   */
 abstract class JourneyController(implicit ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
@@ -82,22 +78,55 @@ abstract class JourneyController(implicit ec: ExecutionContext)
           routeFactory(origin, breadcrumbs)(request) // renders current state back
       }
 
-  protected final def simpleAction(transition: Transition)(afterTransition: RouteFactory): Action[AnyContent] =
-    Action.async { implicit request =>
-      apply(transition, afterTransition)
+  protected final def action(body: Request[_] => Future[Result]): Action[AnyContent] = Action.async {
+    implicit request =>
+      body(request)
+  }
+
+  type WithAuthorised[User] = Request[_] => (User => Future[Result]) => Future[Result]
+
+  protected final def authorised[User](withAuthorised: WithAuthorised[User])(transition: User => Transition)(
+    routeFactory: RouteFactory)(implicit request: Request[_]): Future[Result] =
+    withAuthorised(request) { user: User =>
+      apply(transition(user), routeFactory)
     }
 
-  protected final def authorisedAgentActionRenderStateWhen(filter: PartialFunction[State, Unit]): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { _ =>
+  protected final def authorisedWithForm[User, Payload](withAuthorised: WithAuthorised[User])(form: Form[Payload])(
+    transition: User => Payload => Transition)(implicit request: Request[_]): Future[Result] =
+    withAuthorised(request) { user: User =>
+      bindForm(form, transition(user))
+    }
+
+  private def bindForm[T](form: Form[T], transition: T => Transition)(
+    implicit hc: HeaderCarrier,
+    request: Request[_]): Future[Result] =
+    form
+      .bindFromRequest()
+      .fold(
+        formWithErrors =>
+          journeyService.currentState.flatMap {
+            case Some((state, breadcrumbs)) =>
+              Future.successful(renderState(state, breadcrumbs, Some(formWithErrors))(request))
+            case None =>
+              apply(journeyService.model.start, redirect)
+        },
+        userInput => apply(transition(userInput), redirect)
+      )
+
+  type ExpectedStates = PartialFunction[State, Unit]
+
+  protected final def authorisedShowCurrentStateWhen[User](withAuthorised: WithAuthorised[User])(
+    expectedStates: ExpectedStates): Action[AnyContent] =
+    action { implicit request =>
+      withAuthorised(request) { _ =>
         for {
           stateAndBreadcrumbsOpt <- journeyService.currentState
           result <- stateAndBreadcrumbsOpt match {
                      case None => apply(journeyService.model.start, redirect)
                      case Some(stateAndBreadcrumbs) =>
-                       if (hasMatchingState(filter, stateAndBreadcrumbs))
+                       if (hasMatchingState(expectedStates, stateAndBreadcrumbs))
                          journeyService.currentState
-                           .flatMap(stepBackUntil(filter))
+                           .flatMap(stepBackUntil(expectedStates))
                        else apply(journeyService.model.start, redirect)
                    }
         } yield result
@@ -126,62 +155,6 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       if (filter.isDefinedAt(state)) Future.successful(renderState(state, breadcrumbs, None)(request))
       else journeyService.stepBack.flatMap(stepBackUntil(filter))
   }
-
-  protected final def authorisedAgentAction(transition: AuthorisedAgent => Transition)(
-    routeFactory: RouteFactory): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        apply(transition(agent), routeFactory)
-      }
-    }
-
-  protected final def authorisedAgentActionWithHC(transition: HeaderCarrier => AuthorisedAgent => Transition)(
-    routeFactory: RouteFactory): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        apply(transition(implicitly[HeaderCarrier])(agent), routeFactory)
-      }
-    }
-
-  private def bindForm[T](form: Form[T], transition: T => Transition)(
-    implicit hc: HeaderCarrier,
-    request: Request[_]): Future[Result] =
-    form
-      .bindFromRequest()
-      .fold(
-        formWithErrors =>
-          journeyService.currentState.flatMap {
-            case Some((state, breadcrumbs)) =>
-              Future.successful(renderState(state, breadcrumbs, Some(formWithErrors))(request))
-            case None =>
-              apply(journeyService.model.start, redirect)
-        },
-        userInput => apply(transition(userInput), redirect)
-      )
-
-  protected final def authorisedAgentActionWithForm[T](form: Form[T])(
-    transition: AuthorisedAgent => T => Transition): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        bindForm(form, transition(agent))
-      }
-    }
-
-  protected final def authorisedAgentActionWithFormWithHC[T](form: Form[T])(
-    transition: HeaderCarrier => AuthorisedAgent => T => Transition): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        bindForm(form, transition(implicitly[HeaderCarrier])(agent))
-      }
-    }
-
-  protected final def authorisedAgentActionWithFormWithHCWithRequest[T](form: Form[T])(
-    transition: HeaderCarrier => Request[Any] => AuthorisedAgent => T => Transition): Action[AnyContent] =
-    Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        bindForm(form, transition(implicitly[HeaderCarrier])(implicitly[Request[Any]])(agent))
-      }
-    }
 
 }
 
