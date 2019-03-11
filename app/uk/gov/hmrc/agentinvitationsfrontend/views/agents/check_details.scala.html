@@ -121,14 +121,14 @@
 
     @if(config.needClientType) {
 
-        <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsUrl(config.fastTrackRequest.service)">@Messages("check-details.change.link")</a></div>
+        <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsCall">@Messages("check-details.change.link")</a></div>
 
         <p>@Messages("check-details.change.p1")</p>
 
         <a href="@config.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
     }else {
         @if(config.needKnownFact) {
-            <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsUrl(config.fastTrackRequest.service)">@Messages("check-details.change.link")</a></div>
+            <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsCall">@Messages("check-details.change.link")</a></div>
 
             <p>@Messages("check-details.change.p1")</p>
 

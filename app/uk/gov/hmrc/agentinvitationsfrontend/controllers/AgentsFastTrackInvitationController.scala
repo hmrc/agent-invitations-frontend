@@ -91,7 +91,9 @@ class AgentsFastTrackInvitationController @Inject()(
               getKnownFactFormForService(agentSession.service.getOrElse("")),
               KnownFactPageConfig(
                 agentSession.service.getOrElse(""),
-                serviceToMessageKey(agentSession.service.getOrElse("")))
+                serviceToMessageKey(agentSession.service.getOrElse("")),
+                getSubmitKnownFactCallBy(agentSession.service.getOrElse(""))
+              )
             ))
 
         case Some(_) => throw new Exception("no content in cache")
@@ -109,7 +111,15 @@ class AgentsFastTrackInvitationController @Inject()(
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
+                Ok(
+                  known_fact(
+                    formWithErrors,
+                    KnownFactPageConfig(
+                      service,
+                      serviceToMessageKey(service),
+                      getSubmitKnownFactCallBy(service)
+                    )
+                  )),
               kf => {
                 val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
                 agentSessionCache
@@ -133,7 +143,15 @@ class AgentsFastTrackInvitationController @Inject()(
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
+                Ok(
+                  known_fact(
+                    formWithErrors,
+                    KnownFactPageConfig(
+                      service,
+                      serviceToMessageKey(service),
+                      getSubmitKnownFactCallBy(service)
+                    )
+                  )),
               kf => {
                 val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
                 agentSessionCache
@@ -157,7 +175,15 @@ class AgentsFastTrackInvitationController @Inject()(
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Ok(known_fact(formWithErrors, KnownFactPageConfig(service, serviceToMessageKey(service)))),
+                Ok(
+                  known_fact(
+                    formWithErrors,
+                    KnownFactPageConfig(
+                      service,
+                      serviceToMessageKey(service),
+                      getSubmitKnownFactCallBy(service)
+                    )
+                  )),
               kf => {
                 val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
                 agentSessionCache
@@ -235,7 +261,13 @@ class AgentsFastTrackInvitationController @Inject()(
           Ok(
             check_details(
               checkDetailsForm,
-              CheckDetailsPageConfig(fastTrackRequest, featureFlags)
+              CheckDetailsPageConfig(
+                fastTrackRequest,
+                featureFlags,
+                routes.AgentsInvitationController.showClientType(),
+                routes.AgentsFastTrackInvitationController.showKnownFact(),
+                getSubmitIdentifyClientCallBy(fastTrackRequest.service)
+              )
             ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
       }
@@ -249,18 +281,24 @@ class AgentsFastTrackInvitationController @Inject()(
         .bindFromRequest()
         .fold(
           formWithErrors => {
-            agentSession.flatMap { session =>
-              val fastTrackRequest = AgentFastTrackRequest(
-                session.clientType,
-                session.service.getOrElse(""),
-                session.clientIdentifierType.getOrElse(""),
-                session.clientIdentifier.getOrElse(""),
-                session.knownFact
-              )
-              Future successful Ok(
-                check_details(
+            agentSession.flatMap {
+              session =>
+                val fastTrackRequest = AgentFastTrackRequest(
+                  session.clientType,
+                  session.service.getOrElse(""),
+                  session.clientIdentifierType.getOrElse(""),
+                  session.clientIdentifier.getOrElse(""),
+                  session.knownFact
+                )
+                Future successful Ok(check_details(
                   formWithErrors,
-                  CheckDetailsPageConfig(fastTrackRequest, featureFlags)
+                  CheckDetailsPageConfig(
+                    fastTrackRequest,
+                    featureFlags,
+                    routes.AgentsInvitationController.showClientType(),
+                    routes.AgentsFastTrackInvitationController.showKnownFact(),
+                    getSubmitIdentifyClientCallBy(fastTrackRequest.service)
+                  )
                 ))
             }
           },
@@ -348,4 +386,18 @@ object AgentsFastTrackInvitationController {
     })
 
   val checkDetailsForm: Form[Confirmation] = agentConfirmationForm("error.confirmDetails.invalid")
+
+  def getSubmitKnownFactCallBy(service: String) =
+    service match {
+      case HMRCMTDIT  => routes.AgentsFastTrackInvitationController.submitKnownFactItsa()
+      case HMRCPIR    => routes.AgentsFastTrackInvitationController.submitKnownFactIrv()
+      case HMRCMTDVAT => routes.AgentsFastTrackInvitationController.submitKnownFactVat()
+    }
+
+  def getSubmitIdentifyClientCallBy(service: String) =
+    service match {
+      case HMRCMTDIT  => routes.AgentsInvitationController.submitIdentifyClientItsa()
+      case HMRCPIR    => routes.AgentsInvitationController.submitIdentifyClientIrv()
+      case HMRCMTDVAT => routes.AgentsInvitationController.submitIdentifyClientVat()
+    }
 }
