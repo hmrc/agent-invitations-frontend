@@ -20,7 +20,14 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession, Services}
 
-case class CheckDetailsPageConfig(fastTrackRequest: AgentFastTrackRequest, featureFlags: FeatureFlags) {
+case class CheckDetailsPageConfig(
+  fastTrackRequest: AgentFastTrackRequest,
+  featureFlags: FeatureFlags,
+  clientTypeUrl: Call,
+  knownFactUrl: Call,
+  submitIdentifyClientItsa: Call,
+  submitIdentifyClientIrv: Call,
+  submitIdentifyClientVat: Call) {
 
   private val shouldShowKF: Boolean = {
     fastTrackRequest.service match {
@@ -43,15 +50,11 @@ case class CheckDetailsPageConfig(fastTrackRequest: AgentFastTrackRequest, featu
 
   val needKnownFact: Boolean = shouldShowKF && fastTrackRequest.knownFact.getOrElse("").isEmpty
 
-  val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
-
-  val knownFactUrl: Call = routes.AgentsFastTrackInvitationController.showKnownFact()
-
   def changeDetailsUrl(service: String): Call =
     service match {
-      case Services.HMRCMTDIT  => routes.AgentsInvitationController.submitIdentifyClientItsa()
-      case Services.HMRCPIR    => routes.AgentsInvitationController.submitIdentifyClientIrv()
-      case Services.HMRCMTDVAT => routes.AgentsInvitationController.submitIdentifyClientVat()
+      case Services.HMRCMTDIT  => submitIdentifyClientItsa
+      case Services.HMRCPIR    => submitIdentifyClientIrv
+      case Services.HMRCMTDVAT => submitIdentifyClientVat
       case _                   => throw new Exception("service not supported")
     }
 
