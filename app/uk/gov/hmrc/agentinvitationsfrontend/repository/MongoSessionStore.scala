@@ -18,25 +18,19 @@ package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import play.api.Logger
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.cache.model.Id
-import uk.gov.hmrc.cache.repository.CacheMongoRepository
+import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MongoSessionStore[T] {
 
-  val expireAfterSeconds: Int
-  val mongo: ReactiveMongoComponent
   val sessionName: String
-  implicit val ec: ExecutionContext
+  val cacheRepository: CacheRepository
 
-  private lazy val cacheRepository =
-    new CacheMongoRepository("sessions", expireAfterSeconds)(mongo.mongoConnector.db, ec)
-
-  def get(implicit reads: Reads[T], hc: HeaderCarrier): Future[Either[String, Option[T]]] =
+  def get(implicit reads: Reads[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Option[T]]] =
     hc.sessionId.map(_.value) match {
       case Some(sessionId) ⇒
         cacheRepository
@@ -66,7 +60,8 @@ trait MongoSessionStore[T] {
         Right(None)
     }
 
-  def store(newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier): Future[Either[String, Unit]] =
+  def store(
+    newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
     hc.sessionId.map(_.value) match {
       case Some(sessionId) ⇒
         cacheRepository
@@ -87,7 +82,7 @@ trait MongoSessionStore[T] {
         Left(s"no sessionId found in the HeaderCarrier to store in mongo")
     }
 
-  def delete()(implicit hc: HeaderCarrier): Future[Either[String, Unit]] =
+  def delete()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
     hc.sessionId.map(_.value) match {
       case Some(sessionId) ⇒
         cacheRepository

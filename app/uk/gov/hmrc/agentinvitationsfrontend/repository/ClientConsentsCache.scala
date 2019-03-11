@@ -24,10 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsentsJourneyState
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ClientConsentsCache @Inject()(
-  @Named("mongodb.session.expireAfterSeconds") val expireAfterSeconds: Int,
-  val mongo: ReactiveMongoComponent,
-  implicit val ec: ExecutionContext)
+class ClientConsentsCache @Inject()(val cacheRepository: SessionCacheRepository)
     extends SessionCache[ClientConsentsJourneyState] {
   override val sessionName: String = "clientSession"
 }
