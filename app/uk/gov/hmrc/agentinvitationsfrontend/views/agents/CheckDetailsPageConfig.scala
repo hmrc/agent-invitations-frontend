@@ -25,9 +25,7 @@ case class CheckDetailsPageConfig(
   featureFlags: FeatureFlags,
   clientTypeUrl: Call,
   knownFactUrl: Call,
-  submitIdentifyClientItsa: Call,
-  submitIdentifyClientIrv: Call,
-  submitIdentifyClientVat: Call) {
+  changeDetailsCall: Call) {
 
   private val shouldShowKF: Boolean = {
     fastTrackRequest.service match {
@@ -49,14 +47,6 @@ case class CheckDetailsPageConfig(
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
   val needKnownFact: Boolean = shouldShowKF && fastTrackRequest.knownFact.getOrElse("").isEmpty
-
-  def changeDetailsUrl(service: String): Call =
-    service match {
-      case Services.HMRCMTDIT  => submitIdentifyClientItsa
-      case Services.HMRCPIR    => submitIdentifyClientIrv
-      case Services.HMRCMTDVAT => submitIdentifyClientVat
-      case _                   => throw new Exception("service not supported")
-    }
 
   val showKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").nonEmpty && shouldShowKF
 
