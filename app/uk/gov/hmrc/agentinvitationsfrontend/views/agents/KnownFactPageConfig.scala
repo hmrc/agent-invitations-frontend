@@ -16,14 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services
+import play.api.mvc.Call
 
-case class KnownFactPageConfig(service: String, serviceMessageKey: String) {
-
-  val submitCall = service match {
-    case Services.HMRCMTDIT  => routes.AgentsFastTrackInvitationController.submitKnownFactItsa()
-    case Services.HMRCPIR    => routes.AgentsFastTrackInvitationController.submitKnownFactIrv()
-    case Services.HMRCMTDVAT => routes.AgentsFastTrackInvitationController.submitKnownFactVat()
-  }
-}
+case class KnownFactPageConfig(service: String, serviceMessageKey: String, submitKFCall: Call) {}
