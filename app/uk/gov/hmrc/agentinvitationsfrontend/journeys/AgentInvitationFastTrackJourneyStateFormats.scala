@@ -23,6 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[State] {
 
   //Happy states
+  val PrologueFormat = Json.format[Prologue]
   val CheckDetailsFormat = Json.format[CheckDetails]
   val MoreDetailsFormat = Json.format[MoreDetails]
   val SelectClientTypeFormat = Json.format[SelectClientType]
@@ -38,6 +39,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
+    case s: Prologue                  => PrologueFormat.writes(s)
     case s: CheckDetails              => CheckDetailsFormat.writes(s)
     case s: MoreDetails               => MoreDetailsFormat.writes(s)
     case s: SelectClientType          => SelectClientTypeFormat.writes(s)
@@ -52,6 +54,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
+    case "Prologue"                  => PrologueFormat.reads(properties)
     case "CheckDetails"              => CheckDetailsFormat.reads(properties)
     case "MoreDetails"               => MoreDetailsFormat.reads(properties)
     case "SelectClientType"          => SelectClientTypeFormat.reads(properties)
