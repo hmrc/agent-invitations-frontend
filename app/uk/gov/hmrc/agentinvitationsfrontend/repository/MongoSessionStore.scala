@@ -73,7 +73,7 @@ trait MongoSessionStore[T] {
           .createOrUpdate(Id(sessionId), sessionName, Json.toJson(newSession))
           .map[Either[String, Unit]] { dbUpdate ⇒
             if (dbUpdate.writeResult.inError) {
-              Left(dbUpdate.writeResult.errMsg.getOrElse("unknown error during inserting session data in mongo"))
+              Left(dbUpdate.writeResult.errmsg.getOrElse("unknown error during inserting session data in mongo"))
             } else {
               Right(())
             }
