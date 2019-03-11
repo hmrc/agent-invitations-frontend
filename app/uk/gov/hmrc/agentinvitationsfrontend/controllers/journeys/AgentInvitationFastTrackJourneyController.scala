@@ -20,7 +20,7 @@ import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.{mapping, optional, single, text}
-import play.api.mvc.Call
+import play.api.mvc.{Call, Request}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -69,90 +69,95 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
+  val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
+    withAuthorisedAsAgent(_)
+  }
+
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   val agentFastTrack =
-    authorisedAgentActionWithBootstrapAndFormWithHCWithRequest(
-      implicit request => Transitions.prologue(continueUrlActions.getErrorUrl.map(_.url)))(agentFastTrackForm) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      Transitions.prologue(continueUrlActions.getErrorUrl.map(_.url))
+      authorisedWithForm(AsAgent)(agentFastTrackForm) {
         Transitions.start(continueUrlActions.getContinueUrl.map(_.url))
+      }
     }
 
-  val showCheckDetails = authorisedAgentActionRenderStateWhen { case _: CheckDetails => }
+  val showCheckDetails = authorisedShowCurrentStateWhen(AsAgent) { case _: CheckDetails => }
 
-  val submitCheckDetails = authorisedAgentActionWithFormWithHCWithRequest(checkDetailsForm) {
-    implicit hc => implicit request =>
+  val submitCheckDetails = action { implicit request =>
+    authorisedWithForm(AsAgent)(checkDetailsForm)(
       Transitions.checkedDetails(invitationsService.checkPostcodeMatches)(invitationsService.checkCitizenRecordMatches)(
         invitationsService.checkVatRegistrationDateMatches)(invitationsService.createInvitation)(
         invitationsService.createAgentLink)(invitationsService.hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)(featureFlags)
+        relationshipsService.hasActiveRelationshipFor)(featureFlags))
   }
 
-  val showIdentifyClient = authorisedAgentActionRenderStateWhen {
+  val showIdentifyClient = authorisedShowCurrentStateWhen(AsAgent) {
     case _: IdentifyPersonalClient | _: IdentifyBusinessClient =>
   }
   val submitIdentifyItsaClient =
-    authorisedAgentActionWithFormWithHCWithRequest(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      authorisedWithForm(AsAgent)(IdentifyItsaClientForm(featureFlags.showKfcMtdIt))(
         Transitions.identifiedClientItsa(invitationsService.checkPostcodeMatches)(
           invitationsService.checkCitizenRecordMatches)(invitationsService.checkVatRegistrationDateMatches)(
           invitationsService.createInvitation)(invitationsService.createAgentLink)(
-          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags))
     }
 
   val submitIdentifyIrvClient =
-    authorisedAgentActionWithFormWithHCWithRequest(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      authorisedWithForm(AsAgent)(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
         Transitions.identifiedClientIrv(invitationsService.checkPostcodeMatches)(
           invitationsService.checkCitizenRecordMatches)(invitationsService.checkVatRegistrationDateMatches)(
           invitationsService.createInvitation)(invitationsService.createAgentLink)(
-          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags))
     }
   val submitIdentifyVatClient =
-    authorisedAgentActionWithFormWithHCWithRequest(IdentifyVatClientForm(featureFlags.showKfcMtdVat)) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      authorisedWithForm(AsAgent)(IdentifyVatClientForm(featureFlags.showKfcMtdVat))(
         Transitions.identifiedClientVat(invitationsService.checkPostcodeMatches)(
           invitationsService.checkCitizenRecordMatches)(invitationsService.checkVatRegistrationDateMatches)(
           invitationsService.createInvitation)(invitationsService.createAgentLink)(
-          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags))
     }
 
-  val showKnownFact = authorisedAgentActionRenderStateWhen { case _: MoreDetails => }
+  val showKnownFact = authorisedShowCurrentStateWhen(AsAgent) { case _: MoreDetails => }
 
   val submitKnownFactItsa =
-    authorisedAgentActionWithFormWithHCWithRequest(agentFastTrackPostcodeForm(featureFlags.showKfcMtdIt)) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      authorisedWithForm(AsAgent)(agentFastTrackPostcodeForm(featureFlags.showKfcMtdIt))(
         Transitions.moreDetailsItsa(invitationsService.checkPostcodeMatches)(
           invitationsService.checkCitizenRecordMatches)(invitationsService.checkVatRegistrationDateMatches)(
           invitationsService.createInvitation)(invitationsService.createAgentLink)(
-          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags))
     }
   val submitKnownFactIrv =
-    authorisedAgentActionWithFormWithHCWithRequest(agentFastTrackDateOfBirthForm(featureFlags.showKfcPersonalIncome)) {
-      implicit hc => implicit request =>
+    action { implicit request =>
+      authorisedWithForm(AsAgent)(agentFastTrackDateOfBirthForm(featureFlags.showKfcPersonalIncome))(
         Transitions.moreDetailsIrv(invitationsService.checkPostcodeMatches)(
           invitationsService.checkCitizenRecordMatches)(invitationsService.checkVatRegistrationDateMatches)(
           invitationsService.createInvitation)(invitationsService.createAgentLink)(
-          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags)
+          invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(featureFlags))
     }
-  val submitKnownFactVat = authorisedAgentActionWithFormWithHCWithRequest(agentFastTrackVatRegDateForm(featureFlags)) {
-    implicit hc => implicit request =>
+  val submitKnownFactVat = action { implicit request =>
+    authorisedWithForm(AsAgent)(agentFastTrackVatRegDateForm(featureFlags))(
       Transitions.moreDetailsVat(invitationsService.checkPostcodeMatches)(invitationsService.checkCitizenRecordMatches)(
         invitationsService.checkVatRegistrationDateMatches)(invitationsService.createInvitation)(
         invitationsService.createAgentLink)(invitationsService.hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)(featureFlags)
+        relationshipsService.hasActiveRelationshipFor)(featureFlags))
   }
 
-  val showClientType = authorisedAgentActionRenderStateWhen { case _: SelectClientType => }
+  val showClientType = authorisedShowCurrentStateWhen(AsAgent) { case _: SelectClientType => }
 
-  val showInvitationSent = authorisedAgentActionRenderStateWhen {
+  val showInvitationSent = authorisedShowCurrentStateWhen(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = authorisedAgentActionRenderStateWhen { case _: KnownFactNotMatched                      => }
-  val showClientNotSignedUp = authorisedAgentActionRenderStateWhen { case _: ClientNotSignedUp                 => }
-  val showPendingAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: PendingInvitationExists  => }
-  val showActiveAuthorisationExists = authorisedAgentActionRenderStateWhen { case _: ActiveAuthorisationExists => }
+  val showNotMatched = authorisedShowCurrentStateWhen(AsAgent) { case _: KnownFactNotMatched                      => }
+  val showClientNotSignedUp = authorisedShowCurrentStateWhen(AsAgent) { case _: ClientNotSignedUp                 => }
+  val showPendingAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: PendingInvitationExists  => }
+  val showActiveAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: ActiveAuthorisationExists => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
