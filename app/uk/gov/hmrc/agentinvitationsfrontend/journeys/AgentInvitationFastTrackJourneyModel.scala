@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.mvc.Request
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ContinueUrlActions, FeatureFlags}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.States.CheckDetails
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -85,7 +85,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       }
     }
 
-    private def checkIfPendingOrActiveAndGoto(
+    def checkIfPendingOrActiveAndGoto(
       fastTrackRequest: AgentFastTrackRequest,
       arn: Arn,
       invitation: Invitation,
@@ -102,20 +102,21 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         result <- if (hasPendingInvitations) {
                    goto(PendingInvitationExists(fastTrackRequest, continueUrl))
                  } else {
-                   hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service).flatMap {
-                     case true => goto(ActiveAuthorisationExists(fastTrackRequest))
-                     case false =>
-                       for {
-                         _              <- createInvitation(arn, invitation)
-                         invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
-                         result <- fastTrackRequest.clientType match {
-                                    case Some(ClientType.personal) =>
-                                      goto(InvitationSentPersonal(invitationLink, continueUrl))
-                                    case Some(ClientType.business) =>
-                                      goto(InvitationSentBusiness(invitationLink, continueUrl))
-                                  }
-                       } yield result
-                   }
+                   hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
+                     .flatMap {
+                       case true => goto(ActiveAuthorisationExists(fastTrackRequest))
+                       case false =>
+                         for {
+                           _              <- createInvitation(arn, invitation)
+                           invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
+                           result <- fastTrackRequest.clientType match {
+                                      case Some(ClientType.personal) =>
+                                        goto(InvitationSentPersonal(invitationLink, continueUrl))
+                                      case Some(ClientType.business) =>
+                                        goto(InvitationSentBusiness(invitationLink, continueUrl))
+                                    }
+                         } yield result
+                     }
                  }
       } yield result
 
@@ -331,7 +332,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       case SelectClientType(ftRequest, continueUrl) =>
         val newState = CheckDetails(ftRequest.copy(clientType = Some(suppliedClientType)), continueUrl)
         checkedDetails(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
-          hasPendingInvitations)(hasActiveRelationship)(featureFlags)(agent)(Confirmation(true)).apply(newState)
+          hasPendingInvitations)(hasActiveRelationship)(featureFlags)(agent)(Confirmation(true))
+          .apply(newState)
     }
   }
 

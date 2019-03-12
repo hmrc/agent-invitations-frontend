@@ -21,11 +21,13 @@ import org.joda.time.LocalDate
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.mvc.{Call, Request}
+import play.api.mvc.Call
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.{clientTypeFor, validateFastTrackForm}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.{clientTypeFor, knownFactsForm, validateFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
