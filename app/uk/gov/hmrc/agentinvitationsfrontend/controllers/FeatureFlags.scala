@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
 @Singleton
 case class FeatureFlags @Inject()(
@@ -32,7 +33,15 @@ case class FeatureFlags @Inject()(
   @Named("features.redirect-to-confirm-personal-income") enableIrvToConfirm: Boolean = false,
   @Named("features.redirect-to-confirm-mtd-it") enableMtdItToConfirm: Boolean = true,
   @Named("features.redirect-to-confirm-mtd-vat") enableMtdVatToConfirm: Boolean = true,
-  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true)
+  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true) {
+
+  def isKfcFlagOnForService(service: String) =
+    service match {
+      case HMRCMTDIT  => showKfcMtdIt
+      case HMRCPIR    => showKfcPersonalIncome
+      case HMRCMTDVAT => showKfcMtdVat
+    }
+}
 
 object FeatureFlags {
   def apply(): FeatureFlags = new FeatureFlags()

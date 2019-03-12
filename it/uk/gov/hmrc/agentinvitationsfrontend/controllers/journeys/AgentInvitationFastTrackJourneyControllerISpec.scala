@@ -48,7 +48,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
       journeyState.get shouldBe Some(
-        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")), None),
+        CheckDetailsCompleteItsa(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
+          None),
         List(Prologue(None)))
     }
 
@@ -96,7 +98,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/check-details")
     "show the check-details page" in {
       journeyState.set(
-        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")), None),
+        CheckDetailsCompleteItsa(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
+          None),
         List(Prologue(None)))
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
@@ -114,7 +118,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("POST", "/agents/fast-track/check-details")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       journeyState.set(
-        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN")), None),
+        CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN")), None),
         List(Prologue(None)))
 
       val result = controller.submitCheckDetails(
@@ -126,7 +130,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
     "redirect to identify-client" in {
       journeyState.set(
-        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
+        CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
         List(Prologue(None)))
 
       val result = controller.submitCheckDetails(
@@ -138,7 +142,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
     "redirect to more-details" in {
       journeyState.set(
-        CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, None), None),
+        CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, None), None),
         List(Prologue(None)))
 
       val result = controller.submitCheckDetails(
@@ -150,7 +154,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
     "redirect to client-type" in {
       journeyState.set(
-        CheckDetails(AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
+        CheckDetailsCompleteItsa(AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
         List(Prologue(None)))
 
       val result = controller.submitCheckDetails(
@@ -169,7 +173,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
           None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -188,7 +194,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
           None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
           Prologue(None))
       )
 
@@ -210,7 +216,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some("1990-10-10")),
           None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
+          CheckDetailsCompletePir(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
           Prologue(None))
       )
 
@@ -234,7 +240,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         IdentifyPersonalClient(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")), None),
+          CheckDetailsCompletePersonalVat(
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
+            None),
           Prologue(None))
       )
 
@@ -259,7 +267,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -276,7 +286,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
+          CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
           Prologue(None))
       )
 
@@ -293,7 +303,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     "redirect to invitation-sent" in new IrvHappyScenario {
       journeyState.set(
         MoreDetails(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
-        List(CheckDetails(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None), Prologue(None))
+        List(
+          CheckDetailsCompletePir(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
+          Prologue(None))
       )
 
       val requestWithForm = request.withFormUrlEncodedBody(
@@ -315,7 +327,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")), None),
+          CheckDetailsCompletePersonalVat(
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
+            None),
           Prologue(None))
       )
 
@@ -338,7 +352,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         SelectClientType(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -355,7 +371,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       journeyState.set(
         InvitationSentPersonal("invitation/sent/url", None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -370,9 +388,11 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/not-signed-up")
     "show the client-type page" in {
       journeyState.set(
-        ClientNotSignedUp(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))),
+        ClientNotSignedUp(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -388,9 +408,11 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/not-matched")
     "show the client-type page" in {
       journeyState.set(
-        KnownFactNotMatched(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))),
+        KnownFactNotMatched(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -409,7 +431,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
           None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 
@@ -424,9 +448,13 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/already-authorisation-present")
     "show the already-authorisation-pending page" in {
       journeyState.set(
-        ActiveAuthorisationExists(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))),
+        ActiveAuthorisationExists(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+          None),
         List(
-          CheckDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
           Prologue(None))
       )
 

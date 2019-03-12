@@ -98,6 +98,15 @@ abstract class JourneyController(implicit ec: ExecutionContext)
       bindForm(form, transition(user))
     }
 
+  protected final def authorisedWithBootstrapAndForm[User, Payload, T](bootstrap: Transition)(
+    withAuthorised: WithAuthorised[User])(form: Form[Payload])(transition: User => Payload => Transition)(
+    implicit request: Request[_]) =
+    withAuthorised(request) { user: User =>
+      journeyService
+        .apply(bootstrap)
+        .flatMap(_ => bindForm(form, transition(user)))
+    }
+
   private def bindForm[T](form: Form[T], transition: T => Transition)(
     implicit hc: HeaderCarrier,
     request: Request[_]): Future[Result] =

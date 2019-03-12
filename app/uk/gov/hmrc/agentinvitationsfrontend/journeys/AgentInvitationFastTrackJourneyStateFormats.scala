@@ -24,7 +24,12 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
 
   //Happy states
   val PrologueFormat = Json.format[Prologue]
-  val CheckDetailsFormat = Json.format[CheckDetails]
+  val CheckDetailsCompleteItsaFormat = Json.format[CheckDetailsCompleteItsa]
+  val CheckDetailsCompletePirFormat = Json.format[CheckDetailsCompletePir]
+  val CheckDetailsCompletePersonalVatFormat = Json.format[CheckDetailsCompletePersonalVat]
+  val CheckDetailsCompleteBusinessVatFormat = Json.format[CheckDetailsCompleteBusinessVat]
+  val CheckDetailsNoKnownFactFormat = Json.format[CheckDetailsNoKnownFact]
+  val CheckDetailsNoClientTypeFormat = Json.format[CheckDetailsNoClientType]
   val MoreDetailsFormat = Json.format[MoreDetails]
   val SelectClientTypeFormat = Json.format[SelectClientType]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
@@ -39,34 +44,44 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: Prologue                  => PrologueFormat.writes(s)
-    case s: CheckDetails              => CheckDetailsFormat.writes(s)
-    case s: MoreDetails               => MoreDetailsFormat.writes(s)
-    case s: SelectClientType          => SelectClientTypeFormat.writes(s)
-    case s: IdentifyPersonalClient    => IdentifyPersonalClientFormat.writes(s)
-    case s: IdentifyBusinessClient    => IdentifyBusinessClientFormat.writes(s)
-    case s: InvitationSentPersonal    => InvitationSentPersonalFormat.writes(s)
-    case s: InvitationSentBusiness    => InvitationSentBusinessFormat.writes(s)
-    case s: KnownFactNotMatched       => KnownFactNotMatchedFormat.writes(s)
-    case s: ClientNotSignedUp         => ClientNotSignedUpFormat.writes(s)
-    case s: PendingInvitationExists   => PendingInvitationExistsFormat.writes(s)
-    case s: ActiveAuthorisationExists => ActiveAuthorisationExistsFormat.writes(s)
+    case s: Prologue                        => PrologueFormat.writes(s)
+    case s: CheckDetailsCompleteItsa        => CheckDetailsCompleteItsaFormat.writes(s)
+    case s: CheckDetailsCompletePir         => CheckDetailsCompletePirFormat.writes(s)
+    case s: CheckDetailsCompletePersonalVat => CheckDetailsCompletePersonalVatFormat.writes(s)
+    case s: CheckDetailsCompleteBusinessVat => CheckDetailsCompleteBusinessVatFormat.writes(s)
+    case s: CheckDetailsNoKnownFact         => CheckDetailsNoKnownFactFormat.writes(s)
+    case s: CheckDetailsNoClientType        => CheckDetailsNoClientTypeFormat.writes(s)
+    case s: MoreDetails                     => MoreDetailsFormat.writes(s)
+    case s: SelectClientType                => SelectClientTypeFormat.writes(s)
+    case s: IdentifyPersonalClient          => IdentifyPersonalClientFormat.writes(s)
+    case s: IdentifyBusinessClient          => IdentifyBusinessClientFormat.writes(s)
+    case s: InvitationSentPersonal          => InvitationSentPersonalFormat.writes(s)
+    case s: InvitationSentBusiness          => InvitationSentBusinessFormat.writes(s)
+    case s: KnownFactNotMatched             => KnownFactNotMatchedFormat.writes(s)
+    case s: ClientNotSignedUp               => ClientNotSignedUpFormat.writes(s)
+    case s: PendingInvitationExists         => PendingInvitationExistsFormat.writes(s)
+    case s: ActiveAuthorisationExists       => ActiveAuthorisationExistsFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "Prologue"                  => PrologueFormat.reads(properties)
-    case "CheckDetails"              => CheckDetailsFormat.reads(properties)
-    case "MoreDetails"               => MoreDetailsFormat.reads(properties)
-    case "SelectClientType"          => SelectClientTypeFormat.reads(properties)
-    case "IdentifyPersonalClient"    => IdentifyPersonalClientFormat.reads(properties)
-    case "IdentifyBusinessClient"    => IdentifyBusinessClientFormat.reads(properties)
-    case "InvitationSentPersonal"    => InvitationSentPersonalFormat.reads(properties)
-    case "InvitationSentBusiness"    => InvitationSentBusinessFormat.reads(properties)
-    case "KnownFactNotMatched"       => KnownFactNotMatchedFormat.reads(properties)
-    case "ClientNotSignedUp"         => ClientNotSignedUpFormat.reads(properties)
-    case "PendingInvitationExists"   => PendingInvitationExistsFormat.reads(properties)
-    case "ActiveAuthorisationExists" => ActiveAuthorisationExistsFormat.reads(properties)
-    case _                           => JsError(s"Unknown state name $stateName")
+    case "Prologue"                        => PrologueFormat.reads(properties)
+    case "CheckDetailsCompleteItsa"        => CheckDetailsCompleteItsaFormat.reads(properties)
+    case "CheckDetailsCompletePir"         => CheckDetailsCompletePirFormat.reads(properties)
+    case "CheckDetailsCompletePersonalVat" => CheckDetailsCompletePersonalVatFormat.reads(properties)
+    case "CheckDetailsCompleteBusinessVat" => CheckDetailsCompleteBusinessVatFormat.reads(properties)
+    case "CheckDetailsNoKnownFact"         => CheckDetailsNoKnownFactFormat.reads(properties)
+    case "CheckDetailsNoClientType"        => CheckDetailsNoClientTypeFormat.reads(properties)
+    case "MoreDetails"                     => MoreDetailsFormat.reads(properties)
+    case "SelectClientType"                => SelectClientTypeFormat.reads(properties)
+    case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
+    case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
+    case "InvitationSentPersonal"          => InvitationSentPersonalFormat.reads(properties)
+    case "InvitationSentBusiness"          => InvitationSentBusinessFormat.reads(properties)
+    case "KnownFactNotMatched"             => KnownFactNotMatchedFormat.reads(properties)
+    case "ClientNotSignedUp"               => ClientNotSignedUpFormat.reads(properties)
+    case "PendingInvitationExists"         => PendingInvitationExistsFormat.reads(properties)
+    case "ActiveAuthorisationExists"       => ActiveAuthorisationExistsFormat.reads(properties)
+    case _                                 => JsError(s"Unknown state name $stateName")
   }
 
 }

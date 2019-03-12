@@ -33,7 +33,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
     "serialize and deserialize state" when {
       "CheckDetails" in {
         val state =
-          CheckDetails(
+          CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url"))
         val json = Json.parse(
@@ -106,9 +106,10 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "KnownFactNotMatched" in {
         val state =
           KnownFactNotMatched(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")))
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
+            Some("continue/url"))
         val json = Json.parse(
-          """{"state":"KnownFactNotMatched","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}}}""")
+          """{"state":"KnownFactNotMatched","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -116,9 +117,10 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "ClientNotSignedUp" in {
         val state =
           ClientNotSignedUp(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")))
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
+            Some("continue/url"))
         val json = Json.parse(
-          """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}}}""")
+          """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -137,9 +139,10 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "ActiveAuthorisationExists" in {
         val state =
           ActiveAuthorisationExists(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")))
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
+            Some("continue/url"))
         val json = Json.parse(
-          """{"state":"ActiveAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}}}""")
+          """{"state":"ActiveAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
