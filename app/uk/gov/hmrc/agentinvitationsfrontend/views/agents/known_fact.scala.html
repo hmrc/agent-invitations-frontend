@@ -38,7 +38,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${config.service}.heading"), config.serviceMessageKey))) {
 
- @back_link(s"${routes.AgentsFastTrackInvitationController.showCheckDetails()}")
+ @back_link(s"${config.backLinkUrl}")
 
  @if(knownFactForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
