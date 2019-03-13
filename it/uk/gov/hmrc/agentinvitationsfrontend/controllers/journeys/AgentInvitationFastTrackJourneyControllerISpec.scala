@@ -94,7 +94,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/check-details" should {
+  "GET /agents/check-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/check-details")
     "show the check-details page" in {
       journeyState.set(
@@ -114,7 +114,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/check-details" should {
+  "POST /agents/check-details" should {
     val request = FakeRequest("POST", "/agents/fast-track/check-details")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       journeyState.set(
@@ -128,7 +128,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
     }
 
-    "redirect to identify-client" in {
+    "redirect to client-identify" in {
       journeyState.set(
         CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
         List(Prologue(None)))
@@ -139,33 +139,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
     }
-
-    "redirect to more-details" in {
-      journeyState.set(
-        CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, None), None),
-        List(Prologue(None)))
-
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact().url)
-    }
-
-    "redirect to client-type" in {
-      journeyState.set(
-        CheckDetailsCompleteItsa(AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
-        List(Prologue(None)))
-
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
-    }
   }
 
-  "GET agents/fast-track/identify-client" should {
+  "GET agents/client-identify" should {
     val request = FakeRequest("GET", "/agents/fast-track/identify-client")
     "show the identify-client page" in {
       journeyState.set(
@@ -186,7 +162,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/identify-itsa-client" should {
+  "POST /agents/client-identify-itsa" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-itsa-client")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       journeyState.set(
@@ -208,7 +184,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/identify-irv-client" should {
+  "POST /agents/client-identify-irv" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to invitation-sent" in new IrvHappyScenario {
       journeyState.set(
@@ -234,7 +210,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/identify-vat-client" should {
+  "POST /agents/client-identify-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to invitation-sent" in new VatHappyScenario {
       journeyState.set(
@@ -261,7 +237,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/more-details" should {
+  "GET /agents/more-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/more-details")
     "show the more-details page" in {
       journeyState.set(
@@ -280,7 +256,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/more-details-itsa" should {
+  "POST /agents/more-details-itsa" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-itsa")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       journeyState.set(
@@ -298,7 +274,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/more-details-irv" should {
+  "POST /agents/more-details-irv" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-irv")
     "redirect to invitation-sent" in new IrvHappyScenario {
       journeyState.set(
@@ -321,7 +297,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "POST /agents/fast-track/more-details-vat" should {
+  "POST /agents/more-details-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-vat")
     "redirect to invitation-sent" in new VatHappyScenario {
       journeyState.set(
@@ -346,7 +322,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/client-type" should {
+  "GET /agents/type-of-client" should {
     val request = FakeRequest("GET", "/agents/fast-track/client-type")
     "show the client-type page" in {
       journeyState.set(
@@ -365,7 +341,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/invitation-sent" should {
+  "GET /agents/sent-invitation" should {
     val request = FakeRequest("GET", "/agents/fast-track/invitation-sent")
     "show the client-type page" in {
       journeyState.set(
@@ -384,7 +360,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/not-signed-up" should {
+  "GET /agents/not-signed-up-single" should {
     val request = FakeRequest("GET", "/agents/fast-track/not-signed-up")
     "show the client-type page" in {
       journeyState.set(
@@ -404,7 +380,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/not-matched" should {
+  "GET /agents/not-matched-single" should {
     val request = FakeRequest("GET", "/agents/fast-track/not-matched")
     "show the client-type page" in {
       journeyState.set(
@@ -423,7 +399,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/already-authorisation-pending" should {
+  "GET /agents/authorisation-already-pending" should {
     val request = FakeRequest("GET", "/agents/fast-track/already-authorisation-pending")
     "show the already-authorisation-pending page" in {
       journeyState.set(
@@ -444,7 +420,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     }
   }
 
-  "GET /agents/fast-track/already-authorisation-present" should {
+  "GET /agents/authorisation-already-present" should {
     val request = FakeRequest("GET", "/agents/fast-track/already-authorisation-present")
     "show the already-authorisation-pending page" in {
       journeyState.set(

@@ -300,7 +300,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               KnownFactPageConfig(
                 fastTrackRequest.service,
                 Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-                getSubmitKFFor(fastTrackRequest.service))
+                getSubmitKFFor(fastTrackRequest.service),
+                backLinkFor(breadcrumbs)
+              )
             ))
 
         case SelectClientType(_, _) =>
