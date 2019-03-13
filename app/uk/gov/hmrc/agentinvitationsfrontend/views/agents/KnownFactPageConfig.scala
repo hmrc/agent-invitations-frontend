@@ -18,4 +18,4 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
 
-case class KnownFactPageConfig(service: String, serviceMessageKey: String, submitKFCall: Call) {}
+case class KnownFactPageConfig(service: String, serviceMessageKey: String, submitKFCall: Call, backLinkUrl: String) {}

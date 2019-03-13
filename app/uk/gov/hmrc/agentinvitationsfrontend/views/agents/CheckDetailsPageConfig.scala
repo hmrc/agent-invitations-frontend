@@ -25,7 +25,8 @@ case class CheckDetailsPageConfig(
   featureFlags: FeatureFlags,
   clientTypeUrl: Call,
   knownFactUrl: Call,
-  changeDetailsCall: Call) {
+  changeDetailsCall: Call,
+  submitFormCall: Call) {
 
   private val shouldShowKF: Boolean = {
     fastTrackRequest.service match {
