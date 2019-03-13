@@ -267,7 +267,8 @@ class AgentsFastTrackInvitationController @Inject()(
                 featureFlags,
                 routes.AgentsInvitationController.showClientType(),
                 routes.AgentsFastTrackInvitationController.showKnownFact(),
-                getSubmitIdentifyClientCallBy(fastTrackRequest.service)
+                getSubmitIdentifyClientCallBy(fastTrackRequest.service),
+                routes.AgentsFastTrackInvitationController.submitCheckDetails()
               )
             ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
@@ -298,7 +299,8 @@ class AgentsFastTrackInvitationController @Inject()(
                     featureFlags,
                     routes.AgentsInvitationController.showClientType(),
                     routes.AgentsFastTrackInvitationController.showKnownFact(),
-                    getSubmitIdentifyClientCallBy(fastTrackRequest.service)
+                    getSubmitIdentifyClientCallBy(fastTrackRequest.service),
+                    routes.AgentsFastTrackInvitationController.submitCheckDetails()
                   )
                 ))
             }

@@ -223,7 +223,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
@@ -236,7 +237,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
@@ -249,7 +251,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
@@ -262,7 +265,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
@@ -276,7 +280,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
@@ -289,7 +294,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 featureFlags,
                 routes.AgentInvitationFastTrackJourneyController.showClientType(),
                 routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
-                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
               )
             ))
 
