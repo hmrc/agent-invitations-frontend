@@ -82,11 +82,13 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val showCheckDetails = authorisedShowCurrentStateWhen(AsAgent) {
     case _: CheckDetailsCompleteItsa        =>
-    case _: CheckDetailsCompletePir         =>
+    case _: CheckDetailsCompleteIrv         =>
     case _: CheckDetailsCompletePersonalVat =>
     case _: CheckDetailsCompleteBusinessVat =>
-    case _: CheckDetailsNoKnownFact         =>
-    case _: CheckDetailsNoClientType        =>
+    case _: CheckDetailsNoPostcode          =>
+    case _: CheckDetailsNoDob               =>
+    case _: CheckDetailsNoVatRegDate        =>
+    case _: CheckDetailsNoClientTypeVat     =>
   }
 
   val submitCheckDetails = action { implicit request =>
@@ -179,14 +181,18 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {
     case Prologue(_)                           => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case SelectClientType(_, _)                => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case MoreDetails(_, _)                     => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case SelectClientTypeVat(_, _)             => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case NoPostcode(_, _)                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case NoDob(_, _)                           => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case NoVatRegDate(_, _)                    => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
     case CheckDetailsCompleteItsa(_, _)        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case CheckDetailsCompletePir(_, _)         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case CheckDetailsCompleteIrv(_, _)         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case CheckDetailsCompletePersonalVat(_, _) => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case CheckDetailsCompleteBusinessVat(_, _) => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case CheckDetailsNoKnownFact(_, _)         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case CheckDetailsNoClientType(_, _)        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case CheckDetailsNoPostcode(_, _)          => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case CheckDetailsNoDob(_, _)               => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case CheckDetailsNoVatRegDate(_, _)        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case CheckDetailsNoClientTypeVat(_, _)     => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case IdentifyPersonalClient(_, _)          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case IdentifyBusinessClient(_, _)          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case InvitationSentPersonal(_, _)          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
@@ -228,7 +234,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               )
             ))
 
-        case CheckDetailsCompletePir(fastTrackRequest, _) =>
+        case CheckDetailsCompleteIrv(fastTrackRequest, _) =>
           Ok(
             check_details(
               checkDetailsForm,
@@ -271,7 +277,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ))
 
         //TODO: Extract function for these views?
-        case CheckDetailsNoKnownFact(fastTrackRequest, _) =>
+        case CheckDetailsNoPostcode(fastTrackRequest, _) =>
           Ok(
             check_details(
               checkDetailsForm,
@@ -285,7 +291,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               )
             ))
 
-        case CheckDetailsNoClientType(fastTrackRequest, _) =>
+        case CheckDetailsNoDob(fastTrackRequest, _) =>
           Ok(
             check_details(
               checkDetailsForm,
@@ -299,7 +305,35 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               )
             ))
 
-        case MoreDetails(fastTrackRequest, _) =>
+        case CheckDetailsNoVatRegDate(fastTrackRequest, _) =>
+          Ok(
+            check_details(
+              checkDetailsForm,
+              CheckDetailsPageConfig(
+                fastTrackRequest,
+                featureFlags,
+                routes.AgentInvitationFastTrackJourneyController.showClientType(),
+                routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
+              )
+            ))
+
+        case CheckDetailsNoClientTypeVat(fastTrackRequest, _) =>
+          Ok(
+            check_details(
+              checkDetailsForm,
+              CheckDetailsPageConfig(
+                fastTrackRequest,
+                featureFlags,
+                routes.AgentInvitationFastTrackJourneyController.showClientType(),
+                routes.AgentInvitationFastTrackJourneyController.showKnownFact(),
+                routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+                routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
+              )
+            ))
+
+        case NoPostcode(fastTrackRequest, _) =>
           Ok(
             known_fact(
               getKnownFactFormForService(fastTrackRequest.service, featureFlags),
@@ -311,7 +345,31 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               )
             ))
 
-        case SelectClientType(_, _) =>
+        case NoDob(fastTrackRequest, _) =>
+          Ok(
+            known_fact(
+              getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+              KnownFactPageConfig(
+                fastTrackRequest.service,
+                Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+                getSubmitKFFor(fastTrackRequest.service),
+                backLinkFor(breadcrumbs)
+              )
+            ))
+
+        case NoVatRegDate(fastTrackRequest, _) =>
+          Ok(
+            known_fact(
+              getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+              KnownFactPageConfig(
+                fastTrackRequest.service,
+                Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+                getSubmitKFFor(fastTrackRequest.service),
+                backLinkFor(breadcrumbs)
+              )
+            ))
+
+        case SelectClientTypeVat(_, _) =>
           Ok(
             client_type(
               formWithErrors.or(SelectClientTypeForm),

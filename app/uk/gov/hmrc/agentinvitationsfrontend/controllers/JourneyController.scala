@@ -20,7 +20,6 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Request, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, FastTrackErrors}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 

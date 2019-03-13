@@ -192,7 +192,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some("1990-10-10")),
           None),
         List(
-          CheckDetailsCompletePir(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
+          CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
           Prologue(None))
       )
 
@@ -241,7 +241,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/more-details")
     "show the more-details page" in {
       journeyState.set(
-        MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+        NoPostcode(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
@@ -260,7 +260,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("POST", "/agents/fast-track/more-details-itsa")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       journeyState.set(
-        MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
+        NoPostcode(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
         List(
           CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
           Prologue(None))
@@ -278,9 +278,9 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("POST", "/agents/fast-track/more-details-irv")
     "redirect to invitation-sent" in new IrvHappyScenario {
       journeyState.set(
-        MoreDetails(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
+        NoDob(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
         List(
-          CheckDetailsCompletePir(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
+          CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
           Prologue(None))
       )
 
@@ -301,7 +301,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("POST", "/agents/fast-track/more-details-vat")
     "redirect to invitation-sent" in new VatHappyScenario {
       journeyState.set(
-        MoreDetails(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10")), None),
+        NoVatRegDate(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10")), None),
         List(
           CheckDetailsCompletePersonalVat(
             AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
@@ -326,7 +326,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
     val request = FakeRequest("GET", "/agents/fast-track/client-type")
     "show the client-type page" in {
       journeyState.set(
-        SelectClientType(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
+        SelectClientTypeVat(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
         List(
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
