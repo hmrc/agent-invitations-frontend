@@ -41,7 +41,9 @@ case class SelectServicePageConfig(
     if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
       map.update(HMRCMTDVAT, Messages("select-service.vat"))
 
-    map.toSeq
+    map.toSeq match {
+      case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
+    }
   }
 
 }
