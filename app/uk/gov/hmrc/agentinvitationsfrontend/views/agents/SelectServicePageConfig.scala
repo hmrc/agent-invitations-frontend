@@ -43,6 +43,7 @@ case class SelectServicePageConfig(
 
     map.toSeq match {
       case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
+      case Seq(vat, itsa)      => Seq(itsa, vat)
     }
   }
 
