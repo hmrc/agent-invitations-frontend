@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
 import play.api.Application

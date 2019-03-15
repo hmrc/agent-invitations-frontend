@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Forms.{mapping, optional, single, text}
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.mvc.{Call, Request}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.{clientTypeFor, validateFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ContinueUrlActions, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -36,7 +35,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.Nino
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -479,6 +480,20 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
 object AgentInvitationFastTrackJourneyController {
 
+  val validateFastTrackForm: Constraint[AgentFastTrackRequest] =
+    Constraint[AgentFastTrackRequest] { formData: AgentFastTrackRequest =>
+      formData match {
+        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCMTDIT, "ni", clientId, _)
+            if Nino.isValid(clientId) =>
+          Valid
+        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _)
+            if Nino.isValid(clientId) =>
+          Valid
+        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId) => Valid
+        case _                                                                                 => Invalid(ValidationError("INVALID_SUBMISSION"))
+      }
+    }
+
   val agentFastTrackForm: Form[AgentFastTrackRequest] =
     Form(
       mapping(
@@ -492,7 +507,7 @@ object AgentInvitationFastTrackJourneyController {
         "clientIdentifier" -> normalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        AgentFastTrackRequest(clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
+        AgentFastTrackRequest(ClientType.clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)
       })({ request =>
         Some(
           (

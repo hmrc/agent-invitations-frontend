@@ -35,5 +35,5 @@ case class InvitationSentPageConfig(
 
   val trackUrl: Call = routes.AgentsRequestTrackingController.showTrackRequests()
 
-  val clientTypeUrl: Call = routes.AgentsInvitationController.showClientType()
+  val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType()
 }

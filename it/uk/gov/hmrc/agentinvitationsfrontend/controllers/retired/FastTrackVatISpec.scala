@@ -1,10 +1,12 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+
 import java.util.UUID
 
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -52,10 +54,11 @@ class FastTrackVatISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "return 303 for authorised Agent with valid VAT information and selected Organisation, redirect to select-service when cache is empty" in {
+      sessionStore.delete()
       givenInvitationCreationSucceeds(
         arn,
         Some(business),
@@ -74,7 +77,7 @@ class FastTrackVatISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/select-service")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/select-service")
       verifyAuthoriseAttempt()
     }
   }
@@ -95,7 +98,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
@@ -108,7 +111,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
@@ -121,7 +124,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track does not contain client type" in {
@@ -134,7 +137,7 @@ class FastTrackVatISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
@@ -288,7 +291,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redirect to client-type when client type is not provided and YES is selected for VAT service" in {
@@ -319,7 +322,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/client-type")
     }
 
     "redirect to client-type when client type and known fact are not provided and YES is selected for VAT service" in {
@@ -344,7 +347,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/client-type")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/client-type")
     }
 
     "redirect to more-details when known fact is not provided and YES is selected for VAT service" in {
@@ -366,7 +369,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showKnownFact().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsFastTrackInvitationController.showKnownFact().url
     }
 
     "redirect to already-authorisation-pending when YES is selected for VAT service and there is already a pending invitation" in {
@@ -388,7 +391,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-pending")
     }
 
     "redirect to already-authorisation-present when YES is selected for VAT service and there is already a relationship" in {
@@ -404,7 +407,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "redirect to identify-client when NO is selected for VAT service" in {
@@ -427,7 +430,7 @@ class FastTrackVatISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/identify-client")
     }
 
     "return 303 not-matched if vrn and vat-reg-date does not match for VAT" in {
@@ -451,7 +454,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/not-matched")
       verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
     }
 
@@ -476,7 +479,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       status(result) shouldBe 303
       header("Set-Cookie", result) shouldBe None
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/not-signed-up")
       verifyCheckVatRegisteredClientStubAttempt(validVrn, LocalDate.parse("2007-07-07"))
 
     }
@@ -537,7 +540,7 @@ class FastTrackVatISpec extends BaseISpec {
 
       val result = await(fastTrackController.submitKnownFactVat(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redisplay the page with errors when known fact is not provided for VAT" in {

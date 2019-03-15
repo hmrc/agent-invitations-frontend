@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.routes
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
 case class DeletePageConfig(clientDetail: AuthorisationRequest) {

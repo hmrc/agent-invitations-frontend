@@ -4,6 +4,7 @@ import java.util.UUID
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -22,10 +23,18 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
       givenAgentReference(arn, uid, personal)
       val continueUrl = ContinueUrl("/someITSA/Url")
-      await(sessionStore.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("/someITSA/Url"), clientTypeForInvitationSent = Some(personal))))
+      await(
+        sessionStore.save(AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(nino),
+          Some(validPostcode),
+          continueUrl = Some("/someITSA/Url"),
+          clientTypeForInvitationSent = Some(personal)
+        )))
 
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "personal"),    arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "personal"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -48,16 +57,26 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(sessionStore.hardGet) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(
+        continueUrl = Some(continueUrl.url),
+        clientTypeForInvitationSent = Some(personal))
     }
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
       givenAgentReference(arn, uid, personal)
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
-      await(sessionStore.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some("http://localhost:9996/tax-history/select-client"), clientTypeForInvitationSent = Some(personal))))
+      await(
+        sessionStore.save(AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(nino),
+          Some(validPostcode),
+          continueUrl = Some("http://localhost:9996/tax-history/select-client"),
+          clientTypeForInvitationSent = Some(personal)
+        )))
 
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "personal"),    arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "personal"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -80,15 +99,26 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(sessionStore.hardGet) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(
+        continueUrl = Some(continueUrl.url),
+        clientTypeForInvitationSent = Some(personal))
     }
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
       givenAgentReference(arn, uid, business)
       val continueUrl = ContinueUrl("/someVat/Url")
-      await(sessionStore.save(AgentSession(Some(business), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = Some(business))))
+      await(
+        sessionStore.save(AgentSession(
+          Some(business),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(nino),
+          Some(validPostcode),
+          continueUrl = Some(continueUrl.url),
+          clientTypeForInvitationSent = Some(business)
+        )))
 
-      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "business"),    arn.value))
+      val result = invitationSent(authorisedAsValidAgent(request.withSession("clientType" -> "business"), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -111,7 +141,9 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
       verifyAuthoriseAttempt()
-      await(sessionStore.hardGet) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent = Some(business))
+      await(sessionStore.hardGet) shouldBe AgentSession(
+        continueUrl = Some(continueUrl.url),
+        clientTypeForInvitationSent = Some(business))
     }
 
   }
@@ -122,7 +154,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
     "redirect to where ever user came from" in {
       await(sessionStore.save(AgentSession(continueUrl = Some("/tax-history/select-service"))))
-      val result = continueAfter(authorisedAsValidAgent(request,    arn.value))
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe "/tax-history/select-service"
       await(sessionStore.fetch) shouldBe Some(AgentSession())
@@ -130,7 +162,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
     "redirect to agent-services-account if no continue-url is stored in cache" in {
       await(sessionStore.save(AgentSession()))
-      val result = continueAfter(authorisedAsValidAgent(request,    arn.value))
+      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe s"$wireMockBaseUrlAsString/agent-services-account"
       await(sessionStore.fetch) shouldBe Some(AgentSession())

@@ -50,7 +50,7 @@
     </ol>
 
         <a href="@config.trackLink" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
-        <p class="text-link-small"><a href="@config.continueLink" id="resurnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a></p>
+        <p class="text-link-small"><a href="@config.continueUrl.getOrElse(externalUrls.agentServicesAccountUrl)" id="resurnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a></p>
         <p class="text-link-small"><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
 
     }

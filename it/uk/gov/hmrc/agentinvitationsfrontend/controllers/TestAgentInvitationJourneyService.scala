@@ -1,4 +1,5 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import com.google.inject.AbstractModule
 import javax.inject.Singleton
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
