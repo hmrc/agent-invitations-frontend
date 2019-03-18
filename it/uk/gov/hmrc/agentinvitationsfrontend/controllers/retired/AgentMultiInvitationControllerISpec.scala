@@ -134,6 +134,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "redirect to select clientType page is there is nothing in the cache" in {
+      sessionStore.delete
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
@@ -318,6 +319,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Redirect to client-type when there is nothing in the cache" in {
+      sessionStore.delete
       val result = controller.submitDelete("foo")(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> ""))
       status(result) shouldBe 303

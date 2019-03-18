@@ -527,6 +527,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
     }
 
     "return to client-type for no cache" in {
+      sessionStore.delete()
       val result = action(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe retired.routes.AgentsInvitationController.showClientType().url

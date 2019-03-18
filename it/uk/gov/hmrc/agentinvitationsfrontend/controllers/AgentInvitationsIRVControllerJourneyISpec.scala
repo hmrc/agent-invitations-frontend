@@ -6,7 +6,6 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthBehaviours, retired}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -31,7 +30,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
         submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/identify-client")
       verifyAuthoriseAttempt()
     }
   }
@@ -101,6 +100,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       }
 
       "redirect to client-type when a valid NINO is submitted but cache is empty" in {
+        sessionStore.delete
         givenInvitationCreationSucceeds(
           arn,
           Some(personal),

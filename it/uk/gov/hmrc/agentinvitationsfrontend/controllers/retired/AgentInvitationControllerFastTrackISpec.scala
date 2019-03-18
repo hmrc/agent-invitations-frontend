@@ -87,7 +87,8 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       }
     }
 
-    "Redirect to select service when there is None in the cache" in {
+    "Redirect to client type when there is None in the cache" in {
+      sessionStore.delete
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe retired.routes.AgentsInvitationController.showClientType().url
@@ -117,6 +118,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to client-type if there is no invitation in the cache" in {
+      sessionStore.delete
       val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe retired.routes.AgentsInvitationController.showClientType().url
