@@ -188,26 +188,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
       case NoVatRegDate(fastTrackRequest, continueUrl) =>
         goto(SelectClientTypeVat(fastTrackRequest, continueUrl))
-
-      case PendingInvitationExists(ftr, continueUrl) => goto(SelectClientTypeVat(ftr, continueUrl))
-
-      case ActiveAuthorisationExists(ftr, continueUrl) => goto(SelectClientTypeVat(ftr, continueUrl))
-
-      case KnownFactNotMatched(ftr, continueUrl) => goto(SelectClientTypeVat(ftr, continueUrl))
-
-      case ClientNotSignedUp(ftr, continueUrl) => goto(SelectClientTypeVat(ftr, continueUrl))
     }
 
-    def checkedDetailsNoKnownFact(agent: AuthorisedAgent) = {
-      def gotoBacklinkKfState(ftr: AgentFastTrackRequest, continueUrl: Option[String]) = {
-        val kfState = ftr.service match {
-          case HMRCMTDIT  => NoPostcode
-          case HMRCPIR    => NoDob
-          case HMRCMTDVAT => NoVatRegDate
-        }
-        goto(kfState(ftr, continueUrl))
-      }
-
+    def checkedDetailsNoKnownFact(agent: AuthorisedAgent) =
       Transition {
         case CheckDetailsNoPostcode(fastTrackRequest, continueUrl) =>
           goto(NoPostcode(fastTrackRequest, continueUrl))
@@ -217,16 +200,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
         case CheckDetailsNoVatRegDate(fastTrackRequest, continueUrl) =>
           goto(NoVatRegDate(fastTrackRequest, continueUrl))
-
-        case PendingInvitationExists(ftr, continueUrl) => gotoBacklinkKfState(ftr, continueUrl)
-
-        case ActiveAuthorisationExists(ftr, continueUrl) => gotoBacklinkKfState(ftr, continueUrl)
-
-        case KnownFactNotMatched(ftr, continueUrl) => gotoBacklinkKfState(ftr, continueUrl)
-
-        case ClientNotSignedUp(ftr, continueUrl) => gotoBacklinkKfState(ftr, continueUrl)
       }
-    }
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent) = {
       def gotoIdentifyClient(ftRequest: AgentFastTrackRequest, continueUrl: Option[String]) =
@@ -259,18 +233,6 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           gotoIdentifyClient(ftr, continueUrl)
 
         case CheckDetailsNoClientTypeVat(ftr, continueUrl) =>
-          gotoIdentifyClient(ftr, continueUrl)
-
-        case PendingInvitationExists(ftr, continueUrl) =>
-          gotoIdentifyClient(ftr, continueUrl)
-
-        case ActiveAuthorisationExists(ftr, continueUrl) =>
-          gotoIdentifyClient(ftr, continueUrl)
-
-        case KnownFactNotMatched(ftr, continueUrl) =>
-          gotoIdentifyClient(ftr, continueUrl)
-
-        case ClientNotSignedUp(ftr, continueUrl) =>
           gotoIdentifyClient(ftr, continueUrl)
       }
     }

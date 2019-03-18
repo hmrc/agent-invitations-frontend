@@ -62,6 +62,7 @@ class AgentInvitationJourneyController @Inject()(
   import OptionalFormOps._
   import journeyService.model.States._
   import journeyService.model.{State, Transitions}
+  import invitationsService.{checkCitizenRecordMatches, checkPostcodeMatches, checkVatRegistrationDateMatches, createAgentLink, createMultipleInvitations, getClientNameByService, hasPendingInvitationsFor}
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
@@ -104,28 +105,25 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitIdentifyItsaClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyItsaClientForm(featureFlags.showKfcMtdIt))(
-      Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
   val submitIdentifyVatClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyVatClientForm(featureFlags.showKfcMtdVat))(
-      Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
   val submitIdentifyIrvClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
-      Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableIrvToConfirm)(featureFlags.showKfcPersonalIncome)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableIrvToConfirm)(
+        featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
@@ -138,8 +136,8 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitConfirmClient = action { implicit request =>
     authorisedWithForm(AsAgent)(ConfirmClientForm)(
-      Transitions.clientConfirmed(invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
+      Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)
     )
   }
 
@@ -149,8 +147,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitReviewAuthorisations = action { implicit request =>
     authorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
-      Transitions.authorisationsReviewed(invitationsService.createMultipleInvitations)(
-        invitationsService.createAgentLink))
+      Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink))
   }
 
   def showDeleteAuthorisation(itemId: String) = action { implicit request =>
