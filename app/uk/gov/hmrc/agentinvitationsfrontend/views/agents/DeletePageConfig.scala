@@ -15,11 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
-case class DeletePageConfig(clientDetail: AuthorisationRequest) {
-
-  val submitUrl = routes.AgentInvitationJourneyController.submitDeleteAuthorisation
-
-}
+case class DeletePageConfig(clientDetail: AuthorisationRequest, submitDelete: Call)

@@ -154,7 +154,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
     "redirect to where ever user came from" in {
       await(sessionStore.save(AgentSession(continueUrl = Some("/tax-history/select-service"))))
-      val result = continueAfter(authorisedAsValidAgent(request, arn.value))
+      val result = await(continueAfter(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get shouldBe "/tax-history/select-service"
       await(sessionStore.fetch) shouldBe Some(AgentSession())

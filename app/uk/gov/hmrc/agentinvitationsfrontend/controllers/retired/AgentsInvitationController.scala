@@ -248,7 +248,10 @@ class AgentsInvitationController @Inject()(
       agentSessionCache.hardGet.map { agentSession =>
         val deleteItem =
           agentSession.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
-        Ok(delete(DeletePageConfig(deleteItem), agentConfirmationForm("error.delete.radio")))
+        Ok(
+          delete(
+            DeletePageConfig(deleteItem, routes.AgentsInvitationController.submitDelete(itemId)),
+            agentConfirmationForm("error.delete.radio")))
       }
     }
   }
@@ -263,7 +266,10 @@ class AgentsInvitationController @Inject()(
               case Some(agentSession) =>
                 val deleteItem =
                   agentSession.requests.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
-                Ok(delete(DeletePageConfig(deleteItem), formWithErrors))
+                Ok(
+                  delete(
+                    DeletePageConfig(deleteItem, routes.AgentsInvitationController.submitDelete(itemId)),
+                    formWithErrors))
               case None => Redirect(agentsRootUrl)
             }
           },
