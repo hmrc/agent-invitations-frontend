@@ -17,8 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.routes
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, AuthorisationRequest}
 
 case class ReviewAuthorisationsPageConfig(
@@ -38,6 +37,6 @@ case class ReviewAuthorisationsPageConfig(
 
   val clientNamesAreDifferent: Boolean = requests.toSeq.map(_.clientName).distinct.length != 1
 
-  def showDeleteCall(itemId: String) = routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
+  def showDeleteCall(itemId: String) = routes.AgentsInvitationController.showDelete(itemId)
 
 }

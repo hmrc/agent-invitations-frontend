@@ -326,7 +326,9 @@ class AgentInvitationJourneyController @Inject()(
             ))
 
         case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
-          Ok(delete(DeletePageConfig(authorisationRequest), DeleteAuthorisationForm))
+          Ok(delete(
+            DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
+            DeleteAuthorisationForm))
 
         case InvitationSentPersonal(invitationLink, continueUrl) =>
           Ok(
