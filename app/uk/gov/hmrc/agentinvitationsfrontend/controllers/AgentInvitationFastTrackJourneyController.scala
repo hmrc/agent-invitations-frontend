@@ -40,6 +40,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.fsm.JourneyController
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -64,8 +65,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     extends FrontendController with JourneyController with I18nSupport with AuthActions {
 
   import AgentInvitationFastTrackJourneyController._
-  import OptionalFormOps._
-  import journeyService.model.States._
+  import uk.gov.hmrc.play.fsm.OptionalFormOps._
+  import journeyService.model.State._
   import journeyService.model.{State, Transitions}
 
   import invitationsService.{checkCitizenRecordMatches, checkPostcodeMatches, checkVatRegistrationDateMatches, createAgentLink, createInvitation, hasPendingInvitationsFor}
@@ -86,7 +87,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         agentFastTrackForm)(Transitions.start(featureFlags)(continueUrlActions.getErrorUrl.map(_.url)))
     }
 
-  val showCheckDetails = authorisedShowCurrentStateWhen(AsAgent) {
+  val showCheckDetails = showCurrentStateWhenAuthorised(AsAgent) {
     case _: CheckDetailsCompleteItsa        =>
     case _: CheckDetailsCompleteIrv         =>
     case _: CheckDetailsCompletePersonalVat =>
@@ -108,7 +109,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     authorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)
   }
 
-  val showIdentifyClient = authorisedShowCurrentStateWhen(AsAgent) {
+  val showIdentifyClient = showCurrentStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient =>
     case _: IdentifyBusinessClient =>
   }
@@ -140,7 +141,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     authorised(AsAgent)(Transitions.checkedDetailsNoKnownFact)(redirect)
   }
 
-  val showKnownFact = authorisedShowCurrentStateWhen(AsAgent) {
+  val showKnownFact = showCurrentStateWhenAuthorised(AsAgent) {
     case _: NoPostcode | _: NoDob | _: NoVatRegDate =>
   }
 
@@ -166,7 +167,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     authorised(AsAgent)(Transitions.checkedDetailsNoClientType)(redirect)
   }
 
-  val showClientType = authorisedShowCurrentStateWhen(AsAgent) {
+  val showClientType = showCurrentStateWhenAuthorised(AsAgent) {
     case _: SelectClientTypeVat =>
   }
 
@@ -176,14 +177,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         createInvitation)(createAgentLink)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(featureFlags))
   }
 
-  val showInvitationSent = authorisedShowCurrentStateWhen(AsAgent) {
+  val showInvitationSent = showCurrentStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = authorisedShowCurrentStateWhen(AsAgent) { case _: KnownFactNotMatched                      => }
-  val showClientNotSignedUp = authorisedShowCurrentStateWhen(AsAgent) { case _: ClientNotSignedUp                 => }
-  val showPendingAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: PendingInvitationExists  => }
-  val showActiveAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: ActiveAuthorisationExists => }
+  val showNotMatched = showCurrentStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                      => }
+  val showClientNotSignedUp = showCurrentStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
+  val showPendingAuthorisationExists = showCurrentStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
+  val showActiveAuthorisationExists = showCurrentStateWhenAuthorised(AsAgent) { case _: ActiveAuthorisationExists => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {

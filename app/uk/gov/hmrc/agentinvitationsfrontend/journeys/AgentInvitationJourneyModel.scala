@@ -22,6 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDV
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -30,12 +31,12 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   sealed trait State
 
-  val root: State = States.SelectClientType(Set.empty)
+  val root: State = State.SelectClientType(Set.empty)
 
   type Basket = Set[AuthorisationRequest]
 
   /* State should contain only minimal set of data required to proceed */
-  object States {
+  object State {
     case class SelectClientType(basket: Basket) extends State
     case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case object SelectBusinessService extends State
@@ -60,7 +61,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   }
 
   object Transitions {
-    import States._
+    import State._
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]

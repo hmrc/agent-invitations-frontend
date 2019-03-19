@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -34,10 +35,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
   sealed trait State
 
-  val root: State = States.Prologue(None)
+  val root: State = State.Prologue(None)
 
   /* State should contain only minimal set of data required to proceed */
-  object States {
+  object State {
     case class Prologue(failureUrl: Option[String]) extends State
 
     case class CheckDetailsNoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
@@ -79,7 +80,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
   }
 
   object Transitions {
-    import States._
+    import State._
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]

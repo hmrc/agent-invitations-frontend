@@ -25,7 +25,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   lazy val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
 
   import journeyState.model.State
-  import journeyState.model.States._
+  import journeyState.model.State._
 
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]

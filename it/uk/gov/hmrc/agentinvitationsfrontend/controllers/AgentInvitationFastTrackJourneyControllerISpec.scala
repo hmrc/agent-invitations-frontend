@@ -25,7 +25,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
   lazy val controller: AgentInvitationFastTrackJourneyController =
     app.injector.instanceOf[AgentInvitationFastTrackJourneyController]
 
-  import journeyState.model.States._
+  import journeyState.model.State._
 
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]
