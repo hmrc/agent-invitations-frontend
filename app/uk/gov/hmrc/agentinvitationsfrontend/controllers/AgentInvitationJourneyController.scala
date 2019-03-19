@@ -20,6 +20,7 @@ import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, Call, Request}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -35,6 +36,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -56,7 +58,7 @@ class AgentInvitationJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends JourneyController {
+    extends FrontendController with JourneyController with I18nSupport with AuthActions {
 
   import AgentInvitationJourneyController._
   import OptionalFormOps._

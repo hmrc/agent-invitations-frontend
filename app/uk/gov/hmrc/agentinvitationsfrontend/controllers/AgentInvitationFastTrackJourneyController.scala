@@ -21,6 +21,7 @@ import org.joda.time.LocalDate
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Call, Request, Result}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -38,6 +39,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -59,7 +61,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends JourneyController {
+    extends FrontendController with JourneyController with I18nSupport with AuthActions {
 
   import AgentInvitationFastTrackJourneyController._
   import OptionalFormOps._

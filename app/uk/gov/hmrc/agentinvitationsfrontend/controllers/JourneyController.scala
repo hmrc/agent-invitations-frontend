@@ -17,11 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.data.Form
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Request, _}
+import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.JourneyService
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,12 +35,16 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - action
   *   - authorised
   *   - authorisedWithForm
+  *   - authorisedWithBootstrapAndForm
   *   - authorisedShowCurrentStateWhen
   */
-abstract class JourneyController(implicit ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+trait JourneyController {
+  self: Controller =>
 
+  /** This has to be injected in the concrete controller */
   val journeyService: JourneyService
+
+  def hc(implicit rh: RequestHeader): HeaderCarrier
 
   import journeyService.StateAndBreadcrumbs
   import journeyService.model.{State, Transition, TransitionNotAllowed}
@@ -66,9 +68,9 @@ abstract class JourneyController(implicit ec: ExecutionContext)
     (state: StateAndBreadcrumbs) => (_: Request[_]) => Redirect(getCallFor(state._1))
 
   /** applies transition to the current state */
-  private def apply(transition: Transition, routeFactory: RouteFactory)(
-    implicit hc: HeaderCarrier,
-    request: Request[_]): Future[Result] =
+  private def apply(
+    transition: Transition,
+    routeFactory: RouteFactory)(implicit hc: HeaderCarrier, request: Request[_], ec: ExecutionContext): Future[Result] =
     journeyService
       .apply(transition)
       .map(routeFactory)
@@ -86,20 +88,23 @@ abstract class JourneyController(implicit ec: ExecutionContext)
   type WithAuthorised[User] = Request[_] => (User => Future[Result]) => Future[Result]
 
   protected final def authorised[User](withAuthorised: WithAuthorised[User])(transition: User => Transition)(
-    routeFactory: RouteFactory)(implicit request: Request[_]): Future[Result] =
+    routeFactory: RouteFactory)(implicit hc: HeaderCarrier, request: Request[_], ec: ExecutionContext): Future[Result] =
     withAuthorised(request) { user: User =>
       apply(transition(user), routeFactory)
     }
 
   protected final def authorisedWithForm[User, Payload](withAuthorised: WithAuthorised[User])(form: Form[Payload])(
-    transition: User => Payload => Transition)(implicit request: Request[_]): Future[Result] =
+    transition: User => Payload => Transition)(
+    implicit hc: HeaderCarrier,
+    request: Request[_],
+    ec: ExecutionContext): Future[Result] =
     withAuthorised(request) { user: User =>
       bindForm(form, transition(user))
     }
 
   protected final def authorisedWithBootstrapAndForm[User, Payload, T](bootstrap: Transition)(
-    withAuthorised: WithAuthorised[User])(form: Form[Payload])(transition: User => Payload => Transition)(
-    implicit request: Request[_]) =
+    withAuthorised: WithAuthorised[User])(form: Form[Payload])(
+    transition: User => Payload => Transition)(implicit hc: HeaderCarrier, request: Request[_], ec: ExecutionContext) =
     withAuthorised(request) { user: User =>
       journeyService
         .apply(bootstrap)
@@ -108,7 +113,8 @@ abstract class JourneyController(implicit ec: ExecutionContext)
 
   private def bindForm[T](form: Form[T], transition: T => Transition)(
     implicit hc: HeaderCarrier,
-    request: Request[_]): Future[Result] =
+    request: Request[_],
+    ec: ExecutionContext): Future[Result] =
     form
       .bindFromRequest()
       .fold(
@@ -125,8 +131,9 @@ abstract class JourneyController(implicit ec: ExecutionContext)
   type ExpectedStates = PartialFunction[State, Unit]
 
   protected final def authorisedShowCurrentStateWhen[User](withAuthorised: WithAuthorised[User])(
-    expectedStates: ExpectedStates): Action[AnyContent] =
+    expectedStates: ExpectedStates)(implicit ec: ExecutionContext): Action[AnyContent] =
     action { implicit request =>
+      implicit val headerCarrier: HeaderCarrier = hc(request)
       withAuthorised(request) { _ =>
         for {
           stateAndBreadcrumbsOpt <- journeyService.currentState
@@ -158,7 +165,8 @@ abstract class JourneyController(implicit ec: ExecutionContext)
 
   private def stepBackUntil(filter: PartialFunction[State, Unit])(stateAndBreadcrumbsOpt: Option[StateAndBreadcrumbs])(
     implicit hc: HeaderCarrier,
-    request: Request[_]): Future[Result] = stateAndBreadcrumbsOpt match {
+    request: Request[_],
+    ec: ExecutionContext): Future[Result] = stateAndBreadcrumbsOpt match {
     case None => apply(journeyService.model.start, redirect)
     case Some((state, breadcrumbs)) =>
       if (filter.isDefinedAt(state)) Future.successful(renderState(state, breadcrumbs, None)(request))

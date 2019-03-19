@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import java.util.UUID
 
@@ -52,7 +52,9 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsMultiInvitationController
+            .warmUp("personal", uid, "99-with-flake")}")
+      )
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -94,7 +96,9 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsMultiInvitationController
+            .warmUp("personal", uid, "99-with-flake")}")
+      )
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -136,7 +140,9 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("business", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${uk.gov.hmrc.agentinvitationsfrontend.controllers.routes.ClientsMultiInvitationController
+            .warmUp("business", uid, "99-with-flake")}")
+      )
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
