@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
-import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -62,6 +61,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   object Transitions {
     import State._
+
+    val start = AgentInvitationJourneyModel.start
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
