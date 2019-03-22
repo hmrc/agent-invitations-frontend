@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 /*
  * Copyright 2017 HM Revenue & Customs
@@ -23,7 +23,7 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation}
@@ -145,7 +145,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
+        redirectLocation(result)(timeout).get shouldBe "/invitations2/agents/identify-client"
         verifyAuthoriseAttempt()
       }
 
@@ -169,7 +169,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(serviceForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
+        redirectLocation(result)(timeout).get shouldBe "/invitations2/agents/identify-client"
       }
     }
 
@@ -182,7 +182,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(confirmForm.data.toSeq: _*), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result)(timeout).get shouldBe "/invitations/agents/identify-client"
+        redirectLocation(result)(timeout).get shouldBe "/invitations2/agents/identify-client"
       }
     }
   }

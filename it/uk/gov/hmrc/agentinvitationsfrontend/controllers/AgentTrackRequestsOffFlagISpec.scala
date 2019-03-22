@@ -5,6 +5,7 @@ import java.util.UUID
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -44,13 +45,12 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
         "features.enable-track-requests"                                      -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri" -> s"$mongoUri"
+        "mongodb.uri"                                                         -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
-    }
+    override def configure(): Unit = {}
   }
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
@@ -64,9 +64,17 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, personal)
       val continueUrl = ContinueUrl("/someITSA/Url")
-      await(sessionStore.save(
-        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), continueUrl = Some(continueUrl.url), clientTypeForInvitationSent =  Some(personal))))
-      val result = invitationSent(authorisedAsValidAgent(request,    arn.value))
+      await(
+        sessionStore.save(AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(nino),
+          Some(validPostcode),
+          continueUrl = Some(continueUrl.url),
+          clientTypeForInvitationSent = Some(personal)
+        )))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -80,14 +88,23 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
       verifyAuthoriseAttempt()
-      await(sessionStore.hardGet) shouldBe AgentSession(continueUrl = Some(continueUrl.url), clientTypeForInvitationSent =  Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(
+        continueUrl = Some(continueUrl.url),
+        clientTypeForInvitationSent = Some(personal))
     }
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, personal)
-      await(sessionStore.save(
-        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(nino), Some(validPostcode), clientTypeForInvitationSent =  Some(personal))))
-      val result = invitationSent(authorisedAsValidAgent(request,    arn.value))
+      await(
+        sessionStore.save(
+          AgentSession(
+            Some(personal),
+            Some(serviceITSA),
+            Some("ni"),
+            Some(nino),
+            Some(validPostcode),
+            clientTypeForInvitationSent = Some(personal))))
+      val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -99,7 +116,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
       verifyAuthoriseAttempt()
-      await(sessionStore.hardGet) shouldBe AgentSession(clientTypeForInvitationSent =  Some(personal))
+      await(sessionStore.hardGet) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
     }
 
   }

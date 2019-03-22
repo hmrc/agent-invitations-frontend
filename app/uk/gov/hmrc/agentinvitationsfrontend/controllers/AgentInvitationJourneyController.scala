@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, Call, Request}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.{clientTypeFor, validateFastTrackForm}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
-import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedServices, supportedTypes}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.fsm.JourneyController
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -58,12 +59,13 @@ class AgentInvitationJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends JourneyController {
+    extends FrontendController with JourneyController with I18nSupport with AuthActions {
 
   import AgentInvitationJourneyController._
-  import OptionalFormOps._
-  import journeyService.model.States._
+  import uk.gov.hmrc.play.fsm.OptionalFormOps._
+  import journeyService.model.State._
   import journeyService.model.{State, Transitions}
+  import invitationsService.{checkCitizenRecordMatches, checkPostcodeMatches, checkVatRegistrationDateMatches, createAgentLink, createMultipleInvitations, getClientNameByService, hasPendingInvitationsFor}
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
@@ -83,7 +85,7 @@ class AgentInvitationJourneyController @Inject()(
     authorisedWithForm(AsAgent)(SelectClientTypeForm)(Transitions.selectedClientType)
   }
 
-  val showSelectService = authorisedShowCurrentStateWhen(AsAgent) {
+  val showSelectService = showCurrentStateWhenAuthorised(AsAgent) {
     case _: SelectPersonalService | SelectBusinessService =>
   }
 
@@ -100,38 +102,35 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
-  val showIdentifyClient = authorisedShowCurrentStateWhen(AsAgent) {
+  val showIdentifyClient = showCurrentStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient | IdentifyBusinessClient =>
   }
 
   val submitIdentifyItsaClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyItsaClientForm(featureFlags.showKfcMtdIt))(
-      Transitions.identifiedItsaClient(invitationsService.checkPostcodeMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
   val submitIdentifyVatClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyVatClientForm(featureFlags.showKfcMtdVat))(
-      Transitions.identifiedVatClient(invitationsService.checkVatRegistrationDateMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
   val submitIdentifyIrvClient = action { implicit request =>
     authorisedWithForm(AsAgent)(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
-      Transitions.identifiedIrvClient(invitationsService.checkCitizenRecordMatches)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        featureFlags.enableIrvToConfirm)(featureFlags.showKfcPersonalIncome)(invitationsService.getClientNameByService)(
-        invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)
+      Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableIrvToConfirm)(
+        featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)
     )
   }
 
-  val showConfirmClient = authorisedShowCurrentStateWhen(AsAgent) {
+  val showConfirmClient = showCurrentStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
@@ -140,19 +139,18 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitConfirmClient = action { implicit request =>
     authorisedWithForm(AsAgent)(ConfirmClientForm)(
-      Transitions.clientConfirmed(invitationsService.createMultipleInvitations)(invitationsService.createAgentLink)(
-        invitationsService.hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
+      Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)
     )
   }
 
-  val showReviewAuthorisations = authorisedShowCurrentStateWhen(AsAgent) {
+  val showReviewAuthorisations = showCurrentStateWhenAuthorised(AsAgent) {
     case _: ReviewAuthorisationsPersonal =>
   }
 
   val submitReviewAuthorisations = action { implicit request =>
     authorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
-      Transitions.authorisationsReviewed(invitationsService.createMultipleInvitations)(
-        invitationsService.createAgentLink))
+      Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink))
   }
 
   def showDeleteAuthorisation(itemId: String) = action { implicit request =>
@@ -163,16 +161,16 @@ class AgentInvitationJourneyController @Inject()(
     authorisedWithForm(AsAgent)(DeleteAuthorisationForm)(Transitions.confirmDeleteAuthorisationRequest)
   }
 
-  val showInvitationSent = authorisedShowCurrentStateWhen(AsAgent) {
+  val showInvitationSent = showCurrentStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
-  val showNotMatched = authorisedShowCurrentStateWhen(AsAgent) { case _: KnownFactNotMatched                      => }
-  val showSomeAuthorisationsFailed = authorisedShowCurrentStateWhen(AsAgent) { case _: SomeAuthorisationsFailed   => }
-  val showAllAuthorisationsFailed = authorisedShowCurrentStateWhen(AsAgent) { case _: AllAuthorisationsFailed     => }
-  val showClientNotSignedUp = authorisedShowCurrentStateWhen(AsAgent) { case _: ClientNotSignedUp                 => }
-  val showPendingAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: PendingInvitationExists  => }
-  val showActiveAuthorisationExists = authorisedShowCurrentStateWhen(AsAgent) { case _: ActiveAuthorisationExists => }
-  val showAllAuthorisationsRemoved = authorisedShowCurrentStateWhen(AsAgent) { case AllAuthorisationsRemoved      => }
+  val showNotMatched = showCurrentStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                      => }
+  val showSomeAuthorisationsFailed = showCurrentStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed   => }
+  val showAllAuthorisationsFailed = showCurrentStateWhenAuthorised(AsAgent) { case _: AllAuthorisationsFailed     => }
+  val showClientNotSignedUp = showCurrentStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
+  val showPendingAuthorisationExists = showCurrentStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
+  val showActiveAuthorisationExists = showCurrentStateWhenAuthorised(AsAgent) { case _: ActiveAuthorisationExists => }
+  val showAllAuthorisationsRemoved = showCurrentStateWhenAuthorised(AsAgent) { case AllAuthorisationsRemoved      => }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State): Call = state match {

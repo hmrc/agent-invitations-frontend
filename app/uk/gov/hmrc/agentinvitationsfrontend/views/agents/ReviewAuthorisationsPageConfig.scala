@@ -37,6 +37,6 @@ case class ReviewAuthorisationsPageConfig(
 
   val clientNamesAreDifferent: Boolean = requests.toSeq.map(_.clientName).distinct.length != 1
 
-  def showDeleteCall(itemId: String) = routes.AgentsInvitationController.showDelete(itemId)
+  def showDeleteCall(itemId: String) = routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
 
 }

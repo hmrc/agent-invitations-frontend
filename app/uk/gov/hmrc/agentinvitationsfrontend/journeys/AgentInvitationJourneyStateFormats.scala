@@ -18,7 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.States.{DeleteAuthorisationRequestPersonal, PendingInvitationExists, _}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.{DeleteAuthorisationRequestPersonal, PendingInvitationExists, _}
+import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 

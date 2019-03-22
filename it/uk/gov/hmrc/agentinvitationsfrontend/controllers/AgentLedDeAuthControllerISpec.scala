@@ -8,7 +8,7 @@ import akka.util.Timeout
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation, Services}
@@ -51,12 +51,16 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("POST", "/agents/cancel-authorisation/client-type")
       val submitClientType = controller.submitClientType()
 
-      val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"),    arn.value))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
       status(result) shouldBe 303
       val timeout = 2.seconds
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
-      await(sessionStore.fetch).get shouldBe AgentSession(Some(personal), clientTypeForInvitationSent = Some(personal))
+      await(sessionStore.fetch).get shouldBe AgentSession(
+        Some(personal),
+        clientTypeForInvitationSent = Some(personal),
+        isDeAuthJourney = true)
     }
   }
 
@@ -67,7 +71,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
 
-      val result = showSelectService(authorisedAsValidAgent(request,    arn.value))
+      val result = showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -87,7 +91,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val showSelectService = controller.showSelectService()
 
-      val result = showSelectService(authorisedAsValidAgent(request,    arn.value))
+      val result = showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
@@ -111,7 +115,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
       val submitSelectService = controller.submitSelectPersonalService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"),    arn.value))
+      val result = submitSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
@@ -124,7 +129,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-business-service")
       val submitSelectService = controller.submitSelectBusinessService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"),    arn.value))
+      val result =
+        submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showIdentifyClient().url
 
@@ -137,7 +143,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
       val submitSelectService = controller.submitSelectPersonalService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-BLAH"),    arn.value))
+      val result = submitSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-BLAH"), arn.value))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
@@ -163,7 +170,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       Services.supportedServices.foreach { service =>
         await(sessionStore.save(AgentSession(Some(personal), Some(service))))
 
-        val result = showIdentifyClient(authorisedAsValidAgent(request,    arn.value))
+        val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 200
 
         if (service == HMRCPIR) {
@@ -190,7 +197,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     "redirect to /cancel-authorisation/select-service page if service in the cache is not a valid service" in {
       await(sessionStore.save(AgentSession(Some(personal), Some("blah service"))))
 
-      val result = showIdentifyClient(authorisedAsValidAgent(request,    arn.value))
+      val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
     }
@@ -198,7 +205,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     "redirect to /cancel-authorisation/client-type page if there is no cache found" in {
       await(sessionStore.save(AgentSession()))
 
-      val result = showIdentifyClient(authorisedAsValidAgent(request,    arn.value))
+      val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentLedDeAuthController.showSelectService().url
 
@@ -211,7 +218,9 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is PERSONAL-INCOME-RECORD" should {
       "handle the form correctly and redirect" in {
-        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth))))
 
         givenAgentReference(arn, "ABCDEFGH", personal)
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
@@ -226,7 +235,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             "dob.day"          -> "07"
           )
 
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmCancel().url)
@@ -235,7 +244,15 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       "redirect to not-authorised when there is no relationship to deauthorise" in {
         givenAfiRelationshipNotFoundForAgent(arn, validNino)
         givenAgentReference(arn, "ABCDEFGH", personal)
-        await(sessionStore.save(AgentSession(Some(personal), Some(servicePIR), Some("ni"), Some(validNino.value), Some(dateOfBirth), isDeAuthJourney = true)))
+        await(
+          sessionStore.save(
+            AgentSession(
+              Some(personal),
+              Some(servicePIR),
+              Some("ni"),
+              Some(validNino.value),
+              Some(dateOfBirth),
+              isDeAuthJourney = true)))
 
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
@@ -244,21 +261,23 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         val requestWithForm =
           request.withFormUrlEncodedBody(
             "clientIdentifier" -> validNino.value,
-            "dob.year"   -> "1980",
-            "dob.month"  -> "07",
-            "dob.day"    -> "07"
+            "dob.year"         -> "1980",
+            "dob.month"        -> "07",
+            "dob.day"          -> "07"
           )
 
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.notAuthorised().url)
+        redirectLocation(result) shouldBe Some(retired.routes.AgentsErrorController.notAuthorised().url)
       }
     }
 
     "service is HMRC-MTD-IT" should {
       "handle the form correctly and redirect" in {
-        await(sessionStore.save(AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
         givenAgentReference(arn, "ABCDEFGH", personal)
         givenMatchingClientIdAndPostcode(validNino, validPostcode)
@@ -271,7 +290,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             "postcode"         -> s"$validPostcode"
           )
 
-        val result = controller.submitIdentifyClientItsa(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = controller.submitIdentifyClientItsa(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmClient().url)
@@ -280,7 +299,14 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "service is HMRC-MTD-VAT" should {
       "handle the form correctly and redirect" in {
-        await(sessionStore.save(AgentSession(Some(personal), Some(serviceVAT), Some("vrn"), Some(validVrn.value), Some(validRegistrationDate))))
+        await(
+          sessionStore.save(
+            AgentSession(
+              Some(personal),
+              Some(serviceVAT),
+              Some("vrn"),
+              Some(validVrn.value),
+              Some(validRegistrationDate))))
         givenAgentReference(arn, "ABCDEFGH", personal)
         givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
         givenCitizenDetailsAreKnownFor(validNino.value, "First", "Last")
@@ -294,7 +320,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             "registrationDate.day"   -> "7"
           )
 
-        val result = controller.submitIdentifyClientVat(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = controller.submitIdentifyClientVat(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmClient().url)
@@ -308,11 +334,12 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     val showConfirmClient = controller.showConfirmClient()
 
     "display the page correctly" in {
-      await(sessionStore.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+      await(
+        sessionStore.save(
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
       givenTradingName(validNino, "some trading name")
 
-      val result = showConfirmClient(authorisedAsValidAgent(request,    arn.value))
+      val result = showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "some trading name")
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.header")
@@ -329,8 +356,15 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "user selects Yes and clicks Continue" should {
       "show /cancel-authorisation/confirm-cancel page as expected" in {
-        await(sessionStore.save(
-          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode), isDeAuthJourney = true)))
+        await(
+          sessionStore.save(
+            AgentSession(
+              Some(personal),
+              Some(serviceITSA),
+              Some("ni"),
+              Some(validNino.value),
+              Some(validPostcode),
+              isDeAuthJourney = true)))
 
         givenCheckRelationshipItsaWithStatus(arn, validNino.value, 200)
         givenTradingName(validNino, "My Trading Name")
@@ -338,7 +372,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showConfirmCancel().url)
@@ -347,28 +381,30 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       "redirect to /not-authorised when there is no relationship to de-authorise" in {
         givenCheckRelationshipItsaWithStatus(arn, validNino.value, 404)
         givenTradingName(validNino, "My Trading Name")
-        await(sessionStore.save(
-          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentsErrorController.notAuthorised().url)
+        redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.notAuthorised().url)
       }
     }
 
     "user selects No and clicks Continue" should {
 
       "show /cancel-authorisation/client-type page as expected" in {
-        await(sessionStore.save(
-          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(false))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showClientType().url)
@@ -382,11 +418,12 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     val showConfirmCancel = controller.showConfirmCancel()
 
     "display the page correctly" in {
-      await(sessionStore.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+      await(
+        sessionStore.save(
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
       givenTradingName(validNino, "some trading name")
 
-      val result = showConfirmCancel(authorisedAsValidAgent(request,    arn.value))
+      val result = showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-cancel.header")
       checkHtmlResultWithBodyText(
@@ -404,15 +441,16 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     "user selects Yes and clicks Continue" should {
 
       "show /cancel-authorisation/cancelled page as expected" in {
-        await(sessionStore.save(
-          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
         givenCancelledAuthorisationItsa(arn, validNino, 204)
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(true))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showCancelled().url)
@@ -422,13 +460,14 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     "user selects No and clicks Continue" should {
 
       "show /cancel-authorisation/client-type page as expected" in {
-        await(sessionStore.save(
-          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+        await(
+          sessionStore.save(
+            AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
 
         val choice = agentConfirmationForm("error message").fill(Confirmation(false))
         val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm,    arn.value))
+        val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm, arn.value))
 
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentLedDeAuthController.showClientType().url)
@@ -442,12 +481,13 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
     val showCancelled = controller.showCancelled()
 
     "display the page correctly" in {
-      await(sessionStore.save(
-        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
+      await(
+        sessionStore.save(
+          AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some(validPostcode))))
       givenGetAgencyNameClientStub(arn)
       givenTradingName(validNino, "Some Client Company")
 
-      val result = showCancelled(authorisedAsValidAgent(request,    arn.value))
+      val result = showCancelled(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
@@ -490,7 +530,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       val result = controller.responseFailed()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result,
+      checkHtmlResultWithBodyMsgs(
+        result,
         "cancel-authorisation.response-failed.header",
         "cancel-authorisation.response-failed.description",
         "cancel-authorisation.response-failed.advice",

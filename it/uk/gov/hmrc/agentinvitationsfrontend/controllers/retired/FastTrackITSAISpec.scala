@@ -1,9 +1,11 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+
 import java.util.UUID
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
@@ -51,7 +53,7 @@ class FastTrackITSAISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
 //    "return 303 for authorised Agent with valid Nino and Known Fact, then selected Individual, redirect to select-service when cache is empty" in {
@@ -93,7 +95,7 @@ class FastTrackITSAISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 check-details if service calling fast-track for does not contain postcode for ITSA" in {
@@ -106,7 +108,7 @@ class FastTrackITSAISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 if service calling fast-track contains invalid postcode for ITSA" in {
@@ -118,7 +120,7 @@ class FastTrackITSAISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 check-details if service calling fast-track for does not contain client type" in {
@@ -131,7 +133,7 @@ class FastTrackITSAISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsFastTrackInvitationController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url)
     }
 
     "return 303 and redirect to error url if service calling fast-track for ITSA contains invalid nino" in {
@@ -342,7 +344,7 @@ class FastTrackITSAISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redirect to identify-client when NO is selected for ITSA service" in {
@@ -371,7 +373,7 @@ class FastTrackITSAISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/identify-client")
     }
 
     "redirect to already-authorisation-pending when YES is selected for ITSA service but there is already a pending invitation" in {
@@ -393,7 +395,7 @@ class FastTrackITSAISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-pending")
     }
 
     "redirect to already-authorisation-exists when YES is selected for ITSA service but there is already a relationship for this service" in {
@@ -414,7 +416,7 @@ class FastTrackITSAISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "return 303 not-matched if nino and postcode do not match for ITSA" in {
@@ -437,7 +439,7 @@ class FastTrackITSAISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-matched")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/not-matched")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEventFailed(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA)
@@ -464,7 +466,7 @@ class FastTrackITSAISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/not-signed-up")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/not-signed-up")
 
       verifyAuthoriseAttempt()
       verifyAgentClientInvitationSubmittedEventFailed(arn.value, "personal", validNino.value, "ni", "Fail", serviceITSA)
@@ -492,7 +494,7 @@ class FastTrackITSAISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("This is the postcode of your client's registered address"))
-      checkResultContainsBackLink(result, "/invitations/agents/check-details")
+      checkResultContainsBackLink(result, "/invitations2/agents/check-details")
     }
   }
 
@@ -532,7 +534,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(formData))
       val result = await(fastTrackController.submitKnownFactItsa(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redirect to already-authorisation-pending when there is already a pending invitation" in {
@@ -558,7 +560,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(formData))
       val result = await(fastTrackController.submitKnownFactItsa(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-pending")
     }
 
     "redirect to already-authorisation-present when there is already a relationship" in {
@@ -584,7 +586,7 @@ class FastTrackITSAISpec extends BaseISpec {
       await(sessionStore.save(formData))
       val result = await(fastTrackController.submitKnownFactItsa(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "redisplay the page with errors when the known fact is not provided for ITSA" in {
