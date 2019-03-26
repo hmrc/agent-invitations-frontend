@@ -243,13 +243,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
       featureFlags: FeatureFlags)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case CheckDetailsCompleteItsa(fastTrackRequest, continueUrl) => {
-        val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
-          fastTrackRequest,
-          agent.arn,
-          ItsaInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(Postcode.apply)),
-          continueUrl
-        )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
         if (confirmation.choice) {
+          val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            ItsaInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(Postcode.apply)),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
           if (featureFlags.showKfcMtdIt) {
             checkPostcodeMatches(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.getOrElse(""))
               .flatMap {
@@ -262,13 +262,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       }
 
       case CheckDetailsCompleteIrv(fastTrackRequest, continueUrl) =>
-        val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
-          fastTrackRequest,
-          agent.arn,
-          PirInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(DOB.apply)),
-          continueUrl
-        )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
         if (confirmation.choice) {
+          val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            PirInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(DOB.apply)),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
           if (featureFlags.showKfcPersonalIncome) {
             checkDobMatches(
               Nino(fastTrackRequest.clientIdentifier),
@@ -282,16 +282,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
 
       case CheckDetailsCompletePersonalVat(fastTrackRequest, continueUrl) =>
-        val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
-          fastTrackRequest,
-          agent.arn,
-          VatInvitation(
-            Some(personal),
-            Vrn(fastTrackRequest.clientIdentifier),
-            fastTrackRequest.knownFact.map(VatRegDate.apply)),
-          continueUrl
-        )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
         if (confirmation.choice) {
+          val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            VatInvitation(
+              Some(personal),
+              Vrn(fastTrackRequest.clientIdentifier),
+              fastTrackRequest.knownFact.map(VatRegDate.apply)),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
           if (featureFlags.showKfcMtdVat) {
             checkRegDateMatches(
               Vrn(fastTrackRequest.clientIdentifier),
@@ -305,16 +305,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
 
       case CheckDetailsCompleteBusinessVat(fastTrackRequest, continueUrl) =>
-        val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
-          fastTrackRequest,
-          agent.arn,
-          VatInvitation(
-            Some(ClientType.business),
-            Vrn(fastTrackRequest.clientIdentifier),
-            fastTrackRequest.knownFact.map(VatRegDate.apply)),
-          continueUrl
-        )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
         if (confirmation.choice) {
+          val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            VatInvitation(
+              Some(ClientType.business),
+              Vrn(fastTrackRequest.clientIdentifier),
+              fastTrackRequest.knownFact.map(VatRegDate.apply)),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink)
           if (featureFlags.showKfcMtdVat) {
             checkRegDateMatches(
               Vrn(fastTrackRequest.clientIdentifier),

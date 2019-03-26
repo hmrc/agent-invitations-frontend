@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -352,7 +352,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
                 None,
                 continueUrl.isDefined,
                 featureFlags.enableTrackRequests,
-                ClientType.fromEnum(business),
+                ClientType.fromEnum(personal),
                 inferredExpiryDate)))
 
         case InvitationSentBusiness(invitationLink, continueUrl) =>
@@ -374,11 +374,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               routes.AgentInvitationJourneyController.showReviewAuthorisations()
             ))
 
-        case ActiveAuthorisationExists(_, _) =>
+        case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
           Ok(
             active_authorisation_exists(
               authRequestsExist = false,
-              "",
+              agentFastTrackRequest.service,
               fromFastTrack = true,
               routes.AgentInvitationJourneyController.showReviewAuthorisations(),
               routes.AgentInvitationFastTrackJourneyController.showClientType()
