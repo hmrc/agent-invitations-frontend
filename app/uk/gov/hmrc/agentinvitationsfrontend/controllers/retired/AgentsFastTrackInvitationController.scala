@@ -21,7 +21,7 @@ import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.mvc.{Action, AnyContent, Request, Result}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
@@ -50,9 +50,8 @@ class AgentsFastTrackInvitationController @Inject()(
   relationshipsService: RelationshipsService,
   relationshipsConnector: RelationshipsConnector,
   agentSessionCache: AgentSessionCache,
-  authConnector: AuthConnector,
+  authActions: AuthActions,
   val continueUrlActions: ContinueUrlActions,
-  withVerifiedPasscode: PasscodeVerification,
   auditService: AuditService)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
@@ -60,8 +59,7 @@ class AgentsFastTrackInvitationController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
     extends BaseInvitationController(
-      withVerifiedPasscode,
-      authConnector,
+      authActions,
       invitationsService,
       invitationsConnector,
       relationshipsService,
@@ -69,6 +67,7 @@ class AgentsFastTrackInvitationController @Inject()(
       relationshipsConnector,
       auditService
     ) {
+  import authActions._
 
   import AgentsFastTrackInvitationController._
 

@@ -21,18 +21,14 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-class ClientErrorController @Inject()(
-  val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
+class ClientErrorController @Inject()(override val messagesApi: play.api.i18n.MessagesApi)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls)
-    extends FrontendController with I18nSupport with AuthActions {
+    extends FrontendController with I18nSupport {
 
   val incorrectClientType: Action[AnyContent] = Action.async { implicit request =>
     request.session.get("clientType") match {

@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
-import java.net.URLEncoder
+import java.net.{URI, URLEncoder}
+
+import play.api.{Configuration, Environment, Mode}
 
 object CallOps {
 
@@ -30,5 +32,17 @@ object CallOps {
       val join = if (url.contains("?")) "&" else "?"
       url + join + query
     }
+  }
+
+  def localFriendlyUrl(env: Environment, config: Configuration)(url: String, hostAndPort: String) = {
+    val isLocalEnv = {
+      if (env.mode.equals(Mode.Test)) false
+      else config.getString("run.mode").forall(Mode.Dev.toString.equals)
+    }
+
+    val uri = new URI(url)
+
+    if (!uri.isAbsolute && isLocalEnv) s"http://$hostAndPort$url"
+    else url
   }
 }

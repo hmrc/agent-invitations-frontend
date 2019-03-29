@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
@@ -28,17 +27,16 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
 import uk.gov.hmrc.agentinvitationsfrontend.views.track.{ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,8 +49,7 @@ case class CancelAuthorisationForm(service: String, clientId: String, clientName
 @Singleton
 class AgentsRequestTrackingController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification,
+  val authActions: AuthActions,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,
@@ -64,7 +61,8 @@ class AgentsRequestTrackingController @Inject()(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+    extends FrontendController with I18nSupport {
+  import authActions._
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {

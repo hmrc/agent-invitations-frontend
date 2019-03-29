@@ -34,17 +34,15 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class AgentsErrorController @Inject()(
-  auditService: AuditService,
+  authActions: AuthActions,
   agentSessionCache: AgentSessionCache,
-  val messagesApi: play.api.i18n.MessagesApi,
-  val env: Environment,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
+  val messagesApi: play.api.i18n.MessagesApi)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+    extends FrontendController with I18nSupport {
+  import authActions._
 
   val notMatched: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>

@@ -36,10 +36,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cancelAuthorisation, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -49,7 +47,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentLedDeAuthController @Inject()(
   withVerifiedPasscode: PasscodeVerification,
-  authConnector: AuthConnector,
+  authActions: AuthActions,
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
@@ -64,17 +62,15 @@ class AgentLedDeAuthController @Inject()(
   configuration: Configuration,
   ec: ExecutionContext)
     extends BaseInvitationController(
-      withVerifiedPasscode,
-      authConnector,
+      authActions,
       invitationsService,
       invitationsConnector,
       relationshipsService,
       agentSessionCache,
       relationshipsConnector,
-      auditService
-    ) {
-
+      auditService) {
   import AgentLedDeAuthController._
+  import authActions._
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
 

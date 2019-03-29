@@ -16,21 +16,35 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import play.api.Logger
+import com.google.inject.ImplementedBy
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthActions extends AuthorisedFunctions {
+@Singleton
+class AuthActionsImpl @Inject()(
+  val withVerifiedPasscode: PasscodeVerification,
+  val externalUrls: ExternalUrls,
+  val env: Environment,
+  val config: Configuration,
+  val authConnector: AuthConnector
+) extends AuthActions
+
+@ImplementedBy(classOf[AuthActionsImpl])
+trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def withVerifiedPasscode: PasscodeVerification
 
@@ -42,7 +56,7 @@ trait AuthActions extends AuthorisedFunctions {
       identifier <- enrolment.getIdentifier(identifierKey)
     } yield identifier.value
 
-  protected def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
+  def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -56,7 +70,7 @@ trait AuthActions extends AuthorisedFunctions {
       }
     }
 
-  protected def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(
+  def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -81,7 +95,7 @@ trait AuthActions extends AuthorisedFunctions {
   private def extractAffinityGroup(affinityGroup: AffinityGroup): String =
     (affinityGroup.toJson \ "affinityGroup").as[String]
 
-  protected def withAuthorisedAsAnyClient[A](body: (String, Seq[(String, String)]) => Future[Result])(
+  def withAuthorisedAsAnyClient[A](body: (String, Seq[(String, String)]) => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -94,22 +108,23 @@ trait AuthActions extends AuthorisedFunctions {
             (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
           }.toSeq
           (affinity, confidence) match {
-            case (AffinityGroup.Individual, ConfidenceLevel.L200) => body(affinityG, clientIdTypePlusIds)
-            case (AffinityGroup.Organisation, _)                  => body(affinityG, clientIdTypePlusIds)
-            case _                                                => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+            case (AffinityGroup.Individual, cl) =>
+              withConfidenceLevelUplift(cl, ConfidenceLevel.L200) {
+                body(affinityG, clientIdTypePlusIds)
+              }
+            case (AffinityGroup.Organisation, _) => body(affinityG, clientIdTypePlusIds)
+            case _                               => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
           }
         case _ => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
       }
       .recover {
         case _: InsufficientEnrolments =>
           Redirect(routes.ClientsInvitationController.notAuthorised())
-        case _: InsufficientConfidenceLevel =>
-          Redirect(routes.ClientsInvitationController.notFoundInvitation())
         case _: UnsupportedAffinityGroup =>
           Redirect(routes.ClientsInvitationController.notAuthorised())
       }
 
-  protected def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
+  def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -130,8 +145,7 @@ trait AuthActions extends AuthorisedFunctions {
       identifier <- enrolment.getIdentifier(identifierKey)
     } yield identifier.value
 
-  protected def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(
-    body: Option[String] => Future[Result])(
+  def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -142,15 +156,38 @@ trait AuthActions extends AuthorisedFunctions {
       case affinity ~ enrols ~ confidence =>
         val id = extractEnrolmentsValue(enrols, serviceName, identifierKey)
         (affinity, confidence) match {
-          case (Some(AffinityGroup.Organisation), _)                  => body(id)
-          case (Some(AffinityGroup.Individual), ConfidenceLevel.L200) => body(id)
-          case (Some(AffinityGroup.Agent), _)                         => body(None)
-          case _ =>
-            Future failed (throw InsufficientConfidenceLevel(
-              s"Client Logged in did not have sufficient confidence level for $serviceName"))
+          case (Some(AffinityGroup.Organisation), _) => body(id)
+          case (Some(AffinityGroup.Individual), cl)  => withConfidenceLevelUplift(cl, ConfidenceLevel.L200)(body(id))
+          case (Some(AffinityGroup.Agent), _)        => body(None)
         }
       case _ =>
         Logger(getClass).warn("Invalid Login")
         body(None)
     }
+
+  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, requiredLevel: ConfidenceLevel)(
+    body: => Future[Result])(implicit request: Request[A]) =
+    if (currentLevel >= requiredLevel) {
+      body
+    } else if (request.method == "GET") {
+      redirectToIdentityVerification(requiredLevel)
+    } else {
+      Future.successful(Redirect(routes.ClientsInvitationController.notAuthorised().url))
+    }
+
+  private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
+    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
+    val successUrl = toLocalFriendlyUrl(request.uri, request.host)
+    val failureUrl = toLocalFriendlyUrl(routes.ClientsInvitationController.notAuthorised().url, request.host)
+
+    val ivUpliftUrl = CallOps.addParamsToUrl(
+      personalIVUrl,
+      "origin"          -> Some("aif"),
+      "confidenceLevel" -> Some(requiredLevel.level.toString),
+      "completionURL"   -> Some(successUrl),
+      "failureURL"      -> Some(failureUrl)
+    )
+
+    Future.successful(Redirect(ivUpliftUrl))
+  }
 }

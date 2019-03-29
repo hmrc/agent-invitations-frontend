@@ -18,13 +18,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
+import play.api.Configuration
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Call, Request, Result}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
@@ -37,7 +36,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -51,26 +49,23 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
-  auditService: AuditService,
-  val env: Environment,
-  val authConnector: AuthConnector,
+  authActions: AuthActionsImpl,
   val continueUrlActions: ContinueUrlActions,
-  val withVerifiedPasscode: PasscodeVerification,
   override val journeyService: AgentInvitationFastTrackJourneyService)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with I18nSupport with AuthActions {
+    extends FrontendController with JourneyController with I18nSupport {
 
   import AgentInvitationFastTrackJourneyController._
-  import uk.gov.hmrc.play.fsm.OptionalFormOps._
+  import invitationsService._
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
-
-  import invitationsService.{checkCitizenRecordMatches, checkPostcodeMatches, checkVatRegistrationDateMatches, createAgentLink, createInvitation, hasPendingInvitationsFor}
   import relationshipsService.hasActiveRelationshipFor
+  import uk.gov.hmrc.play.fsm.OptionalFormOps._
+  import authActions._
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)

@@ -16,14 +16,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import play.api.mvc.{Action, AnyContent, Cookie}
+import play.api.mvc.{Action, AnyContent, Cookie, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmAuthorisationForm
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, TestDataCommonSupport}
 import uk.gov.hmrc.auth.core.AuthorisationException
+
+import scala.concurrent.Future
 
 class ClientsInvitationsIRVControllerISpec extends BaseISpec {
 
@@ -207,16 +209,22 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to IV uplift journey if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest("GET", routes.ClientsInvitationController.getConfirmTerms(invitationIdPIR).url)
+        .withSession("agencyName" -> "My Agency")
       val result = controller.getConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+
+      checkRedirectedToIVUplift(
+        result,
+        expectedCompletionUrl = routes.ClientsInvitationController.getConfirmTerms(invitationIdPIR).url,
+        expectedFailureUrl = routes.ClientsInvitationController.notAuthorised().url
+      )
     }
   }
 
@@ -330,16 +338,19 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to /not-authorised if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest(routes.ClientsInvitationController.submitConfirmTerms(invitationIdPIR))
+        .withSession("agencyName" -> "My Agency")
       val result = controller.submitConfirmTerms(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
+
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notAuthorised().url)
     }
 
     "return exception when agency name retrieval fails" in {
@@ -401,16 +412,22 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to IV uplift journey if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest("GET", routes.ClientsInvitationController.getCompletePage(invitationIdPIR).url)
+        .withSession("agencyName" -> "My Agency")
       val result = controller.getCompletePage(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+
+      checkRedirectedToIVUplift(
+        result,
+        expectedCompletionUrl = routes.ClientsInvitationController.getCompletePage(invitationIdPIR).url,
+        expectedFailureUrl = routes.ClientsInvitationController.notAuthorised().url
+      )
     }
   }
 
@@ -460,16 +477,22 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to IV uplift journey if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest("GET", routes.ClientsInvitationController.getConfirmDecline(invitationIdPIR).url)
+        .withSession("agencyName" -> "My Agency")
       val result = controller.getConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+
+      checkRedirectedToIVUplift(
+        result,
+        expectedCompletionUrl = routes.ClientsInvitationController.getConfirmDecline(invitationIdPIR).url,
+        expectedFailureUrl = routes.ClientsInvitationController.notAuthorised().url
+      )
     }
 
     "redirect to /not-found/ if authenticated user has HMRC-NI enrolment but the invitationId they supplied does not exist" in {
@@ -573,16 +596,18 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to /not-authorised if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest("POST", routes.ClientsInvitationController.submitConfirmDecline(invitationIdPIR).url)
+        .withSession("agencyName" -> "My Agency")
       val result = controller.submitConfirmDecline(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
   }
 
@@ -668,16 +693,22 @@ class ClientsInvitationsIRVControllerISpec extends BaseISpec {
       redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
     }
 
-    "redirect to /client/not-found if an authenticated user does not have the Confidence Level 200" in {
+    "redirect to IV uplift journey if an authenticated user has a Confidence Level below 200" in {
       givenUnauthorisedForInsufficientConfidenceLevel()
+      val request = FakeRequest("GET", routes.ClientsInvitationController.getInvitationDeclined(invitationIdPIR).url)
+        .withSession("agencyName" -> "My Agency")
       val result = controller.getInvitationDeclined(invitationIdPIR)(
         authenticatedClient(
-          FakeRequest().withSession("agencyName" -> "My Agency"),
+          request,
           "Individual",
           Enrolment("HMRC-NI", "NINO", nino),
           "50"))
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notFoundInvitation().url
+
+      checkRedirectedToIVUplift(
+        result,
+        expectedCompletionUrl = routes.ClientsInvitationController.getInvitationDeclined(invitationIdPIR).url,
+        expectedFailureUrl = routes.ClientsInvitationController.notAuthorised().url
+      )
     }
   }
 
