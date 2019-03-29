@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.mvc._
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger}
 import play.twirl.api.HtmlFormat
 import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -44,7 +44,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentLedDeAuthController @Inject()(
   withVerifiedPasscode: PasscodeVerification,
-  authConnector: AuthConnector,
+  authActions: AuthActions,
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
@@ -58,15 +58,14 @@ class AgentLedDeAuthController @Inject()(
   configuration: Configuration,
   ec: ExecutionContext)
     extends BaseInvitationController(
-      withVerifiedPasscode,
-      authConnector,
+      authActions,
       invitationsService,
       invitationsConnector,
       relationshipsService,
       agentSessionCache,
       relationshipsConnector,
-      auditService
-    ) {
+      auditService) {
+  import authActions._
 
   val agentsLedDeAuthRootUrl: Call = routes.AgentLedDeAuthController.showClientType()
 

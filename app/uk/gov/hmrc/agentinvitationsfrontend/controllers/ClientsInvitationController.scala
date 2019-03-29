@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, Request, Result}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
@@ -33,10 +32,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{SingleCompletePageConfig, SingleConfirmDeclinePageConfig, SingleConfirmTermsPageConfig, SingleInvitationDeclinedPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, MtdItId, Vrn}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
-import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,16 +46,15 @@ case class ConfirmAuthForm(confirmAuthorisation: Option[String])
 class ClientsInvitationController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
-  auditService: AuditService,
+  val auditService: AuditService,
   val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
+  authActions: AuthActions)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
-
+    extends FrontendController with I18nSupport {
   import ClientsInvitationController._
+  import authActions._
 
   def start(invitationId: InvitationId): Action[AnyContent] = Action { implicit request =>
     determineService(invitationId) match {

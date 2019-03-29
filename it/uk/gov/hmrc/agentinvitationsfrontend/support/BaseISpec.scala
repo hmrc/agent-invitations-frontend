@@ -250,4 +250,16 @@ abstract class BaseISpec
         "transactionName" -> "Agent client service authorisation request created"
       )
     )
+
+  protected def checkRedirectedToIVUplift(result: Future[Result], expectedCompletionUrl: String, expectedFailureUrl: String) = {
+    val expectedRedirectUrl = CallOps.addParamsToUrl(
+      url = "/mdtp/uplift?origin=aif",
+      "confidenceLevel" -> Some("200"),
+      "completionURL" -> Some(expectedCompletionUrl),
+      "failureURL" -> Some(expectedFailureUrl)
+    )
+
+    status(result) shouldBe SEE_OTHER
+    redirectLocation(result) shouldBe Some(expectedRedirectUrl)
+  }
 }

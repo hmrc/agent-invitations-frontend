@@ -24,7 +24,7 @@ import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.Constraint
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
@@ -51,8 +51,7 @@ case class CancelAuthorisationForm(service: String, clientId: String, clientName
 @Singleton
 class AgentsRequestTrackingController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification,
+  val authActions: AuthActions,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,
@@ -64,7 +63,8 @@ class AgentsRequestTrackingController @Inject()(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+    extends FrontendController with I18nSupport {
+  import authActions._
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
     if (featureFlags.enableTrackRequests) {

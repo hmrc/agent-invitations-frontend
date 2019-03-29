@@ -47,11 +47,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
-  auditService: AuditService,
-  val env: Environment,
-  val authConnector: AuthConnector,
+  authActions: AuthActionsImpl,
   val continueUrlActions: ContinueUrlActions,
-  val withVerifiedPasscode: PasscodeVerification,
   override val journeyService: AgentInvitationFastTrackJourneyService)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -60,6 +57,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   ec: ExecutionContext)
     extends JourneyController {
 
+  import authActions._
   import AgentInvitationFastTrackJourneyController._
   import OptionalFormOps._
   import journeyService.model.States._

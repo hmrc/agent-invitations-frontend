@@ -47,11 +47,7 @@ class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
-  auditService: AuditService,
-  val env: Environment,
-  val authConnector: AuthConnector,
-  val continueUrlActions: ContinueUrlActions,
-  val withVerifiedPasscode: PasscodeVerification,
+  val authActions: AuthActions,
   override val journeyService: AgentInvitationJourneyService)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -64,6 +60,7 @@ class AgentInvitationJourneyController @Inject()(
   import OptionalFormOps._
   import journeyService.model.States._
   import journeyService.model.{State, Transitions}
+  import authActions._
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)

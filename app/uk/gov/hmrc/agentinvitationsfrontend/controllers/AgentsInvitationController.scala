@@ -50,18 +50,15 @@ class AgentsInvitationController @Inject()(
   relationshipsConnector: RelationshipsConnector,
   auditService: AuditService,
   agentSessionCache: AgentSessionCache,
-  val env: Environment,
-  authConnector: AuthConnector,
-  val continueUrlActions: ContinueUrlActions,
-  withVerifiedPasscode: PasscodeVerification)(
+  authActions: AuthActions,
+  val continueUrlActions: ContinueUrlActions)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
     extends BaseInvitationController(
-      withVerifiedPasscode,
-      authConnector,
+      authActions,
       invitationsService,
       invitationsConnector,
       relationshipsService,
@@ -71,6 +68,7 @@ class AgentsInvitationController @Inject()(
     ) {
 
   import AgentsInvitationController._
+  import authActions._
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
 

@@ -35,7 +35,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{BusinessSelectServicePageConfig, ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -43,8 +42,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseInvitationController(
-  override val withVerifiedPasscode: PasscodeVerification,
-  override val authConnector: AuthConnector,
+  authActions: AuthActions,
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
@@ -52,12 +50,13 @@ abstract class BaseInvitationController(
   relationshipsConnector: RelationshipsConnector,
   auditService: AuditService
 )(
-  implicit override val externalUrls: ExternalUrls,
+  implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
   featureFlags: FeatureFlags,
   messages: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+    extends FrontendController with I18nSupport {
+  import authActions._
 
   def enabledPersonalServices(isWhitelisted: Boolean): Set[String] =
     if (isWhitelisted)

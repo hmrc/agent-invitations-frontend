@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import play.api.{Configuration, Environment}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.I18nSupport
@@ -35,7 +35,6 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent
 
 @Singleton
 class ClientsMultiInvitationController @Inject()(
@@ -43,15 +42,14 @@ class ClientsMultiInvitationController @Inject()(
   invitationsConnector: InvitationsConnector,
   val messagesApi: play.api.i18n.MessagesApi,
   clientConsentsCache: ClientConsentsCache,
-  val authConnector: AuthConnector,
-  val withVerifiedPasscode: PasscodeVerification)(
+  val authActions: AuthActions)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls,
   ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
-
+    extends FrontendController with I18nSupport {
   import ClientsInvitationController.confirmDeclineForm
   import ClientsMultiInvitationController._
+  import authActions._
 
   object targets {
     val NotFoundInvitation = Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())

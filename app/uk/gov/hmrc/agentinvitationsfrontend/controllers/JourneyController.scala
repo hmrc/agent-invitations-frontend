@@ -39,9 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - authorisedWithForm
   *   - authorisedShowCurrentStateWhen
   */
-abstract class JourneyController(implicit ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
-
+abstract class JourneyController(implicit ec: ExecutionContext) extends FrontendController with I18nSupport {
   val journeyService: JourneyService
 
   import journeyService.StateAndBreadcrumbs
