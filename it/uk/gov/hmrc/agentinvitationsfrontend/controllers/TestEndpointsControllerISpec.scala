@@ -55,7 +55,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
           .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsErrorController.notMatched().url
+      redirectLocation(result).get shouldBe routes.AgentInvitationJourneyController.showNotMatched().url
     }
 
     "return a Bad Request and reload the page if invalid form data" in {
@@ -99,7 +99,7 @@ class TestEndpointsControllerISpec extends BaseISpec {
           .withFormUrlEncodedBody(relationshipForm: _*)))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsErrorController.notMatched().url
+      redirectLocation(result).get shouldBe routes.AgentInvitationJourneyController.showNotMatched().url
     }
 
     "return a Bad Request and reload the page if invalid form data" in {

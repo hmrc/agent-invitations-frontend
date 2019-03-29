@@ -1,11 +1,11 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import java.util.UUID
 
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -43,7 +43,7 @@ class AgentInvitationsControllerShowFlagsOffISpec extends BaseISpec {
         "features.enable-fast-track"                                          -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri" -> s"$mongoUri"
+        "mongodb.uri"                                                         -> s"$mongoUri"
       )
 
   lazy val fastTrackController: AgentsFastTrackInvitationController =

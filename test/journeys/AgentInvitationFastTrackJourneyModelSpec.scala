@@ -19,7 +19,7 @@ package journeys
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.States._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._

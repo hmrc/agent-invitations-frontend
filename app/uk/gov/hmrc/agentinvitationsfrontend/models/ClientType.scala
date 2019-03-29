@@ -38,4 +38,11 @@ object ClientType {
   implicit val formats: Format[ClientType] = new EnumFormats[ClientType] {
     override val deserialize: String => ClientType = toEnum
   }.formats
+
+  def clientTypeFor(clientType: Option[ClientType], service: String): Option[ClientType] =
+    clientType.orElse(service match {
+      case "HMRC-MTD-IT"            => Some(ClientType.personal)
+      case "PERSONAL-INCOME-RECORD" => Some(ClientType.personal)
+      case _                        => None
+    })
 }

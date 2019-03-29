@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 /*
  * Copyright 2017 HM Revenue & Customs
@@ -20,6 +20,7 @@ import java.util.UUID
 
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthBehaviours, retired}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -77,7 +78,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
           requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
       verifyAuthoriseAttempt()
     }
   }
@@ -129,13 +130,14 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
 
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.allAuthorisationsRemoved().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.allAuthorisationsRemoved().url)
     }
 
     "redirect to select clientType page is there is nothing in the cache" in {
+      sessionStore.delete
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
     }
   }
 
@@ -146,7 +148,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showSelectService().url)
     }
 
     "Redirect to complete if NO is selected and all invitation creation is successful" in {
@@ -185,7 +187,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitReviewAuthorisations()(
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showInvitationSent().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showInvitationSent().url)
     }
 
     "Redirect to all create authorisation failed error page if NO is selected and all invitation creations fail" in {
@@ -198,7 +200,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsErrorController.allCreateAuthorisationFailed.url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsErrorController.allCreateAuthorisationFailed.url)
     }
 
     "Redirect to some create authorisation failed if NO is selected and some invitation creations fail" in {
@@ -237,7 +239,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsErrorController.someCreateAuthorisationFailed.url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsErrorController.someCreateAuthorisationFailed.url)
     }
 
     "Redisplay the page with errors if no option is chosen" in {
@@ -285,7 +287,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitDelete(clientDetail1.itemId)(
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "true"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showReviewAuthorisations().url)
 
 
       await(sessionStore.fetch) shouldBe Some(
@@ -298,7 +300,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val result = controller.submitDelete(clientDetail1.itemId)(
         authorisedAsValidAgent(request,    arn.value).withFormUrlEncodedBody("accepted" -> "false"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showReviewAuthorisations().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showReviewAuthorisations().url)
 
       await(sessionStore.fetch) shouldBe Some(
         AgentSession( Some(personal),requests= Set(clientDetail1, clientDetail2, clientDetail3)))
@@ -317,10 +319,11 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     }
 
     "Redirect to client-type when there is nothing in the cache" in {
+      sessionStore.delete
       val result = controller.submitDelete("foo")(
         authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> ""))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
     }
 
     "Redisplay the page with errors when neither radio button is selected" in {

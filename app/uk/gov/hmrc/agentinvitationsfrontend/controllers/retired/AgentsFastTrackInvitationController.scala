@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import javax.inject.{Inject, Singleton}
-import play.api.data.Forms.{boolean, mapping, optional, single, text}
+import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.mvc.{Action, AnyContent, Request, Result}
@@ -25,8 +25,8 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
@@ -35,7 +35,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, KnownFactPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, known_fact}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -68,6 +68,8 @@ class AgentsFastTrackInvitationController @Inject()(
       auditService
     ) {
   import authActions._
+
+  import AgentsFastTrackInvitationController._
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 

@@ -5,7 +5,7 @@ import java.util.UUID
 import com.google.inject.AbstractModule
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -50,13 +50,12 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
         "features.show-agent-led-de-auth"                                     -> false,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri" -> s"$mongoUri"
+        "mongodb.uri"                                                         -> s"$mongoUri"
       )
       .overrides(new TestGuiceModule)
 
   private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
-    }
+    override def configure(): Unit = {}
   }
 
   lazy val controller: AgentLedDeAuthController = app.injector.instanceOf[AgentLedDeAuthController]
@@ -79,7 +78,8 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val request = FakeRequest("POST", "/agents/cancel-authorisation/client-type")
       val submitClientType = controller.submitClientType()
 
-      val result = submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
+      val result =
+        submitClientType(authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
       status(result) shouldBe 501
     }
   }
@@ -101,14 +101,15 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
       val submitSelectService = controller.submitSelectPersonalService()
 
-      val result = submitSelectService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+      val result = submitSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 501
     }
   }
 
   "GET /agents/cancel-authorisation/identify-client" should {
 
-    "return 401 when flag is off"  in {
+    "return 401 when flag is off" in {
       val request = FakeRequest("GET", "/agents/cancel-authorisation/identify-client")
       val showIdentifyClient = controller.showIdentifyClient()
 
@@ -120,21 +121,21 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST /agents/cancel-authorisation/identify-client" when {
 
     "return 401 when flag is off" in {
-        val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-itsa-client")
-        val submitIdentifyClient = controller.submitIdentifyClientItsa()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-itsa-client")
+      val submitIdentifyClient = controller.submitIdentifyClientItsa()
 
-        val requestWithForm =
-          request.withFormUrlEncodedBody(
-            "clientIdentifier" -> validNino.value,
-            "dob.year"   -> "1980",
-            "dob.month"  -> "07",
-            "dob.day"    -> "07"
-          )
+      val requestWithForm =
+        request.withFormUrlEncodedBody(
+          "clientIdentifier" -> validNino.value,
+          "dob.year"         -> "1980",
+          "dob.month"        -> "07",
+          "dob.day"          -> "07"
+        )
 
-        val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
+      val result = submitIdentifyClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 501
-      }
+      status(result) shouldBe 501
+    }
   }
 
   "GET  /agents/cancel-authorisation/confirm-client" should {
@@ -150,17 +151,17 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
 
   "POST  /agents/cancel-authorisation/confirm-client" when {
 
-      "return 401 when flag is off" in {
-        val request = FakeRequest("POST", "/agents/cancel-authorisation/confirm-client")
-        val submitConfirmClient = controller.submitConfirmClient()
+    "return 401 when flag is off" in {
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/confirm-client")
+      val submitConfirmClient = controller.submitConfirmClient()
 
-        val choice = agentConfirmationForm("error message").fill(Confirmation(true))
-        val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
+      val result = submitConfirmClient(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 501
-      }
+      status(result) shouldBe 501
+    }
   }
 
   "GET  /agents/cancel-authorisation/confirm-cancel" should {
@@ -177,16 +178,16 @@ class AgentLedDeAuthControllerFlagOffISpec extends BaseISpec with AuthBehaviours
   "POST  /agents/cancel-authorisation/confirm-cancel" when {
 
     "return 401 when flag is off" in {
-        val request = FakeRequest("POST", "/agents/cancel-authorisation/confirm-cancel")
-        val submitConfirmCancel = controller.submitConfirmCancel()
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/confirm-cancel")
+      val submitConfirmCancel = controller.submitConfirmCancel()
 
-        val choice = agentConfirmationForm("error message").fill(Confirmation(true))
-        val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
+      val choice = agentConfirmationForm("error message").fill(Confirmation(true))
+      val requestWithForm = request.withFormUrlEncodedBody(choice.data.toSeq: _*)
 
-        val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm, arn.value))
+      val result = submitConfirmCancel(authorisedAsValidAgent(requestWithForm, arn.value))
 
-        status(result) shouldBe 501
-      }
+      status(result) shouldBe 501
+    }
   }
 
   "GET  /agents/cancel-authorisation/cancelled" should {

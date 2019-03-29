@@ -1,21 +1,4 @@
-/*
- * Copyright 2019 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys
-
+package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 trait StateAndBreadcrumbsMatchers {
@@ -46,7 +29,7 @@ trait StateAndBreadcrumbsMatchers {
       }
     }
 
-  def havePattern[S](statePF: PartialFunction[S,Unit], breadcrumbs: List[S]): Matcher[Option[(S, List[S])]] =
+  def havePattern[S](statePF: PartialFunction[S, Unit], breadcrumbs: List[S]): Matcher[Option[(S, List[S])]] =
     new Matcher[Option[(S, List[S])]] {
       override def apply(result: Option[(S, List[S])]): MatchResult = result match {
         case Some((thisState, thisBreadcrumbs)) if statePF.isDefinedAt(thisState) && breadcrumbs == thisBreadcrumbs =>

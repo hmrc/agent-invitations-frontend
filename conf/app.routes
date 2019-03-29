@@ -3,33 +3,57 @@
 # Invitations ---------------------------------------------------------------------------------------------------------
 
 # Agent Endpoints
-GET         /agents                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.agentsRoot
-GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showClientType
-POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitClientType
-GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showSelectService
-POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitSelectPersonalService
-POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitSelectBusinessService
-GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showIdentifyClient
-POST        /agents/identify-itsa-client                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitIdentifyClientItsa
-POST        /agents/identify-irv-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitIdentifyClientIrv
-POST        /agents/identify-vat-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitIdentifyClientVat
-GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showConfirmClient
-POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitConfirmClient
-POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitReviewAuthorisations
-GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showReviewAuthorisations
-GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showInvitationSent
-GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.showDelete(itemId: String)
-POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.submitDelete(itemId: String)
+GET         /agents                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.agentsRoot
+GET         /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientType
+POST        /agents/client-type                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitClientType
+GET         /agents/select-service                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSelectService
+POST        /agents/select-personal-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectService
+POST        /agents/select-business-service                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
+GET         /agents/identify-client                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
+POST        /agents/identify-itsa-client                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyItsaClient
+POST        /agents/identify-vat-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyVatClient
+POST        /agents/identify-irv-client                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyIrvClient
+GET         /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showConfirmClient
+POST        /agents/confirm-client                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitConfirmClient
+GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showReviewAuthorisations
+POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitReviewAuthorisations
+GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showInvitationSent
+GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
+POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitDeleteAuthorisation
 
-# Fast Track Journey
-POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrack
-GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showKnownFact
-POST        /agents/more-details-itsa                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactItsa
-POST        /agents/more-details-irv                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactIrv
-POST        /agents/more-details-vat                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitKnownFactVat
-GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.showCheckDetails
-POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.submitCheckDetails
-GET         /agents/invitation-sent-continue                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.continueAfterInvitationSent
+#Error Agent Endpoints
+GET         /agents/not-signed-up                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientNotSignedUp
+GET         /agents/not-matched                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showNotMatched
+GET         /agents/all-authorisations-removed                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsRemoved
+GET         /agents/already-authorisation-pending               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showPendingAuthorisationExists
+GET         /agents/already-authorisation-present               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showActiveAuthorisationExists
+GET         /agents/all-create-authorisation-failed             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsFailed
+GET         /agents/some-create-authorisation-failed            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSomeAuthorisationsFailed
+
+#Fast Track Endpoints
+POST        /agents/fast-track                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
+GET         /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showCheckDetails
+POST        /agents/check-details                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitCheckDetails
+GET         /agents/client-details                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showIdentifyClient
+POST        /agents/client-details-itsa                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient
+POST        /agents/client-details-irv                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient
+POST        /agents/client-details-vat                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient
+POST        /agents/to-known-fact                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToKnownFact
+POST        /agents/to-client-type                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToClientType
+POST        /agents/to-identify-client                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToIdentifyClient
+GET         /agents/more-details                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showKnownFact
+POST        /agents/more-details-itsa                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitKnownFactItsa
+POST        /agents/more-details-irv                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitKnownFactIrv
+POST        /agents/more-details-vat                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitKnownFactVat
+GET         /agents/select-client-type                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientType
+POST        /agents/select-client-type                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientType
+GET         /agents/sent-invitation                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showInvitationSent
+
+#Error Fast Track Endpoints
+GET         /agents/client-not-signed-up                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientNotSignedUp
+GET         /agents/no-match                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showNotMatched
+GET         /agents/authorisation-already-requested             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
+GET         /agents/already-authorised                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
 
 # Agent Endpoints - Agent led de-auth routes
 GET         /agents/cancel-authorisation                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.agentLedDeAuthRoot
@@ -49,18 +73,14 @@ POST        /agents/cancel-authorisation/confirm-cancel         @uk.gov.hmrc.age
 GET         /agents/cancel-authorisation/cancelled              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showCancelled
 GET         /agents/cancel-authorisation/no-client-found        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.noClientFound
 GET         /agents/cancel-authorisation/response-failed        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.responseFailed
-GET         /agents/not-authorised                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notAuthorised
+GET         /agents/not-authorised                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.notAuthorised
+GET         /agents/cancel-authorisation/review-authorisations        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showReviewAuthorisations
+POST        /agents/cancel-authorisation/review-authorisations        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitReviewAuthorisations
+GET         /agents/cancel-authorisation/all-authorisations-removed       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.allAuthorisationsRemoved
+GET         /agents/cancel-authorisation/all-authorisations-failed       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.allCreateAuthorisationFailed
+GET         /agents/cancel-authorisation/some-authorisations-failed       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.someCreateAuthorisationFailed
+GET         /agents/cancel-authorisation/invitation-sent       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showInvitationSent
 
-# Error Agent Endpoints
-GET         /agents/not-signed-up                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.notSignedUp
-GET         /agents/not-matched                                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notMatched
-GET         /agents/all-authorisations-removed                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.allAuthorisationsRemoved
-GET         /agents/already-authorisation-pending                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsInvitationController.pendingAuthorisationExists
-GET         /agents/already-authorisation-present                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.activeRelationshipExists
-GET         /agents/all-create-authorisation-failed                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.allCreateAuthorisationFailed
-GET         /agents/some-create-authorisation-failed                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.someCreateAuthorisationFailed
-GET         /agents/not-authorised                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.notAuthorised
-GET         /agents/cannot-create-request                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsErrorController.cannotCreateRequest
 
 # Request tracking
 GET         /track                                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests

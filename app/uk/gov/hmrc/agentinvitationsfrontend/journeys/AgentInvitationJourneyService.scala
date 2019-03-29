@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.agentinvitationsfrontend.repository.{SessionCache, SessionCacheRepository}
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.fsm.PersistentJourneyService
 
 import scala.concurrent.{ExecutionContext, Future}
 

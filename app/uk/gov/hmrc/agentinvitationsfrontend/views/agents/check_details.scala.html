@@ -15,7 +15,7 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.journeys.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
@@ -121,18 +121,25 @@
 
     @if(config.needClientType) {
 
-        <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsCall">@Messages("check-details.change.link")</a></div>
-
+        @form(config.changeDetailsCall) {
+            <button id="continueMoreInfo" type="submit">@Messages("check-details.change.link")</button>
+        }
         <p>@Messages("check-details.change.p1")</p>
 
-        <a href="@config.clientTypeUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+      @form(config.clientTypeUrl) {
+          <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
+      }
     }else {
         @if(config.needKnownFact) {
-            <div class="margin-top-40 margin-bottom-40"><a href="@config.changeDetailsCall">@Messages("check-details.change.link")</a></div>
-
+            @form(config.changeDetailsCall) {
+                <button id="continueMoreInfo" type="submit">@Messages("check-details.change.link")</button>
+            }
             <p>@Messages("check-details.change.p1")</p>
 
-            <a href="@config.knownFactUrl" class="button" id="continueMoreInfo" role="button">@Messages("continue.button")</a>
+          @form(config.knownFactUrl){
+            <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
+            }
+
         } else {
 
             @form(

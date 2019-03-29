@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 /*
  * Copyright 2017 HM Revenue & Customs
@@ -21,6 +21,7 @@ import java.util.UUID
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthBehaviours, FeatureFlags, retired}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -40,7 +41,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       val result = controller.agentsRoot(FakeRequest())
       status(result) shouldBe 303
       val timeout = 2.seconds
-      redirectLocation(result)(timeout).get shouldBe routes.AgentsInvitationController.showClientType().url
+      redirectLocation(result)(timeout).get shouldBe retired.routes.AgentsInvitationController.showClientType().url
     }
   }
 
@@ -71,7 +72,13 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment when coming from fast track" in {
       val invitation =
-        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"), fromFastTrack = true)
+        AgentSession(
+          Some(personal),
+          Some(serviceITSA),
+          Some("ni"),
+          Some(validNino.value),
+          Some("AB101AB"),
+          fromFastTrack = true)
       await(sessionStore.save(invitation))
       val result = selectClientType(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -122,7 +129,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for personal" in {
       val invitation =
-        AgentSession( Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
+        AgentSession(Some(personal), Some(serviceITSA), Some("ni"), Some(validNino.value), Some("AB101AB"))
       await(sessionStore.save(invitation))
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -137,14 +144,15 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
       )
-      checkResultContainsBackLink(result, "/invitations/agents/client-type")
+      checkResultContainsBackLink(result, "/invitations2/agents/client-type")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
 
     "return 200 for an Agent with HMRC-AS-AGENT enrolment for business" in {
-      val invitation = AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validNino.value), Some("1234567"))
+      val invitation =
+        AgentSession(Some(business), Some(serviceVAT), Some("vrn"), Some(validNino.value), Some("1234567"))
       await(sessionStore.save(invitation))
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -162,13 +170,13 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       await(sessionStore.save(invitation))
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
     }
 
     "redirect to select client type page when there is nothing in the cache" in {
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showClientType().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
     }
 
     behave like anAuthorisedAgentEndpoint(request, selectService)
@@ -180,10 +188,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
 
     "show errors on the page if the form contains invalid service selection" in {
       await(sessionStore.save(AgentSession(Some(personal))))
-      val result = submitService(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("serviceType" -> ""),
-          arn.value))
+      val result = submitService(authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> ""), arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -206,26 +211,24 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     behave like anAuthorisedAgentEndpoint(request, showIdentifyClientForm)
 
     "return 303 redirect to /agents/select-service for an Agent with HMRC-AS-AGENT enrolment when service is not available" in {
-      await(sessionStore.save(
-        AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
+      await(sessionStore.save(AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showSelectService().url)
     }
 
     "return 303 redirect to /agents/client-type for an Agent with HMRC-AS-AGENT enrolment when service is not supported" in {
-      await(sessionStore.save(
-        AgentSession(None, None)))
+      await(sessionStore.save(AgentSession(None, None)))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showSelectService().url)
     }
 
     "throw exception when there is no content in the cache" in {
       await(sessionStore.save(AgentSession()))
       val result = showIdentifyClientForm(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showSelectService().url)
     }
   }
 
@@ -255,8 +258,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     val featureFlags = FeatureFlags()
 
     "return 5xx for Unsupported service" in {
-      await(sessionStore.save(
-        AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
+      await(sessionStore.save(AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
       val unsupportedForm =
         VatClientForm.form(featureFlags.showKfcMtdVat).fill(VatClient("123456789", None))
 
@@ -268,6 +270,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     }
 
     "return 5xx when there is nothing in the cache" in {
+      sessionStore.delete()
       intercept[Exception] {
         await(notEnrolled(authorisedAsValidAgent(request, arn.value)))
       }.getMessage shouldBe "Cached session state expected but not found"
@@ -280,6 +283,6 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "return 303, redirect to select-service when no keystore cache is found" in {
       val result = await(action(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsInvitationController.showSelectService().url)
+      redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showSelectService().url)
     }
 }

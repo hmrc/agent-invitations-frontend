@@ -18,7 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.States._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
+import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[State] {
 
@@ -29,6 +30,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val CheckDetailsCompletePersonalVatFormat = Json.format[CheckDetailsCompletePersonalVat]
   val CheckDetailsCompleteBusinessVatFormat = Json.format[CheckDetailsCompleteBusinessVat]
   val CheckDetailsNoPostcodeFormat = Json.format[CheckDetailsNoPostcode]
+  val CheckDetailsNoDobFormat = Json.format[CheckDetailsNoDob]
+  val CheckDetailsNoVatRegDateFormat = Json.format[CheckDetailsNoVatRegDate]
   val CheckDetailsNoClientTypeVatFormat = Json.format[CheckDetailsNoClientTypeVat]
   val NoPostcodeFormat = Json.format[NoPostcode]
   val NoDobFormat = Json.format[NoDob]
@@ -52,6 +55,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: CheckDetailsCompletePersonalVat => CheckDetailsCompletePersonalVatFormat.writes(s)
     case s: CheckDetailsCompleteBusinessVat => CheckDetailsCompleteBusinessVatFormat.writes(s)
     case s: CheckDetailsNoPostcode          => CheckDetailsNoPostcodeFormat.writes(s)
+    case s: CheckDetailsNoDob               => CheckDetailsNoDobFormat.writes(s)
+    case s: CheckDetailsNoVatRegDate        => CheckDetailsNoVatRegDateFormat.writes(s)
     case s: CheckDetailsNoClientTypeVat     => CheckDetailsNoClientTypeVatFormat.writes(s)
     case s: NoPostcode                      => NoPostcodeFormat.writes(s)
     case s: NoDob                           => NoDobFormat.writes(s)
@@ -74,6 +79,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "CheckDetailsCompletePersonalVat" => CheckDetailsCompletePersonalVatFormat.reads(properties)
     case "CheckDetailsCompleteBusinessVat" => CheckDetailsCompleteBusinessVatFormat.reads(properties)
     case "CheckDetailsNoPostcode"          => CheckDetailsNoPostcodeFormat.reads(properties)
+    case "CheckDetailsNoDob"               => CheckDetailsNoDobFormat.reads(properties)
+    case "CheckDetailsNoVatRegDate"        => CheckDetailsNoVatRegDateFormat.reads(properties)
     case "CheckDetailsNoClientTypeVat"     => CheckDetailsNoClientTypeVatFormat.reads(properties)
     case "NoPostcode"                      => NoPostcodeFormat.reads(properties)
     case "NoDob"                           => NoDobFormat.reads(properties)

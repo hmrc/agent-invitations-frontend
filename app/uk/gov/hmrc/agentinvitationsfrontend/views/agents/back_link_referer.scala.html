@@ -20,6 +20,6 @@
 @(request: Request[_])(implicit messages: Messages)
 
 
-@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentsInvitationController.agentsRoot()}")}"}
+@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 <a id="identifiersBackLink" href="@backLink" class="link-back">@Messages("button.back")</a>

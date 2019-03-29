@@ -1,10 +1,12 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+
 import java.util.UUID
 
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController.agentFastTrackForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsFastTrackInvitationController.agentFastTrackForm
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
@@ -52,7 +54,7 @@ class FastTrackIRVISpec extends BaseISpec {
           authorisedAsValidAgent(request.withFormUrlEncodedBody(clientTypeForm.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
   }
 
@@ -72,7 +74,7 @@ class FastTrackIRVISpec extends BaseISpec {
           .withFormUrlEncodedBody(fastTrackFormData.data.toSeq: _*))
 
       status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe routes.AgentsFastTrackInvitationController.showCheckDetails().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsFastTrackInvitationController.showCheckDetails().url
     }
 
     "return 303 and redirect to error url if service calling fast-track for PIR contains invalid nino" in {
@@ -183,7 +185,7 @@ class FastTrackIRVISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redirect to identify-client when NO is selected for IRV service" in {
@@ -203,7 +205,7 @@ class FastTrackIRVISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/identify-client")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/identify-client")
     }
 
     "redirect to already-authorisation-pending when YES is selected for IRV service and there is already a pending invitation" in {
@@ -216,7 +218,7 @@ class FastTrackIRVISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-pending")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-pending")
     }
 
     "redirect to already-authorisation-present when YES is selected for IRV service and there is already a relationship" in {
@@ -229,7 +231,7 @@ class FastTrackIRVISpec extends BaseISpec {
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "return 303 invitation-sent if nino that does not return citizen-details record" in {
@@ -255,7 +257,7 @@ class FastTrackIRVISpec extends BaseISpec {
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
   }
 
@@ -299,7 +301,7 @@ class FastTrackIRVISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(fastTrackController.submitKnownFactIrv(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/invitation-sent")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }
 
     "redirect to already-authorisation-present when a relationship already exists between agent and client" in {
@@ -323,7 +325,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       val result = await(fastTrackController.submitKnownFactIrv(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "redirect to already-authorisation-pending when a relationship already exists between agent and client when there is no end date" in {
@@ -347,7 +349,7 @@ class FastTrackIRVISpec extends BaseISpec {
 
       val result = await(fastTrackController.submitKnownFactIrv(authorisedAsValidAgent(requestWithForm, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations/agents/already-authorisation-present")
+      redirectLocation(result) shouldBe Some("/invitations2/agents/already-authorisation-present")
     }
 
     "redisplay the page with errors when known fact is not valid for IRV" in {

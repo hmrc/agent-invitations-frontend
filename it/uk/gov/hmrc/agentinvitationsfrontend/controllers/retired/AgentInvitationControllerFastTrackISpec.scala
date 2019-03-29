@@ -1,11 +1,12 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import java.util.UUID
 
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsFastTrackInvitationController._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsFastTrackInvitationController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -86,10 +87,11 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
       }
     }
 
-    "Redirect to select service when there is None in the cache" in {
+    "Redirect to client type when there is None in the cache" in {
+      sessionStore.delete
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsInvitationController.showClientType().url
     }
   }
 
@@ -116,9 +118,10 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val request = FakeRequest()
 
     "redirect to client-type if there is no invitation in the cache" in {
+      sessionStore.delete
       val result = await(fastTrackController.showKnownFact(authorisedAsValidAgent(request, arn.value)))
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.AgentsInvitationController.showClientType().url
+      redirectLocation(result).get shouldBe retired.routes.AgentsInvitationController.showClientType().url
     }
   }
 

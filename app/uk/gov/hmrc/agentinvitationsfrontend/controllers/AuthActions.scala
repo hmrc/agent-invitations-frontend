@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.net.{URI, URL}
-
 import com.google.inject.ImplementedBy
-import javax.inject.Inject
-import javax.inject.Singleton
-import play.api.{Configuration, Environment, Logger, Mode}
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps

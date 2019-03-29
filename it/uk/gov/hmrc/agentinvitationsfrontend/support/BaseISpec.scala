@@ -82,7 +82,7 @@ abstract class BaseISpec
         "features.show-agent-led-de-auth"                                     -> true,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri"                                                         -> s"$mongoUri"
+        "mongodb.uri"                                                         -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
       )
       .overrides(new TestGuiceModule)
 
