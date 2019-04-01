@@ -30,7 +30,7 @@ trait SessionCache[T] extends MongoSessionStore[T] {
       case Right(cache) => cache
       case Left(error) =>
         Logger.warn(error)
-        Future.failed(new RuntimeException(error))
+        Future.failed(new RuntimeException(s"${hc.sessionId} had an error: " +  error))
     }
 
   def fetchAndClear(implicit hc: HeaderCarrier, reads: Reads[T], ec: ExecutionContext): Future[Option[T]] = {
@@ -43,7 +43,7 @@ trait SessionCache[T] extends MongoSessionStore[T] {
       case Right(cache) => cache
       case Left(error) =>
         Logger.warn(error)
-        Future.failed(new RuntimeException(error))
+        Future.failed(new RuntimeException(s"${hc.sessionId} had an error: " +  error))
     }
   }
 
@@ -52,13 +52,13 @@ trait SessionCache[T] extends MongoSessionStore[T] {
       case Right(_) => input
       case Left(error) =>
         Logger.warn(error)
-        Future.failed(new RuntimeException(error))
+        Future.failed(new RuntimeException(s"${hc.sessionId} had an error: " +  error))
     }
 
   def hardGet(implicit hc: HeaderCarrier, reads: Reads[T], ec: ExecutionContext): Future[T] =
     fetch.map {
       case Some(entry) => entry
       case None =>
-        throw new IllegalStateException("Cached session state expected but not found")
+        throw new IllegalStateException(s"${hc.sessionId} had an error: " +  "Cached session state expected but not found")
     }
 }
