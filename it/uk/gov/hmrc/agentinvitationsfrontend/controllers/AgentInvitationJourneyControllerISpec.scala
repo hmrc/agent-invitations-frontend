@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
 import play.api.Application
+import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -105,8 +106,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result =
         controller.submitClientType()(authorisedAsValidAgent(request, arn.value))
 
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "This field is required")
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      flash(result) shouldBe Flash(Map())
 
       journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
 
