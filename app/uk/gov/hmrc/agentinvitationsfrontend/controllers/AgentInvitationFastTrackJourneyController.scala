@@ -81,7 +81,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val agentFastTrack =
     action { implicit request =>
       authorisedWithBootstrapAndForm(Transitions.prologue(continueUrlActions.getErrorUrl.map(_.url)))(AsAgent)(
-        agentFastTrackForm)(Transitions.start(featureFlags)(continueUrlActions.getErrorUrl.map(_.url)))
+        agentFastTrackForm)(Transitions.start(featureFlags)(continueUrlActions.getContinueUrl.map(_.url)))
     }
 
   val showCheckDetails = showCurrentStateWhenAuthorised(AsAgent) {
@@ -345,7 +345,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         invitation_sent(
           InvitationSentPageConfig(
             invitationLink,
-            None,
+            continueUrl,
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
@@ -356,7 +356,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         invitation_sent(
           InvitationSentPageConfig(
             invitationLink,
-            None,
+            continueUrl,
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
