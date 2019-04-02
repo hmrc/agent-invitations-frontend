@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, pending_form, cancel_authorisation_form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.TrackPageConfig
 @(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
@@ -82,7 +82,7 @@
         <p class="text">@Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)</p>
         <p>@Messages(s"recent-invitations.empty")</p>
         <p>
-            <a href="@routes.AgentsInvitationController.showSelectService()">@Messages(s"recent-invitations.empty.continue")</a>
+            <a href="@routes.AgentInvitationJourneyController.showSelectService()">@Messages(s"recent-invitations.empty.continue")</a>
         </p>
     }
 }

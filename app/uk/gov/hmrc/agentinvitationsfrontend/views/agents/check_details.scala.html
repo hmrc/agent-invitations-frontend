@@ -62,7 +62,7 @@
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
+    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-30">
         <div>
             @if(config.fastTrackRequest.clientType.nonEmpty){
             <dt class="cya-question">
@@ -122,9 +122,9 @@
     @if(config.needClientType) {
 
         @form(config.changeDetailsCall) {
-            <button id="continueMoreInfo" type="submit">@Messages("check-details.change.link")</button>
+            <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
         }
-        <p>@Messages("check-details.change.p1")</p>
+        <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
       @form(config.clientTypeUrl) {
           <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
@@ -132,9 +132,9 @@
     }else {
         @if(config.needKnownFact) {
             @form(config.changeDetailsCall) {
-                <button id="continueMoreInfo" type="submit">@Messages("check-details.change.link")</button>
+                <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
             }
-            <p>@Messages("check-details.change.p1")</p>
+            <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
           @form(config.knownFactUrl){
             <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
