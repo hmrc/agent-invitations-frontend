@@ -20,36 +20,14 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentReferenceRecord
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-sealed trait ConfirmDeclinePageConfig {
-  def agencyName: String
-  def backUrl: Call
-  def submitUrl: Call
-  def serviceKeys: Seq[String]
-  def isSingle: Boolean
-}
+case class ConfirmDeclinePageConfig(agencyName: String, clientType: String, uid: String, serviceKeys: Seq[String]) {
 
-case class MultiConfirmDeclinePageConfig(agencyName: String, clientType: String, uid: String, serviceKeys: Seq[String])
-    extends ConfirmDeclinePageConfig {
-
-  override val backUrl: Call =
+  val backUrl: Call =
     routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
 
-  override val submitUrl: Call =
+  val submitUrl: Call =
     routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)
 
-  override val isSingle: Boolean = false
-
-}
-
-case class SingleConfirmDeclinePageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String)
-    extends ConfirmDeclinePageConfig {
-
-  override def serviceKeys: Seq[String] = Seq(serviceKey)
-
-  override val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
-
-  override val submitUrl: Call = routes.ClientsInvitationController.submitConfirmDecline(invitationId)
-
-  override val isSingle: Boolean = true
+  val isSingle: Boolean = false
 
 }

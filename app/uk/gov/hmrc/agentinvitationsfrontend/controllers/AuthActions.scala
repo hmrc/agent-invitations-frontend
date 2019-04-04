@@ -80,15 +80,15 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     }.recover {
       case _: InsufficientEnrolments =>
         serviceName match {
-          case Services.HMRCNI => Redirect(routes.ClientsInvitationController.notAuthorised())
+          case Services.HMRCNI => Redirect(routes.ClientErrorController.notAuthorised())
           case _ =>
-            Redirect(routes.ClientsInvitationController.notSignedUp())
+            Redirect(routes.ClientErrorController.notSignedUp())
               .addingToSession("clientService" -> serviceName)
         }
       case _: InsufficientConfidenceLevel =>
-        Redirect(routes.ClientsInvitationController.notFoundInvitation())
+        Redirect(routes.ClientErrorController.notFoundInvitation())
       case _: UnsupportedAffinityGroup =>
-        Redirect(routes.ClientsInvitationController.notAuthorised())
+        Redirect(routes.ClientErrorController.notAuthorised())
 
     }
 
@@ -113,15 +113,15 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
                 body(affinityG, clientIdTypePlusIds)
               }
             case (AffinityGroup.Organisation, _) => body(affinityG, clientIdTypePlusIds)
-            case _                               => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+            case _                               => Future successful Redirect(routes.ClientErrorController.notAuthorised())
           }
-        case _ => Future successful Redirect(routes.ClientsInvitationController.notAuthorised())
+        case _ => Future successful Redirect(routes.ClientErrorController.notAuthorised())
       }
       .recover {
         case _: InsufficientEnrolments =>
-          Redirect(routes.ClientsInvitationController.notAuthorised())
+          Redirect(routes.ClientErrorController.notAuthorised())
         case _: UnsupportedAffinityGroup =>
-          Redirect(routes.ClientsInvitationController.notAuthorised())
+          Redirect(routes.ClientErrorController.notAuthorised())
       }
 
   def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
@@ -172,13 +172,13 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     } else if (request.method == "GET") {
       redirectToIdentityVerification(requiredLevel)
     } else {
-      Future.successful(Redirect(routes.ClientsInvitationController.notAuthorised().url))
+      Future.successful(Redirect(routes.ClientErrorController.notAuthorised().url))
     }
 
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val failureUrl = toLocalFriendlyUrl(routes.ClientsInvitationController.notAuthorised().url, request.host)
+    val failureUrl = toLocalFriendlyUrl(routes.ClientErrorController.notAuthorised().url, request.host)
 
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,

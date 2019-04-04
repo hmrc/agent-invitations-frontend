@@ -20,13 +20,8 @@ import org.joda.time.LocalDate
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
-case class MultiConfirmTermsPageConfig(
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  consentSeq: Seq[ClientConsent]) {
+case class ConfirmTermsPageConfig(agencyName: String, clientType: String, uid: String, consentSeq: Seq[ClientConsent]) {
 
   val backUrl: Call =
     routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
@@ -51,12 +46,4 @@ case class MultiConfirmTermsPageConfig(
 
   def isPending(consent: ClientConsent): Boolean =
     if (consent.expiryDate.isBefore(LocalDate.now())) false else true
-}
-
-case class SingleConfirmTermsPageConfig(agencyName: String, invitationId: InvitationId, serviceKey: String) {
-
-  val backUrl: Call = routes.ClientsInvitationController.start(invitationId)
-
-  val submitUrl: Call = routes.ClientsInvitationController.submitConfirmTerms(invitationId)
-
 }

@@ -156,7 +156,7 @@ class AuthActionsISpec extends BaseISpec {
       )
       val result = TestController.testWithAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientErrorController.notSignedUp().url
     }
 
     "throw InsufficientEnrolments and redirect to not-authorised page when client not enrolled for service for PIR" in {
@@ -174,7 +174,7 @@ class AuthActionsISpec extends BaseISpec {
       )
       val result = TestController.testWithAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+      redirectLocation(result).get shouldBe routes.ClientErrorController.notAuthorised().url
     }
 
     "throw InsufficientEnrolments and redirect to not-sign-up page when expected client's identifier missing" in {
@@ -192,7 +192,7 @@ class AuthActionsISpec extends BaseISpec {
       )
       val result = TestController.testWithAuthorisedAsClient("HMRC-MTD-IT", "MTDITID")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientErrorController.notSignedUp().url
     }
 
     "throw InsufficientEnrolments and redirect to not-authorised page when expected client's identifier missing for PIR" in {
@@ -210,7 +210,7 @@ class AuthActionsISpec extends BaseISpec {
       )
       val result = TestController.testWithAuthorisedAsClient("HMRC-NI", "NINO")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notAuthorised().url
+      redirectLocation(result).get shouldBe routes.ClientErrorController.notAuthorised().url
     }
 
     "throw InsufficientConfidenceLevel and redirect to identity-verification when confidence level is less than 200" in {
@@ -234,8 +234,8 @@ class AuthActionsISpec extends BaseISpec {
       val expectedRedirectUrl = CallOps.addParamsToUrl(
         url = "/mdtp/uplift?origin=aif",
         "confidenceLevel" -> Some("200"),
-        "completionURL" -> Some(TestController.request.path),
-        "failureURL" -> Some("/invitations/not-authorised/")
+        "completionURL"   -> Some(TestController.request.path),
+        "failureURL"      -> Some("/invitations/not-authorised/")
       )
       redirectLocation(result).get shouldBe expectedRedirectUrl
     }
@@ -255,15 +255,16 @@ class AuthActionsISpec extends BaseISpec {
       )
       val result = TestController.testWithAuthorisedAsClient("HMRC-MTD-VAT", "VRN")
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.ClientsInvitationController.notSignedUp().url
+      redirectLocation(result).get shouldBe routes.ClientErrorController.notSignedUp().url
     }
   }
 
   "withEnrolledAsClient" should {
-    class IndividualSetup(val confidenceLevel: Int,
-                          val serviceName: String = "HMRC-MTD-IT",
-                          val identifierKey: String = "MTDITID",
-                          val identifierValue: String = "fooMtdItId") {
+    class IndividualSetup(
+      val confidenceLevel: Int,
+      val serviceName: String = "HMRC-MTD-IT",
+      val identifierKey: String = "MTDITID",
+      val identifierValue: String = "fooMtdItId") {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -301,8 +302,8 @@ class AuthActionsISpec extends BaseISpec {
         val expectedRedirectUrl = CallOps.addParamsToUrl(
           url = "/mdtp/uplift?origin=aif",
           "confidenceLevel" -> Some("200"),
-          "completionURL" -> Some(TestController.request.path),
-          "failureURL" -> Some(routes.ClientsInvitationController.notAuthorised().url)
+          "completionURL"   -> Some(TestController.request.path),
+          "failureURL"      -> Some(routes.ClientErrorController.notAuthorised().url)
         )
 
         redirectLocation(result).get shouldBe expectedRedirectUrl
@@ -315,7 +316,7 @@ class AuthActionsISpec extends BaseISpec {
         }(request, TestController.hc, scala.concurrent.ExecutionContext.Implicits.global))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notAuthorised().url)
+        redirectLocation(result) shouldBe Some(routes.ClientErrorController.notAuthorised().url)
       }
     }
   }
