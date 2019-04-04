@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{NotFoundInvitation, WarmUp}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{Consent, ConsentPersonal, NotFoundInvitation, WarmUp}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -34,13 +34,16 @@ object ClientInvitationJourneyModel extends JourneyModel {
   object State {
     case class Start() extends State
     case class WarmUp(clientType: ClientType, uid: String, agentName: String) extends State
-    case class NotFoundInvitation() extends State
+    case object NotFoundInvitation extends State
+    case class Consent(clientType: ClientType, agentName: String, uid: String, consents: Seq[ClientConsent])
+        extends State
   }
 
   object Transitions {
 
     type GetAgentReferenceRecord = String => Future[Option[AgentReferenceRecord]]
     type GetAgencyName = Arn => Future[String]
+    type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
 
     def start(clientType: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName)(client: AuthorisedClient) =
@@ -53,10 +56,33 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          getAgencyName(r.arn).flatMap { name =>
                            goto(WarmUp(ClientType.toEnum(clientType), uid, name))
                          }
-                       case None => goto(NotFoundInvitation())
+                       case None => goto(NotFoundInvitation)
                      }
           } yield result
       }
+
+    private def getConsents(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
+      agencyName: String,
+      uid: String): Future[Seq[ClientConsent]] =
+      for {
+        invitations <- getPendingInvitationIdsAndExpiryDates(uid, Pending)
+        consents = invitations.map(
+          invitation =>
+            ClientConsent(
+              invitation.invitationId,
+              invitation.expiryDate,
+              Services.determineServiceMessageKey(invitation.invitationId),
+              consent = false))
+      } yield consents
+
+    def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
+      client: AuthorisedClient) = Transition {
+      case WarmUp(clientType, uid, agentName) =>
+        getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
+          case consents if consents.nonEmpty => goto(Consent(clientType, agentName, uid, consents))
+          case _                             => goto(NotFoundInvitation)
+        }
+    }
   }
 
 }

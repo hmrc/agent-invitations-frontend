@@ -119,6 +119,7 @@ GET         /:clientType/:uid/:agentName                                        
 
 #Journey Client endpoints
 GET          /warm-up/:clientType/:uid/:agentName                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
+GET          /warm-up/not-found                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 #GET         /accept-tax-agent-invitation/consent/:clientType/:uid                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmTerms(clientType: String, uid: String)
 #POST        /accept-tax-agent-invitation/consent/:clientType/:uid                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType: String, uid: String)
 #GET         /accept-tax-agent-invitation/consent/:clientType/:uid/:givenServiceKey                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String)
