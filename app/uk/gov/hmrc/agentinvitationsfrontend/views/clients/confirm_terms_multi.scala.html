@@ -18,12 +18,12 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.custom_check_box
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
-@(confirmTermsForm: Form[ConfirmedTerms], pageConfig: MultiConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
+@(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @displayDate(date: LocalDate) = @{
     if(date.getDayOfMonth < 10) date.toString("d MMMM yyyy", messages.lang.locale)

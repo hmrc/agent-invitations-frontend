@@ -22,7 +22,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.confirmDeclineForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.confirmDeclineForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState, ClientType, ConfirmedTerms}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -84,7 +84,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.warmUp("personal", uid, normalisedAgentName)(FakeRequest())
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "redirect to not found if the normalised agent name does not match database version" in {
@@ -92,7 +92,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.warmUp("personal", uid, "other-agent-name")(FakeRequest())
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "throw an AgencyNameNotFound exception if agencyName is not found" in {
@@ -176,7 +176,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
 
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "redirect to notFound if an exception is thrown by an external service" in {
@@ -185,7 +185,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "redirect to wrong-account-type if signed-in as business for personal invitation" in {
@@ -391,7 +391,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiConfirmDecline("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "throw an AgencyNameNotFound exception if agencyName is not found" in {
@@ -833,7 +833,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       val result = controller.getMultiInvitationsDeclined(uid)(authorisedAsAnyIndividualClient(FakeRequest()))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientsInvitationController.notFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notFoundInvitation().url)
     }
 
     "redirect to wrong-account-type if signed-in as business for personal invitation" in {

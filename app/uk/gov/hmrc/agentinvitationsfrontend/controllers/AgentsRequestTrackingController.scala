@@ -20,13 +20,12 @@ import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
-import play.api.data.validation.Constraint
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsInvitationController.radioChoice
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
@@ -45,6 +44,8 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 case class CancelRequestForm(invitationId: String, service: String, clientName: String)
 
 case class CancelAuthorisationForm(service: String, clientId: String, clientName: String)
+
+case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
 class AgentsRequestTrackingController @Inject()(
@@ -282,6 +283,13 @@ class AgentsRequestTrackingController @Inject()(
         "clientId"   -> normalizedText.verifying(validateClientId),
         "clientName" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
+  }
+
+  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError(invalidError))
   }
 
 }

@@ -62,17 +62,7 @@ Note: Client Type and Known Fact are optional. If either of those are missing yo
 
 ### For Clients
 
-Start Page for Clients (Old):
-
-Note: This entry point will not be used until TBC
-
-
-    GET     /invitations/{invitationId}
-    
-    
-Start Page for Clients (New):
-
-Note: Replaces old entry point. Currently In-progress.
+Start Page for Clients:
 
 ```
     GET     /invitations/{clientType}/{uid}/{agentName}

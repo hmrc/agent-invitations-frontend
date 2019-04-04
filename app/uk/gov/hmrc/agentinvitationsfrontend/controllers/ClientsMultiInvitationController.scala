@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -47,12 +48,11 @@ class ClientsMultiInvitationController @Inject()(
   val externalUrls: ExternalUrls,
   ec: ExecutionContext)
     extends FrontendController with I18nSupport {
-  import ClientsInvitationController.confirmDeclineForm
   import ClientsMultiInvitationController._
   import authActions._
 
   object targets {
-    val NotFoundInvitation = Future successful Redirect(routes.ClientsInvitationController.notFoundInvitation())
+    val NotFoundInvitation = Future successful Redirect(routes.ClientErrorController.notFoundInvitation())
     val InvalidJourneyState = Future.failed(new BadRequestException("Invalid journey state."))
   }
 
@@ -90,7 +90,7 @@ class ClientsMultiInvitationController @Inject()(
                 Ok(
                   confirm_terms_multi(
                     confirmTermsMultiForm,
-                    MultiConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
+                    ConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
               }
           } else targets.NotFoundInvitation
         }.recoverWith {
@@ -114,7 +114,7 @@ class ClientsMultiInvitationController @Inject()(
               Future successful Ok(
                 confirm_terms_multi(
                   confirmTermsMultiForm,
-                  MultiConfirmTermsPageConfig(
+                  ConfirmTermsPageConfig(
                     journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                     clientType,
                     uid,
@@ -289,7 +289,7 @@ class ClientsMultiInvitationController @Inject()(
                 Ok(
                   confirm_decline(
                     confirmDeclineForm,
-                    MultiConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey).distinct)))
+                    ConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey).distinct)))
               }
           }.recoverWith {
             case _: NotFoundException => targets.NotFoundInvitation
@@ -314,7 +314,7 @@ class ClientsMultiInvitationController @Inject()(
                   formWithErrors =>
                     Future successful Ok(confirm_decline(
                       formWithErrors,
-                      MultiConfirmDeclinePageConfig(
+                      ConfirmDeclinePageConfig(
                         journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                         clientType,
                         uid,
@@ -405,5 +405,20 @@ object ClientsMultiInvitationController {
 
     item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))
   }
+
+  def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
+    if (fieldValue.isDefined)
+      Valid
+    else
+      Invalid(ValidationError(invalidError))
+  }
+
+  val declineChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmDecline.invalid")
+
+  val confirmDeclineForm: Form[ConfirmForm] = Form[ConfirmForm](
+    mapping(
+      "confirmDecline" -> optional(boolean)
+        .verifying(declineChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
+  )
 
 }

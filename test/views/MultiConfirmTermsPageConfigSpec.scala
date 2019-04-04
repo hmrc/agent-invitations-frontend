@@ -19,7 +19,7 @@ package views
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.MultiConfirmTermsPageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 class MultiConfirmTermsPageConfigSpec extends UnitSpec {
@@ -41,7 +41,7 @@ class MultiConfirmTermsPageConfigSpec extends UnitSpec {
       val consent5 = ClientConsent(invitationIdITSA, expiryDate.plusDays(1), "itsa", false)
 
       val consents = Seq(consent1, consent4, consent2, consent5, consent3)
-      val config = MultiConfirmTermsPageConfig("Impala Boolean Ltd", "personal", "12345678", consents)
+      val config = ConfirmTermsPageConfig("Impala Boolean Ltd", "personal", "12345678", consents)
 
       config.serviceKeyAndExpiryDateSeq should contain.only(consent4, consent2, consent5)
 
