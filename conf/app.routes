@@ -107,13 +107,8 @@ GET         /reject-tax-agent-invitation/declined/uid/:uid                      
 
 # Error Client Endpoints
 GET         /wrong-account-type/                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.incorrectClientType
-GET         /not-signed-up/                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notSignedUp
 GET         /not-authorised/                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notAuthorised
-GET         /incorrect/                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.incorrectInvitation
 GET         /not-found/                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notFoundInvitation
-GET         /already-responded/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.invitationAlreadyResponded
-GET         /expired/                                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.invitationExpired
-GET         /request-cancelled/                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.requestCancelled
 GET         /some-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showSomeResponsesFailed
 GET         /all-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showAllResponsesFailed
 
