@@ -70,7 +70,14 @@ class ClientsMultiInvitationController @Inject()(
         result <- record match {
                    case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) => {
                      invitationsService.getAgencyName(r.arn).map { name =>
-                       Ok(warm_up(name, clientType, uid))
+                       Ok(
+                         warm_up(WarmUpPageConfig(
+                           name,
+                           ClientType.toEnum(clientType),
+                           uid,
+                           routes.ClientsMultiInvitationController.getMultiConfirmTerms(clientType, uid),
+                           routes.ClientsMultiInvitationController.getMultiConfirmDecline(clientType, uid)
+                         )))
                      }
                    }
                    case _ => targets.NotFoundInvitation
@@ -87,10 +94,17 @@ class ClientsMultiInvitationController @Inject()(
             clientConsentsCache
               .save(ClientConsentsJourneyState(consents, Some(agencyName)))
               .map { _ =>
-                Ok(
-                  confirm_terms_multi(
-                    confirmTermsMultiForm,
-                    ConfirmTermsPageConfig(agencyName, clientType, uid, consents)))
+                Ok(confirm_terms_multi(
+                  confirmTermsMultiForm,
+                  ConfirmTermsPageConfig(
+                    agencyName,
+                    clientType,
+                    uid,
+                    consents,
+                    routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
+                    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
+                  )
+                ))
               }
           } else targets.NotFoundInvitation
         }.recoverWith {
@@ -118,7 +132,10 @@ class ClientsMultiInvitationController @Inject()(
                     journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                     clientType,
                     uid,
-                    chosenConsent)
+                    chosenConsent,
+                    routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
+                    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
+                  )
                 )).addingToSession("whichConsent" -> givenServiceKey)
             } else {
               targets.InvalidJourneyState
@@ -189,7 +206,8 @@ class ClientsMultiInvitationController @Inject()(
                 journeyState.consents.map(c => c.serviceKey -> c).toMap.values.toSeq,
                 journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
-                uid
+                uid,
+                routes.ClientsMultiInvitationController.submitAnswers(uid)
               )
             )
           ))
@@ -251,7 +269,8 @@ class ClientsMultiInvitationController @Inject()(
           Future successful Ok(
             some_responses_failed(SomeResponsesFailedPageConfig(
               journeyState.consents.filter(_.processed == false).map(c => c.serviceKey -> c).toMap.values.toSeq,
-              journeyState.agencyName.getOrElse(throw new Exception("Lost agency name"))
+              journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
+              routes.ClientsMultiInvitationController.invitationAccepted()
             )))
         } else targets.InvalidJourneyState
       }
@@ -264,7 +283,7 @@ class ClientsMultiInvitationController @Inject()(
         journeyState <- clientConsentsCache.hardGet
         result <- {
           Future successful Ok(
-            complete(MultiCompletePageConfig(
+            complete(CompletePageConfig(
               journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
               journeyState.consents
                 .filter(_.processed == true)
@@ -286,10 +305,16 @@ class ClientsMultiInvitationController @Inject()(
             clientConsentsCache
               .save(ClientConsentsJourneyState(consents, Some(agencyName)))
               .map { _ =>
-                Ok(
-                  confirm_decline(
-                    confirmDeclineForm,
-                    ConfirmDeclinePageConfig(agencyName, clientType, uid, consents.map(_.serviceKey).distinct)))
+                Ok(confirm_decline(
+                  confirmDeclineForm,
+                  ConfirmDeclinePageConfig(
+                    agencyName,
+                    clientType,
+                    uid,
+                    consents.map(_.serviceKey).distinct,
+                    routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)),
+                  routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName).url
+                ))
               }
           }.recoverWith {
             case _: NotFoundException => targets.NotFoundInvitation
@@ -318,7 +343,15 @@ class ClientsMultiInvitationController @Inject()(
                         journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                         clientType,
                         uid,
-                        journeyState.consents.map(_.serviceKey))
+                        journeyState.consents.map(_.serviceKey),
+                        routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)
+                      ),
+                      routes.ClientsMultiInvitationController
+                        .warmUp(
+                          clientType,
+                          uid,
+                          journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")))
+                        .url
                     )),
                   confirmForm =>
                     if (confirmForm.value.contains(true)) {
@@ -348,7 +381,7 @@ class ClientsMultiInvitationController @Inject()(
             {
               val cacheIds = journeyState.consents.map(_.serviceKey)
               val filteredServiceKeys = consents.filter(c => cacheIds.contains(c.serviceKey)).map(_.serviceKey).distinct
-              Ok(invitation_declined(MultiInvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
+              Ok(invitation_declined(InvitationDeclinedPageConfig(agencyName, filteredServiceKeys)))
             }
           }
       }.recoverWith {

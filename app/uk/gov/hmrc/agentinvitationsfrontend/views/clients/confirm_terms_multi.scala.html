@@ -80,7 +80,7 @@
       ) {
         <fieldset>
             <legend>
-                <h1 class="heading-xlarge margin-bottom-20">@{if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl)){
+                <h1 class="heading-xlarge margin-bottom-20">@{if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl.url)){
                     Messages("confirm-terms.multi-individual.heading")
                 }else {
                     Messages("confirm-terms.multi.heading")}}</h1>

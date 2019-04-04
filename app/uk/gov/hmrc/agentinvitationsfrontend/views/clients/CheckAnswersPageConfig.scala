@@ -15,15 +15,18 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
+import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class CheckAnswersPageConfig(consents: Seq[ClientConsent], agencyName: String, clientType: String, uid: String) {
+case class CheckAnswersPageConfig(
+  consents: Seq[ClientConsent],
+  agencyName: String,
+  clientType: String,
+  uid: String,
+  submitCall: Call) {
 
   def changeUrl(serviceKey: String) =
     routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
-
-  def submitUrl() =
-    routes.ClientsMultiInvitationController.submitAnswers(uid)
 
 }

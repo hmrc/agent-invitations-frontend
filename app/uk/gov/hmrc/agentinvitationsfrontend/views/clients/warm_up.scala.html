@@ -18,26 +18,27 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(agentName: String, clientType: String, uid: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
+@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
 
- <h1 class="heading-xlarge">@Messages("warm-up.header", agentName)</h1>
+ <h1 class="heading-xlarge">@Messages("warm-up.header", pageConfig.agentName)</h1>
 
-    <p>@Messages("warm-up.p1", agentName)</p>
-    <p>@Messages(s"warm-up.p2.$clientType", agentName)</p>
+    <p>@Messages("warm-up.p1", pageConfig.agentName)</p>
+    <p>@Messages(s"warm-up.p2.${pageConfig.typeOfClient}", pageConfig.agentName)</p>
 
-    <div class="panel panel-border-wide">@Messages("warm-up.inset", agentName)</div>
+    <div class="panel panel-border-wide">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
     <h2>@Messages("warm-up.sub-header")</h2>
 
     <p>@Messages("warm-up.p3")</p>
 
-    <p>@Messages(s"warm-up.p4.$clientType")</p>
+    <p>@Messages(s"warm-up.p4.${pageConfig.clientType}")</p>
 
-    <a href="@routes.ClientsMultiInvitationController.getMultiConfirmTerms(clientType, uid)"><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
+    <a href=@pageConfig.getConfirmTermsCall><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
 
-    <div class="margin-top-30 text-link-small"><a href="@routes.ClientsMultiInvitationController.getMultiConfirmDecline(clientType, uid)">@Messages("warm-up.link", agentName)</a></div>
+    <div class="margin-top-30 text-link-small"><a href=@pageConfig.getConfirmDeclineCall>@Messages("warm-up.link", pageConfig.agentName)</a></div>
 
 }

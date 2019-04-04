@@ -25,13 +25,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 
-@(confirmDeclineForm : Form[ConfirmForm], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmDeclineForm : Form[ConfirmForm], config: ConfirmDeclinePageConfig, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@requestPage = @{request.headers.get("Referer").getOrElse(s"${config.backUrl}")}
+@requestPage = @{request.headers.get("Referer").getOrElse(s"$backLinkUrl")}
 
 @legend = {
     <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
-    @if(config.isSingle || config.serviceKeys.length == 1){
+    @if(config.serviceKeys.length == 1){
         <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
     } else {
         <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
