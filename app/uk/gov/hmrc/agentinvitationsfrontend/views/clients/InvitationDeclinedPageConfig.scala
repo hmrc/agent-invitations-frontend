@@ -16,24 +16,4 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
-sealed trait InvitationDeclinedPageConfig {
-  def agencyName: String
-  def serviceKeys: Seq[String]
-  def isSingle: Boolean
-}
-
-case class SingleInvitationDeclinedPageConfig(agencyName: String, serviceMessageKey: String)
-    extends InvitationDeclinedPageConfig {
-
-  override val serviceKeys: Seq[String] = Seq(serviceMessageKey)
-
-  override val isSingle = true
-
-}
-
-case class MultiInvitationDeclinedPageConfig(agencyName: String, serviceKeys: Seq[String])
-    extends InvitationDeclinedPageConfig {
-
-  override val isSingle = false
-
-}
+case class InvitationDeclinedPageConfig(agencyName: String, serviceKeys: Seq[String])

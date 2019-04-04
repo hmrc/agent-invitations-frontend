@@ -16,28 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentReferenceRecord, ClientConsent}
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 
-sealed trait CompletePageConfig {
-  def agencyName: String
-  def consents: Seq[ClientConsent]
-  def isSingle: Boolean
-}
-
-case class MultiCompletePageConfig(agencyName: String, consents: Seq[ClientConsent]) extends CompletePageConfig {
-
-  override val isSingle: Boolean = false
-
-}
-
-case class SingleCompletePageConfig(agencyName: String, invitationId: InvitationId, consent: ClientConsent)
-    extends CompletePageConfig {
-
-  override def consents: Seq[ClientConsent] = Seq(consent)
-
-  override val isSingle: Boolean = true
-
-}
+case class CompletePageConfig(agencyName: String, consents: Seq[ClientConsent])
