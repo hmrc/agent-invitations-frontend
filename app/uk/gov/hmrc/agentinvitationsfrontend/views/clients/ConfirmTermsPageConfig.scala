@@ -18,19 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
 import org.joda.time.LocalDate
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 
-case class ConfirmTermsPageConfig(agencyName: String, clientType: String, uid: String, consentSeq: Seq[ClientConsent]) {
-
-  val backUrl: Call =
-    routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName)
-
-  val submitUrl: Call =
-    routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid)
-
-  val checkAnswersUrl: String =
-    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid).url
+case class ConfirmTermsPageConfig(
+  agencyName: String,
+  clientType: String,
+  uid: String,
+  consentSeq: Seq[ClientConsent],
+  submitUrl: Call,
+  checkAnswersUrl: Call) {
 
   val expiryDateDescending: (ClientConsent, ClientConsent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
 

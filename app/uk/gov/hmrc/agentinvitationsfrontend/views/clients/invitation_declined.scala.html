@@ -29,13 +29,6 @@
           <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>
       </div>
 
-
-    @if(config.isSingle) {
-        <p>@Messages(s"invitation-declined-${config.serviceKeys.head}.p1", config.agencyName)</p>
-
-        <a class="button" href="@externalUrls.taxAccountRelativeUrl" id="continue" role="button">@Messages(s"invitation-declined-${config.serviceKeys.head}.button")</a>
-
-    } else {
         @if(config.serviceKeys.length == 1) {
             <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
 
@@ -50,8 +43,6 @@
         }
 
         <a class="button" href="@externalUrls.signOutUrl(false, None)" id="continue" role="button">@Messages(s"invitation-declined.sign-out.button")</a>
-    }
-
 
         <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
 

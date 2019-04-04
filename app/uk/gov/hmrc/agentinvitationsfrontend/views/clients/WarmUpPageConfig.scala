@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.AgentReferenceRecord
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
-case class ConfirmDeclinePageConfig(
-  agencyName: String,
-  clientType: String,
+case class WarmUpPageConfig(
+  agentName: String,
+  clientType: ClientType,
   uid: String,
-  serviceKeys: Seq[String],
-  submitUrl: Call)
+  getConfirmTermsCall: Call,
+  getConfirmDeclineCall: Call) {
+
+  val typeOfClient = ClientType.fromEnum(clientType)
+}

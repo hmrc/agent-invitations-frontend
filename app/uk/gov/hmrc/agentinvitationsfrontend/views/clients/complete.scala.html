@@ -22,19 +22,14 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), ""))) {
 
-    @if(config.isSingle) {
-        <div class="transaction-banner--complete">
-            <h1 class="transaction-banner__heading">@Messages("client-complete.header")</h1>
-        </div>
-    }else {
         <div class="transaction-banner--complete">
             <h1 class="transaction-banner__heading">@Messages("client-complete.multi.header")</h1>
             <p>@Messages("client-complete.multi.header.p", config.agencyName)</p>
         </div>
-    }
+
 
     <h2 class="heading-medium">@Messages("client-complete.p.title")</h2>
-    @if(config.isSingle || config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
+    @if(config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
         <p>@Messages(s"client-complete.${config.consents.filter(_.consent == true).map(_.serviceKey).head}.p1", config.agencyName)</p>
     } else {
         <p>@Messages(s"client-complete.multi.p1.head", config.agencyName)</p>
