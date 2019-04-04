@@ -70,28 +70,6 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       }
     }
 
-  def withAuthorisedAsClient[A](serviceName: String, identifierKey: String)(body: String => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
-    withEnrolledAsClient(serviceName, identifierKey) {
-      case Some(clientId) => body(clientId)
-      case None           => Future.failed(InsufficientEnrolments(s"$identifierKey identifier not found"))
-    }.recover {
-      case _: InsufficientEnrolments =>
-        serviceName match {
-          case Services.HMRCNI => Redirect(routes.ClientErrorController.notAuthorised())
-          case _ =>
-            Redirect(routes.ClientErrorController.notSignedUp())
-              .addingToSession("clientService" -> serviceName)
-        }
-      case _: InsufficientConfidenceLevel =>
-        Redirect(routes.ClientErrorController.notFoundInvitation())
-      case _: UnsupportedAffinityGroup =>
-        Redirect(routes.ClientErrorController.notAuthorised())
-
-    }
-
   private def extractAffinityGroup(affinityGroup: AffinityGroup): String =
     (affinityGroup.toJson \ "affinityGroup").as[String]
 

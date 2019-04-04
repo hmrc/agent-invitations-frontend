@@ -38,17 +38,6 @@ class ClientErrorController @Inject()(override val messagesApi: play.api.i18n.Me
     }
   }
 
-  val notSignedUp: Action[AnyContent] = Action { implicit request =>
-    request.session.get("clientService") match {
-      case Some(Services.HMRCMTDVAT) =>
-        Forbidden(not_signed_up(Messages("not-signed-up-vat.description"), Services.messageKeyForVAT))
-      case Some(Services.HMRCMTDIT) =>
-        Forbidden(not_signed_up(Messages("not-signed-up.description"), Services.messageKeyForITSA))
-      case _ =>
-        Forbidden(not_signed_up(Messages("not-signed-up.description"), "Service is Missing"))
-    }
-  }
-
   val notAuthorised: Action[AnyContent] = Action { implicit request =>
     Forbidden(
       not_authorised(
@@ -57,29 +46,9 @@ class ClientErrorController @Inject()(override val messagesApi: play.api.i18n.Me
         Services.messageKeyForAfi))
   }
 
-  val incorrectInvitation: Action[AnyContent] = Action { implicit request =>
-    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-    Forbidden(incorrect_invitation(serviceMessageKey))
-  }
-
   val notFoundInvitation: Action[AnyContent] = Action { implicit request =>
     val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
     NotFound(not_found_invitation(serviceMessageKey))
-  }
-
-  val invitationAlreadyResponded: Action[AnyContent] = Action { implicit request =>
-    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-    Forbidden(invitation_already_responded(serviceMessageKey))
-  }
-
-  val invitationExpired: Action[AnyContent] = Action { implicit request =>
-    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-    Ok(invitation_expired(serviceMessageKey))
-  }
-
-  val requestCancelled: Action[AnyContent] = Action { implicit request =>
-    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-    Ok(request_cancelled(serviceMessageKey))
   }
 
 }
