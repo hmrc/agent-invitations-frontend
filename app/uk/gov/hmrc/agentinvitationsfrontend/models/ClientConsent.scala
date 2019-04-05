@@ -25,8 +25,16 @@ case class ClientConsent(
   expiryDate: LocalDate,
   serviceKey: String,
   consent: Boolean,
-  processed: Boolean = false)
+  processed: Boolean = false) {}
 
 object ClientConsent {
   implicit val format = Json.format[ClientConsent]
+
+  def allDeclinedProcessed(consents: Seq[ClientConsent]) = consents.forall(_.consent == false)
+
+  def allAcceptanceFailed(consents: Seq[ClientConsent]) = consents.filter(_.consent).forall(_.processed == false)
+
+  def someAcceptanceFailed(consents: Seq[ClientConsent]) = consents.filter(_.consent).exists(_.processed == false)
+
+  def allProcessed(consents: Seq[ClientConsent]) = consents.forall(_.processed)
 }

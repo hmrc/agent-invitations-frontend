@@ -18,20 +18,27 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.WarmUp
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{IncorrectClientType, MultiConsent, NotFoundInvitation, WarmUp}
 import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   //Happy states
   val WarmUpFormat = Json.format[WarmUp]
+  val ConsentFormat = Json.format[MultiConsent]
+  val IncorrectClientTypeFormat = Json.format[IncorrectClientType]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: WarmUp => WarmUpFormat.writes(s)
+    case s: WarmUp              => WarmUpFormat.writes(s)
+    case s: MultiConsent        => ConsentFormat.writes(s)
+    case s: IncorrectClientType => IncorrectClientTypeFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "WarmUp" => WarmUpFormat.reads(properties)
+    case "WarmUp"              => WarmUpFormat.reads(properties)
+    case "NotFoundInvitation"  => JsSuccess(NotFoundInvitation)
+    case "Consent"             => ConsentFormat.reads(properties)
+    case "IncorrectClientType" => IncorrectClientTypeFormat.reads(properties)
   }
 
 }
