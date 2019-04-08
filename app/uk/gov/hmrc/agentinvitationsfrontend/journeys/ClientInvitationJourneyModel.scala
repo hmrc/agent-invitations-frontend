@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,12 +39,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case object NotFoundInvitation extends State
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
-    case class SingleConsent(
-      clientType: ClientType,
-      uid: String,
-      agentName: String,
-      consent: ClientConsent,
-      consents: Seq[ClientConsent])
+    case class SingleConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
     case class IncorrectClientType(clientType: ClientType) extends State
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
@@ -55,9 +49,14 @@ object ClientInvitationJourneyModel extends JourneyModel {
         extends State
     case object AllResponsesFailed extends State
     case class SomeResponsesFailed(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
+        extends State
+    case class Declined(agentName: String, filteredServiceKeys: Seq[ClientConsent]) extends State
   }
 
   object Transitions {
+
+    import State._
 
     type GetAgentReferenceRecord = String => Future[Option[AgentReferenceRecord]]
     type GetAgencyName = Arn => Future[String]
@@ -113,6 +112,25 @@ object ClientInvitationJourneyModel extends JourneyModel {
         }
     }
 
+    def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
+      client: AuthorisedClient) = Transition {
+      case WarmUp(clientType, uid, agentName) =>
+        getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
+          case consents if consents.nonEmpty =>
+            goto(ConfirmDecline(clientType, agentName, uid, consents))
+          case _ => goto(NotFoundInvitation)
+        }
+    }
+
+    def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
+      Transition {
+        case ConfirmDecline(clientType, uid, agentName, consents) =>
+          if (confirmation.choice) {
+            consents.map(consent => rejectInvitation(consent.invitationId))
+            goto(Declined(agentName, consents))
+          } else goto(MultiConsent(clientType, uid, agentName, consents))
+      }
+
     def determineNewConsents(oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] =
       oldConsents.map { oldConsent =>
         oldConsent.serviceKey match {
@@ -129,10 +147,9 @@ object ClientInvitationJourneyModel extends JourneyModel {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
-    def submitChangeConsents(client: AuthorisedClient) = Transition {
-      case SingleConsent(clientType, uid, agentName, newConsent, consents) =>
-        val newConsents =
-          consents.map(c => if (c.serviceKey == newConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
+    def submitChangeConsents(client: AuthorisedClient)(confirmedTerms: ConfirmedTerms) = Transition {
+      case SingleConsent(clientType, uid, agentName, consents) =>
+        val newConsents = determineNewConsents(consents, confirmedTerms)
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
@@ -169,7 +186,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       case CheckAnswers(clientType, uid, agentName, consents) =>
         val chosenConsent: Option[ClientConsent] = consents.find(_.serviceKey == serviceMessageKeyToChange)
         chosenConsent match {
-          case Some(consent) => goto(SingleConsent(clientType, uid, agentName, consent, consents))
+          case Some(consent) => goto(SingleConsent(clientType, uid, agentName, consents))
           case None          => throw new IllegalStateException("the key for this consent was not found")
         }
     }

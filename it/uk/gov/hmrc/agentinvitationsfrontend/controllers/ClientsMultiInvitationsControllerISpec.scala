@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.confirmDeclineForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState, ClientType, ConfirmedTerms}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.logging.SessionId
@@ -433,7 +433,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenRejectInvitationSucceeds("AB123456A", InvitationId("B9SCS2T4NZBAX"), "NI")
       givenRejectInvitationSucceeds("101747696", InvitationId("CZTW1KY6RTAAT"), "VRN")
 
-      val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(true)))
+      val confirmForm = confirmDeclineForm.fill(Confirmation(true))
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
@@ -450,7 +450,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
             Seq(ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", true)),
             Some("my agency name"))))
 
-      val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(false)))
+      val confirmForm = confirmDeclineForm.fill(Confirmation(false))
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))
@@ -508,7 +508,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       givenRejectInvitationSucceeds("AB123456A", InvitationId("B9SCS2T4NZBAX"), "NI")
       givenRejectInvitationSucceeds("101747696", InvitationId("CZTW1KY6RTAAT"), "VRN")
 
-      val confirmForm = confirmDeclineForm.fill(ConfirmForm(Some(true)))
+      val confirmForm = confirmDeclineForm.fill(Confirmation(true))
 
       val result = controller.submitMultiConfirmDecline("personal", uid)(
         authorisedAsAnyClientFalse(FakeRequest()).withFormUrlEncodedBody(confirmForm.data.toSeq: _*))

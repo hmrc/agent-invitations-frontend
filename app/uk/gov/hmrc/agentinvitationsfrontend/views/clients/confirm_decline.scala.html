@@ -25,7 +25,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 
-@(confirmDeclineForm : Form[ConfirmForm], config: ConfirmDeclinePageConfig, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @requestPage = @{request.headers.get("Referer").getOrElse(s"$backLinkUrl")}
 
@@ -48,18 +49,18 @@
     @back_link(requestPage)
 
     @if(confirmDeclineForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("confirmDecline"))
+        @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
     }
 
     @form(config.submitUrl){
 
         @input_radio_group(
-            confirmDeclineForm("confirmDecline"),
+            confirmDeclineForm("accepted"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
             '_legend -> legend,
             '_legendClass -> "form-label",
             '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='confirmDecline'""")
+            '_fieldsetAttributes -> Html("""id='accepted'""")
         )
 
         <div class="form-group">

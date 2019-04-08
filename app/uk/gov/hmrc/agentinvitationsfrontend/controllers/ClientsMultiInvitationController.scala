@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.repository.ClientConsentsCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -354,7 +355,7 @@ class ClientsMultiInvitationController @Inject()(
                         .url
                     )),
                   confirmForm =>
-                    if (confirmForm.value.contains(true)) {
+                    if (confirmForm.choice) {
                       for {
                         _ <- Future.sequence(
                               journeyState.consents.map(c => invitationsService.rejectInvitation(c.invitationId)))
@@ -446,12 +447,14 @@ object ClientsMultiInvitationController {
       Invalid(ValidationError(invalidError))
   }
 
-  val declineChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmDecline.invalid")
+  def confirmationForm(errorMessage: String): Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice(errorMessage))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm: Form[ConfirmForm] = Form[ConfirmForm](
-    mapping(
-      "confirmDecline" -> optional(boolean)
-        .verifying(declineChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
-  )
+  val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 
 }

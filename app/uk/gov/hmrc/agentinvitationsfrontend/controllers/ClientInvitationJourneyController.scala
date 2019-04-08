@@ -25,12 +25,13 @@ import play.api.mvc.{Call, Request, Result}
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{IncorrectClientType, MultiConsent, NotFoundInvitation, WarmUp}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.views.clients.{ConfirmTermsPageConfig, WarmUpPageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.{confirm_terms_multi, incorrect_client_type, not_found_invitation, warm_up}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
+import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 import views.html.helper.form
@@ -71,21 +72,64 @@ class ClientInvitationJourneyController @Inject()(
           getAgencyName))(display)
     }
 
-  def submitWarmUp = action { implicit request =>
-    authorised(AsClient)(Transitions.submitWarmUp(invitationsConnector.getAllClientInvitationsInfoForAgentAndStatus))(
-      redirect)
+  val submitWarmUp = action { implicit request =>
+    authorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
   }
 
-  def showConsent = showCurrentStateWhenAuthorised(AsClient) {
+  val showConsent = showCurrentStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
   }
 
-  def showNotFoundInvitation = showCurrentStateWhenAuthorised(AsClient) {
+  val showNotFoundInvitation = showCurrentStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
   }
 
   def showIncorrectClientType = showCurrentStateWhenAuthorised(AsClient) {
     case _: IncorrectClientType =>
+  }
+
+  def submitConsent = action { implicit request =>
+    authorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
+  }
+
+  def showCheckAnswers = showCurrentStateWhenAuthorised(AsClient) {
+    case _: CheckAnswers =>
+  }
+
+  def submitCheckAnswers = action { implicit request =>
+    authorised(AsClient)(Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation))(redirect)
+  }
+
+  def submitWarmUpConfirmDecline = action { implicit request =>
+    authorised(AsClient)(Transitions.submitWarmUpToDecline(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+  }
+
+  def showConfirmDecline = showCurrentStateWhenAuthorised(AsClient) {
+    case _: ConfirmDecline =>
+  }
+
+  def submitConfirmDecline = action { implicit request =>
+    authorisedWithForm(AsClient)(confirmDeclineForm)(Transitions.submitConfirmDecline(rejectInvitation))
+  }
+
+  def showDeclined = showCurrentStateWhenAuthorised(AsClient) {
+    case _: Declined =>
+  }
+
+  def showInvitationsAccepted = showCurrentStateWhenAuthorised(AsClient) {
+    case _: InvitationsAccepted =>
+  }
+
+  def showInvitationsDeclined = showCurrentStateWhenAuthorised(AsClient) {
+    case _: InvitationsDeclined =>
+  }
+
+  def showAllResponsesFailed = showCurrentStateWhenAuthorised(AsClient) {
+    case AllResponsesFailed =>
+  }
+
+  def showSomeResponsesFailed = showCurrentStateWhenAuthorised(AsClient) {
+    case _: SomeResponsesFailed =>
   }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
@@ -95,6 +139,13 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation
     case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent
+    case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers
+    case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline
+    case _: Declined            => routes.ClientInvitationJourneyController.showDeclined
+    case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted
+    case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined
+    case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed
+    case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed
     case _                      => throw new Exception(s"Link not found for $state")
   }
 
@@ -109,8 +160,8 @@ class ClientInvitationJourneyController @Inject()(
             agentName,
             clientType,
             uid,
-            routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, agentName),
-            routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, agentName)
+            routes.ClientInvitationJourneyController.submitWarmUp,
+            routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline
           )))
 
     case NotFoundInvitation =>
@@ -126,15 +177,51 @@ class ClientInvitationJourneyController @Inject()(
             ClientType.fromEnum(clientType),
             uid,
             consents,
-            //routes.ClientInvitationJourneyController.submitConsent
-            ???,
-            //routes.ClientInvitationJourneyController.showCheckAnswers
-            ???
+            routes.ClientInvitationJourneyController.submitConsent,
+            routes.ClientInvitationJourneyController.showCheckAnswers
           )
         ))
 
+    case CheckAnswers(clientType, uid, agentName, consents) =>
+      Ok(
+        check_answers(
+          CheckAnswersPageConfig(
+            consents,
+            agentName,
+            ClientType.fromEnum(clientType),
+            uid,
+            routes.ClientInvitationJourneyController.submitCheckAnswers)))
+
     case IncorrectClientType(clientType) => Ok(incorrect_client_type(ClientType.fromEnum(clientType)))
 
+    case ConfirmDecline(clientType, uid, agentName, consents) =>
+      Ok(
+        confirm_decline(
+          confirmDeclineForm,
+          ConfirmDeclinePageConfig(
+            agentName,
+            ClientType.fromEnum(clientType),
+            uid,
+            consents.map(_.serviceKey).distinct,
+            routes.ClientInvitationJourneyController.submitConfirmDecline),
+          backLinkFor(breadcrumbs).url
+        ))
+
+    case InvitationsAccepted(agentName, consents) => Ok(complete(CompletePageConfig(agentName, consents)))
+
+    case InvitationsDeclined(clientType, uid, agentName, consents) =>
+      Ok(invitation_declined(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct)))
+
+    case AllResponsesFailed => Ok(all_responses_failed())
+
+    case SomeResponsesFailed(agentName, consents) =>
+      Ok(
+        some_responses_failed(
+          SomeResponsesFailedPageConfig(
+            consents,
+            agentName,
+            //this call is wrong, what should it be?
+            routes.ClientInvitationJourneyController.showCheckAnswers())))
   }
 }
 
@@ -147,5 +234,15 @@ object ClientInvitationJourneyController {
         "confirmedTerms.afi"  -> boolean,
         "confirmedTerms.vat"  -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
+
+  def confirmationForm(errorMessage: String): Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice(errorMessage))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+
+  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
 
 }

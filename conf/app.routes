@@ -119,7 +119,18 @@ GET         /:clientType/:uid/:agentName                                        
 
 #Journey Client endpoints
 GET          /warm-up/:clientType/:uid/:agentName                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
+POST         /warm-up                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+POST         /warm-up/to-decline                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET          /warm-up/not-found                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
-POST         /warm-up/                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET          /warm-up/consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 GET          /warm-up/incorrect-client-type                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showIncorrectClientType
+POST         /warm-up/consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
+GET         /warm-up/check-answers                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCheckAnswers
+POST         /warm-up/check-answers                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswers
+GET          /warm-up/confirm-decline                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConfirmDecline
+POST         /warm-up/confirm-decline                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConfirmDecline
+GET          /warm-up/declined                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showDeclined
+GET          /warm-up/accepted                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsAccepted
+GET          /warm-up/rejected                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsDeclined
+GET          /warm-up/all-failed                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showAllResponsesFailed
+GET          /warm-up/some-failed                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
