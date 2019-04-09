@@ -26,7 +26,7 @@ case class CheckAnswersPageConfig(
   uid: String,
   submitCall: Call) {
 
-  def changeUrl(serviceKey: String) =
-    routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
+  def changeUrl(serviceMessageKey: String) =
+    routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey)
 
 }

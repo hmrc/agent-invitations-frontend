@@ -48,7 +48,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
 
         val result = await(connector.getAgentReferenceRecord(hash))
         result.isDefined shouldBe true
-        result.get shouldBe AgentReferenceRecord(hash, arn, Seq("99-with-flake"))
+        result.get shouldBe AgentReferenceRecord(hash, arn, Seq("99-with-flake", "My-Agency"))
       }
     }
 

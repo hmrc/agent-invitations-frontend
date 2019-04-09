@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,32 +26,32 @@ import scala.concurrent.Future
 
 object ClientInvitationJourneyModel extends JourneyModel {
 
-  import Services._
-
   sealed trait State
 
-  val root: State = State.Start()
+  val root: State = State.WarmUp(personal, "", "")
 
   /* State should contain only minimal set of data required to proceed */
   object State {
-    case class Start() extends State
     case class WarmUp(clientType: ClientType, uid: String, agentName: String) extends State
     case object NotFoundInvitation extends State
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
-    case class SingleConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
+    case class SingleConsent(
+      clientType: ClientType,
+      uid: String,
+      agentName: String,
+      consent: ClientConsent,
+      consents: Seq[ClientConsent])
         extends State
     case class IncorrectClientType(clientType: ClientType) extends State
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
     case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State
-    case class InvitationsDeclined(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
-        extends State
+    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
     case object AllResponsesFailed extends State
     case class SomeResponsesFailed(agentName: String, consents: Seq[ClientConsent]) extends State
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
-    case class Declined(agentName: String, filteredServiceKeys: Seq[ClientConsent]) extends State
   }
 
   object Transitions {
@@ -107,8 +107,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
       client: AuthorisedClient) = Transition {
       case WarmUp(clientType, uid, agentName) =>
         getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-          case consents if consents.nonEmpty => goto(MultiConsent(clientType, agentName, uid, consents))
-          case _                             => goto(NotFoundInvitation)
+          case consents if consents.nonEmpty => goto(MultiConsent(clientType, uid, agentName, consents))
+          case consents                      => goto(NotFoundInvitation)
         }
     }
 
@@ -127,7 +127,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case ConfirmDecline(clientType, uid, agentName, consents) =>
           if (confirmation.choice) {
             consents.map(consent => rejectInvitation(consent.invitationId))
-            goto(Declined(agentName, consents))
+            goto(InvitationsDeclined(agentName, consents))
           } else goto(MultiConsent(clientType, uid, agentName, consents))
       }
 
@@ -147,9 +147,22 @@ object ClientInvitationJourneyModel extends JourneyModel {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
+    def determineChangedConsents(
+      changedConsent: ClientConsent,
+      oldConsents: Seq[ClientConsent],
+      formTerms: ConfirmedTerms): Seq[ClientConsent] = {
+      val newConsent = changedConsent.serviceKey match {
+        case "itsa" => changedConsent.copy(consent = formTerms.itsaConsent)
+        case "afi"  => changedConsent.copy(consent = formTerms.afiConsent)
+        case "vat"  => changedConsent.copy(consent = formTerms.vatConsent)
+        case _      => throw new IllegalStateException("the service key was not supported")
+      }
+      oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
+    }
+
     def submitChangeConsents(client: AuthorisedClient)(confirmedTerms: ConfirmedTerms) = Transition {
-      case SingleConsent(clientType, uid, agentName, consents) =>
-        val newConsents = determineNewConsents(consents, confirmedTerms)
+      case SingleConsent(clientType, uid, agentName, consent, consents) =>
+        val newConsents = determineChangedConsents(consent, consents, confirmedTerms)
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
@@ -174,7 +187,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)
           result <- if (ClientConsent.allDeclinedProcessed(newConsents))
-                     goto(InvitationsDeclined(clientType, uid, agentName, consents))
+                     goto(InvitationsDeclined(agentName, consents))
                    else if (ClientConsent.allAcceptanceFailed(newConsents)) goto(AllResponsesFailed)
                    else if (ClientConsent.someAcceptanceFailed(newConsents))
                      goto(SomeResponsesFailed(agentName, consents))
@@ -186,7 +199,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       case CheckAnswers(clientType, uid, agentName, consents) =>
         val chosenConsent: Option[ClientConsent] = consents.find(_.serviceKey == serviceMessageKeyToChange)
         chosenConsent match {
-          case Some(consent) => goto(SingleConsent(clientType, uid, agentName, consents))
+          case Some(consent) => goto(SingleConsent(clientType, uid, agentName, consent, consents))
           case None          => throw new IllegalStateException("the key for this consent was not found")
         }
     }

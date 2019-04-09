@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 
@@ -17,6 +18,7 @@ trait TestDataCommonSupport {
   val validPostcodeSpaces = "DH1 4EJ"
   val invitationIdITSA = InvitationId("ABERULMHCKKW3")
   val identifierITSA = "MTDITID"
+  val expiryDate = LocalDate.parse("2010-10-10")
 
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val invitationIdPIR = InvitationId("B9SCS2T4NZBAX")

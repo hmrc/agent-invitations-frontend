@@ -35,7 +35,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
   lazy val controller: ClientsMultiInvitationController = app.injector.instanceOf[ClientsMultiInvitationController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-  val expiryDate = LocalDate.now().plusDays(7)
+  override val expiryDate = LocalDate.now().plusDays(7)
 
   "GET /:clientType/:uid/:agentName  (warm up page)" should {
 

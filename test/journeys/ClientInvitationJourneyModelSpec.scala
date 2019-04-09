@@ -69,8 +69,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           Future(Some(AgentReferenceRecord("uid123", arn, Seq("normalised%agent%name", "normalised%agent%name%2"))))
         def getAgencyName(arn: Arn) = Future("normalised agent name")
 
-        given(Start()) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(getAgencyName)(
-          authorisedIndividualClient) should
+        given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
+          getAgencyName)(authorisedIndividualClient) should
           thenGo(WarmUp(personal, uid, "normalised agent name"))
       }
       "transition to NotFoundInvitation when there is no agent reference record" in {
@@ -78,8 +78,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           Future(None)
         def getAgencyName(arn: Arn) = Future("normalised agent name")
 
-        given(Start()) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(getAgencyName)(
-          authorisedIndividualClient) should
+        given(WarmUp(personal, "", "")) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(
+          getAgencyName)(authorisedIndividualClient) should
           thenGo(NotFoundInvitation)
       }
       "transition to IncorrectClientType when the affinity group does not match the client type" in {
@@ -87,8 +87,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           Future(Some(AgentReferenceRecord("uid", arn, Seq("normalised%agent%name", "normalised%agent%name%2"))))
         def getAgencyName(arn: Arn) = Future("normalised agent name")
 
-        given(Start()) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(getAgencyName)(
-          authorisedBusinessClient) should
+        given(WarmUp(personal, "", "")) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(
+          getAgencyName)(authorisedBusinessClient) should
           thenGo(IncorrectClientType(personal))
       }
     }
@@ -101,8 +101,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           thenGo(
             MultiConsent(
               personal,
-              "normalised agent name",
               uid,
+              "normalised agent name",
               Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
       }
     }
@@ -142,10 +142,11 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             personal,
             uid,
             "agent name",
+            ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(itsaConsent = true, afiConsent = false, vatConsent = false)) should thenGo(
@@ -155,8 +156,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
           )
         )
@@ -203,8 +204,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsDeclined(
-            personal,
-            uid,
             "agent name",
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
@@ -258,7 +257,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     }
     "at state ConfirmDecline" should {
 
-      "transition to Declined if selected YES" in {
+      "transition to InvitationsDeclined if selected YES" in {
         def rejectInvitation(invitationId: InvitationId) = Future(true)
 
         given(
@@ -273,7 +272,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             )
           )) when
           submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(true)) should thenGo(
-          Declined(
+          InvitationsDeclined(
             "agent pearson",
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),

@@ -78,14 +78,14 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(s"""{"state":"MultiConsent",
@@ -101,33 +101,29 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           personal,
           "uid",
           "agent name",
+          ClientConsent(
+            InvitationId("B1BEOZEO7MNO6"),
+            LocalDate.parse("2010-02-02"),
+            "afi",
+            consent = true
+          ),
           Seq(
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(
-          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name",
-             |"consent": {
-             |"invitationId": {
-             |  "value": "A1BEOZEO7MNO6"
-             |  },
-             |"expiryDate": "2010-01-01",
-             |"serviceKey": "itsa",
-             |"consent": true,
-             |"processed": false
-             |},
-             |$jsonConsents}}""".stripMargin)
+          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "serviceKey": "afi", "consent": true, "processed": false}, $jsonConsents}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -149,14 +145,14 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(
@@ -173,14 +169,14 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(
@@ -191,28 +187,26 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "InvitationsDeclined" in {
         val state = InvitationsDeclined(
-          personal,
-          "uid",
           "agent name",
           Seq(
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(s"""{"state":"InvitationsDeclined",
-                                 |"properties":{"clientType": "personal",
-                                 |"uid": "uid",
-                                 |"agentName": "agent name", $jsonConsents}}""".stripMargin)
+                                 |"properties":{
+                                 |"agentName": "agent name",
+                                 |$jsonConsents}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -232,14 +226,14 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
               "itsa",
-              consent = true,
-              processed = false),
+              consent = true
+            ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true,
-              processed = false)
+              consent = true
+            )
           )
         )
         val json = Json.parse(
@@ -248,9 +242,32 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+      "ConfirmDecline" in {
+        val state = ConfirmDecline(
+          personal,
+          "uid",
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin)
 
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
-
   }
-
 }

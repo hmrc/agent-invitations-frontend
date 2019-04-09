@@ -30,7 +30,7 @@ trait ACAStubs {
                          |{
                          |  "arn" : "${arn.value}",
                          |  "uid" : "$uid",
-                         |  "normalisedAgentNames" : ["99-with-flake"]
+                         |  "normalisedAgentNames" : ["99-with-flake", "My-Agency"]
                          |}""".stripMargin)))
 
   def givenAgentReferenceRecordNotFoundForUid(uid: String): Unit =
