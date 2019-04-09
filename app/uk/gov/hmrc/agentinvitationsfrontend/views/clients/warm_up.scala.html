@@ -18,7 +18,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.helpers.form
-
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 @(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -42,8 +41,8 @@
         <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
 
-  @form(pageConfig.getConfirmDeclineCall) {
-      <button type="submit" class="button--link-style text-link-small margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
-  }
+    @form(pageConfig.getConfirmDeclineCall) {
+        <button type="submit" class="button--link-style text-link-small margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
+    }
 
 }

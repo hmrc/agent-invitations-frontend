@@ -75,7 +75,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName)(client: AuthorisedClient) =
       Transition {
         case _ =>
-          if (clientTypeMatchesGroup(client.affinity, clientType)) {
+          if (clientTypeMatchesGroup(client.affinityGroup, clientType)) {
             for {
               record <- getAgentReferenceRecord(uid)
               result <- record match {

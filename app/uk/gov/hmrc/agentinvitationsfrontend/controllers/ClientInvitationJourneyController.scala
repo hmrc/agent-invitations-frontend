@@ -211,7 +211,9 @@ class ClientInvitationJourneyController @Inject()(
             agentName,
             ClientType.fromEnum(clientType),
             uid,
-            routes.ClientInvitationJourneyController.submitCheckAnswers())))
+            routes.ClientInvitationJourneyController.submitCheckAnswers(),
+            (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey)
+          )))
 
     case IncorrectClientType(clientType) => Ok(incorrect_client_type(ClientType.fromEnum(clientType)))
 

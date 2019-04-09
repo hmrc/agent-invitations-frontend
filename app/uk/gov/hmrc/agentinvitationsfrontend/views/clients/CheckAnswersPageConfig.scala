@@ -24,9 +24,5 @@ case class CheckAnswersPageConfig(
   agencyName: String,
   clientType: String,
   uid: String,
-  submitCall: Call) {
-
-  def changeUrl(serviceMessageKey: String) =
-    routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey)
-
-}
+  submitCall: Call,
+  changeCall: String => Call)

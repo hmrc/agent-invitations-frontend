@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class AuthorisedClient(affinity: String, clientIdTypePlusIds: Seq[(String, String)])
+case class AuthorisedClient(affinityGroup: String, clientIdTypePlusIds: Seq[(String, String)])
