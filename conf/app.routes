@@ -114,5 +114,25 @@ GET         /all-responses-failed                                               
 
 GET         /assets/*file                                                        controllers.Assets.at(path="/public", file)
 
+#Journey Client endpoints
+POST         /fsm/warm-up                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+POST         /fsm/warm-up/to-decline                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
+GET          /fsm/not-found                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
+GET          /fsm/consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
+GET          /fsm/consent/individual                                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentIndividual
+GET          /fsm/wrong-account-type                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showIncorrectClientType
+POST         /fsm/consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
+POST         /fsm/consent-change                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitChangeConsents
+GET          /fsm/check-answers                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCheckAnswers
+POST         /fsm/check-answers                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswers
+POST         /fsm/check-answers-change/:serviceMessageKey                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey: String)
+GET          /fsm/confirm-decline                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConfirmDecline
+POST         /fsm/confirm-decline                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConfirmDecline
+GET          /fsm/accepted                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsAccepted
+GET          /fsm/declined                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsDeclined
+GET          /fsm/all-responses-failed                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showAllResponsesFailed
+GET          /fsm/some-responses-failed                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
+GET          /fsm/:clientType/:uid/:agentName                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
+
 # New Client Journey
 GET         /:clientType/:uid/:agentName                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.warmUp(clientType: String, uid: String, agentName: String)

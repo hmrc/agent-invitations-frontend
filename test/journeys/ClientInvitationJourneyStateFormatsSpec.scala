@@ -1,0 +1,273 @@
+/*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package journeys
+
+import org.joda.time.LocalDate
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.play.test.UnitSpec
+
+class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
+
+  implicit val formats: Format[State] = ClientInvitationJourneyStateFormats.formats
+
+  "ClientInvitationJourneyStateFormats" should {
+    "serialize and deserialize state" when {
+
+      val jsonConsents = """"consents":[
+                           |{
+                           |"invitationId": {
+                           |  "value": "A1BEOZEO7MNO6"
+                           |  },
+                           |"expiryDate": "2010-01-01",
+                           |"serviceKey": "itsa",
+                           |"consent": true,
+                           |"processed": false
+                           |}, {
+                           |"invitationId": {
+                           |  "value": "B1BEOZEO7MNO6"
+                           |  },
+                           |"expiryDate": "2010-02-02",
+                           |"serviceKey": "afi",
+                           |"consent": true,
+                           |"processed": false
+                           |}
+                           |]"""
+
+      "WarmUp" in {
+        val state = WarmUp(personal, "uid", "agent name")
+        val json = Json.parse(
+          """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name"}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "NotFoundInvitation" in {
+        val state = NotFoundInvitation
+        val json = Json.parse("""{"state":"NotFoundInvitation"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "MultiConsent" in {
+        val state = MultiConsent(
+          personal,
+          "uid",
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(s"""{"state":"MultiConsent",
+                                 |"properties":{"clientType": "personal", 
+                                 |"uid": "uid", 
+                                 |"agentName": "agent name", $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "SingleConsent" in {
+        val state = SingleConsent(
+          personal,
+          "uid",
+          "agent name",
+          ClientConsent(
+            InvitationId("B1BEOZEO7MNO6"),
+            LocalDate.parse("2010-02-02"),
+            "afi",
+            consent = true
+          ),
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "serviceKey": "afi", "consent": true, "processed": false}, $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "IncorrectClientType" in {
+        val state = IncorrectClientType(personal)
+        val json = Json.parse("""{"state":"IncorrectClientType","properties":{"clientType": "personal"}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "CheckAnswers" in {
+        val state = CheckAnswers(
+          personal,
+          "uid",
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"CheckAnswers","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "InvitationsAccepted" in {
+        val state = InvitationsAccepted(
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "InvitationsDeclined" in {
+        val state = InvitationsDeclined(
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(s"""{"state":"InvitationsDeclined",
+                                 |"properties":{
+                                 |"agentName": "agent name",
+                                 |$jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "AllResponsesFailed" in {
+        val state = AllResponsesFailed
+        val json = Json.parse("""{"state":"AllResponsesFailed"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "SomeResponsesFailed" in {
+        val state = SomeResponsesFailed(
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"SomeResponsesFailed","properties":{"agentName": "agent name", $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ConfirmDecline" in {
+        val state = ConfirmDecline(
+          personal,
+          "uid",
+          "agent name",
+          Seq(
+            ClientConsent(
+              InvitationId("A1BEOZEO7MNO6"),
+              LocalDate.parse("2010-01-01"),
+              "itsa",
+              consent = true
+            ),
+            ClientConsent(
+              InvitationId("B1BEOZEO7MNO6"),
+              LocalDate.parse("2010-02-02"),
+              "afi",
+              consent = true
+            )
+          )
+        )
+        val json = Json.parse(
+          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+    }
+  }
+}
