@@ -17,7 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-
+@import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 @(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -37,8 +37,12 @@
 
     <p>@Messages(s"warm-up.p4.${pageConfig.clientType}")</p>
 
-    <a href=@pageConfig.getConfirmTermsCall><button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button></a>
+    @form(pageConfig.getConfirmTermsCall) {
+        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+    }
 
-    <div class="margin-top-30 text-link-small"><a href=@pageConfig.getConfirmDeclineCall>@Messages("warm-up.link", pageConfig.agentName)</a></div>
+    @form(pageConfig.getConfirmDeclineCall) {
+        <button type="submit" class="button--link-style text-link-small margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
+    }
 
 }

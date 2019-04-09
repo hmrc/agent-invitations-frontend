@@ -14,15 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.clients
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class CheckAnswersPageConfig(
-  consents: Seq[ClientConsent],
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  submitCall: Call,
-  changeCall: String => Call)
+case class AuthorisedClient(affinityGroup: String, clientIdTypePlusIds: Seq[(String, String)])
