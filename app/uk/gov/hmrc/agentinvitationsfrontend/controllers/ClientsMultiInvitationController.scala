@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.repository.ClientConsentsCache
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -87,8 +88,8 @@ class ClientsMultiInvitationController @Inject()(
   }
 
   def getMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (affinity, _) =>
-      if (matchClientTypeToGroup(affinity, clientType)) {
+    withAuthorisedAsAnyClient { authClient =>
+      if (matchClientTypeToGroup(authClient.affinityGroup, clientType)) {
         withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
           if (consents.nonEmpty) {
             clientConsentsCache
@@ -119,7 +120,7 @@ class ClientsMultiInvitationController @Inject()(
 
   def getMultiConfirmTermsIndividual(clientType: String, uid: String, givenServiceKey: String): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAnyClient { (_, _) =>
+      withAuthorisedAsAnyClient { authClient =>
         for {
           journeyState <- clientConsentsCache.hardGet
           result <- {
@@ -146,8 +147,8 @@ class ClientsMultiInvitationController @Inject()(
     }
 
   def submitMultiConfirmTerms(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (affinity, _) =>
-      if (matchClientTypeToGroup(affinity, clientType)) {
+    withAuthorisedAsAnyClient { authClient =>
+      if (matchClientTypeToGroup(authClient.affinityGroup, clientType)) {
         val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
         val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
         val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
@@ -207,7 +208,9 @@ class ClientsMultiInvitationController @Inject()(
                 journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
                 uid,
-                routes.ClientsMultiInvitationController.submitAnswers(uid)
+                routes.ClientsMultiInvitationController.submitAnswers(uid),
+                (serviceKey: String) =>
+                  routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
               )
             )
           ))
@@ -232,7 +235,7 @@ class ClientsMultiInvitationController @Inject()(
     } yield result
 
   def submitAnswers(uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (_, _) =>
+    withAuthorisedAsAnyClient { authClient =>
       for {
         journeyState <- clientConsentsCache.hardGet
         result <- {
@@ -257,13 +260,13 @@ class ClientsMultiInvitationController @Inject()(
   }
 
   val showAllResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (_, _) =>
+    withAuthorisedAsAnyClient { authClient =>
       Future successful Ok(all_responses_failed())
     }
   }
 
   def showSomeResponsesFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (_, _) =>
+    withAuthorisedAsAnyClient { authClient =>
       clientConsentsCache.hardGet.flatMap { journeyState =>
         if (journeyState.consents.exists(_.processed == false) && journeyState.consents.exists(_.processed == true)) {
           Future successful Ok(
@@ -278,7 +281,7 @@ class ClientsMultiInvitationController @Inject()(
   }
 
   val invitationAccepted: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (_, _) =>
+    withAuthorisedAsAnyClient { authClient =>
       for {
         journeyState <- clientConsentsCache.hardGet
         result <- {
@@ -299,8 +302,8 @@ class ClientsMultiInvitationController @Inject()(
 
   def getMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAnyClient { (affinity, _) =>
-        if (matchClientTypeToGroup(affinity, clientType)) {
+      withAuthorisedAsAnyClient { authClient =>
+        if (matchClientTypeToGroup(authClient.affinityGroup, clientType)) {
           withAgencyNameAndConsents(uid, Pending) { (agencyName, consents) =>
             clientConsentsCache
               .save(ClientConsentsJourneyState(consents, Some(agencyName)))
@@ -328,8 +331,8 @@ class ClientsMultiInvitationController @Inject()(
 
   def submitMultiConfirmDecline(clientType: String, uid: String): Action[AnyContent] = Action.async {
     implicit request =>
-      withAuthorisedAsAnyClient { (affinity, _) =>
-        if (matchClientTypeToGroup(affinity, clientType)) {
+      withAuthorisedAsAnyClient { authClient =>
+        if (matchClientTypeToGroup(authClient.affinityGroup, clientType)) {
           for {
             journeyState <- clientConsentsCache.hardGet
             result <- {
@@ -354,7 +357,7 @@ class ClientsMultiInvitationController @Inject()(
                         .url
                     )),
                   confirmForm =>
-                    if (confirmForm.value.contains(true)) {
+                    if (confirmForm.choice) {
                       for {
                         _ <- Future.sequence(
                               journeyState.consents.map(c => invitationsService.rejectInvitation(c.invitationId)))
@@ -374,7 +377,7 @@ class ClientsMultiInvitationController @Inject()(
   }
 
   def getMultiInvitationsDeclined(uid: String): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAnyClient { (_, _) =>
+    withAuthorisedAsAnyClient { authClient =>
       withAgencyNameAndConsents(uid, Rejected) { (agencyName, consents) =>
         clientConsentsCache.hardGet
           .map { journeyState =>
@@ -446,12 +449,14 @@ object ClientsMultiInvitationController {
       Invalid(ValidationError(invalidError))
   }
 
-  val declineChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmDecline.invalid")
+  def confirmationForm(errorMessage: String): Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice(errorMessage))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm: Form[ConfirmForm] = Form[ConfirmForm](
-    mapping(
-      "confirmDecline" -> optional(boolean)
-        .verifying(declineChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
-  )
+  val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 
 }

@@ -46,8 +46,10 @@
             @Messages(s"check-answers.consent.${consent.consent}")
             </dd>
             <dd class="app-check-your-answers__change">
-                <a href=@pageConfig.changeUrl(consent.serviceKey)>
-                    @Messages("check-answers.change-link")
+                @form(pageConfig.changeCall(consent.serviceKey)) {
+              <button type="submit" class="button--link-style">@Messages("check-answers.change-link")</button>
+            }
+
                     <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${consent.serviceKey}")</span>
                 </a>
             </dd>

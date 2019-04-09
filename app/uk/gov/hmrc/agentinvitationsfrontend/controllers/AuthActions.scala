@@ -22,7 +22,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
@@ -73,7 +73,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   private def extractAffinityGroup(affinityGroup: AffinityGroup): String =
     (affinityGroup.toJson \ "affinityGroup").as[String]
 
-  def withAuthorisedAsAnyClient[A](body: (String, Seq[(String, String)]) => Future[Result])(
+  def withAuthorisedAsAnyClient[A](body: AuthorisedClient => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -88,9 +88,9 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
               withConfidenceLevelUplift(cl, ConfidenceLevel.L200) {
-                body(affinityG, clientIdTypePlusIds)
+                body(AuthorisedClient(affinityG, clientIdTypePlusIds))
               }
-            case (AffinityGroup.Organisation, _) => body(affinityG, clientIdTypePlusIds)
+            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, clientIdTypePlusIds))
             case _                               => Future successful Redirect(routes.ClientErrorController.notAuthorised())
           }
         case _ => Future successful Redirect(routes.ClientErrorController.notAuthorised())
