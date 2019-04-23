@@ -64,14 +64,22 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
   "AgentInvitationFastTrackJourneyService" when {
     "at any state" should {
-      "transition to WarmUp with agency name" in {
+      "transition to WarmUp with agency name" when {
         def getAgentReferenceRecord(uid: String) =
           Future(Some(AgentReferenceRecord("uid123", arn, Seq("normalised%agent%name", "normalised%agent%name%2"))))
         def getAgencyName(arn: Arn) = Future("normalised agent name")
 
-        given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
-          getAgencyName)(authorisedIndividualClient) should
-          thenGo(WarmUp(personal, uid, "normalised agent name"))
+        "the affinity group does match the client type" in {
+          given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
+            getAgencyName)(authorisedIndividualClient) should
+            thenGo(WarmUp(personal, uid, "normalised agent name"))
+        }
+
+        "the affinity group does not match the client type" in {
+          given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
+            getAgencyName)(authorisedBusinessClient) should
+            thenGo(WarmUp(personal, uid, "normalised agent name"))
+        }
       }
       "transition to NotFoundInvitation when there is no agent reference record" in {
         def getAgentReferenceRecord(uid: String) =
@@ -82,28 +90,28 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           getAgencyName)(authorisedIndividualClient) should
           thenGo(NotFoundInvitation)
       }
-      "transition to IncorrectClientType when the affinity group does not match the client type" in {
-        def getAgentReferenceRecord(uid: String) =
-          Future(Some(AgentReferenceRecord("uid", arn, Seq("normalised%agent%name", "normalised%agent%name%2"))))
-        def getAgencyName(arn: Arn) = Future("normalised agent name")
-
-        given(WarmUp(personal, "", "")) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(
-          getAgencyName)(authorisedBusinessClient) should
-          thenGo(IncorrectClientType(personal))
-      }
     }
     "at WarmUp state" should {
       "transition to Consent when the invitation is found" in {
         def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
           Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-        given(WarmUp(ClientType.personal, uid, "normalised agent name")) when submitWarmUp(
-          getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
+        given(WarmUp(personal, uid, "normalised agent name")) when submitWarmUp(getPendingInvitationIdsAndExpiryDates)(
+          authorisedIndividualClient) should
           thenGo(
             MultiConsent(
               personal,
               uid,
               "normalised agent name",
               Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+      }
+
+      "transition to IncorrectClientType when the affinity group does not match the client type" in {
+        def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+          Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
+
+        given(WarmUp(personal, uid, "normalised agent name")) when
+          submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
+          thenGo(IncorrectClientType(personal))
       }
     }
     "at MultiConsent" should {

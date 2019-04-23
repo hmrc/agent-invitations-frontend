@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -64,29 +64,28 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type AcceptInvitation = InvitationId => Future[Boolean]
     type RejectInvitation = InvitationId => Future[Boolean]
 
-    private def clientTypeMatchesGroup(affinityGroup: String, clientType: String): Boolean =
+    private def clientTypeMatchesGroup(affinityGroup: String, clientType: ClientType): Boolean =
       (affinityGroup, clientType) match {
-        case ("Individual", "personal")   => true
-        case ("Organisation", "business") => true
-        case _                            => false
+        case ("Individual", ClientType.personal)   => true
+        case ("Organisation", ClientType.business) => true
+        case _                                     => false
       }
 
-    def start(clientType: String, uid: String, normalisedAgentName: String)(
+    def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName)(client: AuthorisedClient) =
       Transition {
         case _ =>
-          if (clientTypeMatchesGroup(client.affinityGroup, clientType)) {
-            for {
-              record <- getAgentReferenceRecord(uid)
-              result <- record match {
-                         case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
-                           getAgencyName(r.arn).flatMap { name =>
-                             goto(WarmUp(ClientType.toEnum(clientType), uid, name))
-                           }
-                         case None => goto(NotFoundInvitation)
-                       }
-            } yield result
-          } else goto(IncorrectClientType(ClientType.toEnum(clientType)))
+          for {
+            record <- getAgentReferenceRecord(uid)
+            result <- record match {
+                       case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
+                         val clientType = ClientType.toEnum(clientTypeStr)
+                         getAgencyName(r.arn).flatMap { name =>
+                           goto(WarmUp(clientType, uid, name))
+                         }
+                       case None => goto(NotFoundInvitation)
+                     }
+          } yield result
       }
 
     private def getConsents(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
@@ -106,10 +105,12 @@ object ClientInvitationJourneyModel extends JourneyModel {
     def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
       client: AuthorisedClient) = Transition {
       case WarmUp(clientType, uid, agentName) =>
-        getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-          case consents if consents.nonEmpty => goto(MultiConsent(clientType, uid, agentName, consents))
-          case consents                      => goto(NotFoundInvitation)
-        }
+        if (clientTypeMatchesGroup(client.affinityGroup, clientType)) {
+          getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
+            case consents if consents.nonEmpty => goto(MultiConsent(clientType, uid, agentName, consents))
+            case consents                      => goto(NotFoundInvitation)
+          }
+        } else goto(IncorrectClientType(clientType))
     }
 
     def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
