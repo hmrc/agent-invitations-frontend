@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Call, Request, Result}
+import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
@@ -31,10 +33,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClientInvitationJourneyController @Inject()(
@@ -56,19 +60,34 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
+  private val journeyIdKey = journeyService.journeyId
+
+  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier = {
+    val hc = HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
+    journeyId.map(value => hc.withExtraHeaders(journeyIdKey -> value)).getOrElse(hc)
+  }
+
+  def journeyId(implicit rh: RequestHeader): Option[String] = rh.session.get(journeyIdKey)
+
   override val root: Call = routes.ClientInvitationJourneyController.warmUp("", "", "")
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
     withAuthorisedAsAnyClient
   }
 
+  def withJourneyId(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
+    journeyId match {
+      case None => Future.successful(Redirect(request.uri).withSession(journeyIdKey -> UUID.randomUUID().toString))
+      case _    => body
+    }
+
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def warmUp(clientType: String, uid: String, normalisedAgentName: String) =
     action { implicit request =>
-      authorised(AsClient)(
-        Transitions.start(clientType: String, uid: String, normalisedAgentName: String)(getAgentReferenceRecord)(
-          getAgencyName))(display)
+      withJourneyId {
+        apply(Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName), display)
+      }
     }
 
   val submitWarmUp = action { implicit request =>

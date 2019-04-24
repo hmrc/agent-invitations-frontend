@@ -1,8 +1,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import play.api.Application
+import play.api.mvc.{AnyContent, Request, Result, Session}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -24,25 +26,73 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   val emptyBasket = Set.empty[AuthorisationRequest]
 
-  "GET /warm-up/:clientType/:uid/:agentName" should {
-    val request = FakeRequest("GET", "/warm-up/:clientType/:uid/:agentName")
+  "GET /invitations/:clientType/:uid/:agentName" when {
+    trait Setup {
+      val clientType = "personal"
+      val agentName = "My-Agency"
+      val endpointUrl: String = routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName).url
+      val journeyIdKey = app.injector.instanceOf[ClientInvitationJourneyService].journeyId
 
-    "show the warm up page" in {
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
       journeyState.set(WarmUp(personal, "", ""), Nil)
-
-      val result = controller.warmUp("personal", uid, "My-Agency")(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.header", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p2.personal", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p4.personal"))
     }
+
+    "journey ID is already present in the session cookie, show the warmup page" should {
+      "work when signed in" in new Setup {
+        val request = FakeRequest("GET", endpointUrl)
+        val reqAuthorisedWithJourneyId = requestWithJourneyId(authorisedAsAnyIndividualClient(request), journeyIdKey)
+        val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        checkWarmUpPageIsShown(result)
+      }
+      "work when not signed in" in new Setup {
+        val reqWithJourneyId = requestWithJourneyId(FakeRequest("GET", endpointUrl), journeyIdKey)
+        val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
+        checkWarmUpPageIsShown(result)
+      }
+
+      def checkWarmUpPageIsShown(result: Result) {
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.header", "My Agency"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p2.personal", "My Agency"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p4.personal"))
+      }
+
+      def requestWithJourneyId[T <: AnyContent](request: FakeRequest[T], journeyIdKey: String): FakeRequest[T] = {
+        val sessionWithJourneyId: Session = request.session + (journeyIdKey -> "1234-i-am-a-journey-id")
+        val requestWithJourneyId = request.withSession(sessionWithJourneyId.data.toSeq :_*)
+        requestWithJourneyId
+      }
+    }
+
+    "journey ID is not already present in the session cookie, redirect to same page saving the journey ID in the session" should {
+      "work when signed in" in new Setup {
+        val request = authorisedAsAnyIndividualClient(FakeRequest("GET", endpointUrl))
+        val result = controller.warmUp("personal", uid, "My-Agency")(request)
+        checkRedirectedWithJourneyId(result, request, journeyIdKey)
+      }
+
+      "work when not signed in" in new Setup {
+        val request = FakeRequest("GET", endpointUrl)
+        val result = controller.warmUp("personal", uid, "My-Agency")(request)
+        checkRedirectedWithJourneyId(result, request, journeyIdKey)
+      }
+
+      def checkRedirectedWithJourneyId(result: Result, request: Request[_], journeyIdKey: String): Unit = {
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(request.uri)
+
+        val journeyId = result.session(request).get(journeyIdKey)
+        journeyId shouldBe a[Some[String]]
+        journeyId.get should not be empty
+      }
+    }
+
   }
 
-  "POST /warm-up" should {
-    val request = FakeRequest("POST", "/warm-up")
+  "GET /warm-up" should {
+    val request = FakeRequest("GET", "/warm-up")
 
     "redirect to consent page if the invitation is found" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -62,8 +112,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "POST /warm-up/to-decline" should {
-    val request = FakeRequest("POST", "/warm-up/to-decline")
+  "GET /warm-up/to-decline" should {
+    val request = FakeRequest("GET", "/warm-up/to-decline")
 
     "redirect to confirm decline" in {
       givenAllInvitationIdsByStatus(uid, "Pending")

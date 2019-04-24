@@ -115,8 +115,8 @@ GET         /all-responses-failed                                               
 GET         /assets/*file                                                        controllers.Assets.at(path="/public", file)
 
 #Journey Client endpoints
-POST         /fsm/warm-up                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
-POST         /fsm/warm-up/to-decline                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
+GET          /fsm/warm-up                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+GET          /fsm/warm-up/to-decline                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET          /fsm/not-found                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET          /fsm/consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 GET          /fsm/consent/individual                                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentIndividual
