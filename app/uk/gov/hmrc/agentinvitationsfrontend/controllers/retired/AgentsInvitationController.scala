@@ -319,11 +319,11 @@ class AgentsInvitationController @Inject()(
 
   val continueAfterInvitationSent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      agentSessionCache.hardGet.map { agentSession =>
-        val continueUrl = agentSession.continueUrl.getOrElse(agentServicesAccountUrl)
-        agentSessionCache.save(agentSession.copy(continueUrl = None))
-        Redirect(continueUrl)
-      }
+      for {
+        agentSession <- agentSessionCache.hardGet
+        continueUrl = agentSession.continueUrl.getOrElse(agentServicesAccountUrl)
+        _ <- agentSessionCache.save(agentSession.copy(continueUrl = None))
+      } yield Redirect(continueUrl)
     }
   }
 
