@@ -71,13 +71,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "the affinity group does match the client type" in {
           given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
-            getAgencyName)(authorisedIndividualClient) should
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, "normalised agent name"))
         }
 
         "the affinity group does not match the client type" in {
           given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
-            getAgencyName)(authorisedBusinessClient) should
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, "normalised agent name"))
         }
       }
@@ -87,31 +87,74 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         def getAgencyName(arn: Arn) = Future("normalised agent name")
 
         given(WarmUp(personal, "", "")) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(
-          getAgencyName)(authorisedIndividualClient) should
+          getAgencyName) should
           thenGo(NotFoundInvitation)
       }
     }
-    "at WarmUp state" should {
-      "transition to Consent when the invitation is found" in {
-        def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-          Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-        given(WarmUp(personal, uid, "normalised agent name")) when submitWarmUp(getPendingInvitationIdsAndExpiryDates)(
-          authorisedIndividualClient) should
-          thenGo(
-            MultiConsent(
-              personal,
-              uid,
-              "normalised agent name",
-              Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+    "at WarmUp state" when {
+      "submitting intent to continue" should {
+        "transition to Consent when the invitation is found" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+            Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
+
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
+            thenGo(
+              MultiConsent(
+                personal,
+                uid,
+                "normalised agent name",
+                Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+        }
+
+        "transition to NotFoundInvitation when the invitation is not found" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
+
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
+            thenGo(NotFoundInvitation)
+        }
+
+        "transition to IncorrectClientType when the affinity group does not match the client type" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+            Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
+
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
+            thenGo(IncorrectClientType(personal))
+        }
       }
+      "submitting intent to decline" should {
+        "transition to ConfirmDecline when the invitation is found" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+            Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
 
-      "transition to IncorrectClientType when the affinity group does not match the client type" in {
-        def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-          Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
+            thenGo(
+              ConfirmDecline(
+                personal,
+                uid,
+                "normalised agent name",
+                Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+        }
 
-        given(WarmUp(personal, uid, "normalised agent name")) when
-          submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
-          thenGo(IncorrectClientType(personal))
+        "transition to NotFoundInvitation when the invitation is not found" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
+
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
+            thenGo(NotFoundInvitation)
+        }
+
+        "transition to IncorrectClientType when the affinity group does not match the client type" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+            Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
+
+          given(WarmUp(personal, uid, "normalised agent name")) when
+            submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
+            thenGo(IncorrectClientType(personal))
+        }
       }
     }
     "at MultiConsent" should {

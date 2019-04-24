@@ -30,8 +30,11 @@ trait MongoSessionStore[T] {
   val sessionName: String
   val cacheRepository: CacheRepository
 
+  def getSessionId(implicit hc: HeaderCarrier): Option[String] =
+    hc.sessionId.map(_.value)
+
   def get(implicit reads: Reads[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Option[T]]] =
-    hc.sessionId.map(_.value) match {
+    getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
           .findById(Id(sessionId))
@@ -62,7 +65,7 @@ trait MongoSessionStore[T] {
 
   def store(
     newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
-    hc.sessionId.map(_.value) match {
+    getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
           .createOrUpdate(Id(sessionId), sessionName, Json.toJson(newSession))
@@ -83,7 +86,7 @@ trait MongoSessionStore[T] {
     }
 
   def delete()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
-    hc.sessionId.map(_.value) match {
+    getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
           .removeById(Id(sessionId))

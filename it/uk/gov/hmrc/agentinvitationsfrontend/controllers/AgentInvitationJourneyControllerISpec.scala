@@ -108,7 +108,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
-      flash(result) shouldBe Flash(Map())
+      flash(result) shouldBe Flash(Map("dummy" -> "")) // "dummy" comes from a workaround introduced in https://github.com/hmrc/play-fsm/releases/tag/v0.20.0
 
       journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
 

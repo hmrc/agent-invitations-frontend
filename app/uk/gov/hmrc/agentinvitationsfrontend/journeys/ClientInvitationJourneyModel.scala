@@ -72,7 +72,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       }
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
-      getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName)(client: AuthorisedClient) =
+      getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
       Transition {
         case _ =>
           for {
@@ -103,25 +103,25 @@ object ClientInvitationJourneyModel extends JourneyModel {
       } yield consents
 
     def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
-      client: AuthorisedClient) = Transition {
-      case WarmUp(clientType, uid, agentName) =>
-        if (clientTypeMatchesGroup(client.affinityGroup, clientType)) {
-          getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-            case consents if consents.nonEmpty => goto(MultiConsent(clientType, uid, agentName, consents))
-            case consents                      => goto(NotFoundInvitation)
-          }
-        } else goto(IncorrectClientType(clientType))
-    }
+      client: AuthorisedClient) =
+      transitionFromWarmup(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates)(client)
 
     def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
-      client: AuthorisedClient) = Transition {
-      case WarmUp(clientType, uid, agentName) =>
-        getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-          case consents if consents.nonEmpty =>
-            goto(ConfirmDecline(clientType, agentName, uid, consents))
-          case _ => goto(NotFoundInvitation)
-        }
-    }
+      client: AuthorisedClient) =
+      transitionFromWarmup(idealTargetState = ConfirmDecline.apply)(getPendingInvitationIdsAndExpiryDates)(client)
+
+    private def transitionFromWarmup(idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
+      Transition {
+        case WarmUp(clientType, uid, agentName) =>
+          if (!clientTypeMatchesGroup(client.affinityGroup, clientType))
+            goto(IncorrectClientType(clientType))
+          else
+            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
+              case consents if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
+              case _                             => goto(NotFoundInvitation)
+            }
+      }
 
     def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
       Transition {

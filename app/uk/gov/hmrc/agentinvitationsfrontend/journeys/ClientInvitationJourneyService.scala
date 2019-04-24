@@ -29,6 +29,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[MongoDBCachedClientInvitationJourneyService])
 trait ClientInvitationJourneyService extends PersistentJourneyService {
 
+  val journeyId = "clientInvitationJourney"
+
   override val model = ClientInvitationJourneyModel
 }
 
@@ -36,16 +38,16 @@ trait ClientInvitationJourneyService extends PersistentJourneyService {
 class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository)
     extends ClientInvitationJourneyService {
 
-  val id = "clientInvitationJourney"
-
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
   implicit val formats1: Format[model.State] = ClientInvitationJourneyStateFormats.formats
   implicit val formats2: Format[PersistentState] = Json.format[PersistentState]
 
   final val cache = new SessionCache[PersistentState] {
-    override val sessionName: String = id
+    override val sessionName: String = journeyId
     override val cacheRepository: CacheRepository = _cacheRepository
+    override def getSessionId(implicit hc: HeaderCarrier): Option[String] =
+      hc.extraHeaders.find(_._1 == journeyId).map(_._2)
   }
 
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
