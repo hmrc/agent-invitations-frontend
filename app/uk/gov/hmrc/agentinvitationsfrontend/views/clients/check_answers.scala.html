@@ -17,7 +17,6 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
 @import uk.gov.hmrc.play.views.html.helpers.{form, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
@@ -28,7 +27,7 @@
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
 
-    @back_link_referer(request)
+    @back_link(pageConfig.backLink.url)
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-answers.heading")</h1>
 

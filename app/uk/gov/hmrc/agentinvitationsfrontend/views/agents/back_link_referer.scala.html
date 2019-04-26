@@ -22,4 +22,4 @@
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
-<a id="identifiersBackLink" href="@backLink" class="link-back">@Messages("button.back")</a>
+<a id="backLink" href="@backLink" class="link-back">@Messages("button.back")</a>

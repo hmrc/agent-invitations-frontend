@@ -26,7 +26,8 @@ case class ConfirmTermsPageConfig(
   uid: String,
   consentSeq: Seq[ClientConsent],
   submitUrl: Call,
-  checkAnswersUrl: Call) {
+  checkAnswersUrl: Call,
+  backLink: Call) {
 
   val expiryDateDescending: (ClientConsent, ClientConsent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
 

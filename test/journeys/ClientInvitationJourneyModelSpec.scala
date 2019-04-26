@@ -62,32 +62,32 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdVat = InvitationId("C1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
 
+  val normalisedAgentName = "agent-name"
+  val agentName = "Agent Name"
+
   "AgentInvitationFastTrackJourneyService" when {
     "at any state" should {
       "transition to WarmUp with agency name" when {
         def getAgentReferenceRecord(uid: String) =
-          Future(Some(AgentReferenceRecord("uid123", arn, Seq("normalised%agent%name", "normalised%agent%name%2"))))
-        def getAgencyName(arn: Arn) = Future("normalised agent name")
+          Future(Some(AgentReferenceRecord("uid123", arn, Seq(normalisedAgentName, s"$normalisedAgentName-2"))))
+        def getAgencyName(arn: Arn) = Future(agentName)
 
         "the affinity group does match the client type" in {
-          given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
-            getAgencyName) should
-            thenGo(WarmUp(personal, uid, "normalised agent name"))
+          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+            thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
 
         "the affinity group does not match the client type" in {
-          given(WarmUp(personal, "", "")) when start("personal", uid, "normalised%agent%name")(getAgentReferenceRecord)(
-            getAgencyName) should
-            thenGo(WarmUp(personal, uid, "normalised agent name"))
+          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+            thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
       }
       "transition to NotFoundInvitation when there is no agent reference record" in {
         def getAgentReferenceRecord(uid: String) =
           Future(None)
-        def getAgencyName(arn: Arn) = Future("normalised agent name")
+        def getAgencyName(arn: Arn) = Future(agentName)
 
-        given(WarmUp(personal, "", "")) when start("personal", "uid", "normalised%agent%name")(getAgentReferenceRecord)(
-          getAgencyName) should
+        given(Root) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
           thenGo(NotFoundInvitation)
       }
     }
@@ -97,20 +97,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
             thenGo(
               MultiConsent(
                 personal,
                 uid,
-                "normalised agent name",
+                agentName,
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
         "transition to NotFoundInvitation when the invitation is not found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
             thenGo(NotFoundInvitation)
         }
@@ -119,7 +119,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
             thenGo(IncorrectClientType(personal))
         }
@@ -129,20 +129,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
             thenGo(
               ConfirmDecline(
                 personal,
                 uid,
-                "normalised agent name",
+                agentName,
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
         "transition to NotFoundInvitation when the invitation is not found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
             thenGo(NotFoundInvitation)
         }
@@ -151,7 +151,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
 
-          given(WarmUp(personal, uid, "normalised agent name")) when
+          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
             thenGo(IncorrectClientType(personal))
         }

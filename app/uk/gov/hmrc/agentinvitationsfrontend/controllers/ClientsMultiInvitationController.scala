@@ -22,7 +22,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -102,8 +102,9 @@ class ClientsMultiInvitationController @Inject()(
                     clientType,
                     uid,
                     consents,
-                    routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
-                    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
+                    backLink = routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName),
+                    submitUrl = routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
+                    checkAnswersUrl = routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
                   )
                 ))
               }
@@ -126,16 +127,18 @@ class ClientsMultiInvitationController @Inject()(
           result <- {
             val chosenConsent = journeyState.consents.find(_.serviceKey == givenServiceKey).toSeq
             if (chosenConsent.nonEmpty) {
+              val agencyName = journeyState.agencyName.getOrElse(throw new Exception("Lost agency name"))
               Future successful Ok(
                 confirm_terms_multi(
                   confirmTermsMultiForm,
                   ConfirmTermsPageConfig(
-                    journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
+                    agencyName,
                     clientType,
                     uid,
                     chosenConsent,
-                    routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
-                    routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
+                    backLink = routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName),
+                    submitUrl = routes.ClientsMultiInvitationController.submitMultiConfirmTerms(clientType, uid),
+                    checkAnswersUrl = routes.ClientsMultiInvitationController.showCheckAnswers(clientType, uid)
                   )
                 )).addingToSession("whichConsent" -> givenServiceKey)
             } else {
@@ -208,9 +211,10 @@ class ClientsMultiInvitationController @Inject()(
                 journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
                 uid,
-                routes.ClientsMultiInvitationController.submitAnswers(uid),
-                (serviceKey: String) =>
-                  routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
+                submitCall = routes.ClientsMultiInvitationController.submitAnswers(uid),
+                changeCall = (serviceKey: String) =>
+                  routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey),
+                backLink = backLinkFromReferer(routes.AgentInvitationJourneyController.agentsRoot())
               )
             )
           ))
@@ -315,8 +319,10 @@ class ClientsMultiInvitationController @Inject()(
                     clientType,
                     uid,
                     consents.map(_.serviceKey).distinct,
-                    routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)),
-                  routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName).url
+                    submitUrl = routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid),
+                    backLink =
+                      backLinkFromReferer(routes.ClientsMultiInvitationController.warmUp(clientType, uid, agencyName))
+                  )
                 ))
               }
           }.recoverWith {
@@ -336,6 +342,9 @@ class ClientsMultiInvitationController @Inject()(
           for {
             journeyState <- clientConsentsCache.hardGet
             result <- {
+              val backLinkDefault = routes.ClientsMultiInvitationController
+                .warmUp(clientType, uid, journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")))
+
               confirmDeclineForm
                 .bindFromRequest()
                 .fold(
@@ -347,14 +356,9 @@ class ClientsMultiInvitationController @Inject()(
                         clientType,
                         uid,
                         journeyState.consents.map(_.serviceKey),
-                        routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid)
-                      ),
-                      routes.ClientsMultiInvitationController
-                        .warmUp(
-                          clientType,
-                          uid,
-                          journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")))
-                        .url
+                        submitUrl = routes.ClientsMultiInvitationController.submitMultiConfirmDecline(clientType, uid),
+                        backLink = backLinkFromReferer(backLinkDefault)
+                      )
                     )),
                   confirmForm =>
                     if (confirmForm.choice) {
@@ -392,6 +396,9 @@ class ClientsMultiInvitationController @Inject()(
       }
     }
   }
+
+  private def backLinkFromReferer(backLinkDefault: Call)(implicit rh: RequestHeader): Call =
+    rh.headers.get("Referer").map(Call("GET", _)).getOrElse(backLinkDefault)
 
   private def getAgencyName(uid: String)(implicit hc: HeaderCarrier): Future[String] =
     for {

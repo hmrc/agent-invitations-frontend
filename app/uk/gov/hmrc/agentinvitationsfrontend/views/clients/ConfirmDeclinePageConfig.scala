@@ -25,4 +25,5 @@ case class ConfirmDeclinePageConfig(
   clientType: String,
   uid: String,
   serviceKeys: Seq[String],
-  submitUrl: Call)
+  submitUrl: Call,
+  backLink: Call)

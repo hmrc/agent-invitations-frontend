@@ -70,7 +70,7 @@
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
-    @back_link_referer(request)
+    @back_link(pageConfig.backLink.url)
 
     @if(confirmTermsForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))

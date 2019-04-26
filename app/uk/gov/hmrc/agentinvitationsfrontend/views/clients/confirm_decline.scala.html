@@ -26,9 +26,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@requestPage = @{request.headers.get("Referer").getOrElse(s"$backLinkUrl")}
+@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = {
     <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
@@ -46,7 +44,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
 
-    @back_link(requestPage)
+    @back_link(config.backLink.url)
 
     @if(confirmDeclineForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
