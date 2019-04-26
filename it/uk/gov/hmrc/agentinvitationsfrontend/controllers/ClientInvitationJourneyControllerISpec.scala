@@ -1,7 +1,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.util.UUID
+
 import play.api.Application
-import play.api.mvc.{AnyContent, Request, Result, Session}
+import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
@@ -21,17 +23,20 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   lazy val journeyState = app.injector.instanceOf[TestClientInvitationJourneyService]
   lazy val controller: ClientInvitationJourneyController = app.injector.instanceOf[ClientInvitationJourneyController]
+  lazy val journeyIdKey = app.injector.instanceOf[ClientInvitationJourneyService].journeyKey
 
   import journeyState.model.State._
 
   val emptyBasket = Set.empty[AuthorisationRequest]
+
+  def requestWithJourneyId(method: String, path: String) =
+    FakeRequest(method, path).withSession(journeyIdKey -> UUID.randomUUID().toString)
 
   "GET /invitations/:clientType/:uid/:agentName" when {
     trait Setup {
       val clientType = "personal"
       val agentName = "My-Agency"
       val endpointUrl: String = routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName).url
-      val journeyIdKey = app.injector.instanceOf[ClientInvitationJourneyService].journeyId
 
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
@@ -40,13 +45,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "journey ID is already present in the session cookie, show the warmup page" should {
       "work when signed in" in new Setup {
-        val request = FakeRequest("GET", endpointUrl)
-        val reqAuthorisedWithJourneyId = requestWithJourneyId(authorisedAsAnyIndividualClient(request), journeyIdKey)
+        def request = FakeRequest("GET", endpointUrl)
+        val reqAuthorisedWithJourneyId = authorisedAsAnyIndividualClient(requestWithJourneyId("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
       "work when not signed in" in new Setup {
-        val reqWithJourneyId = requestWithJourneyId(FakeRequest("GET", endpointUrl), journeyIdKey)
+        val reqWithJourneyId = requestWithJourneyId("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
@@ -58,23 +63,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p2.personal", "My Agency"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p4.personal"))
       }
-
-      def requestWithJourneyId[T <: AnyContent](request: FakeRequest[T], journeyIdKey: String): FakeRequest[T] = {
-        val sessionWithJourneyId: Session = request.session + (journeyIdKey -> "1234-i-am-a-journey-id")
-        val requestWithJourneyId = request.withSession(sessionWithJourneyId.data.toSeq :_*)
-        requestWithJourneyId
-      }
     }
 
     "journey ID is not already present in the session cookie, redirect to same page saving the journey ID in the session" should {
       "work when signed in" in new Setup {
-        val request = authorisedAsAnyIndividualClient(FakeRequest("GET", endpointUrl))
+        def request = authorisedAsAnyIndividualClient(FakeRequest("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(request)
         checkRedirectedWithJourneyId(result, request, journeyIdKey)
       }
 
       "work when not signed in" in new Setup {
-        val request = FakeRequest("GET", endpointUrl)
+        def request = FakeRequest("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "My-Agency")(request)
         checkRedirectedWithJourneyId(result, request, journeyIdKey)
       }
@@ -92,7 +91,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up" should {
-    val request = FakeRequest("GET", "/warm-up")
+    def request = requestWithJourneyId("GET", "/warm-up")
 
     "redirect to consent page if the invitation is found" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -113,7 +112,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/to-decline" should {
-    val request = FakeRequest("GET", "/warm-up/to-decline")
+    def request = requestWithJourneyId("GET", "/warm-up/to-decline")
 
     "redirect to confirm decline" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
@@ -134,7 +133,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/not-found" should {
-    val request = FakeRequest("GET", "/warm-up/not-found")
+    def request = requestWithJourneyId("GET", "/warm-up/not-found")
 
     "display the not found invitation page" in {
       journeyState.set(NotFoundInvitation, Nil)
@@ -147,7 +146,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/consent" should {
-    val request = FakeRequest("GET", "/warm-up/consent")
+    def request = requestWithJourneyId("GET", "/warm-up/consent")
 
     "display the consent page" in {
       journeyState.set(
@@ -166,7 +165,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/incorrect-client-type" should {
-    val request = FakeRequest("GET", "/warm-up/incorrect-client-type")
+    def request = requestWithJourneyId("GET", "/warm-up/incorrect-client-type")
 
     "display the incorrect client type page" in {
       journeyState.set(IncorrectClientType(personal), Nil)
@@ -180,7 +179,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/consent" should {
-    val request = FakeRequest("POST", "/warm-up/consent")
+    def request = requestWithJourneyId("POST", "/warm-up/consent")
 
     "redirect to check answers when continuing" in {
       journeyState.set(
@@ -199,7 +198,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/check-answers" should {
-    val request = FakeRequest("GET", "/warm-up/check-answers")
+    def request = requestWithJourneyId("GET", "/warm-up/check-answers")
 
     "display the check answers page" in {
       journeyState.set(
@@ -219,7 +218,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/check-answers" should {
-    val request = FakeRequest("POST", "/warm-up/check-answers")
+    def request = requestWithJourneyId("POST", "/warm-up/check-answers")
 
     "redirect to invitations accepted when all invitations are successfully accepted" in {
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
@@ -325,7 +324,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/confirm-decline" should {
-    val request = FakeRequest("GET", "/warm-up/confirm-decline")
+    def request = requestWithJourneyId("GET", "/warm-up/confirm-decline")
 
     "display the confirm decline page" in {
       journeyState.set(
@@ -345,7 +344,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/confirm-decline" should {
-    val request = FakeRequest("POST", "/warm-up/confirm-decline")
+    def request = requestWithJourneyId("POST", "/warm-up/confirm-decline")
 
     "redirect to invitation declined when yes is selected" in {
       journeyState.set(
@@ -379,7 +378,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/accepted" should {
-    val request = FakeRequest("GET", "/warm-up/accepted")
+    def request = requestWithJourneyId("GET", "/warm-up/accepted")
 
     "display the accepted page" in {
       journeyState
@@ -395,7 +394,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/rejected" should {
-    val request = FakeRequest("GET", "/warm-up/rejected")
+    def request = requestWithJourneyId("GET", "/warm-up/rejected")
 
     "display the rejected page" in {
       journeyState
@@ -411,7 +410,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/all-failed" should {
-    val request = FakeRequest("GET", "/warm-up/all-failed")
+    def request = requestWithJourneyId("GET", "/warm-up/all-failed")
 
     "display the all responses failed page" in {
       journeyState
@@ -425,7 +424,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/some-failed" should {
-    val request = FakeRequest("GET", "/warm-up/some-failed")
+    def request = requestWithJourneyId("GET", "/warm-up/some-failed")
 
     "display the some responses failed page" in {
       journeyState

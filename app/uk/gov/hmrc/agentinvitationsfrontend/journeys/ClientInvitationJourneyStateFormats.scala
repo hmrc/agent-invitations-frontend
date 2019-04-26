@@ -49,6 +49,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
+    case "Root"                => JsSuccess(Root)
     case "WarmUp"              => WarmUpFormat.reads(properties)
     case "NotFoundInvitation"  => JsSuccess(NotFoundInvitation)
     case "Consent"             => ConsentFormat.reads(properties)

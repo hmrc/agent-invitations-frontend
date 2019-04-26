@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.util.UUID
-
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Call, Request, RequestHeader, Result}
+import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
@@ -34,11 +32,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationC
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.play.fsm.JourneyController
+import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 @Singleton
 class ClientInvitationJourneyController @Inject()(
@@ -51,7 +49,7 @@ class ClientInvitationJourneyController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   featureFlags: FeatureFlags,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with I18nSupport {
+    extends FrontendController with JourneyController with JourneyIdSupport with I18nSupport {
 
   import ClientInvitationJourneyController._
   import authActions._
@@ -60,33 +58,28 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
-  private val journeyIdKey = journeyService.journeyId
-
-  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier = {
-    val hc = HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
-    journeyId.map(value => hc.withExtraHeaders(journeyIdKey -> value)).getOrElse(hc)
-  }
-
-  def journeyId(implicit rh: RequestHeader): Option[String] = rh.session.get(journeyIdKey)
-
-  override val root: Call = routes.ClientInvitationJourneyController.warmUp("", "", "")
+  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
+    appendJourneyId(super.hc)
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
     withAuthorisedAsAnyClient
   }
 
-  def withJourneyId(body: => Future[Result])(implicit request: Request[_]): Future[Result] =
-    journeyId match {
-      case None => Future.successful(Redirect(request.uri).withSession(journeyIdKey -> UUID.randomUUID().toString))
-      case _    => body
-    }
-
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def warmUp(clientType: String, uid: String, normalisedAgentName: String) =
-    action { implicit request =>
-      withJourneyId {
-        apply(Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName), display)
+    Action.async { implicit request =>
+      journeyId match {
+        case None =>
+          // redirect to itself with new journeyId generated
+          Future.successful(
+            appendJourneyId(
+              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, normalisedAgentName)))(
+              request))
+        case _ =>
+          apply(
+            Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName),
+            display)
       }
     }
 
@@ -142,12 +135,24 @@ class ClientInvitationJourneyController @Inject()(
     authorisedWithForm(AsClient)(confirmDeclineForm)(Transitions.submitConfirmDecline(rejectInvitation))
   }
 
-  def showInvitationsAccepted = showCurrentStateWhenAuthorised(AsClient) {
-    case _: InvitationsAccepted =>
+  def showInvitationsAccepted = action { implicit request =>
+    whenAuthorised(AsClient) {
+      case _: InvitationsAccepted =>
+    }(display)
+      .andThen {
+        // clears journey history
+        case Success(_) => journeyService.cleanBreadcrumbs()
+      }
   }
 
-  def showInvitationsDeclined = showCurrentStateWhenAuthorised(AsClient) {
-    case _: InvitationsDeclined =>
+  def showInvitationsDeclined = action { implicit request =>
+    whenAuthorised(AsClient) {
+      case _: InvitationsDeclined =>
+    }(display)
+      .andThen {
+        // clears journey history
+        case Success(_) => journeyService.cleanBreadcrumbs()
+      }
   }
 
   def showAllResponsesFailed = showCurrentStateWhenAuthorised(AsClient) {
@@ -160,6 +165,7 @@ class ClientInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
+    case Root => routes.AgentInvitationJourneyController.agentsRoot() // would be better to have client's root as well
     case WarmUp(clientType, uid, agentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, agentName)
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
@@ -178,6 +184,10 @@ class ClientInvitationJourneyController @Inject()(
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = state match {
+
+    case Root =>
+      // There is no client root and we will not try to render page for it.
+      throw new Exception("Unsupported journey state, cannot render the page.")
 
     case WarmUp(clientType, uid, agentName) =>
       Ok(
