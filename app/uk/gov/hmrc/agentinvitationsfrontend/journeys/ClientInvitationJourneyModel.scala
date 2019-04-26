@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -27,13 +26,15 @@ import scala.concurrent.Future
 object ClientInvitationJourneyModel extends JourneyModel {
 
   sealed trait State
+  sealed trait IsError
 
-  val root: State = State.WarmUp(personal, "", "")
+  val root: State = State.Root
 
   /* State should contain only minimal set of data required to proceed */
   object State {
+    case object Root extends State
     case class WarmUp(clientType: ClientType, uid: String, agentName: String) extends State
-    case object NotFoundInvitation extends State
+    case object NotFoundInvitation extends State with IsError
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
     case class SingleConsent(
@@ -43,7 +44,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       consent: ClientConsent,
       consents: Seq[ClientConsent])
         extends State
-    case class IncorrectClientType(clientType: ClientType) extends State
+    case class IncorrectClientType(clientType: ClientType) extends State with IsError
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
     case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State

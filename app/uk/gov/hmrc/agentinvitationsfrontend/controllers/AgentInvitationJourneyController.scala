@@ -65,8 +65,6 @@ class AgentInvitationJourneyController @Inject()(
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
-  override val root: Call = routes.AgentInvitationJourneyController.showClientType()
-
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
   }

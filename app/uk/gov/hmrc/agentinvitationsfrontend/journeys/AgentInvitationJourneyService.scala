@@ -28,6 +28,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[MongoDBCachedAgentInvitationJourneyService])
 trait AgentInvitationJourneyService extends PersistentJourneyService {
 
+  val journeyKey = "agentInvitationJourney"
+
   override val model = AgentInvitationJourneyModel
 }
 
@@ -35,15 +37,13 @@ trait AgentInvitationJourneyService extends PersistentJourneyService {
 class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository)
     extends AgentInvitationJourneyService {
 
-  val id = "agentInvitationJourney"
-
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
   implicit val formats1: Format[model.State] = AgentInvitationJourneyStateFormats.formats
   implicit val formats2: Format[PersistentState] = Json.format[PersistentState]
 
   final val cache = new SessionCache[PersistentState] {
-    override val sessionName: String = id
+    override val sessionName: String = journeyKey
     override val cacheRepository: CacheRepository = _cacheRepository
   }
 
@@ -53,5 +53,8 @@ class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: Ses
   protected def save(
     state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     cache.save(PersistentState(state._1, state._2)).map(_ => state)
+
+  override def clear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    cache.delete().map(_ => ())
 
 }

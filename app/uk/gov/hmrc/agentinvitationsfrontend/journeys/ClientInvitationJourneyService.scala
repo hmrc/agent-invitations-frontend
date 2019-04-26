@@ -29,9 +29,13 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[MongoDBCachedClientInvitationJourneyService])
 trait ClientInvitationJourneyService extends PersistentJourneyService {
 
-  val journeyId = "clientInvitationJourney"
+  override val journeyKey = "clientInvitationJourney"
 
   override val model = ClientInvitationJourneyModel
+
+  // do not keep errors or root in the journey history
+  override val breadcrumbsRetentionStrategy: Breadcrumbs => Breadcrumbs =
+    _.filterNot(s => s.isInstanceOf[model.IsError] || s == model.State.Root)
 }
 
 @Singleton
@@ -44,10 +48,10 @@ class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: Se
   implicit val formats2: Format[PersistentState] = Json.format[PersistentState]
 
   final val cache = new SessionCache[PersistentState] {
-    override val sessionName: String = journeyId
+    override val sessionName: String = journeyKey
     override val cacheRepository: CacheRepository = _cacheRepository
     override def getSessionId(implicit hc: HeaderCarrier): Option[String] =
-      hc.extraHeaders.find(_._1 == journeyId).map(_._2)
+      hc.extraHeaders.find(_._1 == journeyKey).map(_._2)
   }
 
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
@@ -56,5 +60,8 @@ class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: Se
   protected def save(
     state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     cache.save(PersistentState(state._1, state._2)).map(_ => state)
+
+  override def clear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    cache.delete().map(_ => ())
 
 }
