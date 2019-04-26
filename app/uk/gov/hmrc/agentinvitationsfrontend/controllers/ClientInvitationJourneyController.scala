@@ -214,9 +214,9 @@ class ClientInvitationJourneyController @Inject()(
             clientTypeStr,
             uid,
             consents,
-            backLink = backLinkFor(breadcrumbs),
             submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
-            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers()
+            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+            backLink = backLinkFor(breadcrumbs)
           )
         ))
 
@@ -229,9 +229,9 @@ class ClientInvitationJourneyController @Inject()(
             ClientType.fromEnum(clientType),
             uid,
             Seq(consent),
-            backLink = backLinkFor(breadcrumbs),
             submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
-            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers()
+            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+            backLink = backLinkFor(breadcrumbs)
           )
         ))
 
@@ -243,8 +243,10 @@ class ClientInvitationJourneyController @Inject()(
             agentName,
             ClientType.fromEnum(clientType),
             uid,
-            routes.ClientInvitationJourneyController.submitCheckAnswers(),
-            (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey)
+            submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers(),
+            changeCall = (serviceKey: String) =>
+              routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
+            backLink = backLinkFor(breadcrumbs)
           )))
 
     case IncorrectClientType(clientType) => Ok(incorrect_client_type(ClientType.fromEnum(clientType)))

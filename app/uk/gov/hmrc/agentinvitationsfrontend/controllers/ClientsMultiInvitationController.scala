@@ -211,9 +211,10 @@ class ClientsMultiInvitationController @Inject()(
                 journeyState.agencyName.getOrElse(throw new Exception("Lost agency name")),
                 clientType,
                 uid,
-                routes.ClientsMultiInvitationController.submitAnswers(uid),
-                (serviceKey: String) =>
-                  routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey)
+                submitCall = routes.ClientsMultiInvitationController.submitAnswers(uid),
+                changeCall = (serviceKey: String) =>
+                  routes.ClientsMultiInvitationController.getMultiConfirmTermsIndividual(clientType, uid, serviceKey),
+                backLink = backLinkFromReferer(routes.AgentInvitationJourneyController.agentsRoot())
               )
             )
           ))

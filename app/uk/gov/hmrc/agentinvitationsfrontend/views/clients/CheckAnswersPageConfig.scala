@@ -25,4 +25,5 @@ case class CheckAnswersPageConfig(
   clientType: String,
   uid: String,
   submitCall: Call,
-  changeCall: String => Call)
+  changeCall: String => Call,
+  backLink: Call)
