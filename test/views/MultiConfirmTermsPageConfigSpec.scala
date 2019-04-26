@@ -47,6 +47,7 @@ class MultiConfirmTermsPageConfigSpec extends UnitSpec {
         "personal",
         "12345678",
         consents,
+        routes.ClientsMultiInvitationController.warmUp("personal", "12345678", "Impala Boolean Ltd"),
         routes.ClientsMultiInvitationController.submitMultiConfirmTerms("personal", "12345678"),
         routes.ClientsMultiInvitationController.showCheckAnswers("personal", "12345678")
       )

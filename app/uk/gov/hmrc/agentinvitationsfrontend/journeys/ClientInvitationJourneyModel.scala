@@ -33,7 +33,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
   /* State should contain only minimal set of data required to proceed */
   object State {
     case object Root extends State
-    case class WarmUp(clientType: ClientType, uid: String, agentName: String) extends State
+    case class WarmUp(clientType: ClientType, uid: String, agentName: String, normalisedAgentName: String) extends State
     case object NotFoundInvitation extends State with IsError
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
@@ -82,7 +82,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                        case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
                          val clientType = ClientType.toEnum(clientTypeStr)
                          getAgencyName(r.arn).flatMap { name =>
-                           goto(WarmUp(clientType, uid, name))
+                           goto(WarmUp(clientType, uid, name, normalisedAgentName))
                          }
                        case None => goto(NotFoundInvitation)
                      }
@@ -114,7 +114,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     private def transitionFromWarmup(idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
       getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
       Transition {
-        case WarmUp(clientType, uid, agentName) =>
+        case WarmUp(clientType, uid, agentName, _) =>
           if (!clientTypeMatchesGroup(client.affinityGroup, clientType))
             goto(IncorrectClientType(clientType))
           else

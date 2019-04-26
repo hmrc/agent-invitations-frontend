@@ -40,7 +40,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
-      journeyState.set(WarmUp(personal, "", ""), Nil)
+      journeyState.set(Root, Nil)
     }
 
     "journey ID is already present in the session cookie, show the warmup page" should {
@@ -95,7 +95,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to consent page if the invitation is found" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
       val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 303
@@ -103,7 +103,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
     "redirect to not found invitation if the invitation is not found" in {
       givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
       val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 303
@@ -116,7 +116,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to confirm decline" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
       val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 303
@@ -124,7 +124,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
     "redirect to not found invitation" in {
       givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
       val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 303

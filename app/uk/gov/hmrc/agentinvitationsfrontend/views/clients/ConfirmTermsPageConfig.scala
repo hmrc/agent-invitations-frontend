@@ -25,6 +25,7 @@ case class ConfirmTermsPageConfig(
   clientType: String,
   uid: String,
   consentSeq: Seq[ClientConsent],
+  backLink: Call,
   submitUrl: Call,
   checkAnswersUrl: Call) {
 

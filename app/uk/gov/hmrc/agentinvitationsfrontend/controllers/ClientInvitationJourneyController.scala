@@ -166,8 +166,8 @@ class ClientInvitationJourneyController @Inject()(
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case Root => routes.AgentInvitationJourneyController.agentsRoot() // would be better to have client's root as well
-    case WarmUp(clientType, uid, agentName) =>
-      routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, agentName)
+    case WarmUp(clientType, uid, _, normalisedAgentName) =>
+      routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
@@ -189,7 +189,7 @@ class ClientInvitationJourneyController @Inject()(
       // There is no client root and we will not try to render page for it.
       throw new Exception("Unsupported journey state, cannot render the page.")
 
-    case WarmUp(clientType, uid, agentName) =>
+    case WarmUp(clientType, uid, agentName, _) =>
       Ok(
         warm_up(
           WarmUpPageConfig(
@@ -205,16 +205,18 @@ class ClientInvitationJourneyController @Inject()(
       Ok(not_found_invitation(serviceMessageKey))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
+      val clientTypeStr = ClientType.fromEnum(clientType)
       Ok(
         confirm_terms_multi(
           formWithErrors.or(confirmTermsMultiForm),
           ConfirmTermsPageConfig(
             agentName,
-            ClientType.fromEnum(clientType),
+            clientTypeStr,
             uid,
             consents,
-            routes.ClientInvitationJourneyController.submitConsent(),
-            routes.ClientInvitationJourneyController.showCheckAnswers()
+            backLink = backLinkFor(breadcrumbs),
+            submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
+            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers()
           )
         ))
 
@@ -227,8 +229,9 @@ class ClientInvitationJourneyController @Inject()(
             ClientType.fromEnum(clientType),
             uid,
             Seq(consent),
-            routes.ClientInvitationJourneyController.submitChangeConsents(),
-            routes.ClientInvitationJourneyController.showCheckAnswers()
+            backLink = backLinkFor(breadcrumbs),
+            submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
+            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers()
           )
         ))
 
@@ -255,8 +258,9 @@ class ClientInvitationJourneyController @Inject()(
             ClientType.fromEnum(clientType),
             uid,
             consents.map(_.serviceKey).distinct,
-            routes.ClientInvitationJourneyController.submitConfirmDecline()),
-          backLinkFor(breadcrumbs).url
+            submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline(),
+            backLink = backLinkFor(breadcrumbs)
+          )
         ))
 
     case InvitationsAccepted(agentName, consents) => Ok(complete(CompletePageConfig(agentName, consents)))

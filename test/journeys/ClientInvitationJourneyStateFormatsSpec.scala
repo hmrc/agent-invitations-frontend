@@ -54,9 +54,9 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |]"""
 
       "WarmUp" in {
-        val state = WarmUp(personal, "uid", "agent name")
+        val state = WarmUp(personal, "uid", "agent name", "agent-name")
         val json = Json.parse(
-          """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name"}}""")
+          """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "normalisedAgentName":"agent-name"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

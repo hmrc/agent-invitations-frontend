@@ -148,7 +148,7 @@ abstract class BaseISpec
   }
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {
-    val element = s"""<a id="identifiersBackLink" href="$backLinkUrl" class="link-back">Back</a>"""
+    val element = s"""<a id="backLink" href="$backLinkUrl" class="link-back">Back</a>"""
     checkHtmlResultWithBodyText(result, element)
   }
 
