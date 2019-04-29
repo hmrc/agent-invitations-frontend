@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.fsm.PersistentJourneyService
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[MongoDBCachedClientInvitationJourneyService])
-trait ClientInvitationJourneyService extends PersistentJourneyService {
+trait ClientInvitationJourneyService extends PersistentJourneyService[HeaderCarrier] {
 
   override val journeyKey = "clientInvitationJourney"
 

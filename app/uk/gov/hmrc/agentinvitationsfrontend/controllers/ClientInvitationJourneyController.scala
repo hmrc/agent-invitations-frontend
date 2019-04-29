@@ -49,7 +49,8 @@ class ClientInvitationJourneyController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   featureFlags: FeatureFlags,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with JourneyIdSupport with I18nSupport {
+    extends FrontendController with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier]
+    with I18nSupport {
 
   import ClientInvitationJourneyController._
   import authActions._
@@ -58,8 +59,11 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
-  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
+  override implicit def context(implicit rh: RequestHeader): HeaderCarrier =
     appendJourneyId(super.hc)
+
+  override def amendContext(headerCarrier: HeaderCarrier)(key: String, value: String): HeaderCarrier =
+    headerCarrier.withExtraHeaders(key -> value)
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
     withAuthorisedAsAnyClient
@@ -84,82 +88,80 @@ class ClientInvitationJourneyController @Inject()(
     }
 
   val submitWarmUp = action { implicit request =>
-    authorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+    whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
   }
 
-  val showConsent = showCurrentStateWhenAuthorised(AsClient) {
+  val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
   }
 
-  def showConsentIndividual = showCurrentStateWhenAuthorised(AsClient) {
+  def showConsentIndividual = actionShowStateWhenAuthorised(AsClient) {
     case _ =>
   }
 
-  val showNotFoundInvitation = showCurrentStateWhenAuthorised(AsClient) {
+  val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
   }
 
-  def showIncorrectClientType = showCurrentStateWhenAuthorised(AsClient) {
+  def showIncorrectClientType = actionShowStateWhenAuthorised(AsClient) {
     case _: IncorrectClientType =>
   }
 
   def submitConsent = action { implicit request =>
-    authorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
+    whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
   }
 
   def submitChangeConsents = action { implicit request =>
-    authorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitChangeConsents)
+    whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitChangeConsents)
   }
 
-  def showCheckAnswers = showCurrentStateWhenAuthorised(AsClient) {
+  def showCheckAnswers = actionShowStateWhenAuthorised(AsClient) {
     case _: CheckAnswers =>
   }
 
   def submitCheckAnswers = action { implicit request =>
-    authorised(AsClient)(Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation))(redirect)
+    whenAuthorised(AsClient)(Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation))(redirect)
   }
 
   def submitCheckAnswersChange(uid: String) = action { implicit request =>
-    authorised(AsClient)(Transitions.submitCheckAnswersChange(uid))(redirect)
+    whenAuthorised(AsClient)(Transitions.submitCheckAnswersChange(uid))(redirect)
   }
 
   def submitWarmUpConfirmDecline = action { implicit request =>
-    authorised(AsClient)(Transitions.submitWarmUpToDecline(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+    whenAuthorised(AsClient)(Transitions.submitWarmUpToDecline(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
   }
 
-  def showConfirmDecline = showCurrentStateWhenAuthorised(AsClient) {
+  def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {
     case _: ConfirmDecline =>
   }
 
   def submitConfirmDecline = action { implicit request =>
-    authorisedWithForm(AsClient)(confirmDeclineForm)(Transitions.submitConfirmDecline(rejectInvitation))
+    whenAuthorisedWithForm(AsClient)(confirmDeclineForm)(Transitions.submitConfirmDecline(rejectInvitation))
   }
 
   def showInvitationsAccepted = action { implicit request =>
-    whenAuthorised(AsClient) {
+    showStateWhenAuthorised(AsClient) {
       case _: InvitationsAccepted =>
-    }(display)
-      .andThen {
-        // clears journey history
-        case Success(_) => journeyService.cleanBreadcrumbs()
-      }
+    }.andThen {
+      // clears journey history
+      case Success(_) => journeyService.cleanBreadcrumbs()
+    }
   }
 
   def showInvitationsDeclined = action { implicit request =>
-    whenAuthorised(AsClient) {
+    showStateWhenAuthorised(AsClient) {
       case _: InvitationsDeclined =>
-    }(display)
-      .andThen {
-        // clears journey history
-        case Success(_) => journeyService.cleanBreadcrumbs()
-      }
+    }.andThen {
+      // clears journey history
+      case Success(_) => journeyService.cleanBreadcrumbs()
+    }
   }
 
-  def showAllResponsesFailed = showCurrentStateWhenAuthorised(AsClient) {
+  def showAllResponsesFailed = actionShowStateWhenAuthorised(AsClient) {
     case AllResponsesFailed =>
   }
 
-  def showSomeResponsesFailed = showCurrentStateWhenAuthorised(AsClient) {
+  def showSomeResponsesFailed = actionShowStateWhenAuthorised(AsClient) {
     case _: SomeResponsesFailed =>
   }
 
