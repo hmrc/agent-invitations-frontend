@@ -49,7 +49,8 @@ class ClientInvitationJourneyController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   featureFlags: FeatureFlags,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with JourneyIdSupport with I18nSupport {
+    extends FrontendController with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier]
+    with I18nSupport {
 
   import ClientInvitationJourneyController._
   import authActions._
@@ -58,8 +59,11 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
-  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
+  override implicit def context(implicit rh: RequestHeader): HeaderCarrier =
     appendJourneyId(super.hc)
+
+  override def amendContext(headerCarrier: HeaderCarrier)(key: String, value: String): HeaderCarrier =
+    headerCarrier.withExtraHeaders(key -> value)
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
     withAuthorisedAsAnyClient

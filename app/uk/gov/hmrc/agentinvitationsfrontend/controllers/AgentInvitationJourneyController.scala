@@ -22,7 +22,7 @@ import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, Call, Request, Result}
+import play.api.mvc.{Action, Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
@@ -34,6 +34,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
@@ -53,7 +54,7 @@ class AgentInvitationJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with I18nSupport {
+    extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationJourneyController._
   import authActions._
@@ -61,6 +62,8 @@ class AgentInvitationJourneyController @Inject()(
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
+
+  override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)

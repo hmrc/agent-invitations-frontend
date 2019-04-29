@@ -23,7 +23,7 @@ import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Call, Request, Result}
+import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
@@ -37,6 +37,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
@@ -57,7 +58,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   featureFlags: FeatureFlags,
   val messagesApi: play.api.i18n.MessagesApi,
   ec: ExecutionContext)
-    extends FrontendController with JourneyController with I18nSupport {
+    extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationFastTrackJourneyController._
   import invitationsService._
@@ -66,6 +67,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   import relationshipsService.hasActiveRelationshipFor
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
   import authActions._
+
+  override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
