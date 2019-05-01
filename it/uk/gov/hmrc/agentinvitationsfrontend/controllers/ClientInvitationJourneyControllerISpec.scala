@@ -148,7 +148,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /warm-up/consent" should {
     def request = requestWithJourneyId("GET", "/warm-up/consent")
 
-    "display the consent page" in {
+    "display the multi consent page" in {
       journeyState.set(
         MultiConsent(
           personal,
@@ -194,6 +194,63 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         controller.submitConsent(authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers().url)
+    }
+  }
+
+  "GET /consent/individual" should {
+    def request = requestWithJourneyId("GET", "/consent/individual")
+
+    "display the individual consent page" in {
+      journeyState.set(
+        SingleConsent(
+          personal,
+          uid,
+          "My Agency",
+          ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+          Seq(
+            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
+            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
+          )
+        ),
+        Nil)
+
+      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
+    }
+
+    "display the individual consent page when coming back to it from the CheckAnswers page" in {
+      val consents = Seq(
+        ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
+        ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
+        ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
+      )
+      val currentState = CheckAnswers(
+        personal,
+        uid,
+        "My Agency",
+        consents
+      )
+
+      journeyState.set(
+        currentState,
+        breadcrumbs = List(
+          currentState,
+          SingleConsent(
+            personal,
+            uid,
+            "My Agency",
+            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+            consents
+          )
+        ))
+
+      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
     }
   }
 
