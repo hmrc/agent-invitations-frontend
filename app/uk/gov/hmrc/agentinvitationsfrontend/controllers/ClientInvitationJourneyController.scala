@@ -96,7 +96,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def showConsentIndividual = actionShowStateWhenAuthorised(AsClient) {
-    case _ =>
+    case _: SingleConsent =>
   }
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
