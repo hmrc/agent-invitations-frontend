@@ -352,10 +352,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
       agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) if showKfcPir && redirectToConfirmIrvFlag =>
         for {
-          regDateMatches <- checkDobMatches(
-                             Nino(irvClient.clientIdentifier),
-                             LocalDate.parse(irvClient.dob.getOrElse("")))
-          endState <- regDateMatches match {
+          dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse("")))
+          endState <- dobMatches match {
                        case Some(true) =>
                          getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
                            goto(
@@ -367,7 +365,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ))
                          }
                        case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCPIR, Set.empty))
+                       case None        => goto(KnownFactNotMatched(Set.empty))
                      }
         } yield endState
 
@@ -396,7 +394,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
                          }
                        case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCPIR, Set.empty))
+                       case None        => goto(KnownFactNotMatched(Set.empty))
                      }
         } yield endState
 
