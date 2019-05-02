@@ -89,7 +89,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       )
 
       val parseHtml = Jsoup.parse(contentAsString(result))
-      println(parseHtml)
+
       parseHtml.getElementsByAttributeValue("id","row-0").toString should include("FooBar Ltd.")
       parseHtml.getElementsByAttributeValue("id","row-0").toString should include(
         "Report their income and expenses through software")
