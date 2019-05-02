@@ -297,12 +297,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgentLink)(authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should thenGo(
           ActiveAuthorisationExists(personal, HMRCPIR, emptyBasket))
       }
-      "transition to ClientNotSignedUp when client not found" in {
+      "transition to KnownFactNotMatched when client not found" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(true)(true)(clientName)(createMultipleInvitations)(
           getAgentLink)(authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
-          thenGo(ClientNotSignedUp(HMRCPIR, emptyBasket))
+          thenGo(KnownFactNotMatched(emptyBasket))
       }
 
     }

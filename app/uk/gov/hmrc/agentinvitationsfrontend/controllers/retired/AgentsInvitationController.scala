@@ -333,9 +333,9 @@ class AgentsInvitationController @Inject()(
         val hasRequests = agentSession.requests.nonEmpty
         agentSession.service match {
           case Some(HMRCMTDVAT) =>
-            Forbidden(not_signed_up(Services.messageKeyForVAT, hasRequests))
+            Forbidden(not_signed_up(HMRCMTDVAT, hasRequests))
           case Some(HMRCMTDIT) =>
-            Forbidden(not_signed_up(Services.messageKeyForITSA, hasRequests))
+            Forbidden(not_signed_up(HMRCMTDIT, hasRequests))
           case ex =>
             throw new Exception(s"Unsupported Service: ${ex.getOrElse("")}")
         }
