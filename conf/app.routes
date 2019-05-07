@@ -106,9 +106,9 @@ POST        /accept-tax-agent-invitation/confirm-decline/:clientType/:uid       
 GET         /reject-tax-agent-invitation/declined/uid/:uid                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.getMultiInvitationsDeclined(uid: String)
 
 # Error Client Endpoints
-GET         /wrong-account-type/                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.incorrectClientType
-GET         /not-authorised/                                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notAuthorised
-GET         /not-found/                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notFoundInvitation
+GET         /wrong-account-type                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.incorrectClientType
+GET         /not-authorised                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notAuthorised
+GET         /not-found                                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientErrorController.notFoundInvitation
 GET         /some-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showSomeResponsesFailed
 GET         /all-responses-failed                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.showAllResponsesFailed
 
