@@ -24,6 +24,7 @@
         mainClass: Option[String] = None,
         scriptElem: Option[Html] = None,
         isAgent: Boolean,
+        bannerTitle: String = "app.name",
         completedInviteGoSurvey: Option[Boolean] = None,
         mainDataAttributes: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -45,5 +46,6 @@
         scriptElem = scriptElem,
         cookies = Some(request.cookies),
         isAgent = isAgent,
+        bannerTitle = bannerTitle,
         completedInviteGoSurvey = completedInviteGoSurvey,
         mainDataAttributes = mainDataAttributes)

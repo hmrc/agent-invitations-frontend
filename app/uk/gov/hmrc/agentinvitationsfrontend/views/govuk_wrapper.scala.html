@@ -30,6 +30,7 @@
         gaCode: Seq[String] = Seq.empty,
         cookies: Option[Cookies] = None,
         isAgent: Boolean,
+        bannerTitle: String = "app.name",
         completedInviteGoSurvey: Option[Boolean] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @head = {
@@ -65,7 +66,7 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     @uiLayouts.header_nav(
-        navTitle = Some(Messages("app.name")),
+        navTitle = Some(Messages(bannerTitle)),
         navTitleLink = None,
         showBetaLink = false,
         navLinks = Some(headerNavLinks))
