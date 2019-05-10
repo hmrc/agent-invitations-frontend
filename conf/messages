@@ -443,14 +443,14 @@ incorrect-invitation.header=There is a problem
 incorrect-invitation.description=The request you accepted might be meant for someone else. Contact the tax agent who sent you the request.
 
 # Not Found Invitation
-not-found-invitation.header=There is a problem
+not-found-invitation.header=Page not found
 not-found-invitation.description.1=If you typed the web address, check it is correct.
 not-found-invitation.description.2=If you pasted the web address, check you copied the entire address
 not-found-invitation.description.3=If the web address is correct, contact the tax agent who sent you the request if you still want to authorise them.
 
 # Invitation Already Responded
 invitation-already-responded.header=There is a problem
-invitation-already-responded.description=Someone has already responsed to this request. If you think this is wrong, contact the tax agent who sent you the request.
+invitation-already-responded.description=Someone has already responded to this request. If you think this is wrong, contact the tax agent who sent you the request.
 
 # Wrong Client Type
 
@@ -489,9 +489,10 @@ global.error.403.message=
 global.error.passcode.title=Forbidden - 403
 global.error.passcode.heading=Sorry, you haven''t been authorised to proceed.
 global.error.passcode.message=
-global.error.404.title=Page not found - 404
-global.error.404.heading=This page can''t be found
-global.error.404.message=Please check that you have entered the correct web address.
+global.error.404.title=Page not found - GOV.UK
+global.error.404.heading=Page not found
+global.error.404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
+
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
 global.error.500.heading=Sorry, we''re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
@@ -601,7 +602,7 @@ pending-authorisation-exists.no-requests.p=You already created an authorisation 
 pending-authorisation-exists.track.button=Track your authorisation requests
 pending-authorisation-exists.new-request.link=Start a new request
 
-#Active authorisatio exists
+#Active authorisation exists
 active-authorisation-exists.header=You are already authorised
 active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to report their income and expenses through software.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.

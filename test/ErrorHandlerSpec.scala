@@ -20,7 +20,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.auth.core.{InsufficientEnrolments, MissingBearerToken}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.auth.otac.{NoOtacTokenInSession, OtacFailureThrowable}
 import uk.gov.hmrc.http.BadGatewayException
 import uk.gov.hmrc.play.test.UnitSpec
@@ -74,7 +74,8 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
 
       status(result) shouldBe NOT_FOUND
       contentType(result) shouldBe Some(HTML)
-      checkIncludesMessages(result, "global.error.404.title", "global.error.404.heading", "global.error.404.message")
+      checkIncludesText(result, "<p>If you typed the web address, check it is correct.</p>")
+      checkIncludesMessages(result, "global.error.404.title", "global.error.404.heading")
     }
   }
 
@@ -92,5 +93,10 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
     messageKeys.foreach { messageKey =>
       messagesApi.isDefinedAt(messageKey) shouldBe true
       contentAsString(result) should include(HtmlFormat.escape(messagesApi(messageKey)).toString)
+    }
+
+  private def checkIncludesText(result: Future[Result], messageKeys: String*): Unit =
+    messageKeys.foreach { messageKey =>
+      contentAsString(result) should include(messageKey.toString)
     }
 }
