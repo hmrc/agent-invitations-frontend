@@ -1,4 +1,5 @@
 app.name=Ask a client to authorise you
+app.name.clients=Appoint someone to deal with HMRC for you
 
 title.suffix.agents=Agent services account
 title.suffix.client=Manage your tax agents
