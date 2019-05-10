@@ -24,7 +24,7 @@
 
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
 
     @back_link(pageConfig.backLink.url)

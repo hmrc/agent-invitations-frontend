@@ -20,7 +20,7 @@
 
 @(title: String, description: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages(s"generic.title", Messages("not-authorised.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("not-authorised.header"), serviceMessageKey))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title = Messages(s"generic.title", Messages("not-authorised.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("not-authorised.header"), serviceMessageKey))) {
 
     <h1 class="heading-xlarge">@title</h1>
 

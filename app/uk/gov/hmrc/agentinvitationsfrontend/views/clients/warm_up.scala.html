@@ -22,7 +22,7 @@
 @(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, bannerTitle = "app.name.clients") {
 
  <h1 class="heading-xlarge">@Messages("warm-up.header", pageConfig.agentName)</h1>
 
