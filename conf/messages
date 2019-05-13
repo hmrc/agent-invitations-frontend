@@ -283,13 +283,9 @@ landing-page.service.vat.p1=You need to authorise your tax agent if you want the
 # Warm up
 warm-up.header=Appoint {0} to deal with HMRC for you
 warm-up.p1=Use this service to allow {0} to help you manage your tax affairs.
-warm-up.p2.business=We need your approval for each business tax service that {0} wants to deal with for you.
+warm-up.p2.business=<p>So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>. You can create a user ID now if you do not have one.</p>
 warm-up.p2.personal=We need your approval for each individual or sole trader tax service that {0} wants to deal with for you.
 warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
-warm-up.sub-header=Before you start
-warm-up.p3=Before you can give your permission, you will need to sign in so we can confirm who you are.
-warm-up.p4.business=You will need the Government Gateway login details you use to access your business tax affairs. You can create an account now if you do not have one.
-warm-up.p4.personal=You will need the Government Gateway login details you use to access your individual or sole trader tax affairs. You can create an account now if you do not have one.
 warm-up.link=I do not want to appoint {0}
 
 # Invitation Declined
