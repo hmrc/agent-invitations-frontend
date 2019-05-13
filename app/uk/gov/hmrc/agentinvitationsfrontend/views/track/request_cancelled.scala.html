@@ -37,10 +37,8 @@
     </div>
 
     <div class="margin-bottom-30">
-        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button">@Messages(s"request-cancelled.track.button")</a>
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages(s"request-cancelled.track.link")</a>
     </div>
-
-    <h2 class="heading-small">@Messages("request-cancelled.subheader")</h2>
 
     <p>@Html(Messages("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))</p>
 

@@ -377,7 +377,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Authorisation request cancelled",
         "You have cancelled your authorisation request to report their income and expenses through software.",
         "Joe Volcano will not be able to respond to this request.",
-        "Made a mistake?",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
       )
     }

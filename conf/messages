@@ -567,9 +567,9 @@ request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request t
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to report their VAT returns through software.
 request-cancelled.panel={0} will not be able to respond to this request.
-request-cancelled.track.button=Track your recent authorisation requests
-request-cancelled.subheader=Made a mistake?
-request-cancelled.p2=If you want your client to authorise you, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
+request-cancelled.track.link=Track your recent authorisation requests
+
+request-cancelled.p2=If you cancelled your authorisation request by mistake, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=Are you sure you want to cancel this client''s authorisation?
@@ -601,7 +601,7 @@ pending-authorisation-exists.no-requests.p=You already created an authorisation 
 pending-authorisation-exists.track.button=Track your authorisation requests
 pending-authorisation-exists.new-request.link=Start a new request
 
-#Active authorisatio exists
+#Active authorisation exists
 active-authorisation-exists.header=You are already authorised
 active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to report their income and expenses through software.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
