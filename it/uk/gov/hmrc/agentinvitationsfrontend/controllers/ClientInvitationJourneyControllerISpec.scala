@@ -60,8 +60,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         status(result) shouldBe 200
 
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.header", "My Agency"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p2.personal", "My Agency"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.p4.personal"))
+        checkIncludesText(result,"<p>So we can confirm who you are")
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.inset","My Agency"))
       }
     }
 

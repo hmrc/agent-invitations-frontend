@@ -48,7 +48,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "Appoint My Agency to deal with HMRC for you",
-        "We need your approval for each individual or sole trader tax service that My Agency wants to deal with for you.",
+        "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = \"bold\"> personal tax affairs</strong>. You can create a user ID now if you do not have one.",
         "I do not want to appoint My Agency"
       )
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")
@@ -63,7 +63,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "Appoint My Agency to deal with HMRC for you",
-        "We need your approval for each business tax service that My Agency wants to deal with for you.",
+        "we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = \"bold\"> business tax affairs</strong>. You can create a user ID now if you do not have one.",
         "I do not want to appoint My Agency"
       )
       await(bodyOf(result)) should not include htmlEscapedMessage("common.sign-out")

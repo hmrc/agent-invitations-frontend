@@ -27,22 +27,16 @@
  <h1 class="heading-xlarge">@Messages("warm-up.header", pageConfig.agentName)</h1>
 
     <p>@Messages("warm-up.p1", pageConfig.agentName)</p>
-    <p>@Messages(s"warm-up.p2.${pageConfig.typeOfClient}", pageConfig.agentName)</p>
+    <p>@Html(Messages(s"warm-up.p2.${pageConfig.typeOfClient}", pageConfig.agentName))</p>
 
-    <div class="panel panel-border-wide">@Messages("warm-up.inset", pageConfig.agentName)</div>
-
-    <h2>@Messages("warm-up.sub-header")</h2>
-
-    <p>@Messages("warm-up.p3")</p>
-
-    <p>@Messages(s"warm-up.p4.${pageConfig.clientType}")</p>
+    <div class="panel panel-border-wide margin-bottom-30">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
     @form(pageConfig.getConfirmTermsCall) {
         <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
 
     @form(pageConfig.getConfirmDeclineCall) {
-        <button type="submit" class="button--link-style text-link-small margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
+        <button type="submit" class="button--link-style margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
     }
 
 }
