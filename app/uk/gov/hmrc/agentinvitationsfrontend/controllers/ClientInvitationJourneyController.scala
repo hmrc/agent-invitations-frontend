@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
@@ -163,6 +163,14 @@ class ClientInvitationJourneyController @Inject()(
 
   def showSomeResponsesFailed = actionShowStateWhenAuthorised(AsClient) {
     case _: SomeResponsesFailed =>
+  }
+
+  val notAuthorised: Action[AnyContent] = Action { implicit request =>
+    Forbidden(
+      not_authorised(
+        Messages("not-authorised.header"),
+        Messages("not-authorised.description"),
+        Services.messageKeyForAfi))
   }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
