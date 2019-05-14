@@ -19,29 +19,27 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@(service: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.track.RequestCancelledPageConfig
+
+@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
-        """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
+        """<p>""" + Messages(s"confirm-cancel.subheader.${pageConfig.service}") + """</p>"""}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), pageConfig.service))) {
 
  <div class="transaction-banner--complete">
   <h1 class="transaction-banner__heading">@Messages("request-cancelled.header")</h1>
  </div>
 
- <p>@Messages(s"request-cancelled.p1.$service")</p>
-@if(service == "PERSONAL-INCOME-RECORD") {
+ <p>@Messages(s"request-cancelled.p1.${pageConfig.service}")</p>
+
     <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
-        <p>@Messages("request-cancelled.panel.PERSONAL-INCOME-RECORD")</p>
+        <p>@Messages("request-cancelled.panel", pageConfig.hideClientName)</p>
     </div>
-} else {
-    <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
-        <p>@Messages("request-cancelled.panel.other", clientName)</p>
-    </div>
-}
+
     <div class="margin-bottom-30">
-        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages(s"request-cancelled.track.link")</a>
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages("request-cancelled.track.link")</a>
     </div>
 
     <p>@Html(Messages("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))</p>
