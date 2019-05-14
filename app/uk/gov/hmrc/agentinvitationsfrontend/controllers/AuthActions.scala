@@ -91,15 +91,15 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
                 body(AuthorisedClient(affinityG, clientIdTypePlusIds))
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, clientIdTypePlusIds))
-            case _                               => Future successful Redirect(routes.ClientErrorController.notAuthorised())
+            case _                               => Future successful Redirect(routes.ClientNotAuthorisedController.notAuthorised())
           }
-        case _ => Future successful Redirect(routes.ClientErrorController.notAuthorised())
+        case _ => Future successful Redirect(routes.ClientNotAuthorisedController.notAuthorised())
       }
       .recover {
         case _: InsufficientEnrolments =>
-          Redirect(routes.ClientErrorController.notAuthorised())
+          Redirect(routes.ClientNotAuthorisedController.notAuthorised())
         case _: UnsupportedAffinityGroup =>
-          Redirect(routes.ClientErrorController.notAuthorised())
+          Redirect(routes.ClientNotAuthorisedController.notAuthorised())
       }
 
   def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
@@ -150,13 +150,13 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     } else if (request.method == "GET") {
       redirectToIdentityVerification(requiredLevel)
     } else {
-      Future.successful(Redirect(routes.ClientErrorController.notAuthorised().url))
+      Future.successful(Redirect(routes.ClientNotAuthorisedController.notAuthorised().url))
     }
 
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val failureUrl = toLocalFriendlyUrl(routes.ClientErrorController.notAuthorised().url, request.host)
+    val failureUrl = toLocalFriendlyUrl(routes.ClientNotAuthorisedController.notAuthorised().url, request.host)
 
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,

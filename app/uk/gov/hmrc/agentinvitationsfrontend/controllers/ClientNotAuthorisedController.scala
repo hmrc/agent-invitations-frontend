@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import javax.inject.Inject
 import play.api.Configuration
 import play.api.i18n.{I18nSupport, Messages}
@@ -24,19 +25,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
-
-class ClientErrorController @Inject()(override val messagesApi: play.api.i18n.MessagesApi)(
+class ClientNotAuthorisedController @Inject()(override val messagesApi: play.api.i18n.MessagesApi)(
   implicit val configuration: Configuration,
   val externalUrls: ExternalUrls)
     extends FrontendController with I18nSupport {
-
-  val incorrectClientType: Action[AnyContent] = Action.async { implicit request =>
-    request.session.get("clientType") match {
-      case Some(clientType) => Future successful Forbidden(incorrect_client_type(clientType))
-      case _                => Future successful Redirect(routes.ClientErrorController.notAuthorised())
-    }
-  }
 
   val notAuthorised: Action[AnyContent] = Action { implicit request =>
     Forbidden(
@@ -45,10 +37,4 @@ class ClientErrorController @Inject()(override val messagesApi: play.api.i18n.Me
         Messages("not-authorised.description"),
         Services.messageKeyForAfi))
   }
-
-  val notFoundInvitation: Action[AnyContent] = Action { implicit request =>
-    val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-    NotFound(not_found_invitation(serviceMessageKey))
-  }
-
 }

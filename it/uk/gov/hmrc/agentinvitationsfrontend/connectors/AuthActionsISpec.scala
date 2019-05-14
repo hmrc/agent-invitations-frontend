@@ -140,7 +140,7 @@ class AuthActionsISpec extends BaseISpec {
           url = "/mdtp/uplift?origin=aif",
           "confidenceLevel" -> Some("200"),
           "completionURL"   -> Some(TestController.request.path),
-          "failureURL"      -> Some(routes.ClientErrorController.notAuthorised().url)
+          "failureURL"      -> Some(routes.ClientNotAuthorisedController.notAuthorised().url)
         )
 
         redirectLocation(result).get shouldBe expectedRedirectUrl
@@ -153,7 +153,7 @@ class AuthActionsISpec extends BaseISpec {
         }(request, TestController.hc, scala.concurrent.ExecutionContext.Implicits.global))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientErrorController.notAuthorised().url)
+        redirectLocation(result) shouldBe Some(routes.ClientNotAuthorisedController.notAuthorised().url)
       }
     }
   }

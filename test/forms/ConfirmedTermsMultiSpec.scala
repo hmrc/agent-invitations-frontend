@@ -15,7 +15,7 @@
  */
 
 package forms
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.confirmTermsMultiForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.ClientsMultiInvitationController.confirmTermsMultiForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
 import uk.gov.hmrc.play.test.UnitSpec
 
