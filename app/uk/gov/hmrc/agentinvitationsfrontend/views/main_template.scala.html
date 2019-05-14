@@ -26,6 +26,7 @@
         isAgent: Boolean,
         bannerTitle: String = "app.name",
         completedInviteGoSurvey: Option[Boolean] = None,
+        gaCalls: Option[(String,String) => Html] = None,
         mainDataAttributes: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
     @serviceInfoContent = {}
@@ -48,4 +49,5 @@
         isAgent = isAgent,
         bannerTitle = bannerTitle,
         completedInviteGoSurvey = completedInviteGoSurvey,
-        mainDataAttributes = mainDataAttributes)
+        mainDataAttributes = mainDataAttributes,
+        gaCalls = gaCalls)
