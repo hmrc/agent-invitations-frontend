@@ -563,7 +563,8 @@ request-cancelled.header=Authorisation request cancelled
 request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to report their income and expenses through software.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to report their VAT returns through software.
-request-cancelled.panel={0} will not be able to respond to this request.
+request-cancelled.panel.PERSONAL-INCOME-RECORD= Your client will not be able to respond to this request.
+request-cancelled.panel.other= {0} will not be able to respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 
 request-cancelled.p2=If you cancelled your authorisation request by mistake, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.

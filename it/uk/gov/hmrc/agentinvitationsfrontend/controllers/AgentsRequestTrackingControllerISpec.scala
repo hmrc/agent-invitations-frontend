@@ -354,13 +354,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "This field is required")
     }
-
   }
 
   "GET /request-cancelled/" should {
     val request = FakeRequest("POST", "/track/request-cancelled")
     val showRequestCancelled = controller.showRequestCancelled
-
     "render a request cancelled page" in {
       val result = showRequestCancelled(
         authorisedAsValidAgent(
@@ -378,6 +376,21 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "You have cancelled your authorisation request to report their income and expenses through software.",
         "Joe Volcano will not be able to respond to this request.",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
+      )
+    }
+    "render a request cancelled page without the client's name during an IRV journey" in {
+      val result = showRequestCancelled(authorisedAsValidAgent(request
+          .withSession(
+            "invitationId" -> invitationIdPIR.value,
+                          "clientName"  -> "Voe Jolcano",
+                          "service"     -> "PERSONAL-INCOME-RECORD"), arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "Authorisation request cancelled",
+        "You have cancelled your authorisation request to view their PAYE income record.",
+        "Your client will not be able to respond to this request."
       )
     }
   }

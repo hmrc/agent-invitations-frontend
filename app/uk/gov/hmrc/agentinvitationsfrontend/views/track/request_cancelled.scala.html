@@ -31,11 +31,15 @@
  </div>
 
  <p>@Messages(s"request-cancelled.p1.$service")</p>
-
+@if(service == "PERSONAL-INCOME-RECORD") {
     <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
-        <p>@Messages("request-cancelled.panel", clientName)</p>
+        <p>@Messages("request-cancelled.panel.PERSONAL-INCOME-RECORD")</p>
     </div>
-
+} else {
+    <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
+        <p>@Messages("request-cancelled.panel.other", clientName)</p>
+    </div>
+}
     <div class="margin-bottom-30">
         <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages(s"request-cancelled.track.link")</a>
     </div>
