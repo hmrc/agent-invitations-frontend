@@ -1,8 +1,8 @@
 app.name=Manage your agent invitations
 app.name.clients=Appoint someone to deal with HMRC for you
 
-title.suffix.agents=Agent services account
-title.suffix.client=Manage your tax agents
+title.suffix.agents=Manage your agent invitations
+title.suffix.client=Appoint someone to deal with HMRC for you
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages
