@@ -79,6 +79,9 @@ GET         /agents/not-authorised                                      @uk.gov.
 GET         /fsm/agents/cancel-authorisation/client-type                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showClientType
 POST        /fsm/agents/cancel-authorisation/client-type                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitClientType
 GET         /fsm/agents/cancel-authorisation/select-service             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showSelectService
+POST         /fsm/agents/cancel-authorisation/select-personal-service             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitPersonalService
+POST         /fsm/agents/cancel-authorisation/select-business-service             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitBusinessService
+GET         /fsm/agents/cancel-authorisation/identify-client             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showIdentifyClient
 
 # Request tracking
 GET         /track                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests

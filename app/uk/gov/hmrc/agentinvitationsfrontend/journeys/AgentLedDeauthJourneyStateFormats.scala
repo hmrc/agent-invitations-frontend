@@ -23,15 +23,19 @@ import uk.gov.hmrc.play.fsm.JsonStateFormats
 object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
 
   val SelectServicePersonalFormats: OFormat[SelectServicePersonal] = Json.format
+  val IdentifyClientPersonalFormats: OFormat[IdentifyClientPersonal] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: SelectServicePersonal => SelectServicePersonalFormats.writes(s)
+    case s: SelectServicePersonal  => SelectServicePersonalFormats.writes(s)
+    case s: IdentifyClientPersonal => IdentifyClientPersonalFormats.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "SelectClientType"      => JsSuccess(SelectClientType)
-    case "SelectServicePersonal" => SelectServicePersonalFormats.reads(properties)
-    case "SelectServiceBusiness" => JsSuccess(SelectServiceBusiness)
-    case _                       => JsError(s"Unknown state name $stateName")
+    case "SelectClientType"       => JsSuccess(SelectClientType)
+    case "SelectServicePersonal"  => SelectServicePersonalFormats.reads(properties)
+    case "SelectServiceBusiness"  => JsSuccess(SelectServiceBusiness)
+    case "IdentifyClientPersonal" => IdentifyClientPersonalFormats.reads(properties)
+    case "IdentifyClientBusiness" => JsSuccess(IdentifyClientBusiness)
+    case _                        => JsError(s"Unknown state name $stateName")
   }
 }

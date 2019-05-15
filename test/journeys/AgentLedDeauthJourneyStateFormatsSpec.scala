@@ -18,8 +18,9 @@ package journeys
 
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{SelectClientType, SelectServiceBusiness, SelectServicePersonal}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
@@ -36,7 +37,6 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-
       "SelectServicePersonal" in {
         val state = SelectServicePersonal(Set("approved", "services"))
         val json = Json.parse(
@@ -45,10 +45,23 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-
       "SelectServiceBusiness" in {
         val state = SelectServiceBusiness
         val json = Json.parse("""{"state":"SelectServiceBusiness"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "IdentifyClientPersonal" in {
+        val state = IdentifyClientPersonal(Services.HMRCMTDIT)
+        val json = Json.parse("""{"state":"IdentifyClientPersonal", "properties": {"service": "HMRC-MTD-IT"}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "IdentifyClientBusiness" in {
+        val state = IdentifyClientBusiness
+        val json = Json.parse("""{"state":"IdentifyClientBusiness"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

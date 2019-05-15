@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 object AgentLedDeauthJourneyModel extends JourneyModel {
@@ -29,6 +29,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object SelectClientType extends State
     case class SelectServicePersonal(enabledServices: Set[String]) extends State
     case object SelectServiceBusiness extends State
+    case class IdentifyClientPersonal(service: String) extends State
+    case object IdentifyClientBusiness extends State
   }
 
   object Transitions {
@@ -49,6 +51,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         goto(SelectServicePersonal(enabledPersonalServices))
       }
       case SelectClientType if clientType == business => goto(SelectServiceBusiness)
+    }
+
+    def chosenPersonalService(agent: AuthorisedAgent)(service: String) = Transition {
+      case SelectServicePersonal(_) => goto(IdentifyClientPersonal(service))
+    }
+
+    def chosenBusinessService(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
+      case SelectServiceBusiness if confirmation.choice => goto(IdentifyClientBusiness)
+      case SelectServiceBusiness                        => goto(SelectClientType)
     }
 
   }

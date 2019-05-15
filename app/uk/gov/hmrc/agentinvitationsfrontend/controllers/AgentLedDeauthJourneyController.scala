@@ -18,18 +18,20 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.single
+import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.SelectPersonalServiceForm
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{SelectClientType, SelectServiceBusiness, SelectServicePersonal}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, SelectServicePageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{client_type, select_service}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{business_select_service, client_type, select_service}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{identify_client_irv, identify_client_itsa, identify_client_vat}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -68,11 +70,26 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectServiceBusiness    =>
   }
 
+  val submitPersonalService = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(servicePersonalForm)(chosenPersonalService)
+  }
+
+  val submitBusinessService = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(serviceBusinessForm)(chosenBusinessService)
+  }
+
+  val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
+    case _: IdentifyClientPersonal =>
+    case IdentifyClientBusiness    =>
+  }
+
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
-    case SelectClientType         => routes.AgentLedDeauthJourneyController.showClientType()
-    case _: SelectServicePersonal => routes.AgentLedDeauthJourneyController.showSelectService()
-    case SelectServiceBusiness    => routes.AgentLedDeauthJourneyController.showSelectService()
-    case _                        => throw new Exception(s"Link not found for $state")
+    case SelectClientType          => routes.AgentLedDeauthJourneyController.showClientType()
+    case _: SelectServicePersonal  => routes.AgentLedDeauthJourneyController.showSelectService()
+    case SelectServiceBusiness     => routes.AgentLedDeauthJourneyController.showSelectService()
+    case _: IdentifyClientPersonal => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case IdentifyClientBusiness    => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case _                         => throw new Exception(s"Link not found for $state")
 
   }
 
@@ -89,7 +106,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectServicePersonal(enabledServices) =>
       Ok(
         select_service(
-          formWithErrors.or(SelectPersonalServiceForm), // TODO
+          formWithErrors.or(servicePersonalForm),
           SelectServicePageConfig(
             basketFlag = false,
             featureFlags,
@@ -100,15 +117,81 @@ class AgentLedDeauthJourneyController @Inject()(
           )
         ))
 
+    case SelectServiceBusiness =>
+      Ok(
+        business_select_service(
+          formWithErrors.or(serviceBusinessForm),
+          basketFlag = false,
+          routes.AgentLedDeAuthController.showClientType(), //change
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
+    case IdentifyClientPersonal(service) =>
+      service match {
+        case Services.HMRCMTDIT =>
+          Ok(
+            identify_client_itsa(
+              ItsaClientForm.form(featureFlags.showKfcMtdIt),
+              featureFlags.showKfcMtdIt,
+              routes.AgentLedDeAuthController.showClientType(), //change
+              routes.AgentLedDeAuthController.showSelectService().url
+            ))
+        case Services.HMRCPIR =>
+          Ok(
+            identify_client_irv(
+              IrvClientForm.form(featureFlags.showKfcPersonalIncome),
+              featureFlags.showKfcPersonalIncome,
+              routes.AgentLedDeAuthController.showClientType(), //change
+              routes.AgentLedDeAuthController.showSelectService().url
+            )
+          )
+        case Services.HMRCMTDVAT =>
+          Ok(
+            identify_client_vat(
+              formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)), //change form
+              featureFlags.showKfcMtdVat,
+              routes.AgentLedDeAuthController.showClientType(), //change to submit identify client call
+              routes.AgentLedDeAuthController.showSelectService().url
+            ))
+      }
+
+    case IdentifyClientBusiness =>
+      Ok(
+        identify_client_vat(
+          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)), //change form
+          featureFlags.showKfcMtdVat,
+          routes.AgentLedDeAuthController.showClientType(), //change to submit identify client call
+          routes.AgentLedDeAuthController.showSelectService().url
+        ))
+
   }
 
-  override def context(implicit rh: RequestHeader): HeaderCarrier = ???
+  override def context(implicit rh: RequestHeader): HeaderCarrier = hc
 }
 
 object AgentLedDeauthJourneyController {
+
   val clientTypeForm: Form[ClientType] = Form(
     single(
       "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
     ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
+
+  val servicePersonalForm: Form[String] = Form(
+    single(
+      "serviceType" -> text.verifying("service.type.invalid", supportedServices.contains _)
+    )
+  )
+
+  def agentConfirmationForm(errorMessage: String): Form[Confirmation] =
+    Form(
+      mapping(
+        "accepted" -> optional(normalizedText)
+          .transform[String](_.getOrElse(""), s => Some(s))
+          .verifying(confirmationChoice(errorMessage))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+
+  val serviceBusinessForm: Form[Confirmation] = agentConfirmationForm(
+    "cancel-authorisation.error.business-service.required")
 }

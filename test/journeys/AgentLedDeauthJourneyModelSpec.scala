@@ -16,11 +16,10 @@
 
 package journeys
 
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{SelectClientType, SelectServiceBusiness, SelectServicePersonal}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -53,11 +52,40 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     "at state ClientType" should {
       "transition to SelectServicePersonal when personal is selected" in {
         given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.personal) should thenGo(
-          SelectServicePersonal(Set(HMRCMTDIT, HMRCMTDVAT, HMRCPIR)))
+          SelectServicePersonal(availableServices))
       }
       "transition to SelectServiceBusiness when business is selected" in {
         given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.business) should thenGo(
           SelectServiceBusiness)
+      }
+    }
+    "at state SelectServicePersonal" should {
+      "transition to IdentifyClientPersonal when service is ITSA" in {
+        given(SelectServicePersonal(availableServices)) when chosenPersonalService(authorisedAgent)(HMRCMTDIT) should thenGo(
+          IdentifyClientPersonal(HMRCMTDIT)
+        )
+      }
+      "transition to IdentifyClientPersonal when service is PIR" in {
+        given(SelectServicePersonal(availableServices)) when chosenPersonalService(authorisedAgent)(HMRCPIR) should thenGo(
+          IdentifyClientPersonal(HMRCPIR)
+        )
+      }
+      "transition to IdentifyClientPersonal when service is VAT" in {
+        given(SelectServicePersonal(availableServices)) when chosenPersonalService(authorisedAgent)(HMRCMTDVAT) should thenGo(
+          IdentifyClientPersonal(HMRCMTDVAT)
+        )
+      }
+    }
+    "at state SelectServiceBusiness" should {
+      "transition to IdentifyClientBusiness when YES is selected" in {
+        given(SelectServiceBusiness) when chosenBusinessService(authorisedAgent)(Confirmation(true)) should thenGo(
+          IdentifyClientBusiness
+        )
+      }
+      "transition to ClientType when NO is selected" in {
+        given(SelectServiceBusiness) when chosenBusinessService(authorisedAgent)(Confirmation(false)) should thenGo(
+          SelectClientType
+        )
       }
     }
   }
