@@ -4,6 +4,7 @@ import java.util.UUID
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.ClientErrorController
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
@@ -47,7 +48,7 @@ class ClientErrorControllerISpec extends BaseISpec {
     "redirect to not-authorised page if client-type not found in session" in {
       val result = controller.incorrectClientType(authorisedAsAnyIndividualClient(FakeRequest()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientErrorController.notAuthorised().url)
+      redirectLocation(result) shouldBe Some(retired.routes.ClientErrorController.notAuthorised().url)
     }
   }
 

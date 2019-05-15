@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
+
 import javax.inject.Inject
 import play.api.Configuration
 import play.api.i18n.{I18nSupport, Messages}

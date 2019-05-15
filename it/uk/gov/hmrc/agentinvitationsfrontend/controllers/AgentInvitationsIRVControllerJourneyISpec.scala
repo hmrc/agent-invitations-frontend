@@ -306,7 +306,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${routes.ClientInvitationJourneyController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 

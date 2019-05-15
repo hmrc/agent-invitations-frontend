@@ -17,7 +17,7 @@
 package views
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
