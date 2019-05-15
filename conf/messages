@@ -37,8 +37,7 @@ error.postcode.required=Enter your client''s postcode
 
 # Vrn
 identify-client.vrn.label=VAT registration number
-identify-client.vrn.hint=This is the 9-digit number they received when they registered for VAT.
-identify-client.vrn.example=For example, 123456789
+identify-client.vrn.hint=This is 9 numbers, for example, 123456789.
 
 #UTR
 identify-client.utr.label=Unique Taxpayer Reference (UTR)
