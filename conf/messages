@@ -1,7 +1,7 @@
 app.name=Ask a client to authorise you
 app.name.clients=Appoint someone to deal with HMRC for you
 
-title.suffix.agents=Manage your agent invitations
+title.suffix.agents=Ask a client to authorise you
 title.suffix.client=Appoint someone to deal with HMRC for you
 generic.title={0} - {1} - GOV.UK
 
