@@ -54,11 +54,8 @@
 
   @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
-  <p class="hint-text">@Messages("identify-client.vat.p1")</p>
+  <p>@Messages("identify-client.vat.p1")</p>
 }
-
-
-
 
  @form(
   action = submitFormCall, 'class -> "form js-form") {
@@ -83,7 +80,7 @@
                  '_label -> Messages("identify-client.vrn.label"),
                  '_inputClass -> "form-control",
                  '_labelTextClass -> "form-label",
-                 '_inputHint -> Html("""<span class="normal-text">""" + Messages("identify-client.vrn.hint") + """</span><br><span>""" + Messages("identify-client.vrn.example") + """</span>"""),
+                 '_inputHint -> Html("""<span>""" + Messages("identify-client.vrn.hint") + """</span><br>"""),
                  '_labelClass -> "soft--ends"
              )
          </div>
