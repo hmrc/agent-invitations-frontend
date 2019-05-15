@@ -20,7 +20,7 @@ import play.api.libs.json.{JsString, Json, OFormat}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.play.test.UnitSpec
 
-class ClientTypeSpec extends UnitSpec {
+class SelectClientTypeSpec extends UnitSpec {
 
   case class ClientTypeTest(clientType: ClientType)
   object ClientTypeTest {

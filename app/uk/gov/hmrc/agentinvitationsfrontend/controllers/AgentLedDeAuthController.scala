@@ -310,126 +310,14 @@ class AgentLedDeAuthController @Inject()(
       .select_service(
         form,
         SelectServicePageConfig(
-          false,
+          basketFlag = false,
           featureFlags,
           enabledServices,
           submitServicePersonalCall,
           routes.AgentLedDeAuthController.showClientType().url,
-          routes.AgentLedDeAuthController.showReviewAuthorisations()
+          routes.AgentInvitationJourneyController.showReviewAuthorisations()
         )
       )
-
-  def showReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      for {
-        sessionCache <- agentSessionCache.fetch
-        result = sessionCache match {
-          case Some(cache) if cache.requests.nonEmpty =>
-            Ok(
-              review_authorisations(
-                ReviewAuthorisationsPageConfig(
-                  cache.requests,
-                  featureFlags,
-                  routes.AgentLedDeAuthController.submitReviewAuthorisations()),
-                agentConfirmationForm("error.review-authorisation.required"),
-                backLinkForReviewAuthorisationsPage(cache.service.getOrElse(""))
-              ))
-          case Some(_) => Redirect(routes.AgentLedDeAuthController.allAuthorisationsRemoved())
-          case None    => Redirect(routes.AgentLedDeAuthController.showClientType())
-        }
-      } yield result
-    }
-  }
-
-  def submitReviewAuthorisations: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { agent =>
-      agentSessionCache.hardGet.flatMap { sessionCache =>
-        agentConfirmationForm("error.review-authorisation.required")
-          .bindFromRequest()
-          .fold(
-            formWithErrors => {
-              Future.successful(Ok(review_authorisations(
-                ReviewAuthorisationsPageConfig(
-                  sessionCache.requests,
-                  featureFlags,
-                  routes.AgentLedDeAuthController.submitReviewAuthorisations()),
-                formWithErrors,
-                backLinkForReviewAuthorisationsPage(sessionCache.service.getOrElse(""))
-              )))
-            },
-            input => {
-              if (input.choice) {
-                Redirect(routes.AgentLedDeAuthController.showSelectService())
-              } else {
-                for {
-                  processedRequests <- invitationsService
-                                        .createMultipleInvitations(
-                                          agent.arn,
-                                          sessionCache.clientType,
-                                          sessionCache.requests)
-                  _ <- agentSessionCache.save(sessionCache.copy(requests = processedRequests))
-                  result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests))
-                             Redirect(routes.AgentLedDeAuthController.showInvitationSent())
-                           else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
-                             Redirect(routes.AgentLedDeAuthController.allCreateAuthorisationFailed())
-                           else Redirect(routes.AgentLedDeAuthController.someCreateAuthorisationFailed())
-                } yield result
-              }
-            }
-          )
-      }
-    }
-  }
-
-  val showInvitationSent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { agent =>
-      agentSessionCache.hardGet.flatMap { session =>
-        val clientTypeForInvitationSent = session.clientTypeForInvitationSent.getOrElse(
-          throw new IllegalStateException("no client type found in cache"))
-        val continueUrlExists = session.continueUrl.isDefined
-        invitationsService.createAgentLink(agent.arn, Some(clientTypeForInvitationSent)).flatMap { agentLink =>
-          val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-          //clear every thing in the cache except clientTypeForInvitationSent and continueUrl , as these needed in-case user refreshes the page
-          agentSessionCache
-            .save(
-              AgentSession(
-                clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
-                continueUrl = session.continueUrl))
-            .map { _ =>
-              Ok(
-                invitation_sent(
-                  InvitationSentPageConfig(
-                    agentLink,
-                    session.continueUrl,
-                    continueUrlExists,
-                    featureFlags.enableTrackRequests,
-                    ClientType.fromEnum(clientTypeForInvitationSent),
-                    inferredExpiryDate)))
-            }
-        }
-      }
-    }
-  }
-
-  val allAuthorisationsRemoved: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      Ok(all_authorisations_removed(routes.AgentLedDeAuthController.showClientType()))
-    }
-  }
-
-  val allCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      agentSessionCache.hardGet.map(cacheItem =>
-        Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(cacheItem.requests))))
-    }
-  }
-
-  val someCreateAuthorisationFailed: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      agentSessionCache.hardGet.map(cacheItem =>
-        Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(cacheItem.requests))))
-    }
-  }
 
   override def businessSelectServicePage(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
