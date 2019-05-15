@@ -47,10 +47,12 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
     </ol>
 
+  @if(!config.hasContinueUrl) {
     <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
+  }
 
   @defining(
-    Messages(if(!config.hasContinueUrl) "invitation-sent.continueJourney.button" else "invitation-sent.continueToASAccount.button")
+    Messages(if(config.hasContinueUrl) "invitation-sent.continueJourney.button" else "invitation-sent.continueToASAccount.button")
   ) { continueMsg =>
     @if(config.hasContinueUrl && config.trackRequests) {
       <a href="@config.continueUrl" class="button form-field-group" id="continue">@continueMsg</a>
@@ -59,7 +61,7 @@
     } else {
       @if(config.trackRequests) {
         <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
-        <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a></p>
+        <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")</a></p>
         <p><a href="@config.continueUrl" class="form-field-group" id="continue">@continueMsg</a></p>
       } else {
         <a href="@config.continueUrl" class="button form-field-group" id="continue">@continueMsg</a>
