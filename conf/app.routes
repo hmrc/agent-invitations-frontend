@@ -18,7 +18,7 @@ POST        /agents/confirm-client                              @uk.gov.hmrc.age
 GET         /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showReviewAuthorisations
 POST        /agents/review-authorisations                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitReviewAuthorisations
 GET         /agents/invitation-sent                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showInvitationSent
-GET         /agents/delete                  git                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
+GET         /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
 POST        /agents/delete                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitDeleteAuthorisation
 
 #Error Agent Endpoints
