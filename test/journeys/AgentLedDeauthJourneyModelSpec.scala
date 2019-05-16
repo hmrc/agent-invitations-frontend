@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -31,6 +31,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] {
+
   import Services._
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -98,17 +99,20 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
       "transition to ConfirmClientItsa when known fact matches" in {
         def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
+
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(postcodeMatches, getClientName)(
           authorisedAgent)(itsaClient) should thenGo(
           ConfirmClientItsa(Some("John Smith"), Nino(nino), Postcode(postCode.getOrElse(""))))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
+
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(postcodeDoesNotMatch, getClientName)(
           authorisedAgent)(itsaClient) should thenGo(KnownFactNotMatched)
       }
       "transition to NotSignedUp when client is not enrolled" in {
         def clientNotSignedUp(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
+
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(clientNotSignedUp, getClientName)(
           authorisedAgent)(itsaClient) should thenGo(NotSignedUp(HMRCMTDIT))
 
@@ -120,18 +124,78 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
       "transition to ConfirmClientIrv when known fact matches" in {
         def dobMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(true))
+
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(dobMatches, getClientName)(authorisedAgent)(
           irvClient) should thenGo(ConfirmClientIrv(Some("John Smith"), Nino(nino), DOB(dob.getOrElse(""))))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
+
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(dobDoesNotMatch, getClientName)(
           authorisedAgent)(irvClient) should thenGo(KnownFactNotMatched)
       }
       "transition to NotSignedUp when client is not enrolled" in {
         def clientNotSignedUp(nino: Nino, localDate: LocalDate): Future[Option[Boolean]] = Future(None)
+
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(clientNotSignedUp, getClientName)(
           authorisedAgent)(irvClient) should thenGo(NotSignedUp(HMRCPIR))
+      }
+    }
+
+    "at state IdentifyClientVat" should {
+      val vatClient = VatClient(vrn, vatRegDate)
+
+      "transition to ConfirmClientVat when known fact matches" in {
+        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(vatRegDateMatches, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+      }
+      "transition to KnownFactNotMatched when known fact does not match" in {
+        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(vatRegDateDoesNotMatch, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+      }
+      "transition to CannotCreateRequest when there is a data migration in progress" in {
+        def cannotCreateRequest(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(423))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(cannotCreateRequest, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(CannotCreateRequest)
+      }
+      "transition to NotSignedUp when client is not enrolled" in {
+        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(clientNotSignedUp, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
+      }
+    }
+    "at state IdentityClientBusiness" should {
+      val vatClient = VatClient(vrn, vatRegDate)
+
+      "transition to ConfirmClientVat when known fact matches" in {
+        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(vatRegDateMatches, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(ConfirmClientBusiness(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+      }
+      "transition to KnownFactNotMatched when known fact does not match" in {
+        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(vatRegDateDoesNotMatch, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+      }
+      "transition to CannotCreateRequest when there is a data migration in progress" in {
+        def cannotCreateRequest(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(423))
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(cannotCreateRequest, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(CannotCreateRequest)
+      }
+      "transition to NotSignedUp when client is not enrolled" in {
+        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentityClientVat(clientNotSignedUp, getClientName)(
+          authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
     }
   }

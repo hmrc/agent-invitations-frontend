@@ -53,6 +53,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientBusiness"    => ConfirmClientBusinessFormats.reads(properties)
     case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
     case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)
+    case "CannotCreateRequest"      => JsSuccess(CannotCreateRequest)
     case _                          => JsError(s"Unknown state name $stateName")
   }
 }

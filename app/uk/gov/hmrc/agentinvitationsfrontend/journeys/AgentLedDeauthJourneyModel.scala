@@ -17,8 +17,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{IdentifyClientPersonal, KnownFactNotMatched, NotSignedUp}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions.{GetClientName, VatRegDateMatches}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, messageKeyForAfi, messageKeyForITSA}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, DOB, IrvClient, ItsaClient, Postcode, Service, Services, VatRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, DOB, IrvClient, ItsaClient, Postcode, Service, Services, VatClient, VatRegDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -55,6 +57,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object KnownFactNotMatched extends State
 
     case class NotSignedUp(serviceId: String) extends State
+
+    case object CannotCreateRequest extends State
   }
 
   object Transitions {
@@ -66,6 +70,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]] // client id and service
     type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
+    type VatRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
 
     def showSelectClientType(agent: AuthorisedAgent) = Transition {
       case _ => goto(SelectClientType)
@@ -97,6 +102,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       case IdentifyClientPersonal(HMRCMTDIT) => {
         def nameToState(name: Option[String]) =
           ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier), Postcode(itsaClient.postcode.getOrElse("")))
+
         submitIdentifyClient[Nino, String](checkPostcodeMatches, getClientName, nameToState)(
           Nino(itsaClient.clientIdentifier),
           itsaClient.postcode.getOrElse(""),
@@ -109,6 +115,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       case IdentifyClientPersonal(HMRCPIR) =>
         def nameToState(name: Option[String]) =
           ConfirmClientIrv(name, Nino(irvClient.clientIdentifier), DOB(irvClient.dob.getOrElse("")))
+
         submitIdentifyClient[Nino, LocalDate](DOBMatches, getClientName, nameToState)(
           Nino(irvClient.clientIdentifier),
           LocalDate.parse(irvClient.dob.getOrElse("")),
@@ -120,13 +127,43 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       getClientName: GetClientName,
       successState: Option[String] => State)(clientId: A, kf: B, service: String): Future[State] =
       for {
-        hasDateOfBirth <- kfMatches(clientId, kf)
-        finalState <- hasDateOfBirth match {
+        hasKnownFact <- kfMatches(clientId, kf)
+        finalState <- hasKnownFact match {
                        case Some(true) =>
                          getClientName(clientId.value, service).flatMap(name => goto(successState(name)))
                        case Some(false) => goto(KnownFactNotMatched)
                        case None        => goto(NotSignedUp(service))
                      }
       } yield finalState
+
+    def submitIdentityClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName)(
+      agent: AuthorisedAgent)(vatClient: VatClient) = {
+      def goToFinalState(finalState: Option[String] => State) = for {
+        hasVatRegDate <- vatRegDateMatches(
+                          Vrn(vatClient.clientIdentifier),
+                          LocalDate.parse(vatClient.registrationDate.getOrElse("")))
+        finalState <- hasVatRegDate match {
+                       case Some(204) =>
+                         getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(
+                           name =>
+                             goto(finalState(name)))
+                       case Some(403) => goto(KnownFactNotMatched)
+                       case Some(423) => goto(CannotCreateRequest)
+                       case None      => goto(NotSignedUp(HMRCMTDVAT))
+                     }
+      } yield finalState
+
+      Transition {
+        case IdentifyClientPersonal(HMRCMTDVAT) =>
+          def nameToState(name: Option[String]) =
+            ConfirmClientPersonalVat(name, Vrn(vatClient.clientIdentifier), VatRegDate(vatClient.registrationDate.getOrElse("")))
+          goToFinalState(nameToState)
+
+        case IdentifyClientBusiness =>
+          def nameToState(name: Option[String]) =
+          ConfirmClientBusiness(name, Vrn(vatClient.clientIdentifier), VatRegDate(vatClient.registrationDate.getOrElse("")))
+          goToFinalState(nameToState)
+      }
+    }
   }
 }

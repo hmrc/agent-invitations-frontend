@@ -82,7 +82,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
         hasMessage("cancel-authorisation.select-service.hint")
       )
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
+      checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/client-type")
     }
     "show the select service page for business service" in {
       journeyState.set(SelectServiceBusiness, Nil)
@@ -99,7 +99,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage("business-select-service.yes"),
         hasMessage("business-select-service.no")
       )
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
+      checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/client-type")
     }
   }
 }
