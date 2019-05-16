@@ -107,8 +107,7 @@ class AgentsRequestTrackingController @Inject()(
                     externalUrl,
                     agentLink,
                     data.clientType.map(ClientType.fromEnum).getOrElse(""),
-                    data.expiryDate,
-                    None)))
+                    data.expiryDate)))
           }
         )
     }

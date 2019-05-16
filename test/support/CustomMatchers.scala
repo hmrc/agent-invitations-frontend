@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package support
 
 import org.jsoup.Jsoup
@@ -17,19 +33,19 @@ object CustomMatchers extends Matchers {
       Messages.isDefinedAt(messageKey) shouldBe true
     }
 
-  def containMessages(expectedMessageKeys: String*)
-                     (expectHtmlEscaped: Boolean = true)
-                     (implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)(
+    implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         expectedMessageKeys.foreach(checkMessageIsDefined)
 
         val htmlText = html.toString
         val (msgsPresent, msgsMissing) = expectedMessageKeys.partition { messageKey =>
-          val expectedMessage = if(expectHtmlEscaped)
-            htmlEscapedMessage(messageKey)
-          else
-            messagesProvider(messageKey)
+          val expectedMessage =
+            if (expectHtmlEscaped)
+              htmlEscapedMessage(messageKey)
+            else
+              messagesProvider(messageKey)
 
           htmlText.contains(expectedMessage)
         }
@@ -41,17 +57,17 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)
-                              (expectHtmlEscaped: Boolean = true)
-                              (implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)(
+    expectHtmlEscaped: Boolean = true)(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedMessageKey)
 
-        val expectedMessage = if(expectHtmlEscaped)
-          htmlEscapedMessage(expectedMessageKey, expectedMessageParameters: _*)
-        else
-          messagesProvider(expectedMessageKey, expectedMessageParameters: _*)
+        val expectedMessage =
+          if (expectHtmlEscaped)
+            htmlEscapedMessage(expectedMessageKey, expectedMessageParameters: _*)
+          else
+            messagesProvider(expectedMessageKey, expectedMessageParameters: _*)
 
         val msgIsPresent = html.toString.contains(expectedMessage)
 
@@ -104,8 +120,8 @@ object CustomMatchers extends Matchers {
         )
       }
     }
-  def containElement(tag: String, expectedMessageKey: String)
-                    (implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containElement(tag: String, expectedMessageKey: String)(
+    implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedMessageKey)
@@ -122,10 +138,10 @@ object CustomMatchers extends Matchers {
       }
     }
   def containSubmitButton(
-                           expectedMessageKey: String,
-                           expectedElementId: String,
-                           expectedTagName: String = "button",
-                           expectedType: String = "submit")(implicit messagesProvider: MessagesProvider): Matcher[Html] =
+    expectedMessageKey: String,
+    expectedElementId: String,
+    expectedTagName: String = "button",
+    expectedType: String = "submit")(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)
@@ -147,21 +163,27 @@ object CustomMatchers extends Matchers {
         )
       }
     }
-  def containLink(expectedMessageKey: String, expectedHref: String)(
+  def containLink(expectedMessageKey: String, expectedHref: String, expectedClasses: Set[String] = Set.empty)(
     implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)
         checkMessageIsDefined(expectedMessageKey)
         val foundElement = doc.select(s"a[href=$expectedHref]").first()
+
         val wasFoundWithCorrectMessage = Option(foundElement) match {
           case None          => false
           case Some(element) => element.text() == htmlEscapedMessage(expectedMessageKey)
         }
+
+        val hasExpectedClasses = wasFoundWithCorrectMessage && expectedClasses.forall(foundElement.hasClass)
+
         MatchResult(
-          wasFoundWithCorrectMessage,
-          s"""Response does not contain a link to "$expectedHref" with content for message key "$expectedMessageKey" """,
-          s"""Response contains a link to "$expectedHref" with content for message key "$expectedMessageKey" """
+          wasFoundWithCorrectMessage && hasExpectedClasses,
+          s"""Response does not contain a link to "$expectedHref" with content for message key "$expectedMessageKey" and with classes: "${expectedClasses
+            .mkString(", ")}" """,
+          s"""Response contains a link to "$expectedHref" with content for message key "$expectedMessageKey" and with classes: "${expectedClasses
+            .mkString(", ")} """
         )
       }
     }

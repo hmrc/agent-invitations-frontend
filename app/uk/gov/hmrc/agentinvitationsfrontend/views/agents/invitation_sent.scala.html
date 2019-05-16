@@ -47,29 +47,17 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
     </ol>
 
-  @if(!config.hasContinueUrl) {
-    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
-  }
-
-  @defining(
-    Messages(if(config.hasContinueUrl) "invitation-sent.continueJourney.button" else "invitation-sent.continueToASAccount.button")
-  ) { continueMsg =>
-    @if(config.hasContinueUrl && config.trackRequests) {
-      <a href="@config.continueUrl" class="button form-field-group" id="continue">@continueMsg</a>
-      <p><a class="text-link-small" href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests") @Messages("invitation-sent.new-window")</a></p>
-
-    } else {
-      @if(config.trackRequests) {
-        <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
-        <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")</a></p>
-        <p><a href="@config.continueUrl" class="form-field-group" id="continue">@continueMsg</a></p>
-      } else {
-        <a href="@config.continueUrl" class="button form-field-group" id="continue">@continueMsg</a>
-        @if(!config.hasContinueUrl) {
-          <p><a class="text-link-small" href="@config.clientTypeUrl" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-        }
-      }
-
+@if(config.hasContinueUrl) {
+    <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>
+    @if(config.trackRequests) {
+        <p><a class="text-link-small" href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests") @Messages("invitation-sent.new-window")</a></p>
     }
-  }
+} else {
+    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
+    <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
+    @if(config.trackRequests) {
+        <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")</a></p>
+    }
+    <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.continueToASAccount.button")</a>
+}
 }

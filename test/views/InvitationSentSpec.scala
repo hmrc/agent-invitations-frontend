@@ -95,10 +95,16 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
             expectedHref = "/invitations/agents/client-type"
           )
         }
-        "show a link to agent services account home" in {
+        "show a link (not a button) to agent services account home" in {
           view(pageConfNoContinueUrl) should containLink(
-              expectedMessageKey = "invitation-sent.continueToASAccount.button",
-              expectedHref = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+            expectedMessageKey = "invitation-sent.continueToASAccount.button",
+            expectedHref = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+          )
+
+          view(pageConfNoContinueUrl) shouldNot containLink(
+            expectedMessageKey = "invitation-sent.continueToASAccount.button",
+            expectedHref = s"${externalUrls.agentServicesAccountUrl}/agent-services-account",
+            expectedClasses = Set("button")
           )
         }
 
@@ -119,7 +125,7 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
         }
       }
 
-      "there is a continue URL (from fast track) and track requests flag is on" should {
+      "there is a continue URL (from fast track)" should {
         val pageConfContinueUrl = pageConf.copy(
           continueUrlOpt = Some("/continue-some-other-journey"),
           hasContinueUrl = true
@@ -129,18 +135,19 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
           view(pageConfContinueUrl) shouldNot containMessages("invitation-sent.header.links")()
         }
 
-        "show a button to 'Continue' the journey" in {
+        "show a button (not a link) to 'Continue' the journey" in {
           view(pageConfContinueUrl) should containLink(
             expectedMessageKey = "invitation-sent.continueJourney.button",
-            expectedHref = "/continue-some-other-journey"
+            expectedHref = "/continue-some-other-journey",
+            expectedClasses = Set("button")
           )
-          view(pageConfContinueUrl) should containElement(id = "continue", tag = "a", attrs = Map("class" -> "button form-field-group"))
         }
 
         "show a link to track recent authorisation requests, which opens in a new window, only if the track requests feature is toggled on" when {
           "track requests feature is on" in {
             view(pageConfContinueUrl.copy(trackRequests = true)) should containLinkWithSubstring(
-              expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages("invitation-sent.new-window"),
+              expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
+                "invitation-sent.new-window"),
               expectedHref = "/invitations/track"
             )
           }

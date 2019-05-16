@@ -301,7 +301,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l1.p.personal"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.header.links"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
