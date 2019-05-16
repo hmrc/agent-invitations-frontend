@@ -17,8 +17,8 @@
 package support
 
 import org.jsoup.Jsoup
-import org.scalatest.{Assertions, Matchers}
 import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.{Assertions, Matchers}
 import play.api.i18n.Messages
 import play.twirl.api.{Html, HtmlFormat}
 
@@ -33,8 +33,38 @@ object CustomMatchers extends Matchers {
       Messages.isDefinedAt(messageKey) shouldBe true
     }
 
-  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)(
+  def havePageTitle(expectedTitleMessageKey: String, expectedMessageParamKeys: String*)(
     implicit messagesProvider: MessagesProvider): Matcher[Html] =
+    new Matcher[Html] {
+      override def apply(html: Html): MatchResult = {
+        checkMessageIsDefined(expectedTitleMessageKey)
+        expectedMessageParamKeys.foreach(checkMessageIsDefined)
+
+        val doc = Jsoup.parse(html.toString)
+        val foundTitles = doc.getElementsByTag("title")
+
+        Assertions.withClue(s"There is more than 1 <title> tag in the page") {
+          foundTitles.size should not be >(1)
+        }
+        Assertions.withClue(s"There is no <title> tag in the page") {
+          foundTitles.size shouldBe 1
+        }
+
+        val foundTitleText = foundTitles.first().text()
+        val expectedTitleText =
+          htmlEscapedMessage(expectedTitleMessageKey, expectedMessageParamKeys.map(htmlEscapedMessage(_)): _*)
+        val hasCorrectTitle = foundTitleText.equals(expectedTitleText)
+
+        MatchResult(
+          hasCorrectTitle,
+          s"""Page's title of "$foundTitleText" does not match the expected title of "$expectedTitleText"""",
+          s"""Page's title matches the unexpected title "$expectedTitleText""""
+        )
+      }
+    }
+
+  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)
+                     (implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         expectedMessageKeys.foreach(checkMessageIsDefined)
