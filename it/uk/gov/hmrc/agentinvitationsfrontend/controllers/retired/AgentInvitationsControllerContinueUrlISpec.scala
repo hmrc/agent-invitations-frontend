@@ -47,7 +47,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -85,7 +85,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 
@@ -123,7 +123,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.business"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.new-window"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 

@@ -1,7 +1,7 @@
 app.name=Ask a client to authorise you
 app.name.clients=Appoint someone to deal with HMRC for you
 
-title.suffix.agents=Manage your agent invitations
+title.suffix.agents=Ask a client to authorise you
 title.suffix.client=Appoint someone to deal with HMRC for you
 generic.title={0} - {1} - GOV.UK
 
@@ -86,7 +86,7 @@ select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
-select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
+select-service.alt-suggestion=You can use this service to ask for a client''s authorisation to report their VAT returns through software.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
@@ -106,7 +106,6 @@ confirm-client.no=No - I need to start over again
 error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 # Invitation Sent
-invitation-sent-link.header=One more step
 invitation-sent.header=What you need to do next
 invitation-sent.l1=Copy this link and email it to your client.
 invitation-sent.l1.p.personal=<span>You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.</span>
@@ -115,11 +114,12 @@ invitation-sent.l2=Ask your client to go to the link to accept your authorisatio
 invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.continueToASAccount.button=Return to your agent services account
+invitation-sent.header.links=Other actions
+invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
-invitation-sent.trackRequests.button=Track your recent authorisation requests
+invitation-sent.trackRequests=Track your recent authorisation requests
 invitation-sent.new-window=(opens a new window or tab)
-invitation-sent.startNewAuthRequest=Start new authorisation request
+invitation-sent.startNewAuthRequest=Start a new authorisation request
 
 #Check Details
 check-details.heading=Check your client''s details before you continue

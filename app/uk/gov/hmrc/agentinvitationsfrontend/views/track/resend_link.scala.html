@@ -38,8 +38,6 @@
 
   <h1 class="heading-xlarge">@Messages("resend-link.header")</h1>
 
-  <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
-
     <ol class="list list-number margin-left-0">
         <li class="margin-bottom-30"><p>@Messages("invitation-sent.l1")</p>
             <p><span id="invitationUrl" class="word-wrap">@config.fullAgentLink</span></p>
@@ -49,8 +47,8 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
     </ol>
 
-        <a href="@config.trackLink" class="button form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests.button")</a>
-        <p class="text-link-small"><a href="@config.continueUrl.getOrElse(externalUrls.agentServicesAccountUrl)" id="resurnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a></p>
-        <p class="text-link-small"><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-
-    }
+    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
+    <p><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
+    <p><a href="@config.trackLink" class="form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests")</a></p>
+    <a href="@externalUrls.agentServicesAccountUrl" id="resurnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a>
+}
