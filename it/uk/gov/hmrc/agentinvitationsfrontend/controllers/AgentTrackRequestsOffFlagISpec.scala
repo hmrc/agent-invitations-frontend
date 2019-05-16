@@ -80,10 +80,10 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${routes.ClientInvitationJourneyController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueJourney.button"))
-      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests")
       await(bodyOf(result)) should not include hasMessage("invitation-sent.continueToASAccount.button")
       await(bodyOf(result)) should not include hasMessage("invitation-sent.startNewAuthRequest")
 
@@ -110,11 +110,11 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${routes.ClientInvitationJourneyController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
-      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests.button")
+      await(bodyOf(result)) should not include hasMessage("invitation-sent.trackRequests")
       verifyAuthoriseAttempt()
       await(sessionStore.hardGet) shouldBe AgentSession(clientTypeForInvitationSent = Some(personal))
     }

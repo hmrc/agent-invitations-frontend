@@ -215,13 +215,13 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l4.personal"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests.button"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.trackRequests"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.continueToASAccount.button"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.startNewAuthRequest"))
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage(
-          s"$wireMockBaseUrlAsString${routes.ClientsMultiInvitationController.warmUp("personal", uid, "99-with-flake")}"))
+          s"$wireMockBaseUrlAsString${routes.ClientInvitationJourneyController.warmUp("personal", uid, "99-with-flake")}"))
       checkHtmlResultWithBodyText(result, wireMockBaseUrlAsString)
       checkInviteSentExitSurveyAgentSignOutLink(result)
 

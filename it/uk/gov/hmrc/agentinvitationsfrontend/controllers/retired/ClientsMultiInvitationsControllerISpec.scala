@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 /*
  * Copyright 2017 HM Revenue & Customs
@@ -22,7 +22,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgencyNameNotFound
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientsMultiInvitationController.confirmDeclineForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.ClientsMultiInvitationController.confirmDeclineForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec

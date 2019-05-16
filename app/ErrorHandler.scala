@@ -56,7 +56,7 @@ class ErrorHandler @Inject()(
 
     val response = statusCode match {
       case 400 if message.equals(ErrorConstants.InvitationIdNotFound) =>
-        Redirect(routes.ClientErrorController.notFoundInvitation())
+        Redirect(routes.ClientInvitationJourneyController.showNotFoundInvitation())
       case _ =>
         Status(statusCode)(
           error_template(

@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
-import uk.gov.hmrc.agentinvitationsfrontend.views.track.{ResendLinkPageConfig, TrackPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.track.{RequestCancelledPageConfig, ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -107,8 +107,7 @@ class AgentsRequestTrackingController @Inject()(
                     externalUrl,
                     agentLink,
                     data.clientType.map(ClientType.fromEnum).getOrElse(""),
-                    data.expiryDate,
-                    None)))
+                    data.expiryDate)))
           }
         )
     }
@@ -175,7 +174,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      Future successful Ok(request_cancelled(service, clientName))
+      Future successful Ok(request_cancelled(RequestCancelledPageConfig(service, clientName)))
     }
   }
 
