@@ -34,9 +34,7 @@
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("invitation-sent-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
 
 
-  <h1 class="heading-xlarge">@Messages("invitation-sent-link.header")</h1>
-
-  <h2 class="heading-medium">@Messages("invitation-sent.header")</h2>
+    <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>
 
     <ol class="list list-number margin-left-0">
         <li class="margin-bottom-30">
@@ -49,25 +47,17 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
     </ol>
 
-  @defining(if(config.hasContinueUrl) "continueJourney" else "continueToASAccount") { continueMsg =>
-    @if(config.hasContinueUrl && config.trackRequests) {
-      <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-      <p><a class="text-link-small" href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button") @Messages("invitation-sent.new-window")</a></p>
-
-    } else {
-      @if(config.trackRequests) {
-        <a href="@config.trackUrl" class="button form-field-group" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests.button")<span class="visuallyhidden">@Messages(s"invitation-sent.new-window")</span></a>
-        <p><a class="text-link-small" href="@config.continueUrl" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a></p>
-        <p><a class="text-link-small" href="@config.clientTypeUrl" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-      } else {
-        @if(config.hasContinueUrl) {
-          <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-        } else {
-          <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages(s"invitation-sent.$continueMsg.button")</a>
-          <p><a class="text-link-small" href="@config.clientTypeUrl" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-        }
-      }
-
+@if(config.hasContinueUrl) {
+    <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>
+    @if(config.trackRequests) {
+        <p><a class="text-link-small" href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests") @Messages("invitation-sent.new-window")</a></p>
     }
-  }
+} else {
+    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
+    <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
+    @if(config.trackRequests) {
+        <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")</a></p>
+    }
+    <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.continueToASAccount.button")</a>
+}
 }

@@ -186,12 +186,12 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Resend this link to your client",
-        "What you need to do next",
         "Copy this link and email it to your client.",
         "individual or sole trader tax affairs",
+        "Other actions",
         "Track your recent authorisation requests",
-        "Return to your agent services account",
-        "Start new authorisation request"
+        "Go to agent services account home",
+        "Start a new authorisation request"
       )
     }
 
