@@ -44,6 +44,16 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
   val view = uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.invitation_sent
 
   "invitations_sent" should {
+    "show an appropriate page title" in {
+      view(pageConf) should havePageTitle(
+        expectedTitleMessageKey = "generic.title",
+        expectedMessageParamKeys = Seq(
+          "invitation-sent.header",
+          "title.suffix.agents"
+        ):_*
+      )
+    }
+
     "show header and standard paragraphs" in {
       view(pageConf) should containMessages(
         "invitation-sent.header",
