@@ -27,8 +27,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, Services}
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, ItsaClient, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText, postcodeMapping, validNino}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{business_select_service, client_type, select_service}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{identify_client_irv, identify_client_itsa, identify_client_vat}
@@ -40,7 +41,8 @@ import scala.concurrent.ExecutionContext
 
 class AgentLedDeauthJourneyController @Inject()(
   override val journeyService: AgentLedDeauthJourneyService,
-  authActions: AuthActionsImpl
+  authActions: AuthActionsImpl,
+  invitationsService: InvitationsService
 )(
   implicit ec: ExecutionContext,
   configuration: Configuration,
@@ -52,7 +54,7 @@ class AgentLedDeauthJourneyController @Inject()(
   import AgentLedDeauthJourneyController._
   import authActions._
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
-
+  import invitationsService._
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
   }
@@ -83,12 +85,27 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientBusiness    =>
   }
 
+  val submitIdentifyItsaClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(identifyClientItsaForm(featureFlags.showHmrcMtdIt))(
+      submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService))
+  }
+
+  val showKnownFactNotMatched = actionShowStateWhenAuthorised(AsAgent) {
+    case KnownFactNotMatched =>
+  }
+
+  val showNotSignedUp = actionShowStateWhenAuthorised(AsAgent) {
+    case _: NotSignedUp =>
+  }
+
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
     case SelectClientType          => routes.AgentLedDeauthJourneyController.showClientType()
     case _: SelectServicePersonal  => routes.AgentLedDeauthJourneyController.showSelectService()
     case SelectServiceBusiness     => routes.AgentLedDeauthJourneyController.showSelectService()
     case _: IdentifyClientPersonal => routes.AgentLedDeauthJourneyController.showIdentifyClient()
     case IdentifyClientBusiness    => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case KnownFactNotMatched       => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
+    case _: NotSignedUp            => routes.AgentLedDeauthJourneyController.showNotSignedUp()
     case _                         => throw new Exception(s"Link not found for $state")
 
   }
@@ -194,4 +211,11 @@ object AgentLedDeauthJourneyController {
 
   val serviceBusinessForm: Form[Confirmation] = agentConfirmationForm(
     "cancel-authorisation.error.business-service.required")
+
+  def identifyClientItsaForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
+    mapping(
+      "clientIdentifier" -> normalizedText.verifying(validNino()),
+      "postcode"         -> postcodeMapping(showKfcMtdIt)
+    )(ItsaClient.apply)(ItsaClient.unapply)
+  )
 }

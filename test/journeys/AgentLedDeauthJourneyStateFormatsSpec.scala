@@ -69,29 +69,44 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec with TestDataCommon
         json.as[State] shouldBe state
       }
       "ConfirmClientItsa" in {
-        val state = ConfirmClientItsa("Cersei not KEEPing well", Nino("AB123456A"), Postcode("123"))
+        val state = ConfirmClientItsa(Some("Cersei not KEEPing well"), Nino("AB123456A"), Postcode("123"))
         val json = Json.parse("""{"state":"ConfirmClientItsa","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A","postcode":{"value":"123"}}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientIrv" in {
-        val state = ConfirmClientIrv("Cersei not KEEPing well", Nino("AB123456A"), DOB("123"))
+        val state = ConfirmClientIrv(Some("Cersei not KEEPing well"), Nino("AB123456A"), DOB("123"))
         val json = Json.parse("""{"state":"ConfirmClientIrv","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A","dob":{"value":"123"}}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientPersonalVat" in {
-        val state = ConfirmClientPersonalVat("Cersei not KEEPing well", validVrn, VatRegDate("123"))
+        val state = ConfirmClientPersonalVat(Some("Cersei not KEEPing well"), validVrn, VatRegDate("123"))
         val json = Json.parse(s"""{"state":"ConfirmClientPersonalVat","properties": {"clientName":"Cersei not KEEPing well","vrn": "${validVrn.value}","vatRegDate":{"value":"123"}}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientBusiness" in {
-        val state = ConfirmClientBusiness("Cersei not KEEPing well", validVrn, VatRegDate("123"))
+        val state = ConfirmClientBusiness(Some("Cersei not KEEPing well"), validVrn, VatRegDate("123"))
         val json = Json.parse(s"""{"state":"ConfirmClientBusiness","properties": {"clientName":"Cersei not KEEPing well","vrn": "${validVrn.value}","vatRegDate":{"value":"123"}}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "KnownFactNotMatched" in {
+        val state = KnownFactNotMatched
+        val json = Json.parse("""{"state":"KnownFactNotMatched"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "NotSignedUp" in {
+        val state = NotSignedUp("itsa")
+        val json = Json.parse("""{"state":"NotSignedUp", "properties": {"serviceId":"itsa"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

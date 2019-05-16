@@ -28,29 +28,31 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientIrvFormats: OFormat[ConfirmClientIrv] = Json.format
   val ConfirmClientPersonalVatFormats: OFormat[ConfirmClientPersonalVat] = Json.format
   val ConfirmClientBusinessFormats: OFormat[ConfirmClientBusiness] = Json.format
+  val NotSignedUpFormats: OFormat[NotSignedUp] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: SelectServicePersonal  => SelectServicePersonalFormats.writes(s)
-    case s: IdentifyClientPersonal => IdentifyClientPersonalFormats.writes(s)
-    case s: ConfirmClientItsa      => ConfirmClientsItsaFormats.writes(s)
-    case s: ConfirmClientIrv      => ConfirmClientIrvFormats.writes(s)
-    case s: ConfirmClientPersonalVat  => ConfirmClientPersonalVatFormats.writes(s)
-    case s: ConfirmClientBusiness     => ConfirmClientBusinessFormats.writes(s)
-
-
+    case s: SelectServicePersonal    => SelectServicePersonalFormats.writes(s)
+    case s: IdentifyClientPersonal   => IdentifyClientPersonalFormats.writes(s)
+    case s: ConfirmClientItsa        => ConfirmClientsItsaFormats.writes(s)
+    case s: ConfirmClientIrv         => ConfirmClientIrvFormats.writes(s)
+    case s: ConfirmClientPersonalVat => ConfirmClientPersonalVatFormats.writes(s)
+    case s: ConfirmClientBusiness    => ConfirmClientBusinessFormats.writes(s)
+    case s: NotSignedUp              => NotSignedUpFormats.writes(s)
 
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "SelectClientType"       => JsSuccess(SelectClientType)
-    case "SelectServicePersonal"  => SelectServicePersonalFormats.reads(properties)
-    case "SelectServiceBusiness"  => JsSuccess(SelectServiceBusiness)
-    case "IdentifyClientPersonal" => IdentifyClientPersonalFormats.reads(properties)
-    case "IdentifyClientBusiness" => JsSuccess(IdentifyClientBusiness)
-    case "ConfirmClientItsa"      => ConfirmClientsItsaFormats.reads(properties)
-    case "ConfirmClientIrv"      => ConfirmClientIrvFormats.reads(properties)
-    case "ConfirmClientPersonalVat"      => ConfirmClientPersonalVatFormats.reads(properties)
-    case "ConfirmClientBusiness"      => ConfirmClientBusinessFormats.reads(properties)
-    case _                        => JsError(s"Unknown state name $stateName")
+    case "SelectClientType"         => JsSuccess(SelectClientType)
+    case "SelectServicePersonal"    => SelectServicePersonalFormats.reads(properties)
+    case "SelectServiceBusiness"    => JsSuccess(SelectServiceBusiness)
+    case "IdentifyClientPersonal"   => IdentifyClientPersonalFormats.reads(properties)
+    case "IdentifyClientBusiness"   => JsSuccess(IdentifyClientBusiness)
+    case "ConfirmClientItsa"        => ConfirmClientsItsaFormats.reads(properties)
+    case "ConfirmClientIrv"         => ConfirmClientIrvFormats.reads(properties)
+    case "ConfirmClientPersonalVat" => ConfirmClientPersonalVatFormats.reads(properties)
+    case "ConfirmClientBusiness"    => ConfirmClientBusinessFormats.reads(properties)
+    case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
+    case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)
+    case _                          => JsError(s"Unknown state name $stateName")
   }
 }
