@@ -7,6 +7,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.models.Postcode
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration._
@@ -254,6 +255,75 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/identify-client")
     }
   }
+
+  "POST /fsm/agents/cancel-authorisation/confirm-client" should {
+    "redirect to confirm cancel when YES is selected" in {
+      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino), Postcode(validPostcode)), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
+
+      givenCheckRelationshipItsaWithStatus(arn, nino, 200)
+
+      val result =
+        controller.submitConfirmClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+      val timeout = 2.seconds
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+    }
+  }
+  "GET /fsm/agents/cancel-authorisation/confirm-cancel" should {
+    "display the confirm cancel page" in {
+      journeyState.set(
+        ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value),
+        List(ConfirmClientItsa(Some("Barry Block"), validNino, Postcode(validPostcode))))
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
+      val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.header"),
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block")
+      )
+      checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/confirm-client")
+    }
+  }
+  "POST /fsm/agents/cancel-authorisation/confirm-cancel" should {
+    "redirect to the authorisation cancelled page" in {
+      journeyState.set(ConfirmCancel(HMRCMTDIT, Some("Sufjan Stevens"), nino), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenCancelledAuthorisationItsa(arn, Nino(nino), 204)
+      givenGetAgencyNameClientStub(arn)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+      val timeout = 2.seconds
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+  }
+  "GET /fsm/agents/cancel-authorisation/cancelled" should {
+    "display the authorisation cancelled page" in {
+      journeyState.set(AuthorisationCancelled(HMRCMTDIT, Some("client man"), "Agent man"), Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/cancelled")
+      val result = controller.showAuthorisationCancelled(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("cancel-authorisation.cancelled.header"),
+        htmlEscapedMessage("cancel-authorisation.cancelled.p1.HMRC-MTD-IT", "Agent man", "client man")
+      )
+    }
+  }
   "GET /fsm/agents/cancel-authorisation/not-matched" should {
     "display the known facts dont match page" in {
       journeyState.set(KnownFactNotMatched, Nil)
@@ -262,8 +332,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("not-matched.header"),
-        htmlEscapedMessage("not-matched.description"))
+        htmlEscapedMessage("cancel-authorisation.not-matched.header"),
+        htmlEscapedMessage("cancel-authorisation.not-matched.description"))
     }
   }
   "GET /fsm/agents/cancel-authorisation/not-enrolled" should {
@@ -288,6 +358,31 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         htmlEscapedMessage("cannot-create-request.header"),
         htmlEscapedMessage("cannot-create-request.p1"))
+    }
+  }
+  "GET /fsm/agents/cancel-authorisation/not-authorised" should {
+    "display the not authorised page" in {
+      journeyState.set(NotAuthorised(HMRCMTDIT), Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-authorised")
+      val result = controller.showNotAuthorised(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("problem.header"),
+        htmlEscapedMessage("not-authorised.HMRC-MTD-IT.p"))
+    }
+  }
+  "GET /fsm/agents/cancel-authorisation/response-failed" should {
+    "display the response failed page" in {
+      journeyState.set(ResponseFailed, Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/response-failed")
+      val result = controller.showResponseFailed(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "cancel-authorisation.response-failed.header",
+        "cancel-authorisation.response-failed.description"
+      )
     }
   }
 

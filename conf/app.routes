@@ -76,6 +76,7 @@ GET         /agents/cancel-authorisation/response-failed                    @uk.
 GET         /agents/not-authorised                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.notAuthorised
 
 # agent led deauth FSM
+GET         /fsm/agents/cancel-authorisation                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.agentLedDeauthRoot
 GET         /fsm/agents/cancel-authorisation/client-type                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showClientType
 POST        /fsm/agents/cancel-authorisation/client-type                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitClientType
 GET         /fsm/agents/cancel-authorisation/select-service                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showSelectService
@@ -86,9 +87,15 @@ POST        /fsm/agents/cancel-authorisation/identify-itsa-client           @uk.
 POST        /fsm/agents/cancel-authorisation/identify-irv-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyIrvClient
 POST        /fsm/agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyVatClient
 GET         /fsm/agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmClient
+POST        /fsm/agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmClient
+GET         /fsm/agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmCancel
+POST        /fsm/agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmCancel
+GET         /fsm/agents/cancel-authorisation/cancelled                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showAuthorisationCancelled
 GET         /fsm/agents/cancel-authorisation/not-matched                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showKnownFactNotMatched
 GET         /fsm/agents/cancel-authorisation/not-enrolled                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotSignedUp
-GET         /fsm/agents/cancel-authorisation/not-authorised                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showCannotCreateRequest
+GET         /fsm/agents/cancel-authorisation/cannot-create-request          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showCannotCreateRequest
+GET         /fsm/agents/cancel-authorisation/not-authorised                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotAuthorised
+GET         /fsm/agents/cancel-authorisation/response-failed                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showResponseFailed
 
 # Request tracking
 GET         /track                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests

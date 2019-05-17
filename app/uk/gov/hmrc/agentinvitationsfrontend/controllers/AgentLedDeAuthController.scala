@@ -211,7 +211,7 @@ class AgentLedDeAuthController @Inject()(
                       },
                       data => {
                         if (data.choice) {
-                          deleteRelationshipForService(service, agent.arn, clientId).map {
+                          relationshipsService.deleteRelationshipForService(service, agent.arn, clientId).map {
                             case Some(true)  => Redirect(routes.AgentLedDeAuthController.showCancelled())
                             case Some(false) => NotFound //TODO: should be fixed in Sprint 36
                             case _           => Redirect(routes.AgentLedDeAuthController.responseFailed())
@@ -252,14 +252,6 @@ class AgentLedDeAuthController @Inject()(
       }
     })
   }
-
-  private def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
-    service match {
-      case HMRCMTDIT  => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
-      case HMRCPIR    => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case HMRCMTDVAT => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
-      case e          => throw new Error(s"Unsupported service for deleting relationship: $e")
-    }
 
   override def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(
     body: => Future[Result])(implicit request: Request[_]): Future[Result] =

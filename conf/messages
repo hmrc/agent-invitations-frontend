@@ -161,10 +161,12 @@ cancel-authorisation.client-type.header=What type of client do you want to cance
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.select-service.hint=Select an option.
+
 cancel-authorisation.confirm-client.header=Is this the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
+
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to report income and expenses for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel your authorisation, you will not be able to view the PAYE income record for this client.
@@ -172,6 +174,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisa
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
+
 cancel-authorisation.cancelled.header=Authorisation cancelled
 cancel-authorisation.cancelled.subheader=What this means
 cancel-authorisation.cancelled.return-to-account-services.button=Return to agent services account
@@ -179,11 +182,14 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1}
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to report their VAT Returns through software.
 cancel-authorisation.cancelled.print=Print this page
+
 cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+
 cancel-authorisation.not-matched.header=There is a problem
 cancel-authorisation.not-matched.description=We could not find any clients matching these details.
 cancel-authorisation.not-matched.advice=Check the details and try again.
+
 cancel-authorisation.start-over.button=Start over
 cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
 cancel-authorisation.response-failed.description=You can try again now, or try later.

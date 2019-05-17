@@ -21,11 +21,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.{DOB, Postcode, Services, VatRegDate}
-import uk.gov.hmrc.agentinvitationsfrontend.support.TestDataCommonSupport
-import uk.gov.hmrc.domain.{Nino, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec with TestDataCommonSupport {
+class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
   implicit val formats: Format[State] = AgentLedDeauthJourneyStateFormats.formats
 
@@ -85,17 +85,33 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec with TestDataCommon
         json.as[State] shouldBe state
       }
       "ConfirmClientPersonalVat" in {
-        val state = ConfirmClientPersonalVat(Some("Cersei not KEEPing well"), validVrn, VatRegDate("123"))
+        val state = ConfirmClientPersonalVat(Some("Cersei not KEEPing well"), Vrn("123456"), VatRegDate("123"))
         val json = Json.parse(
-          s"""{"state":"ConfirmClientPersonalVat","properties": {"clientName":"Cersei not KEEPing well","vrn": "${validVrn.value}","vatRegDate":{"value":"123"}}}""")
+          s"""{"state":"ConfirmClientPersonalVat","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456","vatRegDate":{"value":"123"}}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientBusiness" in {
-        val state = ConfirmClientBusiness(Some("Cersei not KEEPing well"), validVrn, VatRegDate("123"))
+        val state = ConfirmClientBusiness(Some("Cersei not KEEPing well"), Vrn("123456"), VatRegDate("123"))
         val json = Json.parse(
-          s"""{"state":"ConfirmClientBusiness","properties": {"clientName":"Cersei not KEEPing well","vrn": "${validVrn.value}","vatRegDate":{"value":"123"}}}""")
+          s"""{"state":"ConfirmClientBusiness","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456","vatRegDate":{"value":"123"}}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ConfirmCancel" in {
+        val state = ConfirmCancel("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "AB123456A")
+        val json = Json.parse(
+          """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A"}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "AuthorisationCancelled" in {
+        val state = AuthorisationCancelled("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "agent name")
+        val json = Json.parse(
+          """{"state":"AuthorisationCancelled","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","agencyName": "agent name"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -109,8 +125,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec with TestDataCommon
       }
 
       "NotSignedUp" in {
-        val state = NotSignedUp("itsa")
-        val json = Json.parse("""{"state":"NotSignedUp", "properties": {"serviceId":"itsa"}}""")
+        val state = NotSignedUp("HMRC-MTD-IT")
+        val json = Json.parse("""{"state":"NotSignedUp", "properties": {"service":"HMRC-MTD-IT"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -118,13 +134,25 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec with TestDataCommon
 
       "CannotCreateRequest" in {
         val state = CannotCreateRequest
-        val json = Json.parse("""{"state":"CannotCreateRequest""")
+        val json = Json.parse("""{"state":"CannotCreateRequest"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+      "NotAuthorised" in {
+        val state = NotAuthorised("HMRC-MTD-IT")
+        val json = Json.parse("""{"state":"NotAuthorised", "properties": {"service":"HMRC-MTD-IT"}}""")
 
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ResponseFailed" in {
+        val state = ResponseFailed
+        val json = Json.parse("""{"state":"ResponseFailed"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
       }
     }
   }
-
+}
