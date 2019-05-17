@@ -24,6 +24,7 @@ import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.ConfirmClientBusinessVat
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
@@ -31,8 +32,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig, SelectServicePageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{business_select_service, client_type, select_service}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{business_select_service, client_type, confirm_client, select_service}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cannot_create_request, identify_client_irv, identify_client_itsa, identify_client_vat, not_matched, not_signed_up}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -103,6 +105,13 @@ class AgentLedDeauthJourneyController @Inject()(
     )
   }
 
+  val showConfirmClient = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ConfirmClientItsa        =>
+    case _: ConfirmClientIrv         =>
+    case _: ConfirmClientPersonalVat =>
+    case _: ConfirmClientBusinessVat =>
+  }
+
   val showKnownFactNotMatched = actionShowStateWhenAuthorised(AsAgent) {
     case KnownFactNotMatched =>
   }
@@ -111,15 +120,24 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: NotSignedUp =>
   }
 
+  val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) {
+    case CannotCreateRequest =>
+  }
+
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
-    case SelectClientType          => routes.AgentLedDeauthJourneyController.showClientType()
-    case _: SelectServicePersonal  => routes.AgentLedDeauthJourneyController.showSelectService()
-    case SelectServiceBusiness     => routes.AgentLedDeauthJourneyController.showSelectService()
-    case _: IdentifyClientPersonal => routes.AgentLedDeauthJourneyController.showIdentifyClient()
-    case IdentifyClientBusiness    => routes.AgentLedDeauthJourneyController.showIdentifyClient()
-    case KnownFactNotMatched       => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
-    case _: NotSignedUp            => routes.AgentLedDeauthJourneyController.showNotSignedUp()
-    case _                         => throw new Exception(s"Link not found for $state")
+    case SelectClientType            => routes.AgentLedDeauthJourneyController.showClientType()
+    case _: SelectServicePersonal    => routes.AgentLedDeauthJourneyController.showSelectService()
+    case SelectServiceBusiness       => routes.AgentLedDeauthJourneyController.showSelectService()
+    case _: IdentifyClientPersonal   => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case IdentifyClientBusiness      => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case _: ConfirmClientItsa        => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientIrv         => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientPersonalVat => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientBusiness    => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
+    case _: NotSignedUp              => routes.AgentLedDeauthJourneyController.showNotSignedUp()
+    case CannotCreateRequest         => routes.AgentLedDeauthJourneyController.showCannotCreateRequest()
+    case _                           => throw new Exception(s"Link not found for $state")
 
   }
 
@@ -138,12 +156,10 @@ class AgentLedDeauthJourneyController @Inject()(
         select_service(
           formWithErrors.or(servicePersonalForm),
           SelectServicePageConfig(
-            basketFlag = false,
             featureFlags,
             enabledServices,
-            routes.AgentInvitationJourneyController.submitPersonalSelectService(),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations()
+            routes.AgentLedDeauthJourneyController.submitPersonalService(),
+            backLinkFor(breadcrumbs).url
           )
         ))
 
@@ -151,7 +167,6 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         business_select_service(
           formWithErrors.or(serviceBusinessForm),
-          basketFlag = false,
           routes.AgentLedDeAuthController.showClientType(), //change
           backLinkFor(breadcrumbs).url
         )
@@ -164,7 +179,7 @@ class AgentLedDeauthJourneyController @Inject()(
             identify_client_itsa(
               ItsaClientForm.form(featureFlags.showKfcMtdIt),
               featureFlags.showKfcMtdIt,
-              routes.AgentLedDeAuthController.showClientType(), //change
+              routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
               routes.AgentLedDeAuthController.showSelectService().url
             ))
         case Services.HMRCPIR =>
@@ -172,16 +187,16 @@ class AgentLedDeauthJourneyController @Inject()(
             identify_client_irv(
               IrvClientForm.form(featureFlags.showKfcPersonalIncome),
               featureFlags.showKfcPersonalIncome,
-              routes.AgentLedDeAuthController.showClientType(), //change
+              routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
               routes.AgentLedDeAuthController.showSelectService().url
             )
           )
         case Services.HMRCMTDVAT =>
           Ok(
             identify_client_vat(
-              formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)), //change form
+              formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
-              routes.AgentLedDeAuthController.showClientType(), //change to submit identify client call
+              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
               routes.AgentLedDeAuthController.showSelectService().url
             ))
       }
@@ -189,21 +204,45 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientBusiness =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)), //change form
+          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
-          routes.AgentLedDeAuthController.showClientType(), //change to submit identify client call
+          routes.AgentLedDeAuthController.submitIdentifyClientVat(),
           routes.AgentLedDeAuthController.showSelectService().url
         ))
 
-    case KnownFactNotMatched =>
+    case ConfirmClientItsa(clientName, _, _) =>
       Ok(
-        not_matched(
-          hasJourneyCache = false,
-          routes.AgentLedDeauthJourneyController.showIdentifyClient(),
-          routes.AgentInvitationJourneyController.showReviewAuthorisations()))
+        confirm_client(
+          clientName.getOrElse(""),
+          formWithErrors.or(serviceBusinessForm), //change
+          backLinkFor(breadcrumbs).url))
+
+    case ConfirmClientIrv(clientName, _, _) =>
+      Ok(
+        confirm_client(
+          clientName.getOrElse(""),
+          formWithErrors.or(serviceBusinessForm), //change
+          backLinkFor(breadcrumbs).url))
+
+    case ConfirmClientPersonalVat(clientName, _, _) =>
+      Ok(
+        confirm_client(
+          clientName.getOrElse(""),
+          formWithErrors.or(serviceBusinessForm), //change
+          backLinkFor(breadcrumbs).url))
+
+    case ConfirmClientBusiness(clientName, _, _) =>
+      Ok(
+        confirm_client(
+          clientName.getOrElse(""),
+          formWithErrors.or(serviceBusinessForm), //change
+          backLinkFor(breadcrumbs).url))
+
+    case KnownFactNotMatched =>
+      Ok(not_matched(hasJourneyCache = false, routes.AgentLedDeauthJourneyController.showIdentifyClient(), None))
 
     case NotSignedUp(service) =>
-      Ok(not_signed_up(Services.determineServiceMessageKeyFromService(service), hasRequests = false))
+      Ok(not_signed_up(service, hasRequests = false))
 
     case CannotCreateRequest =>
       Ok(

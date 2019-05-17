@@ -42,9 +42,13 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class ConfirmClientIrv(clientName: Option[String], nino: Nino, dob: DOB) extends State
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn, vatRegDate: VatRegDate) extends State
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn, vatRegDate: VatRegDate) extends State
+    case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
+
+    //error states
     case object KnownFactNotMatched extends State
     case class NotSignedUp(serviceId: String) extends State
     case object CannotCreateRequest extends State
+    case class NotAuthorised(service: String) extends State
   }
 
   object Transitions {
@@ -154,6 +158,27 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
               Vrn(vatClient.clientIdentifier),
               VatRegDate(vatClient.registrationDate.getOrElse("")))
           goToFinalState(nameToState)
+      }
+    }
+
+    def submitConfirmClient(hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
+      confirmation: Confirmation) = {
+
+      def gotoFinalState(clientId: String, service: String, name: Option[String]) =
+        if (confirmation.choice) {
+          for {
+            isRelationshipActive <- hasActiveRelationship(agent.arn, clientId, service)
+            result <- isRelationshipActive match {
+                       case true  => goto(ConfirmCancel(service, name, clientId))
+                       case false => goto(NotAuthorised(service))
+                     }
+          } yield result
+        } else goto(root)
+
+      Transition {
+        case ConfirmClientItsa(name, nino, _)       => gotoFinalState(nino.value, HMRCMTDIT, name)
+        case ConfirmClientIrv(name, nino, _)        => gotoFinalState(nino.value, HMRCPIR, name)
+        case ConfirmClientPersonalVat(name, vrn, _) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
       }
     }
   }

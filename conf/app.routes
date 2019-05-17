@@ -83,8 +83,12 @@ POST        /fsm/agents/cancel-authorisation/select-personal-service        @uk.
 POST        /fsm/agents/cancel-authorisation/select-business-service        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitBusinessService
 GET         /fsm/agents/cancel-authorisation/identify-client                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showIdentifyClient
 POST        /fsm/agents/cancel-authorisation/identify-itsa-client           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyItsaClient
+POST        /fsm/agents/cancel-authorisation/identify-irv-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyIrvClient
+POST        /fsm/agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyVatClient
+GET         /fsm/agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmClient
 GET         /fsm/agents/cancel-authorisation/not-matched                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showKnownFactNotMatched
 GET         /fsm/agents/cancel-authorisation/not-enrolled                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotSignedUp
+GET         /fsm/agents/cancel-authorisation/not-authorised                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showCannotCreateRequest
 
 # Request tracking
 GET         /track                                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
