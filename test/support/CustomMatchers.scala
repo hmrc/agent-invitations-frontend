@@ -63,8 +63,8 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)
-                     (implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)(
+    implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         expectedMessageKeys.foreach(checkMessageIsDefined)

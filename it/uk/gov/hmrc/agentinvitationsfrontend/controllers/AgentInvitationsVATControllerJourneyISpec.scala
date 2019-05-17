@@ -297,7 +297,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("invitation-sent-link.header"),
+          htmlEscapedMessage("invitation-sent.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))
