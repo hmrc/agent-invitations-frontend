@@ -50,7 +50,7 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
         expectedMessageParamKeys = Seq(
           "invitation-sent.header",
           "title.suffix.agents"
-        ):_*
+        ): _*
       )
     }
 

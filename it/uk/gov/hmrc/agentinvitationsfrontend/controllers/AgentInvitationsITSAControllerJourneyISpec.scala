@@ -210,7 +210,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("invitation-sent-link.header"),
+          htmlEscapedMessage("invitation-sent.header"),
           htmlEscapedMessage("title.suffix.agents")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
       checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.l2", "someurl"))

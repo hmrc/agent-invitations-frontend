@@ -692,7 +692,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           result,
           htmlEscapedMessage(
             "generic.title",
-            htmlEscapedMessage("invitation-sent-link.header"),
+            htmlEscapedMessage("invitation-sent.header"),
             htmlEscapedMessage("title.suffix.agents")))
 
         journeyState.get should have[State](InvitationSentPersonal("invitation/link", None))
