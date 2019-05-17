@@ -22,17 +22,18 @@ import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Confirmation, ItsaClient, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, lowerCaseText, normalizedText, postcodeMapping, validNino}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, SelectServicePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{business_select_service, client_type, select_service}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{identify_client_irv, identify_client_itsa, identify_client_vat}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cannot_create_request, identify_client_irv, identify_client_itsa, identify_client_vat, not_matched, not_signed_up}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -88,6 +89,18 @@ class AgentLedDeauthJourneyController @Inject()(
   val submitIdentifyItsaClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(identifyClientItsaForm(featureFlags.showHmrcMtdIt))(
       submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService))
+  }
+
+  val submitIdentifyIrvClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(identifyClientIrvForm(featureFlags.showPersonalIncome))(
+      submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService)
+    )
+  }
+
+  val submitIdentifyVatClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(identifyClientVatForm(featureFlags.showKfcMtdVat))(
+      submitIdentityClientVat(checkVatRegistrationDateMatches, getClientNameByService)
+    )
   }
 
   val showKnownFactNotMatched = actionShowStateWhenAuthorised(AsAgent) {
@@ -182,6 +195,20 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeAuthController.showSelectService().url
         ))
 
+    case KnownFactNotMatched =>
+      Ok(
+        not_matched(
+          hasJourneyCache = false,
+          routes.AgentLedDeauthJourneyController.showIdentifyClient(),
+          routes.AgentInvitationJourneyController.showReviewAuthorisations()))
+
+    case NotSignedUp(service) =>
+      Ok(not_signed_up(Services.determineServiceMessageKeyFromService(service), hasRequests = false))
+
+    case CannotCreateRequest =>
+      Ok(
+        cannot_create_request(
+          CannotCreateRequestConfig(hasRequests = false, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
   }
 
   override def context(implicit rh: RequestHeader): HeaderCarrier = hc
@@ -212,10 +239,24 @@ object AgentLedDeauthJourneyController {
   val serviceBusinessForm: Form[Confirmation] = agentConfirmationForm(
     "cancel-authorisation.error.business-service.required")
 
-  def identifyClientItsaForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
-    mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
-      "postcode"         -> postcodeMapping(showKfcMtdIt)
-    )(ItsaClient.apply)(ItsaClient.unapply)
-  )
+  def identifyClientItsaForm(showKfcMtdIt: Boolean): Form[ItsaClient] =
+    Form(
+      mapping(
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
+        "postcode"         -> postcodeMapping(showKfcMtdIt)
+      )(ItsaClient.apply)(ItsaClient.unapply))
+
+  def identifyClientIrvForm(showKfcPersonalIncome: Boolean): Form[IrvClient] =
+    Form(
+      mapping(
+        "clientIdentifier" -> normalizedText.verifying(validNino()),
+        "dob"              -> dateOfBirthMapping(showKfcPersonalIncome)
+      )(IrvClient.apply)(IrvClient.unapply))
+
+  def identifyClientVatForm(showKfcMtdVat: Boolean): Form[VatClient] =
+    Form(
+      mapping(
+        "clientIdentifier" -> normalizedText.verifying(validVrn),
+        "registrationDate" -> optionalIf(showKfcMtdVat, DateFieldHelper.dateFieldsMapping(validVatDateFormat))
+      )(VatClient.apply)(VatClient.unapply))
 }
