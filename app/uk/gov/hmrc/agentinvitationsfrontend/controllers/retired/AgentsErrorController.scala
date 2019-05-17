@@ -52,7 +52,7 @@ class AgentsErrorController @Inject()(
           not_matched(
             aggregate.requests.nonEmpty,
             routes.AgentsInvitationController.showIdentifyClient(),
-            routes.AgentsInvitationController.showReviewAuthorisations()))
+            Some(routes.AgentsInvitationController.showReviewAuthorisations())))
       }
     }
   }

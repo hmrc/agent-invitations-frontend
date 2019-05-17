@@ -351,7 +351,7 @@ class AgentInvitationJourneyController @Inject()(
         not_matched(
           basket.nonEmpty,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
-          routes.AgentInvitationJourneyController.showReviewAuthorisations()))
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
     case SomeAuthorisationsFailed(basket) =>
       Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))

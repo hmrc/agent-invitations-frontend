@@ -36,6 +36,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cancelAuthorisation, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -310,12 +311,10 @@ class AgentLedDeAuthController @Inject()(
       .select_service(
         form,
         SelectServicePageConfig(
-          false,
           featureFlags,
           enabledServices,
           submitServicePersonalCall,
-          routes.AgentLedDeAuthController.showClientType().url,
-          routes.AgentLedDeAuthController.showReviewAuthorisations()
+          routes.AgentLedDeAuthController.showClientType().url
         )
       )
 
@@ -435,7 +434,7 @@ class AgentLedDeAuthController @Inject()(
     form: Form[Confirmation] = agentConfirmationForm("cancel-authorisation.error.business-service.required"),
     basketFlag: Boolean,
     backLink: String)(implicit request: Request[_]): Appendable =
-    cancelAuthorisation.business_select_service(form, basketFlag, submitServiceBusinessCall)
+    cancelAuthorisation.business_select_service(form, submitServiceBusinessCall)
 
   override def identifyClientCall: Call = routes.AgentLedDeAuthController.showIdentifyClient()
 

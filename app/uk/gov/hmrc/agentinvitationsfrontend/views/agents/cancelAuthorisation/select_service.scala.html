@@ -20,13 +20,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
 
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @(agentForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-@back_link(routes.AgentLedDeAuthController.showClientType().url)
+@back_link(config.backLink)
 
 @if(agentForm.hasErrors) {
     @errorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("select-service"))
