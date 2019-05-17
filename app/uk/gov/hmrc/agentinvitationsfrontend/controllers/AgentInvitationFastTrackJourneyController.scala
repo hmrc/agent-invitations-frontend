@@ -368,7 +368,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         not_matched(
           hasJourneyCache = false,
           routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
-          routes.AgentInvitationJourneyController.showReviewAuthorisations()
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
         ))
 
     case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
