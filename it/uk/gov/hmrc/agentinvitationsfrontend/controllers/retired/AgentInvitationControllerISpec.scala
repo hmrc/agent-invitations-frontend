@@ -142,10 +142,11 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("personal-select-service.itsa"),
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat")
+        htmlEscapedMessage("select-service.vat"),
+        htmlEscapedMessage("select-service.alternative"),
+        htmlEscapedMessage("select-service.alt-suggestion")
       )
       checkResultContainsBackLink(result, "/invitations2/agents/client-type")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
@@ -156,11 +157,13 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       await(sessionStore.save(invitation))
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.yes"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.no"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alt-suggestion"))
+      checkHtmlResultWithBodyText(result,
+        htmlEscapedMessage("business-select-service.header"),
+        htmlEscapedMessage("business-select-service.yes"),
+        htmlEscapedMessage("business-select-service.no"),
+        htmlEscapedMessage("select-service.alternative"),
+        htmlEscapedMessage("select-service.alt-suggestion.vat-only")
+      )
 
       val govUkGuidanceUrl = "https://www.gov.uk/guidance/client-authorisation-an-overview"
       checkHtmlResultWithBodyText(result, hasMessage("select-service.guidance", govUkGuidanceUrl))
