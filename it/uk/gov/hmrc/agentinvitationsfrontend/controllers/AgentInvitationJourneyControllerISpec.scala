@@ -241,37 +241,53 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "POST /agents/identify-itsa-client" should {
       val request = FakeRequest("POST", "/agents/identify-itsa-client")
 
-      "redirect to confirm client" in {
-        givenMatchingClientIdAndPostcode(Nino(nino), "BN114AW")
-        givenTradingName(Nino(nino), "Sylvia Plath")
+      "redirect to /agents/confirm-client" when {
+        "nino is uppercase" in {
+          checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toUpperCase)
+        }
 
-        journeyState.set(
+        "nino is lowercase (APB-3634 bug fix)" in {
+          checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toLowerCase)
+        }
+
+        def checkSubmitIdentifyItsaClient(submittedNinoStr: String) = {
+          val nino = Nino(submittedNinoStr.toUpperCase)
+          givenMatchingClientIdAndPostcode(nino, "BN114AW")
+          givenTradingName(nino, "Sylvia Plath")
+
+          journeyState.set(
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
           List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
-        val result = controller.submitIdentifyItsaClient(
+          val result = controller.submitIdentifyItsaClient(
           authorisedAsValidAgent(
-            request.withFormUrlEncodedBody("clientIdentifier" -> nino, "postcode" -> "BN114AW"),
-            arn.value))
+          request.withFormUrlEncodedBody(
+            "clientIdentifier" -> submittedNinoStr,
+            "postcode" -> "BN114AW"
+          ), arn.value))
 
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
-        journeyState.get should havePattern[State](
-          {
-            case ConfirmClientItsa(
+          journeyState.get should havePattern[State](
+            {
+              case ConfirmClientItsa(
                 AuthorisationRequest(
                   "Sylvia Plath",
-                  ItsaInvitation(Nino(`nino`), Some(Postcode("BN114AW")), _, _, _),
+                  ItsaInvitation(nino, Some(Postcode("BN114AW")), _, _, _),
                   _,
-                  _),
-                `emptyBasket`) =>
-          },
-          List(
-            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-            SelectPersonalService(availableServices, emptyBasket),
-            SelectClientType(emptyBasket))
-        )
+                  _
+                ),
+                `emptyBasket`
+              ) =>
+            },
+            List(
+              IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+              SelectPersonalService(availableServices, emptyBasket),
+              SelectClientType(emptyBasket)
+            )
+          )
+        }
       }
 
       "redirect to not matched when clientId and known fact don't match" in {
@@ -302,7 +318,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "POST /agents/identify-vat-client" should {
       val request = FakeRequest("POST", "/agents/identify-vat-client")
 
-      "redirect to confirm client" in {
+      "redirect to /agents/confirm-client" in {
         givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
         givenClientDetails(Vrn("202949960"))
 
@@ -340,7 +356,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       }
 
-      "redirect to not matched when clientId and known fact don't match" in {
+      "redirect to /agents/not-matched when clientId and known fact don't match" in {
         givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 403)
 
         journeyState.set(
@@ -370,41 +386,51 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       }
     }
 
-    "POST /agents/identify-irv-client" should {
+    "POST /agents/identify-irv-client" when {
       val request = FakeRequest("POST", "/agents/identify-irv-client")
 
-      "redirect to reviewAuthorisations because flag is off" in {
-        givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
-        givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
-        givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
+      "redirect to /agents/review-authorisations because flag is off" when {
+        "submitted NINO is uppercase" in {
+          checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toUpperCase)
+        }
 
-        journeyState.set(
-          IdentifyPersonalClient(HMRCPIR, emptyBasket),
-          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+        "submitted NINO is lowercase (APB-3525)" in {
+          checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toLowerCase)
+        }
 
-        val result = controller.submitIdentifyIrvClient(
-          authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientIdentifier" -> nino,
-              "dob.year"         -> "1990",
-              "dob.month"        -> "10",
-              "dob.day"          -> "10"),
-            arn.value))
+        def checkSubmitIdentifyIrvClient(submittedNinoStr: String) = {
+          givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
+          givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
+          givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
+          givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
 
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
-
-        journeyState.get should havePattern[State](
-          { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => },
-          List(
+          journeyState.set(
             IdentifyPersonalClient(HMRCPIR, emptyBasket),
-            SelectPersonalService(availableServices, emptyBasket),
-            SelectClientType(emptyBasket))
-        )
+            List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+
+          val result = controller.submitIdentifyIrvClient(
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientIdentifier" -> submittedNinoStr,
+                "dob.year"         -> "1990",
+                "dob.month"        -> "10",
+                "dob.day"          -> "10"),
+              arn.value))
+
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+
+          journeyState.get should havePattern[State](
+            { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => },
+            List(
+              IdentifyPersonalClient(HMRCPIR, emptyBasket),
+              SelectPersonalService(availableServices, emptyBasket),
+              SelectClientType(emptyBasket))
+          )
+        }
       }
 
-      "redirect to not matched when clientId and known fact don't match" in {
+      "redirect to /agents/not-matched when clientId and known fact don't match" in {
         givenNonMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
 
         journeyState.set(

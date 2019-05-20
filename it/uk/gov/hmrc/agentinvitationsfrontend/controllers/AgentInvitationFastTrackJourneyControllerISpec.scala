@@ -164,49 +164,72 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
   "POST /agents/client-identify-itsa" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-itsa-client")
-    "redirect to invitation-sent" in new ItsaHappyScenario {
-      journeyState.set(
-        IdentifyPersonalClient(
-          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
-          None),
-        List(
-          CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
-          Prologue(None))
-      )
+    "redirect to invitation-sent" when {
+      "submitted NINO is uppercase" in new ItsaHappyScenario {
+        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toUpperCase)
+      }
 
-      val result = controller.submitIdentifyItsaClient(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("clientIdentifier" -> "AB123456A", "postcode" -> "BN32TN"),
-          arn.value))
+      "submitted NINO is lowercase (APB-3634)" in new ItsaHappyScenario {
+        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toLowerCase)
+      }
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+      def checkSubmitIdentifyItsaClient(submittedNinoStr: String) = {
+        journeyState.set(
+          IdentifyPersonalClient(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")),
+            None),
+          List(
+            CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
+            Prologue(None))
+        )
+
+        val result = controller.submitIdentifyItsaClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientIdentifier" -> submittedNinoStr,
+              "postcode" -> "BN32TN"
+            ),
+            arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+      }
     }
   }
 
   "POST /agents/client-identify-irv" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
-    "redirect to invitation-sent" in new IrvHappyScenario {
-      journeyState.set(
-        IdentifyPersonalClient(
-          AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some("1990-10-10")),
-          None),
-        List(
-          CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
-          Prologue(None))
-      )
+    "redirect to invitation-sent" when {
+      "submitted NINO is uppercase" in new IrvHappyScenario {
+        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toUpperCase)
+      }
 
-      val result = controller.submitIdentifyIrvClient(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "clientIdentifier" -> "AB123456A",
-            "dob.year"         -> "1990",
-            "dob.month"        -> "10",
-            "dob.day"          -> "10"),
-          arn.value))
+      "submitted NINO is lowercase (APB-3634)" in new IrvHappyScenario {
+        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toLowerCase)
+      }
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+      def checkSubmitIdentifyIrvClient(submittedNinoStr: String) = {
+        journeyState.set(
+          IdentifyPersonalClient(
+            AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")),
+            None),
+          List(
+            CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
+            Prologue(None))
+        )
+
+        val result = controller.submitIdentifyIrvClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientIdentifier" -> submittedNinoStr,
+              "dob.year"         -> "1990",
+              "dob.month"        -> "10",
+              "dob.day"          -> "10"),
+            arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+      }
     }
   }
 

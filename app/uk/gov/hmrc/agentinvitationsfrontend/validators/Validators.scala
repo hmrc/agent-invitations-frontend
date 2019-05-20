@@ -38,6 +38,8 @@ object Validators {
 
   val normalizedText: Mapping[String] = of[String].transform(_.replaceAll("\\s", ""), identity)
 
+  val uppercaseNormalizedText: Mapping[String] = normalizedText.transform(_.toUpperCase, identity)
+
   val vrnRegex = "[0-9]{9}"
 
   val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"

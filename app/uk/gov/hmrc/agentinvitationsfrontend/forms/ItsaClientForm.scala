@@ -25,7 +25,7 @@ object ItsaClientForm {
 
   def form(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
     mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
       "postcode"         -> postcodeMapping(showKfcMtdIt)
     )(ItsaClient.apply)(ItsaClient.unapply)
   )
