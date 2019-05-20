@@ -25,7 +25,7 @@ object IrvClientForm {
 
   def form(showKfcPersonalIncome: Boolean): Form[IrvClient] = Form(
     mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
       "dob"              -> dateOfBirthMapping(showKfcPersonalIncome)
     )(IrvClient.apply)(IrvClient.unapply)
   )
