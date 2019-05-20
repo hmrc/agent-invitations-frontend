@@ -160,6 +160,11 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.yes"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("business-select-service.no"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alternative"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("select-service.alt-suggestion"))
+
+      val govUkGuidanceUrl = "https://www.gov.uk/guidance/client-authorisation-an-overview"
+      checkHtmlResultWithBodyText(result, hasMessage("select-service.guidance", govUkGuidanceUrl))
+
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
     }
