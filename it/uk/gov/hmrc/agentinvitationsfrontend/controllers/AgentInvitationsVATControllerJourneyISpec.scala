@@ -335,7 +335,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their VAT returns through software.",
+        "This client has not signed up to submit their VAT returns through software.",
         "Start a new request")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -354,7 +354,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their VAT returns through software.",
+        "This client has not signed up to submit their VAT returns through software.",
         "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

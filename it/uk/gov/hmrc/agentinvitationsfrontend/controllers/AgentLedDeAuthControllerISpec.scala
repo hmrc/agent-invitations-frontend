@@ -428,7 +428,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-cancel.header")
       checkHtmlResultWithBodyText(
         result,
-        "If you cancel your authorisation, you will not be able to report income and expenses for some trading name")
+        "If you cancel your authorisation, you will not be able to send Income Tax updates for some trading name")
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
   }
@@ -500,7 +500,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, today)
       checkHtmlResultWithBodyText(
         result,
-        "My Agency is no longer authorised by Some Client Company to report their income or expenses through software.")
+        "My Agency is no longer authorised by Some Client Company to send their Income Tax updates through software.")
     }
   }
 
