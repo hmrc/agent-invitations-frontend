@@ -20,18 +20,15 @@ import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.Configuration
 import play.api.data.Form
-import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, Call, Request, RequestHeader, Result}
+import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
+import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -80,7 +77,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(SelectClientTypeForm)(Transitions.selectedClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(Transitions.selectedClientType)
   }
 
   val showSelectService = actionShowStateWhenAuthorised(AsAgent) {
@@ -88,7 +85,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitPersonalSelectService = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(SelectPersonalServiceForm)(
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
       Transitions.selectedPersonalService(
         featureFlags.showHmrcMtdIt,
         featureFlags.showPersonalIncome,
@@ -96,7 +93,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitBusinessSelectService = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(SelectBusinessServiceForm)(
+    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceBusinessForm)(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
@@ -105,7 +102,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitIdentifyItsaClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(IdentifyItsaClientForm(featureFlags.showKfcMtdIt))(
+    whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form(featureFlags.showKfcMtdIt))(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(
         getClientNameByService)(createMultipleInvitations)(createAgentLink)
@@ -113,7 +110,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitIdentifyVatClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(IdentifyVatClientForm(featureFlags.showKfcMtdVat))(
+    whenAuthorisedWithForm(AsAgent)(VatClientForm.form(featureFlags.showKfcMtdVat))(
       Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(
         getClientNameByService)(createMultipleInvitations)(createAgentLink)
@@ -121,7 +118,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitIdentifyIrvClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
+    whenAuthorisedWithForm(AsAgent)(IrvClientForm.form(featureFlags.showKfcPersonalIncome))(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableIrvToConfirm)(
         featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)
@@ -202,13 +199,13 @@ class AgentInvitationJourneyController @Inject()(
 
     case SelectClientType(_) =>
       Ok(client_type(
-        formWithErrors.or(SelectClientTypeForm),
+        formWithErrors.or(ClientTypeForm.form),
         ClientTypePageConfig(backLinkFor(breadcrumbs).url, routes.AgentInvitationJourneyController.submitClientType())))
 
     case SelectPersonalService(services, basket) =>
       Ok(
         select_service(
-          formWithErrors.or(SelectPersonalServiceForm),
+          formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfig(
             basket.nonEmpty,
             featureFlags,
@@ -222,7 +219,7 @@ class AgentInvitationJourneyController @Inject()(
     case SelectBusinessService =>
       Ok(
         business_select_service(
-          formWithErrors.or(SelectBusinessServiceForm),
+          formWithErrors.or(CommonConfirmationForms.serviceBusinessForm),
           BusinessSelectServicePageConfig(
             basketFlag = false,
             routes.AgentInvitationJourneyController.submitBusinessSelectService(),
@@ -234,7 +231,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
       Ok(
         identify_client_itsa(
-          formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
+          formWithErrors.or(ItsaClientForm.form(featureFlags.showKfcMtdIt)),
           featureFlags.showKfcMtdIt,
           routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
           backLinkFor(breadcrumbs).url
@@ -244,7 +241,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
           routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
@@ -254,7 +251,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCPIR, _) =>
       Ok(
         identify_client_irv(
-          formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
+          formWithErrors.or(IrvClientForm.form(featureFlags.showKfcPersonalIncome)),
           featureFlags.showKfcPersonalIncome,
           routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
           backLinkFor(breadcrumbs).url
@@ -264,7 +261,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyBusinessClient =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
           routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
@@ -389,48 +386,7 @@ class AgentInvitationJourneyController @Inject()(
 
 object AgentInvitationJourneyController {
 
-  val SelectClientTypeForm: Form[ClientType] = Form(
-    single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    ).transform(ClientType.toEnum, ClientType.fromEnum)
-  )
-
-  val SelectPersonalServiceForm: Form[String] = Form(
-    single(
-      "serviceType" -> text.verifying("service.type.invalid", supportedServices.contains _)
-    )
-  )
-
-  def confirmationForm(errorMessage: String): Form[Confirmation] =
-    Form(
-      mapping(
-        "accepted" -> optional(normalizedText)
-          .transform[String](_.getOrElse(""), s => Some(s))
-          .verifying(confirmationChoice(errorMessage))
-      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
-
-  val SelectBusinessServiceForm = confirmationForm("error.business-service.required")
-
-  def IdentifyItsaClientForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
-    mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
-      "postcode"         -> postcodeMapping(showKfcMtdIt)
-    )(ItsaClient.apply)(ItsaClient.unapply)
-  )
-
-  def IdentifyVatClientForm(showKfcMtdVat: Boolean): Form[VatClient] = Form(
-    mapping(
-      "clientIdentifier" -> normalizedText.verifying(validVrn),
-      "registrationDate" -> optionalIf(showKfcMtdVat, DateFieldHelper.dateFieldsMapping(validVatDateFormat))
-    )(VatClient.apply)(VatClient.unapply)
-  )
-
-  def IdentifyIrvClientForm(showKfcPersonalIncome: Boolean): Form[IrvClient] = Form(
-    mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
-      "dob"              -> dateOfBirthMapping(showKfcPersonalIncome)
-    )(IrvClient.apply)(IrvClient.unapply)
-  )
+  import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 
   val ConfirmClientForm = confirmationForm("error.confirm-client.required")
 
