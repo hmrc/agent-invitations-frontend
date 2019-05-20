@@ -86,7 +86,8 @@ select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
-select-service.alt-suggestion=You can use this service to ask for a client''s authorisation to report their VAT returns through software.
+select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
+select-service.alt-suggestion.vat-only=You can use this service to ask for a client''s authorisation to report their VAT returns through software.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
