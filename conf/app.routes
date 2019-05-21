@@ -74,12 +74,6 @@ GET         /agents/cancel-authorisation/cancelled                         @uk.g
 GET         /agents/cancel-authorisation/no-client-found                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.noClientFound
 GET         /agents/cancel-authorisation/response-failed                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.responseFailed
 GET         /agents/not-authorised                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.notAuthorised
-GET         /agents/cancel-authorisation/review-authorisations             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showReviewAuthorisations
-POST        /agents/cancel-authorisation/review-authorisations             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.submitReviewAuthorisations
-GET         /agents/cancel-authorisation/all-authorisations-removed        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.allAuthorisationsRemoved
-GET         /agents/cancel-authorisation/all-authorisations-failed         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.allCreateAuthorisationFailed
-GET         /agents/cancel-authorisation/some-authorisations-failed        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.someCreateAuthorisationFailed
-GET         /agents/cancel-authorisation/invitation-sent                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeAuthController.showInvitationSent
 
 # Request tracking
 GET         /track                                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
