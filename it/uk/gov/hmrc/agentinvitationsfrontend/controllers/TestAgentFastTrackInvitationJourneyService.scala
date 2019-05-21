@@ -36,9 +36,9 @@ class TestAgentInvitationFastTrackJourneyService extends AgentInvitationFastTrac
       state
     }
 
-  override def clear(implicit rc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+  override def clear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
     this.state = None
-    super.clear(rc, ec)
+    super.clear(hc, ec)
   }
 
 }
