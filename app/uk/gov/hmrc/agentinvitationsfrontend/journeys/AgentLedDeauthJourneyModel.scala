@@ -23,7 +23,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
-import play.api.mvc.Results.NotImplemented
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -40,10 +39,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object SelectServiceBusiness extends State
     case class IdentifyClientPersonal(service: String) extends State
     case object IdentifyClientBusiness extends State
-    case class ConfirmClientItsa(clientName: Option[String], nino: Nino, postcode: Postcode) extends State
-    case class ConfirmClientIrv(clientName: Option[String], nino: Nino, dob: DOB) extends State
-    case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn, vatRegDate: VatRegDate) extends State
-    case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn, vatRegDate: VatRegDate) extends State
+    case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends State
+    case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends State
+    case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
+    case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
@@ -60,9 +59,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     import ClientType._
     import State._
 
-    type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]] //String = postcode
+    type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
-    type GetClientName = (String, String) => Future[Option[String]] // client id and service
+    type GetClientName = (String, String) => Future[Option[String]]
     type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
     type VatRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
@@ -72,20 +71,20 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       case _ =>
         if (showAgentLedDeauth) goto(SelectClientType)
         else {
-          Logger(getClass).warn("Agent led de authorisation feature is disabled.")
-          fail(throw new Exception("Agent led de authorisation feature is disabled."))
+          Logger(getClass).warn("Agent led de-authorisation feature is disabled.")
+          fail(throw new Exception("Agent led de-authorisation feature is disabled."))
         }
     }
 
     def chosenClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType if clientType == personal => {
+      case SelectClientType if clientType == personal =>
         val enabledPersonalServices =
           if (agent.isWhitelisted)
             Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
           else
             Set(HMRCMTDIT, HMRCMTDVAT)
         goto(SelectServicePersonal(enabledPersonalServices))
-      }
+
       case SelectClientType if clientType == business => goto(SelectServiceBusiness)
     }
 
@@ -113,6 +112,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       case SelectServiceBusiness if confirmation.choice =>
         if (showVatFlag) goto(IdentifyClientBusiness)
         else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
+
       case SelectServiceBusiness => goto(root)
     }
 
@@ -120,13 +120,13 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       checkPostcodeMatches: CheckPostcodeMatches,
       getClientName: GetClientName,
       hasActiveRelationship: HasActiveRelationship)(showKFCItsa: Boolean, redirectToConfirmItsa: Boolean)(
-      agent: AuthorisedAgent)(itsaClient: ItsaClient) = {
+      agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToFinalState(finalState: Option[String] => State): Future[State] =
         for {
           postcodeMatches <- itsaClient.postcode match {
                               case _ if !showKFCItsa => Future successful Some(true)
-                              case Some(pc)          => checkPostcodeMatches(Nino(itsaClient.clientIdentifier), pc)
+                              case Some(postcode)    => checkPostcodeMatches(Nino(itsaClient.clientIdentifier), postcode)
                               case None              => throw new Exception("Postcode expected but none found")
                             }
           finalState <- postcodeMatches match {
@@ -140,7 +140,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       Transition {
         case IdentifyClientPersonal(HMRCMTDIT) =>
           def nameToState(name: Option[String]) =
-            ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier), Postcode(itsaClient.postcode.getOrElse("")))
+            ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier))
 
           if (redirectToConfirmItsa) goToFinalState(nameToState)
           else
@@ -154,14 +154,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       checkDOBMatches: DOBMatches,
       getClientName: GetClientName,
       hasActiveRelationship: HasActiveRelationship)(showKFCIrv: Boolean, redirectToConfirmIrv: Boolean)(
-      agent: AuthorisedAgent)(irvClient: IrvClient) = {
+      agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToFinalState(finalState: Option[String] => State): Future[State] =
         for {
           dobMatches <- irvClient.dob match {
                          case _ if !showKFCIrv => Future successful Some(true)
-                         case Some(dateOfBirth) =>
-                           checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(dateOfBirth))
+                         case Some(dob) =>
+                           checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(dob))
                          case None => throw new Exception(s"Date of birth expected but none found")
                        }
           finalState <- dobMatches match {
@@ -175,7 +175,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       Transition {
         case IdentifyClientPersonal(HMRCPIR) =>
           def nameToState(name: Option[String]) =
-            ConfirmClientIrv(name, Nino(irvClient.clientIdentifier), DOB(irvClient.dob.getOrElse("")))
+            ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))
 
           if (redirectToConfirmIrv) goToFinalState(nameToState)
           else
@@ -194,8 +194,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         for {
           hasVatRegDate <- vatClient.registrationDate match {
                             case _ if !showKFCVat => Future successful Some(204)
-                            case Some(regDate) =>
-                              vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(regDate))
+                            case Some(vatRegDate) =>
+                              vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatRegDate))
                             case None => throw new Exception(s"Vat registration date expected but none found")
                           }
           finalState <- hasVatRegDate match {
@@ -203,17 +203,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                            getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(name => goto(finalState(name)))
                          case Some(403) => goto(KnownFactNotMatched)
                          case Some(423) => goto(CannotCreateRequest)
-                         case None      => goto(NotSignedUp(HMRCMTDVAT))
+                         case _         => goto(NotSignedUp(HMRCMTDVAT))
                        }
         } yield finalState
 
       Transition {
         case IdentifyClientPersonal(HMRCMTDVAT) =>
           def nameToState(name: Option[String]) =
-            ConfirmClientPersonalVat(
-              name,
-              Vrn(vatClient.clientIdentifier),
-              VatRegDate(vatClient.registrationDate.getOrElse("")))
+            ConfirmClientPersonalVat(name, Vrn(vatClient.clientIdentifier))
 
           if (redirectToConfirmVat) goToFinalState(nameToState)
           else
@@ -223,10 +220,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
 
         case IdentifyClientBusiness =>
           def nameToState(name: Option[String]) =
-            ConfirmClientBusiness(
-              name,
-              Vrn(vatClient.clientIdentifier),
-              VatRegDate(vatClient.registrationDate.getOrElse("")))
+            ConfirmClientBusiness(name, Vrn(vatClient.clientIdentifier))
           if (redirectToConfirmVat) goToFinalState(nameToState)
           else
             goToFinalState(nameToState).flatMap { finalState =>
@@ -236,22 +230,22 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     }
 
     def clientConfirmed(hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
-      confirmation: Confirmation) = {
+      confirmation: Confirmation): AgentLedDeauthJourneyModel.Transition = {
 
       def gotoFinalState(clientId: String, service: String, name: Option[String]) =
         if (confirmation.choice) {
           for {
-            isRelationshipActive <- hasActiveRelationship(agent.arn, clientId, service)
-            result <- if (isRelationshipActive) goto(ConfirmCancel(service, name, clientId))
+            relationshipIsActive <- hasActiveRelationship(agent.arn, clientId, service)
+            result <- if (relationshipIsActive) goto(ConfirmCancel(service, name, clientId))
                      else goto(NotAuthorised(service))
           } yield result
         } else goto(root)
 
       Transition {
-        case ConfirmClientItsa(name, nino, _)       => gotoFinalState(nino.value, HMRCMTDIT, name)
-        case ConfirmClientIrv(name, nino, _)        => gotoFinalState(nino.value, HMRCPIR, name)
-        case ConfirmClientPersonalVat(name, vrn, _) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
-        case ConfirmClientBusiness(name, vrn, _)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
+        case ConfirmClientItsa(name, nino)       => gotoFinalState(nino.value, HMRCMTDIT, name)
+        case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
+        case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
+        case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
       }
     }
 

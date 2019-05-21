@@ -179,7 +179,6 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: NotAuthorised            => routes.AgentLedDeauthJourneyController.showNotAuthorised()
     case ResponseFailed              => routes.AgentLedDeauthJourneyController.showResponseFailed()
     case _                           => throw new Exception(s"Link not found for $state")
-
   }
 
   override def renderState(
@@ -208,7 +207,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         business_select_service(
           formWithErrors.or(CommonConfirmationForms.serviceBusinessForm),
-          routes.AgentLedDeAuthController.showClientType(), //change
+          routes.AgentLedDeauthJourneyController.submitBusinessService(),
           backLinkFor(breadcrumbs).url
         )
       )
@@ -221,7 +220,7 @@ class AgentLedDeauthJourneyController @Inject()(
               ItsaClientForm.form(featureFlags.showKfcMtdIt),
               featureFlags.showKfcMtdIt,
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
-              routes.AgentLedDeAuthController.showSelectService().url
+              backLinkFor(breadcrumbs).url
             ))
         case Services.HMRCPIR =>
           Ok(
@@ -229,7 +228,7 @@ class AgentLedDeauthJourneyController @Inject()(
               IrvClientForm.form(featureFlags.showKfcPersonalIncome),
               featureFlags.showKfcPersonalIncome,
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
-              routes.AgentLedDeAuthController.showSelectService().url
+              backLinkFor(breadcrumbs).url
             )
           )
         case Services.HMRCMTDVAT =>
@@ -238,7 +237,7 @@ class AgentLedDeauthJourneyController @Inject()(
               formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
               featureFlags.showKfcMtdVat,
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
-              routes.AgentLedDeAuthController.showSelectService().url
+              backLinkFor(breadcrumbs).url
             ))
       }
 
@@ -247,37 +246,45 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_vat(
           formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
-          routes.AgentLedDeAuthController.submitIdentifyClientVat(),
-          routes.AgentLedDeAuthController.showSelectService().url
+          routes.AgentLedDeauthJourneyController.submitBusinessService(),
+          backLinkFor(breadcrumbs).url
         ))
 
-    case ConfirmClientItsa(clientName, _, _) =>
+    case ConfirmClientItsa(clientName, _) =>
       Ok(
         confirm_client(
           clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          backLinkFor(breadcrumbs).url))
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url
+        ))
 
-    case ConfirmClientIrv(clientName, _, _) =>
+    case ConfirmClientIrv(clientName, _) =>
       Ok(
         confirm_client(
           clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          backLinkFor(breadcrumbs).url))
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url
+        ))
 
-    case ConfirmClientPersonalVat(clientName, _, _) =>
+    case ConfirmClientPersonalVat(clientName, _) =>
       Ok(
         confirm_client(
           clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          backLinkFor(breadcrumbs).url))
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url
+        ))
 
-    case ConfirmClientBusiness(clientName, _, _) =>
+    case ConfirmClientBusiness(clientName, _) =>
       Ok(
         confirm_client(
           clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          backLinkFor(breadcrumbs).url))
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url
+        ))
 
     case ConfirmCancel(service, clientName, _) =>
       Ok(
@@ -285,7 +292,9 @@ class AgentLedDeauthJourneyController @Inject()(
           service,
           clientName.getOrElse(""),
           CommonConfirmationForms.confirmCancelForm,
-          backLinkFor(breadcrumbs).url))
+          routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
+          backLinkFor(breadcrumbs).url
+        ))
 
     case AuthorisationCancelled(service, clientName, agencyName) =>
       Ok(

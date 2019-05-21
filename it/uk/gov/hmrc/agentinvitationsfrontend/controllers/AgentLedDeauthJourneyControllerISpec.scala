@@ -4,7 +4,6 @@ import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{DOB, Postcode, VatRegDate}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
@@ -329,9 +328,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "GET /fsm/agents/cancel-authorisation/confirm-client" should {
     "display the confirm client page for ITSA" in {
-      journeyState.set(
-        ConfirmClientItsa(Some("Barry Block"), validNino, Postcode(validPostcode)),
-        List(IdentifyClientPersonal(HMRCMTDIT)))
+      journeyState.set(ConfirmClientItsa(Some("Barry Block"), validNino), List(IdentifyClientPersonal(HMRCMTDIT)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -345,7 +342,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "display the confirm client page for IRV" in {
       journeyState
-        .set(ConfirmClientIrv(Some("Barry Block"), validNino, DOB(dateOfBirth)), List(IdentifyClientPersonal(HMRCPIR)))
+        .set(ConfirmClientIrv(Some("Barry Block"), validNino), List(IdentifyClientPersonal(HMRCPIR)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -358,9 +355,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/identify-client")
     }
     "display the confirm client page for personal VAT" in {
-      journeyState.set(
-        ConfirmClientPersonalVat(Some("Barry Block"), validVrn, VatRegDate(validRegistrationDate)),
-        List(IdentifyClientPersonal(HMRCMTDVAT)))
+      journeyState
+        .set(ConfirmClientPersonalVat(Some("Barry Block"), validVrn), List(IdentifyClientPersonal(HMRCMTDVAT)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -373,9 +369,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/fsm/agents/cancel-authorisation/identify-client")
     }
     "display the confirm client page for business VAT" in {
-      journeyState.set(
-        ConfirmClientBusiness(Some("Barry Block"), validVrn, VatRegDate(validRegistrationDate)),
-        List(IdentifyClientBusiness))
+      journeyState.set(ConfirmClientBusiness(Some("Barry Block"), validVrn), List(IdentifyClientBusiness))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -391,7 +385,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /fsm/agents/cancel-authorisation/confirm-client" should {
     "redirect to confirm cancel when YES is selected" in {
-      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino), Postcode(validPostcode)), Nil)
+      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 200)
@@ -407,7 +401,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
     "redirect to not authorised when there are is no active relationship to de-authorise" in {
-      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino), Postcode(validPostcode)), Nil)
+      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
@@ -427,7 +421,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     "display the confirm cancel page" in {
       journeyState.set(
         ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value),
-        List(ConfirmClientItsa(Some("Barry Block"), validNino, Postcode(validPostcode))))
+        List(ConfirmClientItsa(Some("Barry Block"), validNino)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
       val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

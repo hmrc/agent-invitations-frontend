@@ -54,16 +54,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val dob = Some("1990-10-10")
 
   "AgentLedDeauthJourneyModel" when {
-    "at root" should {
-      "transition to SelectClientType if agent led deauth flag is on" in {
+    "at root state" should {
+      "transition to SelectClientType when agent led deauth flag is on" in {
         given(root) when showSelectClientType(showAgentLedDeauth = true)(authorisedAgent) should thenGo(
           SelectClientType
         )
       }
-      "fail and throw an exception if agent led deauth flag is off" in {
+      "fail and throw an exception when agent led deauth flag is off" in {
         intercept[Exception] {
           given(root) when showSelectClientType(showAgentLedDeauth = false)(authorisedAgent)
-        }.getMessage shouldBe "Agent led de authorisation feature is disabled."
+        }.getMessage shouldBe "Agent led de-authorisation feature is disabled."
       }
     }
     "at state ClientType" should {
@@ -89,7 +89,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           IdentifyClientPersonal(HMRCMTDIT)
         )
       }
-      "throw an exception when service is ITSA if the show itsa flag is switched off" in {
+      "throw an exception when service is ITSA and the show itsa flag is switched off" in {
         intercept[Exception] {
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = false,
@@ -105,7 +105,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           IdentifyClientPersonal(HMRCPIR)
         )
       }
-      "throw an exception when service is IRV if the show irv flag is switched off" in {
+      "throw an exception when service is IRV and the show irv flag is switched off" in {
         intercept[Exception] {
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = true,
@@ -121,7 +121,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           IdentifyClientPersonal(HMRCMTDVAT)
         )
       }
-      "throw an exception when service is VAT if the show vat flag is switched off" in {
+      "throw an exception when service is VAT and the show vat flag is switched off" in {
         intercept[Exception] {
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = true,
@@ -150,10 +150,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
     }
 
-    def getClientName(clientId: String, service: String) = Future(Some("John Smith"))
-    def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
-
     "at state IdentifyClientPersonal" should {
+      def getClientName(clientId: String, service: String) = Future(Some("John Smith"))
+      def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
       val itsaClient = ItsaClient(nino, postCode)
       val itsaClientNoPostcode = ItsaClient(nino, None)
       val irvClient = IrvClient(nino, dob)
@@ -168,7 +167,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           postcodeMatches,
           getClientName,
           hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClientItsa(Some("John Smith"), Nino(nino), Postcode(postCode.getOrElse(""))))
+          ConfirmClientItsa(Some("John Smith"), Nino(nino)))
       }
       "transition to KnownFactNotMatched when postcode does not match and flags are on" in {
         def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
@@ -188,22 +187,22 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
           NotSignedUp(HMRCMTDIT))
       }
-      "transition to ConfirmClientItsa with no postcode when KF flag is off" in {
-        def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
+      "transition to ConfirmClientItsa disregarding whether postcode matched when KF flag is off" in {
+        def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
 
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
           postcodeDoesNotMatch,
           getClientName,
           hasActiveRelationships)(showKFCItsa = false, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClientItsa(Some("John Smith"), Nino(nino), Postcode(postCode.getOrElse(""))))
+          ConfirmClientItsa(Some("John Smith"), Nino(nino)))
       }
-      "transition to ConfirmCancel when redirect to confirm flag is off" in {
+      "transition to ConfirmCancel when redirect-to-confirm flag is off" in {
         def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
 
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
           postcodeMatches,
           getClientName,
-          hasActiveRelationships)(showKFCItsa = false, redirectToConfirmItsa = false)(authorisedAgent)(itsaClient) should thenGo(
+          hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = false)(authorisedAgent)(itsaClient) should thenGo(
           ConfirmCancel(HMRCMTDIT, Some("John Smith"), nino))
       }
       "throw an Exception when the client has no postcode and the KF flag is on" in {
@@ -224,7 +223,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           dobMatches,
           getClientName,
           hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmClientIrv(Some("John Smith"), Nino(nino), DOB(dob.getOrElse(""))))
+          ConfirmClientIrv(Some("John Smith"), Nino(nino)))
       }
       "transition to KnownFactNotMatched when dob does not match and flags are on" in {
         def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
@@ -244,16 +243,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
           NotSignedUp(HMRCPIR))
       }
-      "transition to ConfirmClientIrv with no dob when KF flag is off" in {
-        def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
+      "transition to ConfirmClientIrv and disregard whether dob matches when KF flag is off" in {
+        def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Option[Boolean]] = Future(None)
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
           dobNotMatches,
           getClientName,
           hasActiveRelationships)(showKFCIrv = false, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmClientIrv(Some("John Smith"), Nino(nino), DOB(dob.getOrElse(""))))
+          ConfirmClientIrv(Some("John Smith"), Nino(nino)))
       }
-      "transition to ConfirmCancel when redirect to confirm irv flag is off" in {
+      "transition to ConfirmCancel when redirect-to-confirm irv flag is off" in {
         def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
@@ -279,7 +278,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           vatRegDateMatches,
           getClientName,
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+          ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when vat reg date does not match and flags are on" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
@@ -308,16 +307,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
           NotSignedUp(HMRCMTDVAT))
       }
-      "transition to ConfirmClientPersonalVat with no vatRegDate when KF flag is off" in {
+      "transition to ConfirmClientPersonalVat disregarding whether known fact matches when KF flag is off" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
           vatRegDateDoesNotMatch,
           getClientName,
           hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+          ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn)))
       }
-      "transition to ConfirmCancel when redirect to confirm vat flag is off" in {
+      "transition to ConfirmCancel when redirect-to-confirm vat flag is off" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
@@ -340,6 +339,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state IdentifyClientBusiness" should {
+      def getClientName(clientId: String, service: String) = Future(Some("John Smith"))
+      def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
       val vatClient = VatClient(vrn, vatRegDate)
       "transition to ConfirmClientVat when known fact matches and flags are on" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
@@ -348,7 +349,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           vatRegDateMatches,
           getClientName,
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientBusiness(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+          ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when known fact does not match and flags are on" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
@@ -377,14 +378,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
           NotSignedUp(HMRCMTDVAT))
       }
-      "transition to ConfirmClientBusiness with no vatRegDate when KF flag is off" in {
+      "transition to ConfirmClientBusiness disregarding whether known fact matches when KF flag is off" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(
           vatRegDateDoesNotMatch,
           getClientName,
           hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientBusiness(Some("John Smith"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse(""))))
+          ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
       }
       "transition to ConfirmCancel when redirect to confirm vat flag is off" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
@@ -400,7 +401,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmCancel when YES is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino), Postcode(postCode.getOrElse("")))) when
+        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           ConfirmCancel(HMRCMTDIT, Some("Lucy Rose"), nino)
         )
@@ -408,7 +409,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to root when NO is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino), Postcode(postCode.getOrElse("")))) when
+        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
@@ -416,7 +417,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to NotAuthorised when there are no active relationships" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(false)
 
-        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino), Postcode(postCode.getOrElse("")))) when
+        given(ConfirmClientItsa(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           NotAuthorised(HMRCMTDIT)
         )
@@ -426,7 +427,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmCancel when YES is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino), DOB(dob.getOrElse("")))) when
+        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           ConfirmCancel(HMRCPIR, Some("Lucy Rose"), nino)
         )
@@ -434,7 +435,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to root when NO is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino), DOB(dob.getOrElse("")))) when
+        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
@@ -442,7 +443,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to NotAuthorised when there are no active relationships" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(false)
 
-        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino), DOB(dob.getOrElse("")))) when
+        given(ConfirmClientIrv(Some("Lucy Rose"), Nino(nino))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           NotAuthorised(HMRCPIR)
         )
@@ -452,7 +453,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmCancel when YES is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           ConfirmCancel(HMRCMTDVAT, Some("Lucy Rose"), vrn)
         )
@@ -460,7 +461,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to root when NO is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
@@ -468,7 +469,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to NotAuthorised when there are no active relationships" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(false)
 
-        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientPersonalVat(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           NotAuthorised(HMRCMTDVAT)
         )
@@ -478,7 +479,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmCancel when YES is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           ConfirmCancel(HMRCMTDVAT, Some("Lucy Rose"), vrn)
         )
@@ -486,7 +487,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to root when NO is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
 
-        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
@@ -494,7 +495,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to NotAuthorised when there are no active relationships" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(false)
 
-        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn), VatRegDate(vatRegDate.getOrElse("")))) when
+        given(ConfirmClientBusiness(Some("Lucy Rose"), Vrn(vrn))) when
           clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
           NotAuthorised(HMRCMTDVAT)
         )

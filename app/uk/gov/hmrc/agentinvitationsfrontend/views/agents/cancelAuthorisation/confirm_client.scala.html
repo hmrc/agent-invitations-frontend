@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -32,7 +32,7 @@
   @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 }
 
-@form(action = routes.AgentLedDeAuthController.submitConfirmClient(), 'class -> "form js-form") {
+@form(action = submitCall, 'class -> "form js-form") {
  @input_radio_group(
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),

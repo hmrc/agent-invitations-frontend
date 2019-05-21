@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
-import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
 import play.api.mvc._
@@ -38,9 +37,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationC
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cancelAuthorisation, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
@@ -146,7 +142,12 @@ class AgentLedDeAuthController @Inject()(
                   .bindFromRequest()
                   .fold(
                     formWithErrors =>
-                      Ok(cancelAuthorisation.confirm_client(clientName, formWithErrors, identifyClientCall.url)),
+                      Ok(
+                        cancelAuthorisation.confirm_client(
+                          clientName,
+                          formWithErrors,
+                          routes.AgentLedDeAuthController.submitConfirmClient(),
+                          identifyClientCall.url)),
                     data => {
                       if (data.choice) {
                         relationshipsService.checkRelationshipExistsForService(agent.arn, service, clientId).map {
@@ -185,6 +186,7 @@ class AgentLedDeAuthController @Inject()(
                 cache.service.getOrElse(""),
                 clientName,
                 agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required"),
+                routes.AgentLedDeAuthController.submitConfirmCancel(),
                 backLinkForConfirmCancelPage(cache.service.getOrElse(""))
               ))
             }
@@ -206,8 +208,14 @@ class AgentLedDeAuthController @Inject()(
                     .bindFromRequest()
                     .fold(
                       formWithErrors => {
-                        Ok(cancelAuthorisation
-                          .confirm_cancel(service, clientName, formWithErrors, backLinkForConfirmCancelPage(service)))
+                        Ok(
+                          cancelAuthorisation
+                            .confirm_cancel(
+                              service,
+                              clientName,
+                              formWithErrors,
+                              routes.AgentLedDeAuthController.submitConfirmCancel(),
+                              backLinkForConfirmCancelPage(service)))
                       },
                       data => {
                         if (data.choice) {
@@ -332,7 +340,11 @@ class AgentLedDeAuthController @Inject()(
   override def showConfirmClientPage(name: Option[String], backLinkUrl: String)(
     implicit request: Request[_]): Appendable =
     cancelAuthorisation
-      .confirm_client(name.getOrElse(""), agentConfirmationForm("error.confirm-client.required"), backLinkUrl)
+      .confirm_client(
+        name.getOrElse(""),
+        agentConfirmationForm("error.confirm-client.required"),
+        routes.AgentLedDeAuthController.submitConfirmClient(),
+        backLinkUrl)
 }
 
 object AgentLedDeAuthController {
