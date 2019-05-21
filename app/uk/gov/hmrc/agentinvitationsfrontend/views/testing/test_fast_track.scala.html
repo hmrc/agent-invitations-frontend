@@ -26,7 +26,7 @@
 @postToInvitations = @{
     val baseUrl = if(isDev) s"http://${request.host}" else ""
     addParamsToUrl(s"${agentRoutes.AgentInvitationFastTrackJourneyController.agentFastTrack().url}",
-        "continue" -> Some(s"$baseUrl${testRoutes.TestEndpointsController.getFastTrackForm()}"),
+        "continue" -> request.queryString.get("continue").flatMap(_.headOption),
         "error" -> Some(s"$baseUrl${testRoutes.TestEndpointsController.getFastTrackForm()}")
     )
 }

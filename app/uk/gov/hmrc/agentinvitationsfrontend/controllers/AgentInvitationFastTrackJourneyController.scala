@@ -454,7 +454,7 @@ object AgentInvitationFastTrackJourneyController {
 
   def IdentifyItsaClientForm(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
     mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
       "postcode"         -> postcodeMapping(showKfcMtdIt)
     )(ItsaClient.apply)(ItsaClient.unapply)
   )
@@ -468,7 +468,7 @@ object AgentInvitationFastTrackJourneyController {
 
   def IdentifyIrvClientForm(showKfcPersonalIncome: Boolean): Form[IrvClient] = Form(
     mapping(
-      "clientIdentifier" -> normalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
       "dob"              -> dateOfBirthMapping(showKfcPersonalIncome)
     )(IrvClient.apply)(IrvClient.unapply)
   )
