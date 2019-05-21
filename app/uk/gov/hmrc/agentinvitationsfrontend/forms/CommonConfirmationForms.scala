@@ -30,7 +30,7 @@ object CommonConfirmationForms {
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val serviceBusinessForm: Form[Confirmation] = confirmationForm("cancel-authorisation.error.business-service.required")
+  val serviceBusinessForm: Form[Confirmation] = confirmationForm("error.business-service.required")
 
   val confirmCancelForm: Form[Confirmation] = confirmationForm("cancel-authorisation.error.confirm-cancel.required")
 }
