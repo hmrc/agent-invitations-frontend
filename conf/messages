@@ -161,6 +161,8 @@ error.review-authorisation.required=Select yes if you want to add another author
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.select-service.itsa=Sending their Income Tax updates through software
+cancel-authorisation.select-service.vat=Submitting their VAT returns through software
 cancel-authorisation.select-service.hint=Select an option.
 cancel-authorisation.confirm-client.header=Is this the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Yes - this is the client
@@ -176,9 +178,9 @@ cancel-authorisation.error.confirm-cancel.required=Select yes if you want to can
 cancel-authorisation.cancelled.header=Authorisation cancelled
 cancel-authorisation.cancelled.subheader=What this means
 cancel-authorisation.cancelled.return-to-account-services.button=Return to agent services account
-cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to send their Income Tax updates through software.
+cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to sending their Income Tax updates through software.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
-cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
+cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submitting their VAT returns through software.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
@@ -551,18 +553,18 @@ resend-link.header=Resend this link to your client
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?
-confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to send their Income Tax updates through software.
+confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for this client.
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
-confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit their VAT returns through software.
+confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for this client.
 confirm-cancel.radio.yes=Yes
 confirm-cancel.radio.no=No
 error.confirmCancel.invalid=This field is required
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to send their Income Tax updates through software.
+request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to send Income Tax updates through software for this client.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
-request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to submit their VAT returns through software.
+request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to submit VAT returns through software for this client.
 request-cancelled.panel= {0} will not be able to respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 

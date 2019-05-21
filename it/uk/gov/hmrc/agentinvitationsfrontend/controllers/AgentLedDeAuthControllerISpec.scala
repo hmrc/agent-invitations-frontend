@@ -500,7 +500,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(result, today)
       checkHtmlResultWithBodyText(
         result,
-        "My Agency is no longer authorised by Some Client Company to send their Income Tax updates through software.")
+        "My Agency is no longer authorised by Some Client Company to sending their Income Tax updates through software.")
     }
   }
 
