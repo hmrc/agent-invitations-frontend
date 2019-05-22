@@ -392,7 +392,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         ))
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
-      Ok(not_signed_up(Services.determineServiceMessageKeyFromService(fastTrackRequest.service), hasRequests = false))
+      Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))
   }
 }
 
