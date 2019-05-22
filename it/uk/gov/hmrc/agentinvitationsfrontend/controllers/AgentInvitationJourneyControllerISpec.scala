@@ -68,18 +68,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("client-type.header"),
         hasMessage("client-type.p1")
       )
-      checkResultContainsBackLink(result, routes.AgentInvitationJourneyController.showInvitationSent().url)
+      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
         List(InvitationSentPersonal("invitation/link", None)))
-    }
-    "show the client type page with backlink to asa when there are no breadcrumbs" in {
-      journeyState.set(SelectClientType(emptyBasket), Nil)
-      val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
-      journeyState.get shouldBe Some((SelectClientType(emptyBasket), Nil))
     }
   }
 

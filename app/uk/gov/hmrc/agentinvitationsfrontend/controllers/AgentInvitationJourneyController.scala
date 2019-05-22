@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.sun.xml.internal.ws.client.RequestContext
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.Configuration
@@ -25,6 +26,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -197,17 +199,14 @@ class AgentInvitationJourneyController @Inject()(
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = state match {
 
-    case SelectClientType(_) => {
-      def backLinkForClientType(implicit request: Request[_]): String =
-        breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
-          getCallFor(_).url)
-
+    case SelectClientType(_) =>
       Ok(
         client_type(
           formWithErrors.or(ClientTypeForm.form),
-          ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType())
+          ClientTypePageConfig(
+            s"${externalUrls.agentServicesAccountUrl}/agent-services-account",
+            routes.AgentInvitationJourneyController.submitClientType())
         ))
-    }
 
     case SelectPersonalService(services, basket) =>
       Ok(
