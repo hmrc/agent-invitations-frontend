@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.net.URL
+
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
 import play.api.Configuration
@@ -193,14 +195,30 @@ class AgentInvitationJourneyController @Inject()(
     case _                                  => throw new Exception(s"Link not found for $state")
   }
 
+  def backLinkForClientType(breadcrumbs: List[State])(implicit request: Request[_]) = {
+    val agentServicesAccountUrl: String = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+    breadcrumbs.headOption match {
+      case Some(h) => {
+        getCallFor(h).url
+      }
+      case None => {
+        agentServicesAccountUrl
+      }
+    }
+  }
+
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = state match {
 
     case SelectClientType(_) =>
-      Ok(client_type(
-        formWithErrors.or(ClientTypeForm.form),
-        ClientTypePageConfig(backLinkFor(breadcrumbs).url, routes.AgentInvitationJourneyController.submitClientType())))
+      Ok(
+        client_type(
+          formWithErrors.or(ClientTypeForm.form),
+          ClientTypePageConfig(
+            backLinkForClientType(breadcrumbs),
+            routes.AgentInvitationJourneyController.submitClientType())
+        ))
 
     case SelectPersonalService(services, basket) =>
       Ok(

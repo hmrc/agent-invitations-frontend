@@ -54,7 +54,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("GET", "/agents/client-type")
 
     "show the client type page" in {
-      journeyState.set(SelectClientType(emptyBasket), Nil)
+      journeyState.set(SelectClientType(emptyBasket), List(InvitationSentPersonal("invitation/link", None)))
 
       val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -68,7 +68,18 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("client-type.header"),
         hasMessage("client-type.p1")
       )
-      journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
+      checkResultContainsBackLink(result, routes.AgentInvitationJourneyController.showInvitationSent().url)
+      journeyState.get should have[State](
+        SelectClientType(emptyBasket),
+        List(InvitationSentPersonal("invitation/link", None)))
+    }
+    "show the client type page with backlink to asa when there are no breadcrumbs" in {
+      journeyState.set(SelectClientType(emptyBasket), Nil)
+      val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+      journeyState.get shouldBe Some((SelectClientType(emptyBasket), Nil))
     }
   }
 
@@ -256,15 +267,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           givenTradingName(nino, "Sylvia Plath")
 
           journeyState.set(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
           val result = controller.submitIdentifyItsaClient(
-          authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "clientIdentifier" -> submittedNinoStr,
-            "postcode" -> "BN114AW"
-          ), arn.value))
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientIdentifier" -> submittedNinoStr,
+                "postcode"         -> "BN114AW"
+              ),
+              arn.value))
 
           status(result) shouldBe 303
           redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
@@ -272,14 +284,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           journeyState.get should havePattern[State](
             {
               case ConfirmClientItsa(
-                AuthorisationRequest(
-                  "Sylvia Plath",
-                  ItsaInvitation(nino, Some(Postcode("BN114AW")), _, _, _),
-                  _,
-                  _
-                ),
-                `emptyBasket`
-              ) =>
+                  AuthorisationRequest(
+                    "Sylvia Plath",
+                    ItsaInvitation(nino, Some(Postcode("BN114AW")), _, _, _),
+                    _,
+                    _
+                  ),
+                  `emptyBasket`
+                  ) =>
             },
             List(
               IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
