@@ -301,7 +301,7 @@ class AgentLedDeauthJourneyController @Inject()(
         confirm_cancel(
           service,
           clientName.getOrElse(""),
-          CommonConfirmationForms.confirmCancelForm,
+          formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
           backLinkFor(breadcrumbs).url
         ))
