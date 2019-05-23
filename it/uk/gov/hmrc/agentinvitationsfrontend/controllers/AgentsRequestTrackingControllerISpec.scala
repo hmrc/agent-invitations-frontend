@@ -92,10 +92,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       parseHtml.getElementsByAttributeValue("id","row-0").toString should include("FooBar Ltd.")
       parseHtml.getElementsByAttributeValue("id","row-0").toString should include(
-        "Report their income and expenses through software")
+        "Send their Income Tax updates through software")
       parseHtml.getElementsByAttributeValue("id","row-3").toString should include("GDT")
       parseHtml.getElementsByAttributeValue("id","row-3").toString should include(
-        "Report their VAT returns through software")
+        "Submit their VAT returns through software")
       parseHtml.getElementsByAttributeValue("id","row-3").toString should include("resendRequest")
       parseHtml.getElementsByAttributeValue("id","row-7").toString should include("John Smith")
       parseHtml.getElementsByAttributeValue("id","row-7").toString should include("View their PAYE income record")
@@ -270,7 +270,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to report their income and expenses through software.",
+        "If you cancel this request, you will not be able to send Income Tax updates through software for this client.",
         "Yes",
         "No"
       )
@@ -373,7 +373,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Authorisation request cancelled",
-        "You have cancelled your authorisation request to report their income and expenses through software.",
+        "You have cancelled your authorisation request to send Income Tax updates through software for this client.",
         "Joe Volcano will not be able to respond to this request.",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
       )
@@ -440,7 +440,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to cancel this client's authorisation?",
-        "You will no longer be able to report their income and expenses through software.",
+        "You will no longer be able to send their Income Tax updates through software.",
         "You will not be able to undo this action.",
         "Yes",
         "No"
@@ -587,7 +587,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation cancelled",
         "What this means",
-        "You are no longer authorised by Buttercup Powerpuff to report their income and expenses through software.",
+        "You are no longer authorised by Buttercup Powerpuff to send their Income Tax updates through software.",
         "Return to track your recent authorisation requests"
       )
     }
@@ -631,7 +631,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation cancelled",
         "What this means",
-        "You are no longer authorised by Blossom Powerpuff to report their VAT returns through software.",
+        "You are no longer authorised by Blossom Powerpuff to submit their VAT returns through software.",
         "Return to track your recent authorisation requests"
       )
     }
