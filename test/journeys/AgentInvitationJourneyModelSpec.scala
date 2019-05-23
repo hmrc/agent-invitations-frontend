@@ -58,10 +58,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to SelectClientType" in {
         given(SelectClientType(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
-      "transition to SelectClientType given showSelectClientType" in {
-        given(SelectClientType(emptyBasket)) when showSelectClientType(authorisedAgent) should thenGo(
-          SelectClientType(emptyBasket))
-      }
       "transition to SelectPersonalService" in {
         given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
           SelectPersonalService(availableServices, emptyBasket))

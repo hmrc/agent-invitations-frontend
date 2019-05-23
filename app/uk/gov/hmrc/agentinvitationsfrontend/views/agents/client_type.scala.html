@@ -25,8 +25,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @(agentInvitationsForm: Form[ClientType], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@agentServicesCall = @{s"${externalUrls.agentServicesAccountUrl}/agent-services-account"}
-
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(config.backLinkUrl)

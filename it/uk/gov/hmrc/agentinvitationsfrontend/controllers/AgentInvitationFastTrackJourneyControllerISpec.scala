@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
+import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
@@ -14,7 +15,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
+class AgentInvitationFastTrackJourneyControllerISpec
+    extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder
@@ -30,28 +32,42 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]
 
+  before {
+    journeyState.clear
+  }
+
   "POST /agents/fast-track" should {
     val request = FakeRequest("POST", "/agents/fast-track")
 
-    "redirect to check-details if all values in request are valid with no continue url" in {
+    "redirect to check-details if all values in request are valid with no continue url" when {
 
-      val result = controller.agentFastTrack(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "clientType"           -> "personal",
-            "service"              -> "HMRC-MTD-IT",
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "AB123456A",
-            "knownFact"            -> "BN32TN"),
-          arn.value
-        ))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
-      journeyState.get shouldBe Some(
-        CheckDetailsCompleteItsa(
-          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
-          None),
-        List(Prologue(None)))
+      "submitted NINO is uppercase" in {
+        checkAgentFastTract(submittedNinoStr = "AB123456A")
+      }
+
+      "submitted NINO is lowercase (APB-3634)" in {
+        checkAgentFastTract(submittedNinoStr = "ab123456a")
+      }
+
+      def checkAgentFastTract(submittedNinoStr: String) = {
+        val result = controller.agentFastTrack(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "HMRC-MTD-IT",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> submittedNinoStr,
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          ))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+        journeyState.get shouldBe Some(
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", submittedNinoStr.toUpperCase, Some("BN32TN")),
+            None),
+          List(Prologue(None)))
+      }
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
@@ -175,11 +191,11 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
       def checkSubmitIdentifyItsaClient(submittedNinoStr: String) = {
         journeyState.set(
-          IdentifyPersonalClient(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")),
-            None),
+          IdentifyPersonalClient(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
           List(
-            CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
+            CheckDetailsCompleteItsa(
+              AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")),
+              None),
             Prologue(None))
         )
 
@@ -187,12 +203,13 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           authorisedAsValidAgent(
             request.withFormUrlEncodedBody(
               "clientIdentifier" -> submittedNinoStr,
-              "postcode" -> "BN32TN"
+              "postcode"         -> "BN32TN"
             ),
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+        redirectLocation(result) shouldBe Some(
+          routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
       }
     }
   }
@@ -210,11 +227,11 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
       def checkSubmitIdentifyIrvClient(submittedNinoStr: String) = {
         journeyState.set(
-          IdentifyPersonalClient(
-            AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")),
-            None),
+          IdentifyPersonalClient(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
           List(
-            CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")), None),
+            CheckDetailsCompleteIrv(
+              AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")),
+              None),
             Prologue(None))
         )
 
@@ -228,7 +245,8 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+        redirectLocation(result) shouldBe Some(
+          routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
       }
     }
   }
@@ -399,7 +417,7 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("problem.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p1.itsa"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p1.HMRC-MTD-IT"))
     }
   }
 

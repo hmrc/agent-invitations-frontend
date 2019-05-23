@@ -1,10 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
+import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -15,7 +17,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
+class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder
@@ -24,6 +26,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   lazy val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
   lazy val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
+  lazy val externalUrls = app.injector.instanceOf[ExternalUrls]
 
   import journeyState.model.State
   import journeyState.model.State._
@@ -31,10 +34,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]
 
+  before {
+    journeyState.clear(hc, ec)
+  }
+
   "GET /agents" should {
     val request = FakeRequest("GET", "/agents")
 
     "redirect to /agents/client-type if no current state" in {
+      journeyState.clear(hc, ec)
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
@@ -53,22 +61,53 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   "GET /agents/client-type" should {
     val request = FakeRequest("GET", "/agents/client-type")
 
-    "show the client type page" in {
-      journeyState.set(SelectClientType(emptyBasket), Nil)
+    "show the client type page" when {
+      "there is no journey history (first visit)" in {
+        journeyState.clear(hc, ec)
 
-      val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
+        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(
-          "generic.title",
+        journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
+      }
+
+      "the current state is SelectClientType but there's no breadcrumbs" in {
+        journeyState.set(SelectClientType(emptyBasket), List.empty)
+
+        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+
+        journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
+      }
+
+      "the current state is SelectClientType and there are breadcrumbs" in {
+        journeyState.set(
+          state = SelectClientType(emptyBasket),
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+        )
+
+        behave like itShowsClientTypePage(withBackLinkUrl = routes.AgentInvitationJourneyController.showInvitationSent().url)
+
+        journeyState.get should have[State](
+          state = SelectClientType(emptyBasket),
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+        )
+      }
+
+      def itShowsClientTypePage(withBackLinkUrl: String) = {
+        val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage(
+            "generic.title",
+            htmlEscapedMessage("client-type.header"),
+            htmlEscapedMessage("title.suffix.agents")),
           htmlEscapedMessage("client-type.header"),
-          htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("client-type.header"),
-        hasMessage("client-type.p1")
-      )
-      journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
+          hasMessage("client-type.p1")
+        )
+
+        checkResultContainsBackLink(result, withBackLinkUrl)
+      }
     }
   }
 
@@ -256,15 +295,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           givenTradingName(nino, "Sylvia Plath")
 
           journeyState.set(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
           val result = controller.submitIdentifyItsaClient(
-          authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "clientIdentifier" -> submittedNinoStr,
-            "postcode" -> "BN114AW"
-          ), arn.value))
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientIdentifier" -> submittedNinoStr,
+                "postcode"         -> "BN114AW"
+              ),
+              arn.value))
 
           status(result) shouldBe 303
           redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
@@ -272,14 +312,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           journeyState.get should havePattern[State](
             {
               case ConfirmClientItsa(
-                AuthorisationRequest(
-                  "Sylvia Plath",
-                  ItsaInvitation(nino, Some(Postcode("BN114AW")), _, _, _),
-                  _,
-                  _
-                ),
-                `emptyBasket`
-              ) =>
+                  AuthorisationRequest(
+                    "Sylvia Plath",
+                    ItsaInvitation(nino, Some(Postcode("BN114AW")), _, _, _),
+                    _,
+                    _
+                  ),
+                  `emptyBasket`
+                  ) =>
             },
             List(
               IdentifyPersonalClient(HMRCMTDIT, emptyBasket),

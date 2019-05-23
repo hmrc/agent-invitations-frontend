@@ -72,8 +72,8 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we decide how to handle HTTP request and transition the state of the journey */
   val agentsRoot = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
 
-  val showClientType = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.showSelectClientType)(display)
+  val showClientType = actionShowStateWhenAuthorised(AsAgent) {
+    case _: SelectClientType =>
   }
 
   val submitClientType = action { implicit request =>
@@ -197,10 +197,17 @@ class AgentInvitationJourneyController @Inject()(
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = state match {
 
-    case SelectClientType(_) =>
-      Ok(client_type(
-        formWithErrors.or(ClientTypeForm.form),
-        ClientTypePageConfig(backLinkFor(breadcrumbs).url, routes.AgentInvitationJourneyController.submitClientType())))
+    case SelectClientType(_) => {
+      def backLinkForClientType(implicit request: Request[_]): String =
+        breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
+          getCallFor(_).url)
+
+      Ok(
+        client_type(
+          formWithErrors.or(ClientTypeForm.form),
+          ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType())
+        ))
+    }
 
     case SelectPersonalService(services, basket) =>
       Ok(

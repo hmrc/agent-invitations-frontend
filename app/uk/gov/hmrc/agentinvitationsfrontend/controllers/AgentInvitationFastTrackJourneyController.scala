@@ -392,7 +392,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         ))
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
-      Ok(not_signed_up(Services.determineServiceMessageKeyFromService(fastTrackRequest.service), hasRequests = false))
+      Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))
   }
 }
 
@@ -422,7 +422,7 @@ object AgentInvitationFastTrackJourneyController {
         "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedTypes.contains(clientType)),
-        "clientIdentifier" -> normalizedText.verifying(validateClientId),
+        "clientIdentifier" -> uppercaseNormalizedText.verifying(validateClientId),
         "knownFact"        -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
         AgentFastTrackRequest(ClientType.clientTypeFor(clientType, service), service, clientIdType, clientId, knownFact)

@@ -73,10 +73,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
       (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
 
-    def showSelectClientType(agent: AuthorisedAgent) = Transition {
-      case _ => goto(SelectClientType(Set.empty)) // clears basket
-    }
-
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType(basket) =>
         clientType match {
