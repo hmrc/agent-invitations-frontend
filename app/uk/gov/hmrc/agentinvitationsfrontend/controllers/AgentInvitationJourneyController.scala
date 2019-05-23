@@ -72,8 +72,8 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we decide how to handle HTTP request and transition the state of the journey */
   val agentsRoot = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
 
-  val showClientType = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.showSelectClientType)(display)
+  val showClientType = actionShowStateWhenAuthorised(AsAgent) {
+    case _: SelectClientType =>
   }
 
   val submitClientType = action { implicit request =>
