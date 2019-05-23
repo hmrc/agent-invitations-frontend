@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -63,9 +63,14 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType()))
 
-  val showClientType: Action[AnyContent] = action { implicit request =>
-    whenAuthorised(AsAgent)(showSelectClientType(featureFlags.showAgentLedDeAuth))(display)
-  }
+  val showClientType: Action[AnyContent] =
+    if (featureFlags.showAgentLedDeAuth)
+      actionShowStateWhenAuthorised(AsAgent) {
+        case SelectClientType =>
+      } else {
+      Logger(getClass).warn("Agent led de authorisation feature is disabled.")
+      Action(NotImplemented)
+    }
 
   val submitClientType: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(chosenClientType)
@@ -187,9 +192,14 @@ class AgentLedDeauthJourneyController @Inject()(
     formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result = state match {
 
     case SelectClientType =>
-      Ok(client_type(
-        formWithErrors.or(ClientTypeForm.form),
-        ClientTypePageConfig(backLinkFor(breadcrumbs).url, routes.AgentLedDeauthJourneyController.submitClientType())))
+      def backLinkForClientType(implicit request: Request[_]): String =
+        breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
+          getCallFor(_).url)
+
+      Ok(
+        client_type(
+          formWithErrors.or(ClientTypeForm.form),
+          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType())))
 
     case SelectServicePersonal(enabledServices) =>
       Ok(

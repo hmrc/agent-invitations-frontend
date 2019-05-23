@@ -67,15 +67,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
 
-    def showSelectClientType(showAgentLedDeauth: Boolean)(agent: AuthorisedAgent) = Transition {
-      case _ =>
-        if (showAgentLedDeauth) goto(SelectClientType)
-        else {
-          Logger(getClass).warn("Agent led de-authorisation feature is disabled.")
-          fail(throw new Exception("Agent led de-authorisation feature is disabled."))
-        }
-    }
-
     def chosenClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType if clientType == personal =>
         val enabledPersonalServices =

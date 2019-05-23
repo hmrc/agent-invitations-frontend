@@ -54,18 +54,6 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val dob = Some("1990-10-10")
 
   "AgentLedDeauthJourneyModel" when {
-    "at root state" should {
-      "transition to SelectClientType when agent led deauth flag is on" in {
-        given(root) when showSelectClientType(showAgentLedDeauth = true)(authorisedAgent) should thenGo(
-          SelectClientType
-        )
-      }
-      "fail and throw an exception when agent led deauth flag is off" in {
-        intercept[Exception] {
-          given(root) when showSelectClientType(showAgentLedDeauth = false)(authorisedAgent)
-        }.getMessage shouldBe "Agent led de-authorisation feature is disabled."
-      }
-    }
     "at state ClientType" should {
       "transition to SelectServicePersonal when personal is selected" in {
         given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.personal) should thenGo(

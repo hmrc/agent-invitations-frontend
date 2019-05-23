@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
+import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
@@ -11,7 +12,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration._
 
-class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
+class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   val enabledServices: Set[String] = Set(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
 
@@ -28,8 +29,13 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   val controller = app.injector.instanceOf[AgentLedDeauthJourneyController]
 
+  before {
+    journeyState.clear(hc, ec)
+  }
+
   "GET /fsm/agents/cancel-authorisation" should {
-    "redirect to the client type page" in {
+    "redirect to the client type page when there is no current state" in {
+      journeyState.clear(hc, ec)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
       val root = controller.agentLedDeauthRoot()
       val result = root(authorisedAsValidAgent(request, arn.value))
@@ -40,22 +46,46 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
 
   "GET /fsm/agents/cancel-authorisation/client-type" should {
-    "display the client type page " in {
-      val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
-      val selectClientType = controller.showClientType()
+    "display the client type page" when {
+      "there is a current state of SelectClientType and no breadcrumbs" in {
+        journeyState.set(SelectClientType, Nil)
+        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
+        val selectClientType = controller.showClientType()
 
-      val result = selectClientType(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage(
-          "generic.title",
+        val result = selectClientType(authorisedAsValidAgent(request, arn.value))
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage(
+            "generic.title",
+            htmlEscapedMessage("cancel-authorisation.client-type.header"),
+            htmlEscapedMessage("title.suffix.agents")),
           htmlEscapedMessage("cancel-authorisation.client-type.header"),
-          htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("cancel-authorisation.client-type.header"),
-        hasMessage("cancel-authorisation.client-type.p1")
-      )
-      checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+          hasMessage("cancel-authorisation.client-type.p1")
+        )
+        checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+      }
+      "there is no state or breadcrumbs" in {
+        journeyState.clear(hc, ec)
+        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
+        val selectClientType = controller.showClientType()
+
+        val result = selectClientType(authorisedAsValidAgent(request, arn.value))
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("cancel-authorisation.client-type.header"))
+        checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+      }
+      "there is a state and breadcrumbs" in {
+        journeyState
+          .set(SelectClientType, List(AuthorisationCancelled("HMRC-MTD-IT", Some("clienty name"), "agenty name")))
+        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
+        val selectClientType = controller.showClientType()
+
+        val result = selectClientType(authorisedAsValidAgent(request, arn.value))
+        status(result) shouldBe 200
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("cancel-authorisation.client-type.header"))
+        checkResultContainsBackLink(result, routes.AgentLedDeauthJourneyController.showAuthorisationCancelled().url)
+      }
     }
   }
 
