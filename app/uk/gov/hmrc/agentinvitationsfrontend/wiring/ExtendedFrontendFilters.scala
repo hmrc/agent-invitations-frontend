@@ -23,8 +23,11 @@ import uk.gov.hmrc.play.bootstrap.filters.FrontendFilters
 import uk.gov.hmrc.play.bootstrap.filters.frontend.CSRFExceptionsFilter
 
 @Singleton
-class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, cSRFExceptionsFilter: CSRFExceptionsFilter)
+class ExtendedFrontendFilters @Inject()(
+  defaultFilters: FrontendFilters,
+  cSRFExceptionsFilter: CSRFExceptionsFilter,
+  customFilters: CustomFilters)
     extends HttpFilters {
 
-  override def filters: Seq[EssentialFilter] = cSRFExceptionsFilter +: defaultFilters.filters
+  override def filters: Seq[EssentialFilter] = Seq(cSRFExceptionsFilter, customFilters) ++ defaultFilters.filters
 }
