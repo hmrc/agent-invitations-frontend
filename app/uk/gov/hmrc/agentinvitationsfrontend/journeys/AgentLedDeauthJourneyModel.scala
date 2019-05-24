@@ -113,29 +113,37 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(showKFCItsa: Boolean, redirectToConfirmItsa: Boolean)(
       agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def goToFinalState(finalState: Option[String] => State): Future[State] =
+      def postcodeMatchResult: Future[Option[Boolean]] =
         for {
           postcodeMatches <- itsaClient.postcode match {
                               case _ if !showKFCItsa => Future successful Some(true)
                               case Some(postcode)    => checkPostcodeMatches(Nino(itsaClient.clientIdentifier), postcode)
                               case None              => throw new Exception("Postcode expected but none found")
                             }
-          finalState <- postcodeMatches match {
+        } yield postcodeMatches
+
+      def goToState(kfcResult: Option[Boolean]): Future[State] =
+        for {
+          finalState <- kfcResult match {
                          case Some(true) =>
-                           getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap(name => goto(finalState(name)))
+                           getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap(name =>
+                             goto(ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(HMRCMTDIT))
                        }
         } yield finalState
 
+      def checkPostCodeAndGoToState: Future[State] =
+        for {
+          postcodeMatches <- postcodeMatchResult
+          finalState      <- goToState(postcodeMatches)
+        } yield finalState
+
       Transition {
         case IdentifyClientPersonal(HMRCMTDIT) =>
-          def nameToState(name: Option[String]) =
-            ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier))
-
-          if (redirectToConfirmItsa) goToFinalState(nameToState)
+          if (redirectToConfirmItsa) checkPostCodeAndGoToState
           else
-            goToFinalState(nameToState).flatMap { finalState =>
+            checkPostCodeAndGoToState.flatMap { finalState =>
               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true)).apply(finalState)
             }
       }
@@ -147,7 +155,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(showKFCIrv: Boolean, redirectToConfirmIrv: Boolean)(
       agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def goToFinalState(finalState: Option[String] => State): Future[State] =
+      def dobMatchResult: Future[Option[Boolean]] =
         for {
           dobMatches <- irvClient.dob match {
                          case _ if !showKFCIrv => Future successful Some(true)
@@ -155,22 +163,30 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                            checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(dob))
                          case None => throw new Exception(s"Date of birth expected but none found")
                        }
-          finalState <- dobMatches match {
+        } yield dobMatches
+
+      def goToState(dobMatchResult: Option[Boolean]): Future[State] =
+        for {
+          finalState <- dobMatchResult match {
                          case Some(true) =>
-                           getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap(name => goto(finalState(name)))
+                           getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap(name =>
+                             goto(ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(HMRCPIR))
                        }
         } yield finalState
 
+      def checkDobAndGoToState: Future[State] =
+        for {
+          dobMatches <- dobMatchResult
+          finalState <- goToState(dobMatches)
+        } yield finalState
+
       Transition {
         case IdentifyClientPersonal(HMRCPIR) =>
-          def nameToState(name: Option[String]) =
-            ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))
-
-          if (redirectToConfirmIrv) goToFinalState(nameToState)
+          if (redirectToConfirmIrv) checkDobAndGoToState
           else
-            goToFinalState(nameToState).flatMap { finalState =>
+            checkDobAndGoToState.flatMap { finalState =>
               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true)).apply(finalState)
             }
       }
@@ -181,15 +197,20 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       getClientName: GetClientName,
       hasActiveRelationship: HasActiveRelationship)(showKFCVat: Boolean, redirectToConfirmVat: Boolean)(
       agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
-      def goToFinalState(finalState: Option[String] => State): Future[State] =
+
+      def vatRegDateMatchResult: Future[Option[Int]] =
         for {
-          hasVatRegDate <- vatClient.registrationDate match {
-                            case _ if !showKFCVat => Future successful Some(204)
-                            case Some(vatRegDate) =>
-                              vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatRegDate))
-                            case None => throw new Exception(s"Vat registration date expected but none found")
-                          }
-          finalState <- hasVatRegDate match {
+          vatRegDateMatches <- vatClient.registrationDate match {
+                                case _ if !showKFCVat => Future successful Some(204)
+                                case Some(vatRegDate) =>
+                                  vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatRegDate))
+                                case None => throw new Exception(s"Vat registration date expected but none found")
+                              }
+        } yield vatRegDateMatches
+
+      def goToState(vatRegDateMatchResult: Option[Int], finalState: Option[String] => State): Future[State] =
+        for {
+          finalState <- vatRegDateMatchResult match {
                          case Some(204) =>
                            getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(name => goto(finalState(name)))
                          case Some(403) => goto(KnownFactNotMatched)
@@ -198,23 +219,29 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                        }
         } yield finalState
 
+      def checkVatRegDateAndGoToState(finalState: Option[String] => State): Future[State] =
+        for {
+          hasVatRegDate <- vatRegDateMatchResult
+          finalState    <- goToState(hasVatRegDate, finalState)
+        } yield finalState
+
       Transition {
         case IdentifyClientPersonal(HMRCMTDVAT) =>
           def nameToState(name: Option[String]) =
             ConfirmClientPersonalVat(name, Vrn(vatClient.clientIdentifier))
 
-          if (redirectToConfirmVat) goToFinalState(nameToState)
+          if (redirectToConfirmVat) checkVatRegDateAndGoToState(nameToState)
           else
-            goToFinalState(nameToState).flatMap { finalState =>
+            checkVatRegDateAndGoToState(nameToState).flatMap { finalState =>
               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true)).apply(finalState)
             }
 
         case IdentifyClientBusiness =>
           def nameToState(name: Option[String]) =
             ConfirmClientBusiness(name, Vrn(vatClient.clientIdentifier))
-          if (redirectToConfirmVat) goToFinalState(nameToState)
+          if (redirectToConfirmVat) checkVatRegDateAndGoToState(nameToState)
           else
-            goToFinalState(nameToState).flatMap { finalState =>
+            checkVatRegDateAndGoToState(nameToState).flatMap { finalState =>
               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true)).apply(finalState)
             }
       }

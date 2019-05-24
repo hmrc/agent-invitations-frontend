@@ -35,6 +35,11 @@ class TestAgentLedDeauthJourneyService extends AgentLedDeauthJourneyService {
       this.state = Some(state)
       state
     }
+
+  override def clear(implicit rc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    Future {
+      this.state = None
+    }
 }
 
 private class TestAgentLedDeauthJourneyModule extends AbstractModule {

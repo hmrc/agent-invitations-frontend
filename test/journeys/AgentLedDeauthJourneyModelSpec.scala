@@ -77,6 +77,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           IdentifyClientPersonal(HMRCMTDIT)
         )
       }
+      "transition to SelectServicePersonal when service is not supported and feature flag is on" in {
+        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          showItsaFlag = true,
+          showPirFlag = true,
+          showVatFlag = true)(authorisedAgent)("foo") should thenGo(
+          SelectServicePersonal(availableServices)
+        )
+      }
       "throw an exception when service is ITSA and the show itsa flag is switched off" in {
         intercept[Exception] {
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(

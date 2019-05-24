@@ -30,7 +30,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   val controller = app.injector.instanceOf[AgentLedDeauthJourneyController]
 
   before {
-    journeyState.clear(hc, ec)
+    journeyState.clear
   }
 
   "GET /fsm/agents/cancel-authorisation" should {
@@ -65,15 +65,14 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         )
         checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
       }
-      "there is no state or breadcrumbs" in {
+      "there is no state or breadcrumbs redirect to the client type page" in {
         journeyState.clear(hc, ec)
         val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
         val selectClientType = controller.showClientType()
 
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
-        status(result) shouldBe 200
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("cancel-authorisation.client-type.header"))
-        checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+        status(result) shouldBe 303
+        redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showClientType().url)
       }
       "there is a state and breadcrumbs" in {
         journeyState
@@ -295,7 +294,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
 
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
-      givenCitizenDetailsAreKnownFor(validNino.value, "Barry", "Block")
+      givenClientDetails(validVrn)
 
       val result =
         controller.submitIdentifyVatClient(
@@ -528,7 +527,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("cancel-authorisation.not-matched.description"))
     }
   }
-  "GET /fsm/agents/cancel-authorisation/not-enrolled" should {
+  "GET /fsm/agents/cancel-authorisation/not-signed-up" should {
     "display the not enrolled page" in {
       journeyState.set(NotSignedUp(HMRCMTDIT), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-signed-up")
@@ -540,7 +539,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("not-enrolled.p2"))
     }
   }
-  "GET /fsm/agents/cancel-authorisation/cannot-create-request" should {
+  "GET /fsm/agents/cancel-authorisation/not-signed-up" should {
     "display the cannot create request page" in {
       journeyState.set(CannotCreateRequest, Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-signed-up")

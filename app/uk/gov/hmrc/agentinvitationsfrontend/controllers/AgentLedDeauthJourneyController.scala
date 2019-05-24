@@ -191,7 +191,8 @@ class AgentLedDeauthJourneyController @Inject()(
     breadcrumbs: journeyService.Breadcrumbs,
     formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result = state match {
 
-    case SelectClientType =>
+    case SelectClientType => {
+      println(s"BREADCRUMBS at the beginning $breadcrumbs")
       def backLinkForClientType(implicit request: Request[_]): String =
         breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
           getCallFor(_).url)
@@ -200,6 +201,7 @@ class AgentLedDeauthJourneyController @Inject()(
         client_type(
           formWithErrors.or(ClientTypeForm.form),
           ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType())))
+    }
 
     case SelectServicePersonal(enabledServices) =>
       Ok(
@@ -296,7 +298,9 @@ class AgentLedDeauthJourneyController @Inject()(
           backLinkFor(breadcrumbs).url
         ))
 
-    case ConfirmCancel(service, clientName, _) =>
+    case ConfirmCancel(service, clientName, _) => {
+      println(s"BREADCRUMBS at nearly the end $breadcrumbs")
+
       Ok(
         confirm_cancel(
           service,
@@ -305,14 +309,18 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
           backLinkFor(breadcrumbs).url
         ))
+    }
 
-    case AuthorisationCancelled(service, clientName, agencyName) =>
+    case AuthorisationCancelled(service, clientName, agencyName) => {
+      println(s"BREADCRUMBS at the end $breadcrumbs")
+      journeyService.cleanBreadcrumbs(_ => Nil)
       Ok(
         authorisation_cancelled(
           service,
           clientName.getOrElse(""),
           agencyName,
           s"${externalUrls.agentServicesAccountUrl}/agent-services-account"))
+    }
 
     case KnownFactNotMatched =>
       Ok(no_client_found())
