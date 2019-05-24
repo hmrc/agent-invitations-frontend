@@ -58,7 +58,7 @@ class RelationshipsService @Inject()(
 
   def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) =
+    ec: ExecutionContext): Future[Option[Boolean]] =
     service match {
       case HMRCMTDIT  => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
       case HMRCPIR    => pirRelationshipConnector.deleteRelationship(arn, service, clientId)

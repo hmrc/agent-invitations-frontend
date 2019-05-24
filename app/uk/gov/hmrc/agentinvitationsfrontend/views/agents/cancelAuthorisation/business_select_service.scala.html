@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+
 @(choiceForm: Form[Confirmation], submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.business-select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
