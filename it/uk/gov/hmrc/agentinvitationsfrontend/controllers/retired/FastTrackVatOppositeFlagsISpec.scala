@@ -188,7 +188,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       await(sessionStore.save(agentSession))
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("submit a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
     }
@@ -197,7 +197,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       await(sessionStore.save(agentSession.copy(knownFact = None, fromFastTrack = fromFastTrack)))
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("submit a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
     }
@@ -206,7 +206,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       await(sessionStore.save(agentSession.copy(clientType = None)))
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("submit a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
     }

@@ -34,10 +34,10 @@ case class SelectServicePageConfig(
       map.update(HMRCPIR, Messages("personal-select-service.personal-income-viewer"))
 
     if (featureFlags.showHmrcMtdIt && services.contains(HMRCMTDIT))
-      map.update(HMRCMTDIT, Messages("personal-select-service.itsa"))
+      map.update(HMRCMTDIT, Messages("cancel-authorisation.select-service.itsa"))
 
     if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
-      map.update(HMRCMTDVAT, Messages("select-service.vat"))
+      map.update(HMRCMTDVAT, Messages("cancel-authorisation.select-service.vat"))
 
     map.toSeq match {
       case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
