@@ -327,7 +327,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("income and expenses through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("Income Tax updates through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("National Insurance number"))
       checkHtmlResultWithBodyText(result, validNinoSpace.value)
     }
@@ -361,7 +361,7 @@ class AgentInvitationControllerKFCFlagsOppositeISpec extends BaseISpec {
       val result = await(fastTrackController.showCheckDetails(authorisedAsValidAgent(request, arn.value)))
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("Check your client's details before you continue"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("report a client's VAT returns through software"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("submit a client's VAT returns through software"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("VAT registration number"))
       checkHtmlResultWithBodyText(result, validVrn.value)
     }

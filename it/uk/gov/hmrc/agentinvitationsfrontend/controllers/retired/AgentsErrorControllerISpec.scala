@@ -99,11 +99,11 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         "Sorry, there is a problem with the service",
         "We could not create the following authorisation requests.",
         "Gareth Gates Sr",
-        "Report their income and expenses through software",
+        "Send their Income Tax updates through software",
         "Malcolm Pirson",
         "View their PAYE income record",
         "Sara Vaterloo",
-        "Report their VAT returns through software",
+        "Submit their VAT returns through software",
         "Try again"
       )
     }
@@ -139,9 +139,9 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
         "Sorry, there is a problem with the service",
         "We could not create the following authorisation requests.",
         "Gareth Gates Sr",
-        "Report their income and expenses through software",
+        "Send their Income Tax updates through software",
         "Sara Vaterloo",
-        "Report their VAT returns through software",
+        "Submit their VAT returns through software",
         "You can continue without these requests",
         "Continue",
         "You can continue without these requests"
@@ -194,7 +194,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(
         result,
         "You are already authorised",
-        "This client has already authorised you to report their income and expenses through software.",
+        "This client has already authorised you to send their Income Tax updates through software.",
         "Start a new request"
       )
     }
@@ -218,7 +218,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(
         result,
         "You are already authorised",
-        "This client has already authorised you to report their income and expenses through software.",
+        "This client has already authorised you to send their Income Tax updates through software.",
         "Return to your authorisation requests"
       )
     }
@@ -233,7 +233,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(
         result,
         "You are already authorised",
-        "This client has already authorised you to report their income and expenses through software.",
+        "This client has already authorised you to send their Income Tax updates through software.",
         "Start a new request"
       )
     }
@@ -259,7 +259,7 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(
         result,
         "You are already authorised",
-        "This client has already authorised you to report their income and expenses through software."
+        "This client has already authorised you to send their Income Tax updates through software."
       )
       checkHtmlResultWithNotBodyText(result, "Start a new request", "Return to your authorisation requests")
     }
