@@ -97,7 +97,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         result,
         "Review your authorisation requests",
         "You have added 1 authorisation request.",
-        "Report their income and expenses through software",
+        "Send their Income Tax updates through software",
         "Gareth Gates",
         "Do you need to add another authorisation for this client?"
       )
@@ -113,9 +113,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
         "Review your authorisation requests",
         "You have added 3 authorisation requests.",
         "name may be recorded differently in each service.",
-        "Report their income and expenses through software",
+        "Send their Income Tax updates through software",
         "Viewing their PAYE income record",
-        "Report their VAT returns through software",
+        "Submit their VAT returns through software",
         "Gareth Gates",
         "Sara Vaterloo",
         "Do you need to add another authorisation for this client?"
@@ -263,7 +263,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       checkHtmlResultWithBodyText(
         result,
         s"Are you sure you want to remove your authorisation request for ${clientDetail1.clientName}?",
-        s"You will not send them an authorisation request to report their income and expenses through software"
+        s"You will not send them an authorisation request to send their Income Tax updates through software"
       )
     }
 

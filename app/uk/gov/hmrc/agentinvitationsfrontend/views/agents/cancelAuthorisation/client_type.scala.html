@@ -27,7 +27,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
-    @back_link(externalUrls.agentServicesAccountUrl + "/agent-services-account")
+    @back_link(config.backLinkUrl)
 
     @if(agentForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("client-type"))

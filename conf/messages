@@ -75,26 +75,26 @@ enter-irv-date-of-birth.invalid-format=Enter a valid date
 
 # Personal Select Service
 personal-select-service.personal-income-viewer=View their PAYE income record
-personal-select-service.itsa=Report their income and expenses through software
+personal-select-service.itsa=Send their Income Tax updates through software
 
 # Personal and Business
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
 service.type.invalid=You must select a service
-select-service.vat=Report their VAT returns through software
+select-service.vat=Submit their VAT returns through software
 select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
-select-service.alt-suggestion.vat-only=You can use this service to ask for a client''s authorisation to report their VAT returns through software.
+select-service.alt-suggestion.vat-only=You can use this service to ask for a client''s authorisation to submit their VAT returns through software.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
-business-select-service.header=Do you want to report this client''s VAT returns through software?
+business-select-service.header=Do you want to submit this client''s VAT returns through software?
 business-select-service.yes=Yes
 business-select-service.no=No
-error.business-service.required=Select yes if you want to report this client''s VAT returns through software
+error.business-service.required=Select yes if you want to submit this client''s VAT returns through software
 
 continue.button=Continue
 button.back=Back
@@ -124,9 +124,9 @@ invitation-sent.startNewAuthRequest=Start a new authorisation request
 
 #Check Details
 check-details.heading=Check your client''s details before you continue
-check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to report a client''s income and expenses through software.
+check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to send a client''s Income Tax updates through software.
 check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client''s PAYE income record.
-check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to report a client''s VAT returns through software.
+check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to submit a client''s VAT returns through software.
 check-details.table.heading=Client''s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
@@ -146,9 +146,9 @@ error.confirmDetails.invalid=Select yes if the details are correct
 #Review authorisations
 review-authorisations.heading=Review your authorisation requests
 review-authorisations.p=You have added {0}.
-review-authorisations.table.HMRC-MTD-IT=Report their income and expenses through software
+review-authorisations.table.HMRC-MTD-IT=Send their Income Tax updates through software
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
-review-authorisations.table.HMRC-MTD-VAT=Report their VAT returns through software
+review-authorisations.table.HMRC-MTD-VAT=Submit their VAT returns through software
 review-authorisations.table.remove=Remove
 review-authorisations.subheader=Do you need to add another authorisation for this client?
 review-authorisations.radio.yes=Yes
@@ -161,30 +161,37 @@ error.review-authorisation.required=Select yes if you want to add another author
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.select-service.itsa=Sending their Income Tax updates through software
+cancel-authorisation.select-service.vat=Submitting their VAT returns through software
 cancel-authorisation.select-service.hint=Select an option.
+
 cancel-authorisation.confirm-client.header=Is this the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
+
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to report income and expenses for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to send Income Tax updates for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel your authorisation, you will not be able to view the PAYE income record for this client.
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisation, you will not be able to report VAT Returns for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisation, you will not be able to submit VAT returns for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
+
 cancel-authorisation.cancelled.header=Authorisation cancelled
 cancel-authorisation.cancelled.subheader=What this means
 cancel-authorisation.cancelled.return-to-account-services.button=Return to agent services account
-cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to report their income or expenses through software.
+cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to sending their Income Tax updates through software.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
-cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to report their VAT Returns through software.
+cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submitting their VAT returns through software.
 cancel-authorisation.cancelled.print=Print this page
-cancel-authorisation.business-select-service.header=Do you want to cancel reporting this client''s VAT returns through software?
+cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+
 cancel-authorisation.not-matched.header=There is a problem
 cancel-authorisation.not-matched.description=We could not find any clients matching these details.
 cancel-authorisation.not-matched.advice=Check the details and try again.
+
 cancel-authorisation.start-over.button=Start over
 cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
 cancel-authorisation.response-failed.description=You can try again now, or try later.
@@ -193,16 +200,16 @@ cancel-authorisation.response-failed.tryAgain=Try again
 
 
 #Not authorisation to de-auth
-not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to report their income and expenses through software.
+not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to send their Income Tax updates through software.
 not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
-not-authorised.HMRC-MTD-VAT.p=This business has not authorised you to report their VAT Returns through software.
+not-authorised.HMRC-MTD-VAT.p=This business has not authorised you to submit their VAT returns through software.
 not-authorised.button=Start over
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
-delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to report their income and expenses through software.
+delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to send their Income Tax updates through software.
 delete.subheading.PERSONAL-INCOME-RECORD=You will not send them an authorisation request to view their PAYE income record.
-delete.subheading.HMRC-MTD-VAT=You will not send them an authorisation request to report their VAT Returns through software.
+delete.subheading.HMRC-MTD-VAT=You will not send them an authorisation request to submit their VAT returns through software.
 delete.radio-yes=Yes
 delete.radio-no=No
 error.delete.radio=Select yes if you want to remove the authorisation request for this client
@@ -217,8 +224,8 @@ known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
-not-enrolled.p1.HMRC-MTD-IT=This client has not signed up to report their income and expenses through software.
-not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to report their VAT returns through software.
+not-enrolled.p1.HMRC-MTD-IT=This client has not signed up to send their Income Tax updates through software.
+not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to submit their VAT returns through software.
 not-enrolled.p2=They cannot authorise you for this service until they have signed up.
 not-enrolled.button=Back to your account
 not-enrolled.vat.button=Back to your account
@@ -251,9 +258,9 @@ cannot-create-request.start-again=Start a new request
 #Create authorisation failed
 create-auth-failed.header=Sorry, there is a problem with the service
 create-auth-failed.p1=We could not create the following authorisation {0}.
-create-auth-failed.HMRC-MTD-IT=Report their income and expenses through software
+create-auth-failed.HMRC-MTD-IT=Send their Income Tax updates through software
 create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
-create-auth-failed.HMRC-MTD-VAT=Report their VAT returns through software
+create-auth-failed.HMRC-MTD-VAT=Submit their VAT returns through software
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
 create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
@@ -263,9 +270,9 @@ create-auth-failed.button.continue=Continue
 
 # Client Pages
 # Landing Page
-landing-page.itsa.header=Do you want to authorise your tax agent to report your income and expenses through software?
+landing-page.itsa.header=Do you want to authorise your tax agent to send your Income Tax updates through software?
 landing-page.afi.header=Do you want to authorise your tax agent to view your income record?
-landing-page.vat.header=Do you want to authorise your tax agent to report your VAT returns through software?
+landing-page.vat.header=Do you want to authorise your tax agent to submit your VAT returns through software?
 landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent''s authorisation for the same service.
 landing-page.radio1=Yes
 landing-page.radio2=No
@@ -273,12 +280,12 @@ landing-page.radio3=I want to decide later
 landing-page.subheading1=You will need a Government Gateway account to sign in so we can confirm who you are. You can create an account if you do not have one.
 landing-page.alternative=Why am I seeing this?
 landing-page.alt-suggestion=You may have asked this tax agent to deal with HM Revenue & Customs (HMRC) on your behalf.
-landing-page.itsa.guidance=You received this request because they need you to authorise them to report your income and expenses through software. They cannot do this until you give your authorisation.
+landing-page.itsa.guidance=You received this request because they need you to authorise them to send your Income Tax updates through software. They cannot do this until you give your authorisation.
 landing-page.afi.guidance=You received this request because they need you to authorise them to view your income record. They cannot do this until you give your authorisation.
-landing-page.vat.guidance=You received this request because they need you to authorise them to report your VAT returns through software. They cannot do this until you give your authorisation.
-landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to report your income and expenses through software.
+landing-page.vat.guidance=You received this request because they need you to authorise them to Submit your VAT returns through software. They cannot do this until you give your authorisation.
+landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to send your Income Tax updates through software.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
-landing-page.service.vat.p1=You need to authorise your tax agent if you want them to report your VAT returns through software.
+landing-page.service.vat.p1=You need to authorise your tax agent if you want them to submit your VAT returns through software.
 
 # Warm up
 warm-up.header=Appoint {0} to deal with HMRC for you
@@ -290,17 +297,17 @@ warm-up.link=I do not want to appoint {0}
 
 # Invitation Declined
 invitation-declined.header=You declined this request
-invitation-declined-itsa.p1=You have not authorised {0} to report your income and expenses through software.
+invitation-declined-itsa.p1=You have not authorised {0} to send your Income Tax updates through software.
 invitation-declined-afi.p1={0} will not be able to view your personal income records.
 invitation-declined-itsa.button=Continue to your tax account
 invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
-invitation-declined.multi.itsa.p1=You have not given permission to {0} to report your income and expenses through software.
+invitation-declined.multi.itsa.p1=You have not given permission to {0} to send your Income Tax updates through software.
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
-invitation-declined.multi.vat.p1=You have not given permission to {0} to report your VAT returns through software.
+invitation-declined.multi.vat.p1=You have not given permission to {0} to submit your VAT returns through software.
 
-invitation-declined-vat.p1=	You have not authorised {0} to report your VAT returns through software.
+invitation-declined-vat.p1=	You have not authorised {0} to submit your VAT returns through software.
 invitation-declined-vat.button=Continue to your tax account
 invitation-declined.sign-out.button=Finish and sign out
 
@@ -311,13 +318,13 @@ invitation-decline.sub-header=You have not given permission to {0} to:
 # Confirm Decline Invitation
 confirm-decline.title=Confirm Invitation - {0} - GOV.UK
 confirm-decline.heading=Are you sure you want to decline this request?
-confirm-decline.itsa.sub-header={0} will not be able to report your income and expenses through software.
+confirm-decline.itsa.sub-header={0} will not be able to send your Income Tax updates through software.
 confirm-decline.afi.sub-header={0} will not be able to view your income record.
-confirm-decline.vat.sub-header={0} will not be able to report your VAT returns through software.
+confirm-decline.vat.sub-header={0} will not be able to submit your VAT returns through software.
 confirm-decline.sub-header={0} will not be able to:
-confirm-decline.itsa.service-name=report your income and expenses through software
+confirm-decline.itsa.service-name=send your Income Tax updates through software
 confirm-decline.afi.service-name=report your employer PAYE updates through software
-confirm-decline.vat.service-name=report your VAT returns through software
+confirm-decline.vat.service-name=submit your VAT returns through software
 confirm-decline.radio1=Yes
 confirm-decline.radio2=No
 confirm-decline.button=Continue
@@ -346,9 +353,9 @@ confirm-terms.multi.heading=We need your consent to share information
 confirm-terms.multi-individual.heading=Change your consent
 confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
 
-confirm-terms-multi.itsa.heading=Report my income and expenses through software
-confirm-terms-multi.itsa.p1=I consent to HMRC sharing the following information with {0}, so this agent can report my income and expenses through software:
-confirm-terms-multi.itsa.list.item1=my income and expenses information
+confirm-terms-multi.itsa.heading=Send my Income Tax updates through software
+confirm-terms-multi.itsa.p1=I consent to HMRC sharing the following information with {0}, so this agent can send my Income Tax updates through software:
+confirm-terms-multi.itsa.list.item1=my Income Tax updates information
 confirm-terms-multi.itsa.list.item2=how my Income Tax estimates have been calculated
 
 confirm-terms-multi.expires.p2=You need to respond to this request before {0}, or else it will expire.
@@ -360,15 +367,15 @@ confirm-terms-multi.pir.list.item2=my taxable benefits like medical insurance an
 confirm-terms-multi.pir.list.item3=my pensions
 confirm-terms-multi.pir.list.item4=my PAYE employment start and end dates
 
-confirm-terms-multi.vat.heading=Submit my VAT Returns through software
-confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can submit my VAT Returns through software:
+confirm-terms-multi.vat.heading=Submit my VAT returns through software
+confirm-terms-multi.vat.p1=I consent to HMRC sharing the following information with {0}, so this agent can submit my VAT returns through software:
 confirm-terms-multi.vat.list.item1=my VAT registration details, such as business name and contact details
 confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 15 months
 confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated
 
-confirm-terms.itsa.bullet1=your income and expenses information
+confirm-terms.itsa.bullet1=your Income Tax updates information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
-confirm-terms.itsa.p1=This tax agent needs access to this information to report your income and expenses through software.
+confirm-terms.itsa.p1=This tax agent needs access to this information to send your Income Tax updates through software.
 
 confirm-terms.afi.bullet1=who you have worked for in the past
 confirm-terms.afi.bullet2=taxable benefits like medical insurance and company car
@@ -378,15 +385,15 @@ confirm-terms.afi.bullet4=your PAYE employment start and end dates
 confirm-terms.vat.bullet1=your VAT registration details, such as business name and contact details
 confirm-terms.vat.bullet2=your VAT returns submitted online for the last 15 months
 confirm-terms.vat.bullet3=how your VAT returns have been calculated
-confirm-terms.vat.p1=This tax agent needs access to this information to report your VAT returns through software.
+confirm-terms.vat.p1=This tax agent needs access to this information to submit your VAT returns through software.
 
 #Check answers
 check-answers.heading = Check your answers before sending your response
 check-answers.subheading = Your consent details
 check-answers.p1 = Here are the details of your response to {0}.
 check-answers.service.afi = View your PAYE income record
-check-answers.service.itsa = Report your income and expenses through software
-check-answers.service.vat = Report your VAT returns through software
+check-answers.service.itsa = Send your Income Tax updates through software
+check-answers.service.vat = Submit your VAT returns through software
 check-answers.consent.true = Yes
 check-answers.consent.false = No
 check-answers.change-link=Change
@@ -401,8 +408,8 @@ client-complete.header=Your agent has been authorised
 client-complete.p.title=What this means
 client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
-client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for reporting your income and expenses through software.
-client-complete.vat.p1={0} is now confirmed as your authorised tax agent for reporting your VAT returns through software.
+client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for sending your Income Tax updates through software.
+client-complete.vat.p1={0} is now confirmed as your authorised tax agent for submitting your VAT returns through software.
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -412,9 +419,9 @@ client-complete.sign-out=Finish and sign out
 client-complete.multi.header=Approval complete
 client-complete.multi.header.p={0} can now deal with HMRC for you
 client-complete.multi.p1.head={0} is now confirmed as your authorised tax agent for:
-client-complete.multi.p1.itsa=reporting your income and expenses through software
+client-complete.multi.p1.itsa=sending your Income Tax updates through software
 client-complete.multi.p1.afi=viewing your income record
-client-complete.multi.p1.vat=reporting your VAT returns through software
+client-complete.multi.p1.vat=submitting your VAT returns through software
 client-complete.multi.mistake=Made a mistake?
 client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
 
@@ -423,8 +430,8 @@ client-problem.header=Your authorisation request is no longer valid
 
 # Not Signed Up
 not-signed-up.header=There is a problem
-not-signed-up.description=You have not signed up to report your income and expenses through software.
-not-signed-up-vat.description=You have not signed up to report your VAT returns through software.
+not-signed-up.description=You have not signed up to send your Income Tax updates through software.
+not-signed-up-vat.description=You have not signed up to submit your VAT returns through software.
 not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
 #Not Authorised
@@ -432,7 +439,7 @@ not-authorised.header=Sorry, you haven''t been authorised to proceed.
 not-authorised.description=Try again with an Individual Government Gateway ID.
 
 not-authorised-vat.title=You''re not able to use this service
-not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to report your VAT returns through software.
+not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to submit your VAT returns through software.
 
 # Incorrect Invitation
 incorrect-invitation.header=There is a problem
@@ -459,12 +466,12 @@ wrong-client-type.button=Sign out and try again
 #Some Responses Failed
 some-responses-failed.header=Sorry, some of your responses could not be saved
 some-responses-failed.p1=We could not save your response for the following services:
-some-responses-failed.li.itsa=Report your income and expenses through software
+some-responses-failed.li.itsa=Send your Income Tax updates through software
 some-responses-failed.li.afi=View your PAYE income record
-some-responses-failed.li.vat=Report your VAT Returns through software
-some-responses-failed.itsa=We could not save your response for reporting your income and expenses through software.
+some-responses-failed.li.vat=Submit your VAT returns through software
+some-responses-failed.itsa=We could not save your response for sending your Income Tax updates through software.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
-some-responses-failed.vat=We could not save your response for reporting your VAT Returns through software
+some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
 some-responses-failed.try-again=Please try again in 24 hours.
 some-responses-failed.what-next=What you can do next
 some-responses-failed.advice=You can view which services you appointed {0} to deal with.
@@ -525,9 +532,9 @@ recent-invitations.table-row-header.clientName=Client''s details
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
 recent-invitations.table-row-header.actions=Actions
-recent-invitations.invitation.service.HMRC-MTD-IT=Report their income and expenses through software
+recent-invitations.invitation.service.HMRC-MTD-IT=Send their Income Tax updates through software
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
-recent-invitations.invitation.service.HMRC-MTD-VAT=Report their VAT returns through software
+recent-invitations.invitation.service.HMRC-MTD-VAT=Submit their VAT returns through software
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
 recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:
@@ -551,18 +558,18 @@ resend-link.header=Resend this link to your client
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?
-confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to report their income and expenses through software.
+confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for this client.
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
-confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to report their VAT returns through software.
+confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for this client.
 confirm-cancel.radio.yes=Yes
 confirm-cancel.radio.no=No
 error.confirmCancel.invalid=This field is required
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to report their income and expenses through software.
+request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to send Income Tax updates through software for this client.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
-request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to report their VAT returns through software.
+request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to submit VAT returns through software for this client.
 request-cancelled.panel= {0} will not be able to respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 
@@ -570,9 +577,9 @@ request-cancelled.p2=If you cancelled your authorisation request by mistake, you
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=Are you sure you want to cancel this client''s authorisation?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to report their income and expenses through software.
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to send their Income Tax updates through software.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
-confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to report their VAT returns through software.
+confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No
@@ -580,9 +587,9 @@ confirm-authorisation-cancelled.radio.no=No
 #Authorisation cancelled page
 authorisation-cancelled.header=Authorisation cancelled
 authorisation-cancelled.subheader=What this means
-authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to report their income and expenses through software.
+authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to send their Income Tax updates through software.
 authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
-authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to report their VAT returns through software.
+authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to submit their VAT returns through software.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page
@@ -600,8 +607,8 @@ pending-authorisation-exists.new-request.link=Start a new request
 
 #Active authorisation exists
 active-authorisation-exists.header=You are already authorised
-active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to report their income and expenses through software.
+active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to send their Income Tax updates through software.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
-active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to report their VAT Returns through software.
+active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to submit their VAT returns through software.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests

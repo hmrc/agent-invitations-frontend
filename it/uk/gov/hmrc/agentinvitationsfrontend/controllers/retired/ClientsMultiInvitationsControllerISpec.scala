@@ -117,11 +117,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "We need your consent to share information",
-        "Report my income and expenses through software",
+        "Send my Income Tax updates through software",
         "5 March 9999",
         "View your PAYE income record",
         "1 November 9999",
-        "Submit my VAT Returns through software",
+        "Submit my VAT returns through software",
         "25 December 9999"
       )
 
@@ -138,11 +138,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "We need your consent to share information",
-        "Report my income and expenses through software",
+        "Send my Income Tax updates through software",
         "5 March 9999",
         "View your PAYE income record",
         "1 November 9999",
-        "Submit my VAT Returns through software",
+        "Submit my VAT returns through software",
         "25 December 9999"
       )
 
@@ -159,13 +159,13 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "We need your consent to share information",
-        "Report my income and expenses through software",
+        "Send my Income Tax updates through software",
         "1 November 9999")
       checkHtmlResultWithNotBodyText(
         result,
         "View your PAYE income record",
         "5 March 9999",
-        "Report my VAT Returns through software",
+        "Submit my VAT returns through software",
         "25 December 2000")
     }
 
@@ -378,9 +378,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe OK
       checkHtmlResultWithBodyText(result, "Are you sure you want to decline this request?")
       checkHtmlResultWithBodyText(result, "My Agency will not be able to:")
-      checkHtmlResultWithBodyText(result, "report your income and expenses through software")
+      checkHtmlResultWithBodyText(result, "send your Income Tax updates through software")
       checkHtmlResultWithBodyText(result, "report your employer PAYE updates through software")
-      checkHtmlResultWithBodyText(result, "report your VAT returns through software")
+      checkHtmlResultWithBodyText(result, "submit your VAT returns through software")
     }
 
     "redirect to notFound if there are no invitationIds found" in {
@@ -562,8 +562,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         "Your consent details",
         "Here are the details of your response to My agency Name",
         "View your PAYE income record",
-        "Report your income and expenses through software",
-        "Report your VAT returns through software",
+        "Send your Income Tax updates through software",
+        "Submit your VAT returns through software",
         "Confirm and send response",
         "Yes",
         "No"
@@ -620,9 +620,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "We need your consent to share information",
-        "Report my income and expenses through software",
-        "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
-        "my income and expenses information"
+        "Send my Income Tax updates through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can send my Income Tax updates through software:",
+        "my Income Tax updates information"
       )
       checkHtmlResultWithNotBodyText(result, "View your PAYE income record", "Submit my VAT returns through software")
     }
@@ -647,9 +647,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "Change your consent",
-        "Report my income and expenses through software",
-        "I consent to HMRC sharing the following information with My Agency Name, so this agent can report my income and expenses through software:",
-        "my income and expenses information"
+        "Send my Income Tax updates through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can send my Income Tax updates through software:",
+        "my Income Tax updates information"
       )
       checkHtmlResultWithNotBodyText(result, "View your PAYE income record", "Submit my VAT returns through software")
     }
@@ -676,7 +676,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(
         result,
-        "Report my income and expenses through software",
+        "Send my Income Tax updates through software",
         "Submit my VAT Returns through software")
     }
 
@@ -696,14 +696,14 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Submit my VAT Returns through software",
-        "I consent to HMRC sharing the following information with My Agency Name, so this agent can submit my VAT Returns through software:",
+        "Submit my VAT returns through software",
+        "I consent to HMRC sharing the following information with My Agency Name, so this agent can submit my VAT returns through software:",
         "my VAT registration details, such as business name and contact details"
       )
       checkHtmlResultWithNotBodyText(
         result,
         "View your PAYE income record",
-        "Report my income and expenses through software")
+        "Send my Income Tax updates through software")
     }
 
     "return Invalid Journey State when there is nothing in the cache" in {
@@ -758,9 +758,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         result,
         "You declined this request",
         "You have not given permission to My Agency to:",
-        "report your income and expenses through software",
+        "send your Income Tax updates through software",
         "report your employer PAYE updates through software",
-        "report your VAT returns through software"
+        "submit your VAT returns through software"
       )
     }
 
@@ -785,8 +785,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         result,
         "You declined this request",
         "You have not given permission to My Agency to:",
-        "report your income and expenses through software",
-        "report your VAT returns through software"
+        "send your Income Tax updates through software",
+        "submit your VAT returns through software"
       )
     }
 
@@ -806,7 +806,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "You declined this request",
-        "You have not given permission to My Agency to report your income and expenses through software")
+        "You have not given permission to My Agency to send your Income Tax updates through software")
       checkHtmlResultWithNotBodyText(result, "You have not given permission to {0} to:")
     }
 
@@ -1021,9 +1021,9 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         result,
         "Approval complete",
         "My Agency Name can now deal with HMRC for you",
-        "reporting your income and expenses through software",
+        "sending your Income Tax updates through software",
         "viewing your income record",
-        "reporting your VAT returns through software"
+        "submitting your VAT returns through software"
       )
       checkHtmlResultWithNotBodyText(result, "Made a mistake?")
     }
@@ -1051,8 +1051,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(
         result,
-        "reporting your income and expenses through software",
-        "reporting your VAT returns through software")
+        "sending your Income Tax updates through software",
+        "submiting your VAT returns through software")
     }
 
     "show different content for made a mistake if only one service is declined" in {
@@ -1078,8 +1078,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       )
       checkHtmlResultWithNotBodyText(
         result,
-        "reporting your income and expenses through software",
-        "reporting your VAT returns through software")
+        "sending your Income Tax updates through software",
+        "submitting your VAT returns through software")
     }
 
     "throw an Illegal State Exception when the cache is empty" in {
@@ -1129,8 +1129,8 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         result,
         "Sorry, some of your responses could not be saved",
         "We could not save your response for the following services:",
-        "Report your income and expenses through software",
-        "Report your VAT Returns through software",
+        "Send your Income Tax updates through software",
+        "Submit your VAT returns through software",
         "You can view which services you appointed My Agency Name to deal with."
       )
     }

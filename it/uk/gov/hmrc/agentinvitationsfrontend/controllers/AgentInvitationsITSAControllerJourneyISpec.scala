@@ -246,7 +246,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their income and expenses through software.",
+        "This client has not signed up to send their Income Tax updates through software.",
         "Start a new request")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()
@@ -262,7 +262,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
       status(result) shouldBe 403
       checkHtmlResultWithBodyText(
         result,
-        "This client has not signed up to report their income and expenses through software.",
+        "This client has not signed up to send their Income Tax updates through software.",
         "Return to your authorisation requests")
       checkHasAgentSignOutLink(result)
       verifyAuthoriseAttempt()

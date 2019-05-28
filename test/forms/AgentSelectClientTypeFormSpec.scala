@@ -20,7 +20,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.play.test.UnitSpec
 
-class AgentClientTypeFormSpec extends UnitSpec {
+class AgentSelectClientTypeFormSpec extends UnitSpec {
 
   val clientTypeEmptyMessage: String = "client.type.invalid"
   val clientTypeEmptyFormError: FormError = FormError("clientType", List(clientTypeEmptyMessage))
