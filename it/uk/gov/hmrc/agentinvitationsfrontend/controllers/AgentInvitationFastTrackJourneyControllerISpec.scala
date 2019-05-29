@@ -386,7 +386,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("GET", "/agents/fast-track/invitation-sent")
     "show the client-type page" in {
       journeyState.set(
-        InvitationSentPersonal("invitation/sent/url", None),
+        InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com"),
         List(
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),

@@ -33,12 +33,19 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class AgencyName(name: Option[String])
+case class AgencyEmail(email: Option[String])
 
 case class AgencyNameNotFound() extends Exception
+case class AgencyEmailNotFound() extends Exception
 
 object AgencyName {
   implicit val nameReads: Reads[AgencyName] =
     (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
+}
+
+object AgencyEmail {
+  implicit val emailReads: Reads[AgencyEmail] =
+    (JsPath \ "agencyEmail").readNullable[String].map(AgencyEmail(_))
 }
 
 @Singleton
@@ -56,6 +63,13 @@ class AgentServicesAccountConnector @Inject()(
       http.GET[AgencyName](new URL(baseUrl, s"/agent-services-account/client/agency-name/$arn").toString).map(_.name)
     } recoverWith {
       case _: NotFoundException => Future failed AgencyNameNotFound()
+    }
+
+  def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    monitor("ConsumerAPI-Get-AgencyEmail-GET") {
+      http.GET[AgencyEmail](new URL(baseUrl, "/agent-services-account/agent/agency-email").toString).map(_.email)
+    } recoverWith {
+      case _: NotFoundException => Future failed AgencyEmailNotFound()
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

@@ -25,7 +25,7 @@ import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Call, Request, RequestHeader, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -49,6 +49,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   @Named("invitation.expiryDuration") expiryDuration: String,
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
+  asaConnector: AgentServicesAccountConnector,
   relationshipsService: RelationshipsService,
   authActions: AuthActionsImpl,
   val continueUrlActions: ContinueUrlActions,
@@ -67,6 +68,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   import relationshipsService.hasActiveRelationshipFor
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
   import authActions._
+  import asaConnector._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -99,7 +101,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val submitCheckDetails = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
       Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(
-        checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(hasPendingInvitationsFor)(
+        checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
         hasActiveRelationshipFor)(featureFlags))
   }
 
@@ -116,7 +118,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(IdentifyItsaClientForm(featureFlags.showKfcMtdIt))(
         Transitions.identifiedClientItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(
-          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(hasPendingInvitationsFor)(
+          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
           hasActiveRelationshipFor)(featureFlags))
     }
 
@@ -124,14 +126,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome))(
         Transitions.identifiedClientIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(
-          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(hasPendingInvitationsFor)(
+          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
           hasActiveRelationshipFor)(featureFlags))
     }
   val submitIdentifyVatClient =
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(IdentifyVatClientForm(featureFlags.showKfcMtdVat))(
         Transitions.identifiedClientVat(checkPostcodeMatches)(checkCitizenRecordMatches)(
-          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(hasPendingInvitationsFor)(
+          checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
           hasActiveRelationshipFor)(featureFlags))
     }
 
@@ -147,18 +149,21 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(agentFastTrackPostcodeForm(featureFlags.showKfcMtdIt))(
         Transitions.moreDetailsItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          createInvitation)(createAgentLink)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(featureFlags))
+          createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+          featureFlags))
     }
   val submitKnownFactIrv =
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(agentFastTrackDateOfBirthForm(featureFlags.showKfcPersonalIncome))(
         Transitions.moreDetailsIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          createInvitation)(createAgentLink)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(featureFlags))
+          createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+          featureFlags))
     }
   val submitKnownFactVat = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(agentFastTrackVatRegDateForm(featureFlags))(
       Transitions.moreDetailsVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        createInvitation)(createAgentLink)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(featureFlags))
+        createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+        featureFlags))
   }
 
   val progressToClientType = action { implicit request =>
@@ -172,7 +177,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val submitClientType = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(SelectClientTypeForm)(
       Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        createInvitation)(createAgentLink)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(featureFlags))
+        createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+        featureFlags))
   }
 
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
@@ -208,8 +214,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case CheckDetailsNoClientTypeVat(_, _)     => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case IdentifyPersonalClient(_, _)          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case IdentifyBusinessClient(_, _)          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case InvitationSentPersonal(_, _)          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
-    case InvitationSentBusiness(_, _)          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
+    case InvitationSentPersonal(_, _, _)       => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
+    case InvitationSentBusiness(_, _, _)       => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case KnownFactNotMatched(_, _)             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
     case ClientNotSignedUp(_, _)               => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
     case PendingInvitationExists(_, _) =>
@@ -341,7 +347,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         )
       )
 
-    case InvitationSentPersonal(invitationLink, continueUrl) =>
+    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -351,9 +357,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
             inferredExpiryDate,
-            "email@adress.com")))
+            agencyEmail)))
 
-    case InvitationSentBusiness(invitationLink, continueUrl) =>
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -363,7 +369,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
             inferredExpiryDate,
-            "emai@address.com")))
+            agencyEmail)))
 
     case KnownFactNotMatched(_, _) =>
       Ok(
