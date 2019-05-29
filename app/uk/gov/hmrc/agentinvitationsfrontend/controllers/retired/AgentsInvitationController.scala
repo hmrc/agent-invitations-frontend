@@ -302,15 +302,15 @@ class AgentsInvitationController @Inject()(
                 clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
                 continueUrl = session.continueUrl))
             .map { _ =>
-              Ok(
-                invitation_sent(
-                  InvitationSentPageConfig(
-                    agentLink,
-                    session.continueUrl,
-                    continueUrlExists,
-                    featureFlags.enableTrackRequests,
-                    ClientType.fromEnum(clientTypeForInvitationSent),
-                    inferredExpiryDate)))
+              Ok(invitation_sent(InvitationSentPageConfig(
+                agentLink,
+                session.continueUrl,
+                continueUrlExists,
+                featureFlags.enableTrackRequests,
+                ClientType.fromEnum(clientTypeForInvitationSent),
+                inferredExpiryDate,
+                "email@address.com"
+              )))
             }
         }
       }

@@ -350,7 +350,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            "email@adress.com")))
 
     case InvitationSentBusiness(invitationLink, continueUrl) =>
       Ok(
@@ -361,7 +362,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            "emai@address.com")))
 
     case KnownFactNotMatched(_, _) =>
       Ok(

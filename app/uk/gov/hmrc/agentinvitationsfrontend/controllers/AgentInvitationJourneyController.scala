@@ -337,7 +337,8 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            "email@address.com")))
 
     case InvitationSentBusiness(invitationLink, continueUrl) =>
       Ok(
@@ -348,7 +349,8 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            "email@address.com")))
 
     case KnownFactNotMatched(basket) =>
       Ok(
