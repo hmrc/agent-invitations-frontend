@@ -65,7 +65,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "there is no journey history (first visit)" in {
         journeyState.clear(hc, ec)
 
-        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }
@@ -73,7 +74,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType but there's no breadcrumbs" in {
         journeyState.set(SelectClientType(emptyBasket), List.empty)
 
-        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }
@@ -84,7 +86,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
         )
 
-        behave like itShowsClientTypePage(withBackLinkUrl = routes.AgentInvitationJourneyController.showInvitationSent().url)
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = routes.AgentInvitationJourneyController.showInvitationSent().url)
 
         journeyState.get should have[State](
           state = SelectClientType(emptyBasket),
@@ -274,6 +277,20 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         journeyState.get should have[State](
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
           List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+      }
+    }
+
+    "GET /agents/identify-itsa-client" should {
+      val request = FakeRequest("GET", "/agents/identify-itsa-client")
+      "redirect to the identify client page" in {
+        journeyState.set(
+          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+
+        val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
       }
     }
 

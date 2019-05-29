@@ -23,7 +23,7 @@ import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Call, Request, RequestHeader, Result}
+import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
@@ -107,6 +107,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     whenAuthorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)
   }
 
+  val identifyClientRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()))
+
   val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient =>
     case _: IdentifyBusinessClient =>
@@ -138,6 +140,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val progressToKnownFact = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.checkedDetailsNoKnownFact)(redirect)
   }
+
+  val knownFactRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
 
   val showKnownFact = actionShowStateWhenAuthorised(AsAgent) {
     case _: NoPostcode | _: NoDob | _: NoVatRegDate =>
