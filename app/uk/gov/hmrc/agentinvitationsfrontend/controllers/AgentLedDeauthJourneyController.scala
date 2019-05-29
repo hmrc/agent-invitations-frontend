@@ -91,6 +91,8 @@ class AgentLedDeauthJourneyController @Inject()(
       chosenBusinessService(featureFlags.showHmrcMtdVat))
   }
 
+  val identifyClientRedirect = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
+
   val showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyClientPersonal =>
     case IdentifyClientBusiness    =>

@@ -178,6 +178,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "GET /agents/client-identify-itsa" should {
+    val request = FakeRequest("GET", "/agents/client-identify-itsa")
+    "redirect to the identify client page" in {
+      journeyState.set(
+        IdentifyPersonalClient(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+          None),
+        Nil)
+
+      val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
+    }
+  }
+
   "POST /agents/client-identify-itsa" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-itsa-client")
     "redirect to invitation-sent" when {
@@ -294,6 +310,18 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "known-fact.HMRC-MTD-IT.heading", "known-fact.HMRC-MTD-IT.helper")
+    }
+  }
+
+  "GET /agents/more-details-itsa" should {
+    val request = FakeRequest("GET", "/agents/more-details-itsa")
+    "redirect to the identify client page" in {
+      journeyState.set(NoPostcode(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None), Nil)
+
+      val result = controller.knownFactRedirect()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact().url)
     }
   }
 
