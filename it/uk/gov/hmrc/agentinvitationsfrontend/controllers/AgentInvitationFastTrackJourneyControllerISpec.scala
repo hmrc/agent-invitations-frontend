@@ -133,6 +133,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/check-details" should {
     val request = FakeRequest("POST", "/agents/fast-track/check-details")
     "redirect to invitation-sent" in new ItsaHappyScenario {
+      givenGetAgencyEmailAgentStub
       journeyState.set(
         CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN")), None),
         List(Prologue(None)))
@@ -397,7 +398,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("invitation-sent.header"),
+        htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
     }
   }
 
@@ -490,6 +494,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
+    givenGetAgencyEmailAgentStub
   }
 
   class IrvHappyScenario {
@@ -500,6 +505,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
+    givenGetAgencyEmailAgentStub
   }
 
   class VatHappyScenario {
@@ -510,5 +516,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
+    givenGetAgencyEmailAgentStub
   }
 }

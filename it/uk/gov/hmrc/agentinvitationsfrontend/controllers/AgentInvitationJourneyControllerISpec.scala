@@ -65,7 +65,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "there is no journey history (first visit)" in {
         journeyState.clear(hc, ec)
 
-        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }
@@ -73,7 +74,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType but there's no breadcrumbs" in {
         journeyState.set(SelectClientType(emptyBasket), List.empty)
 
-        behave like itShowsClientTypePage(withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }
@@ -81,14 +83,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType and there are breadcrumbs" in {
         journeyState.set(
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
         )
 
-        behave like itShowsClientTypePage(withBackLinkUrl = routes.AgentInvitationJourneyController.showInvitationSent().url)
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = routes.AgentInvitationJourneyController.showInvitationSent().url)
 
         journeyState.get should have[State](
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
         )
       }
 
@@ -692,6 +695,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
         givenAgentReferenceRecordExistsForArn(arn, "FOO")
         givenAgentReference(arn, nino, personal)
+        givenGetAgencyEmailAgentStub
         journeyState.set(
           ReviewAuthorisationsPersonal(emptyBasket),
           List(
@@ -711,7 +715,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
         journeyState.get should have[State](
-          InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None))
+          InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com"))
       }
 
       "redirect to select-service when yes is selected" in {
@@ -739,7 +743,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "GET /invitation-sent" should {
       "show the invitation sent page" in {
         journeyState.set(
-          InvitationSentPersonal("invitation/link", None),
+          InvitationSentPersonal("invitation/link", None, "abc@xyz.com"),
           List(
             ReviewAuthorisationsPersonal(Set.empty),
             ConfirmClientItsa(
@@ -759,9 +763,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("invitation-sent.header"),
-            htmlEscapedMessage("title.suffix.agents")))
+            htmlEscapedMessage("title.suffix.agents"),
+            htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
+          )
+        )
 
-        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None))
+        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
     }
     "GET /delete" should {
