@@ -84,7 +84,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          getAgencyName(r.arn).flatMap { name =>
                            goto(WarmUp(clientType, uid, name, normalisedAgentName))
                          }
-                       case None => goto(NotFoundInvitation)
+                       case _ => goto(NotFoundInvitation)
                      }
           } yield result
       }
