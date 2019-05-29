@@ -2,7 +2,7 @@
 
 # Invitations ---------------------------------------------------------------------------------------------------------
 
-#When adding a POST endpoint ensure it has a corresponding GET to prevent Error Handler complications
+#When adding a POST endpoint, if there is a possibility of failure ensure it has a corresponding GET to prevent Error Handler complications
 
 # Agent Endpoints
 GET         /agents                                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.agentsRoot
