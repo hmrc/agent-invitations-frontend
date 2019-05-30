@@ -35,7 +35,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{cancelAuthorisation, _}
 
 import scala.concurrent.duration.Duration
@@ -183,11 +183,13 @@ class AgentLedDeAuthController @Inject()(
             .flatMap { name =>
               val clientName = name.getOrElse("")
               Ok(cancelAuthorisation.confirm_cancel(
-                cache.service.getOrElse(""),
-                clientName,
                 agentConfirmationForm("cancel-authorisation.error.confirm-cancel.required"),
-                routes.AgentLedDeAuthController.submitConfirmCancel(),
-                backLinkForConfirmCancelPage(cache.service.getOrElse(""))
+                ConfirmCancelPageConfig(
+                  cache.service.getOrElse(""),
+                  clientName,
+                  routes.AgentLedDeAuthController.submitConfirmCancel(),
+                  backLinkForConfirmCancelPage(cache.service.getOrElse(""))
+                )
               ))
             }
         case None => Redirect(agentsLedDeAuthRootUrl)
@@ -211,11 +213,13 @@ class AgentLedDeAuthController @Inject()(
                         Ok(
                           cancelAuthorisation
                             .confirm_cancel(
-                              service,
-                              clientName,
                               formWithErrors,
-                              routes.AgentLedDeAuthController.submitConfirmCancel(),
-                              backLinkForConfirmCancelPage(service)))
+                              ConfirmCancelPageConfig(
+                                service,
+                                clientName,
+                                routes.AgentLedDeAuthController.submitConfirmCancel(),
+                                backLinkForConfirmCancelPage(service))
+                            ))
                       },
                       data => {
                         if (data.choice) {
