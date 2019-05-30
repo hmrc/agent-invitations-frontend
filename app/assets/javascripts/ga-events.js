@@ -6,7 +6,13 @@ $(function() {
 
         // strips out any text form elements with .visuallyhidden
         function striptext(element){
-            return element.clone().children('.visuallyhidden').remove().end().text();
+            // Stop PII data of Agent Name being sent
+            if($(element).attr('id') === 'linkConfirmDecline'){
+                return 'I do not want to appoint this agent';
+            } else {
+                // Remove visually hidden text content then return the remaining text
+                return element.clone().children('.visuallyhidden').remove().end().text();
+            }
         }
 
         // is it a button, error, or link?
