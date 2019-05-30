@@ -27,6 +27,7 @@
         mainContent: Html = HtmlFormat.empty,
         serviceInfoContent: Html = HtmlFormat.empty,
         scriptElem: Option[Html] = None,
+        gaCalls: Option[(String,String) => Html] = None,
         gaCode: Seq[String] = Seq.empty,
         cookies: Option[Cookies] = None,
         isAgent: Boolean,
@@ -82,7 +83,7 @@
     analyticsHost = configuration.getString("google-analytics.host").get,
     ssoUrl = None,
     scriptElem = Some(scriptElement),
-    gaCalls = None,
+    gaCalls = gaCalls,
     analyticsAdditionalJs = Some(gaJS))
 }
 

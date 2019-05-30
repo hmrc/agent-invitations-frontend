@@ -17,11 +17,18 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 
 @(agentName: String, clientType: String, uid: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@gaCallsWithoutName(analyticsHost: String, token: String) = {
+    var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
+    ga('create', '@token', '@analyticsHost');
+    ga('set',  'page', pathWithoutName);
+    ga('send', 'pageview', { 'anonymizeIp': true });
+}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, gaCalls = Some(gaCallsWithoutName _)) {
 
  <h1 class="heading-xlarge">@Messages("warm-up.header", agentName)</h1>
 

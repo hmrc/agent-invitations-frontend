@@ -25,6 +25,7 @@
         scriptElem: Option[Html] = None,
         isAgent: Boolean,
         completedInviteGoSurvey: Option[Boolean] = None,
+        gaCalls: Option[(String,String) => Html] = None,
         mainDataAttributes: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
     @serviceInfoContent = {}
@@ -46,4 +47,5 @@
         cookies = Some(request.cookies),
         isAgent = isAgent,
         completedInviteGoSurvey = completedInviteGoSurvey,
-        mainDataAttributes = mainDataAttributes)
+        mainDataAttributes = mainDataAttributes,
+        gaCalls = gaCalls)
