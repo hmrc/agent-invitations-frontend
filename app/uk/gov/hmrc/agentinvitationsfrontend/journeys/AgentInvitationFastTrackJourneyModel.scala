@@ -92,7 +92,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
-    type GetAgencyEmail = () => Future[Option[String]]
+    type GetAgencyEmail = () => Future[String]
 
     def prologue(failureUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl))
@@ -174,22 +174,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                        case true => goto(ActiveAuthorisationExists(fastTrackRequest, continueUrl))
                        case false =>
                          for {
+                           agencyEmail    <- getAgencyEmail()
                            _              <- createInvitation(arn, invitation)
                            invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
-                           agencyEmail    <- getAgencyEmail()
                            result <- fastTrackRequest.clientType match {
                                       case Some(ClientType.personal) =>
-                                        goto(
-                                          InvitationSentPersonal(
-                                            invitationLink,
-                                            continueUrl,
-                                            agencyEmail.getOrElse("")))
+                                        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail))
                                       case Some(ClientType.business) =>
-                                        goto(
-                                          InvitationSentBusiness(
-                                            invitationLink,
-                                            continueUrl,
-                                            agencyEmail.getOrElse("")))
+                                        goto(InvitationSentBusiness(invitationLink, continueUrl, agencyEmail))
                                     }
                          } yield result
                      }

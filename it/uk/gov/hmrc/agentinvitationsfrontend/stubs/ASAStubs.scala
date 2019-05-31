@@ -48,6 +48,18 @@ trait ASAStubs {
                          |  "agencyEmail" : "abc@xyz.com"
                          |}""".stripMargin)))
 
+  def givenNoContentAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(204)))
+
+  def givenNotFoundAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
   def givenAgencyNameNotFoundClientStub(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))

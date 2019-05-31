@@ -74,7 +74,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type CreateMultipleInvitations =
       (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
-    type GetAgencyEmail = () => Future[Option[String]]
+    type GetAgencyEmail = () => Future[String]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType(basket) =>
@@ -499,7 +499,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
-                                     InvitationSentBusiness(agentLink, None, agencyEmail.getOrElse("")),
+                                     InvitationSentBusiness(agentLink, None, agencyEmail),
                                      Set(request),
                                      createMultipleInvitations,
                                      authorisedAgent.arn))
@@ -520,10 +520,10 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 basket))
           else {
             for {
-              invitationLink <- getAgentLink(agent.arn, Some(personal))
               agencyEmail    <- getAgencyEmail()
+              invitationLink <- getAgentLink(agent.arn, Some(personal))
               result <- createAndProcessInvitations(
-                         InvitationSentPersonal(invitationLink, None, agencyEmail.getOrElse("")),
+                         InvitationSentPersonal(invitationLink, None, agencyEmail),
                          basket,
                          createMultipleInvitations,
                          agent.arn)

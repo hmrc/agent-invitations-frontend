@@ -22,31 +22,15 @@ import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsPath, Reads}
+import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ContinueUrlActions
-import uk.gov.hmrc.agentinvitationsfrontend.models.CustomerDetails
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
-
-case class AgencyName(name: Option[String])
-case class AgencyEmail(email: Option[String])
-
-case class AgencyNameNotFound() extends Exception
-case class AgencyEmailNotFound() extends Exception
-
-object AgencyName {
-  implicit val nameReads: Reads[AgencyName] =
-    (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
-}
-
-object AgencyEmail {
-  implicit val emailReads: Reads[AgencyEmail] =
-    (JsPath \ "agencyEmail").readNullable[String].map(AgencyEmail(_))
-}
 
 @Singleton
 class AgentServicesAccountConnector @Inject()(
@@ -65,11 +49,17 @@ class AgentServicesAccountConnector @Inject()(
       case _: NotFoundException => Future failed AgencyNameNotFound()
     }
 
-  def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     monitor("ConsumerAPI-Get-AgencyEmail-GET") {
-      http.GET[AgencyEmail](new URL(baseUrl, "/agent-services-account/agent/agency-email").toString).map(_.email)
+      http
+        .GET[HttpResponse](new URL(baseUrl, "/agent-services-account/agent/agency-email").toString)
+        .map(response =>
+          response.status match {
+            case 200 => Json.parse(response.body).as[AgencyEmail].email
+            case 204 => throw AgencyEmailNotFound("No email found in the record for this agent")
+        })
     } recoverWith {
-      case _: NotFoundException => Future failed AgencyEmailNotFound()
+      case _: NotFoundException => Future failed AgencyEmailNotFound("No record found for this agent")
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

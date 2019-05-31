@@ -153,7 +153,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         clientType: Option[ClientType],
         requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
 
       "transition to SelectClientType" in {
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
@@ -315,7 +315,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         clientType: Option[ClientType],
         requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
 
       "transition to SelectClientType" in {
         given(IdentifyBusinessClient) when start should thenGo(SelectClientType(emptyBasket))
@@ -406,7 +406,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         clientType: Option[ClientType],
         requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
       "transition to SelectClientType" in {
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when start should
           thenGo(SelectClientType(emptyBasket))
@@ -437,7 +437,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
       "transition to SelectClientType" in {
         given(ConfirmClientIrv(authorisationRequest, emptyBasket)) when start should thenGo(
           SelectClientType(emptyBasket))
@@ -466,7 +466,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
       "transition to Start" in {
         given(ConfirmClientPersonalVat(
           AuthorisationRequest("Piglet", VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10")))),
@@ -500,7 +500,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
       "after start transition to Start" in {
         given(ConfirmClientBusinessVat(authorisationRequest)) when start should thenGo(SelectClientType(emptyBasket))
       }
@@ -520,7 +520,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at ReviewAuthorisationsPersonal" should {
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def getAgencyEmail() = Future(Some("abc@xyz.com"))
+      def getAgencyEmail() = Future("abc@xyz.com")
       "after start transition to Start" in {
         given(ReviewAuthorisationsPersonal(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
