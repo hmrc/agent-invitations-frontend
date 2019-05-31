@@ -49,7 +49,7 @@ class AgentServicesAccountConnector @Inject()(
       case _: NotFoundException => Future failed AgencyNameNotFound()
     }
 
-  def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+  def getAgencyEmail(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     monitor("ConsumerAPI-Get-AgencyEmail-GET") {
       http
         .GET[HttpResponse](new URL(baseUrl, "/agent-services-account/agent/agency-email").toString)

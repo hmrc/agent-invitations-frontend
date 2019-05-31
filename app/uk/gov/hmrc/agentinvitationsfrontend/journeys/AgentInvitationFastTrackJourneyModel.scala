@@ -92,7 +92,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
-    type GetAgencyEmail = () => Future[String]
+    type GetAgencyEmail = Future[String]
 
     def prologue(failureUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl))
@@ -174,7 +174,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                        case true => goto(ActiveAuthorisationExists(fastTrackRequest, continueUrl))
                        case false =>
                          for {
-                           agencyEmail    <- getAgencyEmail()
+                           agencyEmail    <- getAgencyEmail
                            _              <- createInvitation(arn, invitation)
                            invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
                            result <- fastTrackRequest.clientType match {
