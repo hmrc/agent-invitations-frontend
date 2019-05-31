@@ -365,10 +365,10 @@ class AgentInvitationJourneyController @Inject()(
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
     case SomeAuthorisationsFailed(basket) =>
-      Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
+      Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
 
     case AllAuthorisationsFailed(basket) =>
-      Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
+      Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
 
     case ActiveAuthorisationExists(_, service, basket) =>
       Ok(

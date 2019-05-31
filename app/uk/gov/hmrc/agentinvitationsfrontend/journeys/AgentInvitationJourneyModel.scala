@@ -138,8 +138,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                    itsaClient.postcode.map(Postcode.apply))),
                                basket))
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDIT, Set.empty))
+                       case Some(false) => goto(KnownFactNotMatched(basket))
+                       case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket))
                      }
         } yield endState
 
@@ -172,8 +172,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
                              .apply(newState)
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(false) => goto(KnownFactNotMatched(basket))
+                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
                      }
         } yield endState
 
@@ -212,8 +212,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                basket
                              ))
                          }
-                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(basket))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
                      }
         } yield endState
 
@@ -253,8 +253,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
                              .apply(newState)
                          }
-                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(_) => goto(KnownFactNotMatched(basket))
+                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
                      }
         } yield endState
 
@@ -365,8 +365,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                basket
                              ))
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(KnownFactNotMatched(Set.empty))
+                       case Some(false) => goto(KnownFactNotMatched(basket))
+                       case None        => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
 
@@ -395,8 +395,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
                              .apply(newState)
                          }
-                       case Some(false) => goto(KnownFactNotMatched(Set.empty))
-                       case None        => goto(KnownFactNotMatched(Set.empty))
+                       case Some(false) => goto(KnownFactNotMatched(basket))
+                       case None        => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
 
@@ -421,8 +421,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
         processedRequests <- createMultipleInvitations(arn, Some(personal), basket)
         result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
                  else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
-                   goto(AllAuthorisationsFailed(basket))
-                 else goto(SomeAuthorisationsFailed(basket))
+                   goto(AllAuthorisationsFailed(processedRequests))
+                 else goto(SomeAuthorisationsFailed(processedRequests))
       } yield result
 
     private def checkIfPendingOrActiveAndGoto(successState: State)(
