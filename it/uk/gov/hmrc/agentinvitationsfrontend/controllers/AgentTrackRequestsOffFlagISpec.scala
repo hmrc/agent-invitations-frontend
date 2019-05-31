@@ -63,6 +63,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
     val invitationSent = controller.showInvitationSent()
     "return 200 with the only option to continue where user left off" in {
       givenAgentReference(arn, uid, personal)
+      givenGetAgencyEmailAgentStub
       val continueUrl = ContinueUrl("/someITSA/Url")
       await(
         sessionStore.save(AgentSession(
@@ -95,6 +96,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
 
     "return 200 with two options; agent-services-account and a link to create new invitation" in {
       givenAgentReference(arn, uid, personal)
+      givenGetAgencyEmailAgentStub
       await(
         sessionStore.save(
           AgentSession(

@@ -35,7 +35,7 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
     "return an agency email for a valid agent" in {
       givenGetAgencyEmailAgentStub
 
-      val result = await(connector.getAgencyEmail())
+      val result = await(connector.getAgencyEmail)
 
       result shouldBe "abc@xyz.com"
     }
@@ -43,14 +43,14 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
       givenNoContentAgencyEmailAgentStub
 
       intercept[AgencyEmailNotFound] {
-        await(connector.getAgencyEmail())
+        await(connector.getAgencyEmail)
       }.getMessage shouldBe "No email found in the record for this agent"
     }
     "return AgencyEmailNotFound when there is no record" in {
       givenNotFoundAgencyEmailAgentStub
 
       intercept[AgencyEmailNotFound] {
-        await(connector.getAgencyEmail())
+        await(connector.getAgencyEmail)
       }.getMessage shouldBe "No record found for this agent"
     }
   }

@@ -284,6 +284,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             Some(validNino.value),
             Some(dateOfBirth),
             clientTypeForInvitationSent = Some(personal))))
+      givenGetAgencyEmailAgentStub
 
       givenAgentReference(arn, uid, personal)
 
