@@ -216,6 +216,17 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("identify-client.vat-registration-date.label"))
     }
   }
+  "GET /agents/identify-itsa-client" should {
+    val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-itsa-client")
+    "redirect to the identify client page" in {
+      journeyState.set(IdentifyClientPersonal(HMRCMTDIT), Nil)
+
+      val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showIdentifyClient().url)
+    }
+  }
   "POST /fsm/agents/cancel-authorisation/identify-itsa-client" should {
     "redirect to confirm client" in {
       journeyState.set(IdentifyClientPersonal(HMRCMTDIT), Nil)

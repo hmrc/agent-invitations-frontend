@@ -82,13 +82,25 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
       }
-      "transition to NotFoundInvitation when there is no agent reference record" in {
-        def getAgentReferenceRecord(uid: String) =
-          Future(None)
-        def getAgencyName(arn: Arn) = Future(agentName)
+      "transition to NotFoundInvitation" when {
+        "there is no agent reference record" in {
+          def getAgentReferenceRecord(uid: String) = Future(None)
+          def getAgencyName(arn: Arn) = Future(agentName)
 
-        given(Root) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
-          thenGo(NotFoundInvitation)
+          given(Root) when
+            start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+            thenGo(NotFoundInvitation)
+        }
+
+        "the agency name in the agent reference record is different to the normalised agent name in the invitation link" in {
+          def getAgentReferenceRecord(uid: String) =
+            Future(Some(AgentReferenceRecord("uid123", arn, Seq(s"$normalisedAgentName-2"))))
+          def getAgencyName(arn: Arn) = Future(agentName)
+
+          given(Root) when
+            start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+            thenGo(NotFoundInvitation)
+        }
       }
     }
     "at WarmUp state" when {

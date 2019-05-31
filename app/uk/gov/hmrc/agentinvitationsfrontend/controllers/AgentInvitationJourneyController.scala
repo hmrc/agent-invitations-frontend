@@ -99,6 +99,8 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
+  val identifyClientRedirect = Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
+
   val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient | IdentifyBusinessClient =>
   }

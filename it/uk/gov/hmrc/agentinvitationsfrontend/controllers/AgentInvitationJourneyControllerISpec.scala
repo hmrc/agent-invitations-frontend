@@ -280,6 +280,20 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       }
     }
 
+    "GET /agents/identify-itsa-client" should {
+      val request = FakeRequest("GET", "/agents/identify-itsa-client")
+      "redirect to the identify client page" in {
+        journeyState.set(
+          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+
+        val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      }
+    }
+
     "POST /agents/identify-itsa-client" should {
       val request = FakeRequest("POST", "/agents/identify-itsa-client")
 
