@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -302,11 +302,12 @@ class AgentLedDeauthJourneyController @Inject()(
     case ConfirmCancel(service, clientName, _) =>
       Ok(
         confirm_cancel(
-          service,
-          clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
-          backLinkFor(breadcrumbs).url
+          ConfirmCancelPageConfig(
+            service,
+            clientName.getOrElse(""),
+            routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
+            backLinkFor(breadcrumbs).url)
         ))
 
     case AuthorisationCancelled(service, clientName, agencyName) =>
