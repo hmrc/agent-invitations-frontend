@@ -383,12 +383,14 @@ class AgentInvitationJourneyController @Inject()(
     case PendingInvitationExists(_, basket) =>
       Ok(
         pending_authorisation_exists(
-          basket.nonEmpty,
-          backLinkFor(breadcrumbs).url,
-          fromFastTrack = false,
-          routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-          routes.AgentInvitationJourneyController.showClientType()
-        ))
+          PendingAuthorisationExistsPageConfig(
+            basket.nonEmpty,
+            backLinkFor(breadcrumbs).url,
+            fromFastTrack = false,
+            featureFlags.enableTrackRequests,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+            routes.AgentInvitationJourneyController.showClientType()
+          )))
 
     case ClientNotSignedUp(service, basket) =>
       Ok(not_signed_up(service, basket.nonEmpty))
