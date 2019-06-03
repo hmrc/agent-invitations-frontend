@@ -74,6 +74,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type CreateMultipleInvitations =
       (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
+    type GetAgencyEmail = () => Future[String]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType(basket) =>
@@ -121,7 +122,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)(
       hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
       redirectToConfirmItsaFlag: Boolean)(showKfcItsa: Boolean)(getClientName: GetClientName)(
-      createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(getAgencyEmail: Future[String])(
+      createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
       agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDIT, basket) if showKfcItsa && redirectToConfirmItsaFlag =>
         for {
@@ -192,7 +193,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def identifiedVatClient(checkRegDateMatches: CheckRegDateMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(showKfcVat: Boolean)(
       getClientName: GetClientName)(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
+      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
       case IdentifyPersonalClient(HMRCMTDVAT, basket) if showKfcVat && redirectToConfirmVatFlag =>
         for {
           regDateMatches <- checkRegDateMatches(
@@ -350,7 +351,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def identifiedIrvClient(checkDobMatches: CheckDOBMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmIrvFlag: Boolean)(showKfcPir: Boolean)(
       getClientName: GetClientName)(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
+      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(HMRCPIR, basket) if showKfcPir && redirectToConfirmIrvFlag =>
         for {
           dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse("")))
@@ -450,7 +451,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       } yield result
 
     def clientConfirmed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitationsFor: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmClientItsa(request, basket) =>
@@ -495,7 +496,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                            .flatMap {
                              case true => goto(ActiveAuthorisationExists(business, HMRCMTDVAT, Set.empty))
                              case false =>
-                               getAgencyEmail.flatMap(
+                               getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
                                      InvitationSentBusiness(agentLink, None, agencyEmail),
@@ -509,7 +510,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       }
 
     def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(agent: AuthorisedAgent)(confirmation: Confirmation) =
+      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ReviewAuthorisationsPersonal(basket) =>
           if (confirmation.choice)
@@ -519,7 +520,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 basket))
           else {
             for {
-              agencyEmail    <- getAgencyEmail
+              agencyEmail    <- getAgencyEmail()
               invitationLink <- getAgentLink(agent.arn, Some(personal))
               result <- createAndProcessInvitations(
                          InvitationSentPersonal(invitationLink, None, agencyEmail),

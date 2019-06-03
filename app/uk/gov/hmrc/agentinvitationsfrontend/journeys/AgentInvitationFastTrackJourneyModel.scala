@@ -92,6 +92,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
+    type GetAgencyEmail = () => Future[String]
 
     def prologue(failureUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl))
@@ -159,7 +160,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       hasActiveRelationshipFor: HasActiveRelationship,
       createInvitation: CreateInvitation,
       getAgentLink: GetAgentLink,
-      getAgencyEmail: Future[String]): Future[State] =
+      getAgencyEmail: GetAgencyEmail): Future[State] =
       for {
         hasPendingInvitations <- hasPendingInvitationsFor(
                                   arn,
@@ -173,7 +174,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                        case true => goto(ActiveAuthorisationExists(fastTrackRequest, continueUrl))
                        case false =>
                          for {
-                           agencyEmail    <- getAgencyEmail
+                           agencyEmail    <- getAgencyEmail()
                            _              <- createInvitation(arn, invitation)
                            invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
                            result <- fastTrackRequest.clientType match {
@@ -244,7 +245,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def checkedDetailsAllInformation(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       confirmation: Confirmation) = Transition {
       case CheckDetailsCompleteItsa(fastTrackRequest, continueUrl) => {
@@ -335,7 +336,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def identifiedClientItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       itsaClient: ItsaClient) = Transition {
       case IdentifyPersonalClient(ftr, continueUrl) =>
@@ -350,7 +351,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def identifiedClientIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       irvClient: IrvClient) = Transition {
       case IdentifyPersonalClient(ftr, continueUrl) =>
@@ -366,7 +367,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def identifiedClientVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       vatClient: VatClient) = Transition {
       case IdentifyPersonalClient(ftr, continueUrl) =>
@@ -389,7 +390,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       suppliedKnownFact: Option[String]) = Transition {
       case NoPostcode(ftr, continueUrl) =>
@@ -402,7 +403,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def moreDetailsIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       suppliedKnownFact: Option[String]) = Transition {
       case NoDob(ftr, continueUrl) =>
@@ -415,7 +416,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def moreDetailsVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       suppliedKnownFact: Option[String]) = Transition {
       case NoVatRegDate(ftRequest, continueUrl) => {
@@ -436,7 +437,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: Future[String])(hasPendingInvitations: HasPendingInvitations)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
       hasActiveRelationship: HasActiveRelationship)(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(
       suppliedClientType: ClientType) = Transition {
 
