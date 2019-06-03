@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -12,9 +12,6 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
 
   implicit val hc = HeaderCarrier()
   val connector = app.injector.instanceOf[AgentServicesAccountConnector]
-
-
-
 
   "getAgencyNameClient" should {
     "return agency name for a valid arn for a client" in {
@@ -31,6 +28,30 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
       intercept[AgencyNameNotFound] {
         await(connector.getAgencyName("INVALID_ARN"))
       }
+    }
+  }
+
+  "getAgencyEmail" should {
+    "return an agency email for a valid agent" in {
+      givenGetAgencyEmailAgentStub
+
+      val result = await(connector.getAgencyEmail)
+
+      result shouldBe "abc@xyz.com"
+    }
+    "return AgencyEmailNotFound when there is no email in the agents record" in {
+      givenNoContentAgencyEmailAgentStub
+
+      intercept[AgencyEmailNotFound] {
+        await(connector.getAgencyEmail)
+      }.getMessage shouldBe "No email found in the record for this agent"
+    }
+    "return AgencyEmailNotFound when there is no record" in {
+      givenNotFoundAgencyEmailAgentStub
+
+      intercept[AgencyEmailNotFound] {
+        await(connector.getAgencyEmail)
+      }.getMessage shouldBe "No record found for this agent"
     }
   }
 

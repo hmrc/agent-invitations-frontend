@@ -24,7 +24,7 @@ import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{VatInvitation, _}
@@ -47,6 +47,7 @@ class AgentsInvitationController @Inject()(
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   relationshipsConnector: RelationshipsConnector,
+  asaConnector: AgentServicesAccountConnector,
   auditService: AuditService,
   agentSessionCache: AgentSessionCache,
   authActions: AuthActions)(
@@ -299,16 +300,18 @@ class AgentsInvitationController @Inject()(
               AgentSession(
                 clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
                 continueUrl = session.continueUrl))
-            .map { _ =>
-              Ok(
-                invitation_sent(
-                  InvitationSentPageConfig(
+            .flatMap { _ =>
+              asaConnector.getAgencyEmail
+                .flatMap(email =>
+                  Ok(invitation_sent(InvitationSentPageConfig(
                     agentLink,
                     session.continueUrl,
                     continueUrlExists,
                     featureFlags.enableTrackRequests,
                     ClientType.fromEnum(clientTypeForInvitationSent),
-                    inferredExpiryDate)))
+                    inferredExpiryDate,
+                    email
+                  ))))
             }
         }
       }

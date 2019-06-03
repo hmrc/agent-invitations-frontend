@@ -133,24 +133,26 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe ReviewAuthorisationsPersonal(Set.empty)
       }
       "InvitationSentPersonal" in {
-        Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"))) shouldBe Json.obj(
-          "state"      -> "InvitationSentPersonal",
-          "properties" -> Json.obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url")
+        Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(
+          "state" -> "InvitationSentPersonal",
+          "properties" -> Json
+            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com")
         )
         Json
           .parse(
-            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url"}}""")
-          .as[State] shouldBe InvitationSentPersonal("invitation/link", Some("continue/url"))
+            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com"}}""")
+          .as[State] shouldBe InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com")
       }
       "InvitationSentBusiness" in {
-        Json.toJson(InvitationSentBusiness("invitation/link", Some("continue/url"))) shouldBe Json.obj(
-          "state"      -> "InvitationSentBusiness",
-          "properties" -> Json.obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url")
+        Json.toJson(InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(
+          "state" -> "InvitationSentBusiness",
+          "properties" -> Json
+            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com")
         )
         Json
           .parse(
-            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url"}}""")
-          .as[State] shouldBe InvitationSentBusiness("invitation/link", Some("continue/url"))
+            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com"}}""")
+          .as[State] shouldBe InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com")
       }
       "KnownFactNotMatched" in {
         Json.toJson(KnownFactNotMatched(Set.empty)) shouldBe Json.obj(
