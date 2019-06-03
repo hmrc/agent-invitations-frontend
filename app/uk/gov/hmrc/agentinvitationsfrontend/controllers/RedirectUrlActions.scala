@@ -48,7 +48,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
                   None
               }
           case Failure(e) =>
-            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid continue URL", e)
             Future.successful(None)
         }
       case None =>
@@ -73,7 +73,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
                   None
               }
           case Failure(e) =>
-            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid continue URL", e)
             Future.successful(None)
         }
       case None =>
@@ -87,7 +87,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
         Try(RedirectUrl(redirectUrl)) match {
           case Success(url) => Some(url)
           case Failure(e) =>
-            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid continue URL", e)
             None
         }
       case None =>
