@@ -23,7 +23,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -44,6 +44,7 @@ class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
+  asaConnector: AgentServicesAccountConnector,
   val authActions: AuthActions,
   override val journeyService: AgentInvitationJourneyService)(
   implicit configuration: Configuration,
@@ -59,6 +60,7 @@ class AgentInvitationJourneyController @Inject()(
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
+  import asaConnector._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -107,7 +109,7 @@ class AgentInvitationJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form(featureFlags.showKfcMtdIt))(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(
-        getClientNameByService)(createMultipleInvitations)(createAgentLink)
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -115,7 +117,7 @@ class AgentInvitationJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(VatClientForm.form(featureFlags.showKfcMtdVat))(
       Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(
-        getClientNameByService)(createMultipleInvitations)(createAgentLink)
+        getClientNameByService)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -123,7 +125,8 @@ class AgentInvitationJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form(featureFlags.showKfcPersonalIncome))(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(featureFlags.enableIrvToConfirm)(
-        featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)
+        featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)(
+        getAgencyEmail)
     )
   }
 
@@ -136,7 +139,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitConfirmClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
-      Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(hasPendingInvitationsFor)(
+      Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)
     )
   }
@@ -147,7 +150,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitReviewAuthorisations = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
-      Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink))
+      Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink)(getAgencyEmail))
   }
 
   def showDeleteAuthorisation(itemId: String) = action { implicit request =>
@@ -171,28 +174,28 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case SelectClientType(_)             => routes.AgentInvitationJourneyController.showClientType()
-    case SelectPersonalService(_, _)     => routes.AgentInvitationJourneyController.showSelectService()
+    case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
+    case _: SelectPersonalService        => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
-    case IdentifyPersonalClient(_, _)    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case ConfirmClientItsa(_, _)         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientIrv(_, _)          => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientPersonalVat(_, _)  => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ConfirmClientBusinessVat(_)     => routes.AgentInvitationJourneyController.showConfirmClient()
-    case ReviewAuthorisationsPersonal(_) => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientIrv             => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case InvitationSentPersonal(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
-    case InvitationSentBusiness(_, _)       => routes.AgentInvitationJourneyController.showInvitationSent()
-    case KnownFactNotMatched(_)             => routes.AgentInvitationJourneyController.showNotMatched()
-    case SomeAuthorisationsFailed(_)        => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
-    case AllAuthorisationsFailed(_)         => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
-    case ClientNotSignedUp(_, _)            => routes.AgentInvitationJourneyController.showClientNotSignedUp()
-    case PendingInvitationExists(_, _)      => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
-    case ActiveAuthorisationExists(_, _, _) => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case AllAuthorisationsRemoved           => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
-    case _                                  => throw new Exception(s"Link not found for $state")
+    case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
+    case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
+    case _: ClientNotSignedUp         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
+    case _: PendingInvitationExists   => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
+    case _: ActiveAuthorisationExists => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case AllAuthorisationsRemoved     => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
+    case _                            => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -330,7 +333,7 @@ class AgentInvitationJourneyController @Inject()(
           DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
           DeleteAuthorisationForm))
 
-    case InvitationSentPersonal(invitationLink, continueUrl) =>
+    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -339,9 +342,10 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            agencyEmail)))
 
-    case InvitationSentBusiness(invitationLink, continueUrl) =>
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -350,7 +354,8 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
-            inferredExpiryDate)))
+            inferredExpiryDate,
+            agencyEmail)))
 
     case KnownFactNotMatched(basket) =>
       Ok(

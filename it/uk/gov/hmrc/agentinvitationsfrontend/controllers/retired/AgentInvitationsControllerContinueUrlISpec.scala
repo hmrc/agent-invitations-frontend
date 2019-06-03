@@ -21,6 +21,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
     val invitationSent = controller.showInvitationSent()
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
       givenAgentReference(arn, uid, personal)
+      givenGetAgencyEmailAgentStub
       val continueUrl = ContinueUrl("/someITSA/Url")
       await(
         sessionStore.save(AgentSession(
@@ -59,6 +60,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
       givenAgentReference(arn, uid, personal)
+      givenGetAgencyEmailAgentStub
       val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
       await(
         sessionStore.save(AgentSession(
@@ -97,6 +99,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
       givenAgentReference(arn, uid, business)
+      givenGetAgencyEmailAgentStub
       val continueUrl = ContinueUrl("/someVat/Url")
       await(
         sessionStore.save(AgentSession(

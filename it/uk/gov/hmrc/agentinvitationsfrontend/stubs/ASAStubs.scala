@@ -23,9 +23,8 @@ trait ASAStubs {
   def givenGetAgencyNameNotFoundClientStub(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-services-account/client/agency-name/${encodePathSegment(arn.value)}"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
   def givenGetAgencyNameAgentStub =
     stubFor(
@@ -37,6 +36,29 @@ trait ASAStubs {
                          |{
                          |  "agencyName" : "My Agency"
                          |}""".stripMargin)))
+
+  def givenGetAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-email"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyEmail" : "abc@xyz.com"
+                         |}""".stripMargin)))
+
+  def givenNoContentAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(204)))
+
+  def givenNotFoundAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-services-account/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(404)))
 
   def givenAgencyNameNotFoundClientStub(arn: Arn) =
     stubFor(
@@ -141,11 +163,10 @@ trait ASAStubs {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(
-              s"""
-                 | {
-                 |    "nino":"${nino.value}"
-                 | }
+            .withBody(s"""
+                         | {
+                         |    "nino":"${nino.value}"
+                         | }
                """.stripMargin)
         )
     )
