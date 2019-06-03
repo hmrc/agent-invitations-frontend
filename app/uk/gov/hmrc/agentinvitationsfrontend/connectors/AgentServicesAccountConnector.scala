@@ -24,7 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ContinueUrlActions
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.RedirectUrlActions
 import uk.gov.hmrc.agentinvitationsfrontend.models.CustomerDetails
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -45,7 +45,6 @@ object AgencyName {
 class AgentServicesAccountConnector @Inject()(
   @Named("agent-services-account-baseUrl") baseUrl: URL,
   http: HttpGet,
-  continueUrlActions: ContinueUrlActions,
   metrics: Metrics)
     extends HttpAPIMonitor {
 

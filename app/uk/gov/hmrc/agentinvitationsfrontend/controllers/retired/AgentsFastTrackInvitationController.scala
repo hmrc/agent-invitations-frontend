@@ -21,7 +21,7 @@ import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.mvc.{Action, AnyContent, Request, Result}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
@@ -36,10 +36,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CheckDetailsPageConfig, KnownFactPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, known_fact}
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, RedirectUrlPolicy, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,7 +52,7 @@ class AgentsFastTrackInvitationController @Inject()(
   relationshipsConnector: RelationshipsConnector,
   agentSessionCache: AgentSessionCache,
   authActions: AuthActions,
-  val continueUrlActions: ContinueUrlActions,
+  val redirectUrlActions: RedirectUrlActions,
   auditService: AuditService)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
@@ -67,9 +68,10 @@ class AgentsFastTrackInvitationController @Inject()(
       relationshipsConnector,
       auditService
     ) {
+  import AgentsFastTrackInvitationController._
   import authActions._
 
-  import AgentsFastTrackInvitationController._
+  val policy: RedirectUrlPolicy[Id] = UnsafePermitAll
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 
@@ -218,7 +220,9 @@ class AgentsFastTrackInvitationController @Inject()(
               withMaybeErrorUrlCached {
                 case Some(continue) =>
                   Future successful Redirect(
-                    continue.url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
+                    continue
+                      .get(policy)
+                      .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
                 case None =>
                   throw new IllegalStateException("No Error Url Provided")
               }
@@ -316,24 +320,24 @@ class AgentsFastTrackInvitationController @Inject()(
   }
 
   private def withMaybeErrorUrlCached[A](
-    block: Option[ContinueUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    continueUrlActions.withMaybeErrorUrl {
+    block: Option[RedirectUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
+    redirectUrlActions.withMaybeErrorUrl {
       case None => block(None)
-      case Some(continueUrl) =>
+      case Some(redirectUrl) =>
         agentSessionCache.fetch
           .map(_.getOrElse(AgentSession()))
-          .flatMap(session => agentSessionCache.save(session.copy(errorUrl = Some(continueUrl.url))))
-          .flatMap(_ => block(Some(continueUrl)))
+          .flatMap(session => agentSessionCache.save(session.copy(errorUrl = Some(redirectUrl.get(policy).url))))
+          .flatMap(_ => block(Some(redirectUrl)))
     }
 
   private def withMaybeContinueUrlCached[A](
     block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    continueUrlActions.withMaybeContinueUrl {
+    redirectUrlActions.withMaybeRedirectUrl {
       case None => block
-      case Some(continueUrl) =>
+      case Some(redirectUrl) =>
         agentSessionCache.hardGet.flatMap { session =>
           agentSessionCache
-            .save(session.copy(continueUrl = Some(continueUrl.url)))
+            .save(session.copy(continueUrl = Some(redirectUrl.get(policy).url)))
             .flatMap(_ => block)
         }
     }

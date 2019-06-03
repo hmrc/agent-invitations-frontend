@@ -22,20 +22,21 @@ import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 @Singleton
-class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
+class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
-  def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[ContinueUrl]] = {
+  def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[RedirectUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
 
     request.getQueryString("error") match {
-      case Some(continueUrl) =>
-        Try(ContinueUrl(continueUrl)) match {
+      case Some(redirectUrl) =>
+        Try(RedirectUrl(redirectUrl)) match {
           case Success(url) =>
             isRelativeOrAbsoluteWhiteListed(url)
               .collect {
@@ -47,7 +48,7 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
                   None
               }
           case Failure(e) =>
-            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
             Future.successful(None)
         }
       case None =>
@@ -55,12 +56,12 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     }
   }
 
-  def extractContinueUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[ContinueUrl]] = {
+  def extractRedirectUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[RedirectUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
 
     request.getQueryString("continue") match {
-      case Some(continueUrl) =>
-        Try(ContinueUrl(continueUrl)) match {
+      case Some(redirectUrl) =>
+        Try(RedirectUrl(redirectUrl)) match {
           case Success(url) =>
             isRelativeOrAbsoluteWhiteListed(url)
               .collect {
@@ -72,7 +73,7 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
                   None
               }
           case Failure(e) =>
-            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
             Future.successful(None)
         }
       case None =>
@@ -80,26 +81,26 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     }
   }
 
-  def getContinueUrl[A](implicit request: Request[A]): Option[ContinueUrl] =
+  def getRedirectUrl[A](implicit request: Request[A]): Option[RedirectUrl] =
     request.getQueryString("continue") match {
-      case Some(continueUrl) =>
-        Try(ContinueUrl(continueUrl)) match {
+      case Some(redirectUrl) =>
+        Try(RedirectUrl(redirectUrl)) match {
           case Success(url) => Some(url)
           case Failure(e) =>
-            Logger(getClass).warn(s"$continueUrl is not a valid continue URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid redirect URL", e)
             None
         }
       case None =>
         None
     }
 
-  def getErrorUrl[A](implicit request: Request[A]): Option[ContinueUrl] =
+  def getErrorUrl[A](implicit request: Request[A]): Option[RedirectUrl] =
     request.getQueryString("error") match {
-      case Some(continueUrl) =>
-        Try(ContinueUrl(continueUrl)) match {
+      case Some(redirectUrl) =>
+        Try(RedirectUrl(redirectUrl)) match {
           case Success(url) => Some(url)
           case Failure(e) =>
-            Logger(getClass).warn(s"$continueUrl is not a valid error URL", e)
+            Logger(getClass).warn(s"$redirectUrl is not a valid error URL", e)
             None
         }
       case None =>
@@ -107,24 +108,25 @@ class ContinueUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     }
 
   private def isRelativeOrAbsoluteWhiteListed(
-    continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    if (!continueUrl.isRelativeUrl) whiteListService.isAbsoluteUrlWhiteListed(continueUrl)
+    redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    if (!RedirectUrl.isRelativeUrl(redirectUrl.get(UnsafePermitAll).url))
+      whiteListService.isAbsoluteUrlWhiteListed(redirectUrl)
     else Future.successful(true)
 
-  def withMaybeContinueUrl[A](block: Option[ContinueUrl] => Future[Result])(
+  def withMaybeRedirectUrl[A](block: Option[RedirectUrl] => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] = {
-    val continueUrl: Future[Option[ContinueUrl]] = extractContinueUrl
-    continueUrl.flatMap(block(_))
+    val redirectUrl: Future[Option[RedirectUrl]] = extractRedirectUrl
+    redirectUrl.flatMap(block(_))
   }
 
-  def withMaybeErrorUrl[A](block: Option[ContinueUrl] => Future[Result])(
+  def withMaybeErrorUrl[A](block: Option[RedirectUrl] => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] = {
-    val continueUrl: Future[Option[ContinueUrl]] = extractErrorUrl
-    continueUrl.flatMap(block(_))
+    val redirectUrl: Future[Option[RedirectUrl]] = extractErrorUrl
+    redirectUrl.flatMap(block(_))
   }
 
 }

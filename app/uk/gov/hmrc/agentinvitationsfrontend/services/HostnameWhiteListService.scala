@@ -23,26 +23,28 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.SsoConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 
+import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.collection.JavaConversions._
 
 @Singleton
 class HostnameWhiteListService @Inject()(config: Configuration, ssoConnector: SsoConnector) {
 
   val domainWhiteList: Set[String] = config.getStringList("continueUrl.domainWhiteList").getOrElse(emptyList()).toSet
 
-  def hasExternalDomain(continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    ssoConnector.validateExternalDomain(getHost(continueUrl))
+  def hasExternalDomain(redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    ssoConnector.validateExternalDomain(getHost(redirectUrl))
 
   def isAbsoluteUrlWhiteListed(
-    continueUrl: ContinueUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    if (!hasInternalDomain(continueUrl)) hasExternalDomain(continueUrl)
+    redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    if (!hasInternalDomain(redirectUrl)) hasExternalDomain(redirectUrl)
     else Future.successful(true)
 
-  def hasInternalDomain(continueUrl: ContinueUrl): Boolean = domainWhiteList.contains(getHost(continueUrl))
+  def hasInternalDomain(redirectUrl: RedirectUrl): Boolean = domainWhiteList.contains(getHost(redirectUrl))
 
-  private def getHost(continueUrl: ContinueUrl): String = Try(new URL(continueUrl.url).getHost).getOrElse("invalid")
+  private def getHost(redirectUrl: RedirectUrl): String =
+    Try(new URL(redirectUrl.get(UnsafePermitAll).url).getHost).getOrElse("invalid")
 }

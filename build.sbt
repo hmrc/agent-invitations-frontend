@@ -22,7 +22,7 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.12.0",
   "uk.gov.hmrc" %% "play-fsm" % "0.46.0-play-25",
   "uk.gov.hmrc" %% "govuk-template" % "5.23.0",
   "uk.gov.hmrc" %% "play-ui" % "7.39.0-play-25",
@@ -43,7 +43,8 @@ def testDeps(scope: String) = Seq(
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.13.0-play-25" % scope
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.13.0-play-25" % scope,
+  "org.scalamock" %% "scalamock" % "4.1.0" % scope
 )
 
 lazy val root = (project in file("."))

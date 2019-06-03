@@ -9,19 +9,22 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, RedirectUrlPolicy, UnsafePermitAll}
 
 class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
+  val policy: RedirectUrlPolicy[Id] = UnsafePermitAll
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
     val invitationSent = controller.showInvitationSent()
     "return 200 for authorised Agent with valid postcode and redirected to Confirm Invitation Page (secureFlag = false) for ITSA service" in {
       givenAgentReference(arn, uid, personal)
-      val continueUrl = ContinueUrl("/someITSA/Url")
+      val continueUrl = RedirectUrl("/someITSA/Url")
       await(
         sessionStore.save(AgentSession(
           Some(personal),
@@ -53,13 +56,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       await(sessionStore.hardGet) shouldBe AgentSession(
-        continueUrl = Some(continueUrl.url),
+        continueUrl = Some(continueUrl.get(policy).url),
         clientTypeForInvitationSent = Some(personal))
     }
 
     "return 200 for authorised Agent, redirected to Confirm Invitation Page (secureFlag = false) for PIR service" in {
       givenAgentReference(arn, uid, personal)
-      val continueUrl = ContinueUrl("http://localhost:9996/tax-history/select-client")
+      val continueUrl = RedirectUrl("http://localhost:9996/tax-history/select-client")
       await(
         sessionStore.save(AgentSession(
           Some(personal),
@@ -91,13 +94,13 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       await(sessionStore.hardGet) shouldBe AgentSession(
-        continueUrl = Some(continueUrl.url),
+        continueUrl = Some(continueUrl.get(policy).url),
         clientTypeForInvitationSent = Some(personal))
     }
 
     "return 200 for authorised Agent with valid vat-reg-date and redirected to Confirm Invitation Page (secureFlag = false) for VAT service" in {
       givenAgentReference(arn, uid, business)
-      val continueUrl = ContinueUrl("/someVat/Url")
+      val continueUrl = RedirectUrl("/someVat/Url")
       await(
         sessionStore.save(AgentSession(
           Some(business),
@@ -105,7 +108,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
           Some("ni"),
           Some(nino),
           Some(validPostcode),
-          continueUrl = Some(continueUrl.url),
+          continueUrl = Some(continueUrl.get(policy).url),
           clientTypeForInvitationSent = Some(business)
         )))
 
@@ -129,7 +132,7 @@ class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
       verifyAuthoriseAttempt()
       await(sessionStore.hardGet) shouldBe AgentSession(
-        continueUrl = Some(continueUrl.url),
+        continueUrl = Some(continueUrl.get(policy).url),
         clientTypeForInvitationSent = Some(business))
     }
 
