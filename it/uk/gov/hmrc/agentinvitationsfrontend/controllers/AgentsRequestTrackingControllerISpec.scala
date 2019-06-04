@@ -20,6 +20,7 @@ import java.util.UUID
 
 import org.joda.time.{DateTimeZone, LocalDate}
 import org.jsoup.Jsoup
+import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
@@ -30,6 +31,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
+
+  override implicit lazy val app: Application = appBuilder(featureFlags.copy(enableTrackCancelAuth = true))
+    .build()
 
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
@@ -90,24 +94,24 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       val parseHtml = Jsoup.parse(contentAsString(result))
 
-      parseHtml.getElementsByAttributeValue("id","row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id","row-0").toString should include(
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include(
         "Send their Income Tax updates through software")
-      parseHtml.getElementsByAttributeValue("id","row-3").toString should include("GDT")
-      parseHtml.getElementsByAttributeValue("id","row-3").toString should include(
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("GDT")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include(
         "Submit their VAT returns through software")
-      parseHtml.getElementsByAttributeValue("id","row-3").toString should include("resendRequest")
-      parseHtml.getElementsByAttributeValue("id","row-7").toString should include("John Smith")
-      parseHtml.getElementsByAttributeValue("id","row-7").toString should include("View their PAYE income record")
-      parseHtml.getElementsByAttributeValue("id","row-23").toString should include("Rodney Jones")
-      parseHtml.getElementsByAttributeValue("id","row-23").toString should include("View their PAYE income record")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("resendRequest")
+      parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("John Smith")
+      parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("View their PAYE income record")
+      parseHtml.getElementsByAttributeValue("id", "row-23").toString should include("Rodney Jones")
+      parseHtml.getElementsByAttributeValue("id", "row-23").toString should include("View their PAYE income record")
 
-      parseHtml.getElementsByAttributeValue("id","row-8").toString should include("Declined")
-      parseHtml.getElementsByAttributeValue("id","row-8").toString should include("fastTrackInvitationCreate")
-      parseHtml.getElementsByAttributeValue("id","row-11").toString should include("cancelled this request")
-      parseHtml.getElementsByAttributeValue("id","row-11").toString should include("fastTrackInvitationCreate")
-      parseHtml.getElementsByAttributeValue("id","row-3").toString should include("cancelled your authorisation")
-      parseHtml.getElementsByAttributeValue("id","row-3").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("Declined")
+      parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("id", "row-11").toString should include("cancelled this request")
+      parseHtml.getElementsByAttributeValue("id", "row-11").toString should include("fastTrackInvitationCreate")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("cancelled your authorisation")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("fastTrackInvitationCreate")
 
     }
 
@@ -379,11 +383,14 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       )
     }
     "render a request cancelled page without the client's name during an IRV journey" in {
-      val result = showRequestCancelled(authorisedAsValidAgent(request
-          .withSession(
-            "invitationId" -> invitationIdPIR.value,
-                          "clientName"  -> "Voe Jolcano",
-                          "service"     -> "PERSONAL-INCOME-RECORD"), arn.value))
+      val result = showRequestCancelled(
+        authorisedAsValidAgent(
+          request
+            .withSession(
+              "invitationId" -> invitationIdPIR.value,
+              "clientName"   -> "Voe Jolcano",
+              "service"      -> "PERSONAL-INCOME-RECORD"),
+          arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(

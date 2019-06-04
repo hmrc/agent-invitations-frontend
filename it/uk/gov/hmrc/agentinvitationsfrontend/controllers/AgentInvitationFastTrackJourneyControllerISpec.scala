@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.codahale.metrics.SharedMetricRegistries
 import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
@@ -19,13 +20,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
     extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder
+
+  override implicit lazy val app: Application = appBuilder(featureFlags)
+    .overrides(new TestAgentInvitationFastTrackJourneyModule)
+    .build()
+
+  implicit lazy val appOpposite: Application = appBuilder(oppositeFeatureFlags)
     .overrides(new TestAgentInvitationFastTrackJourneyModule)
     .build()
 
   lazy val journeyState = app.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
+  lazy val appOppositeJourneyState = appOpposite.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
+
   lazy val controller: AgentInvitationFastTrackJourneyController =
     app.injector.instanceOf[AgentInvitationFastTrackJourneyController]
+
+  lazy val oppositeController = appOpposite.injector.instanceOf[AgentInvitationFastTrackJourneyController]
 
   import journeyState.model.State._
 
@@ -490,6 +500,27 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
+      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.track.button")
+    }
+
+    "show the already-authorisation-pending page with no track button when track request flag is off" in {
+      SharedMetricRegistries.clear()
+      appOppositeJourneyState.set(
+        PendingInvitationExists(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+          None),
+        List(
+          CheckDetailsCompleteItsa(
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
+            None),
+          Prologue(None))
+      )
+
+      val result = oppositeController.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
+      checkHtmlResultWithNotBodyText(result, "Track your authorisation requests")
     }
   }
 
