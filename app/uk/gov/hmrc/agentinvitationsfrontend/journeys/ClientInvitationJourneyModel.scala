@@ -32,7 +32,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
   /* State should contain only minimal set of data required to proceed */
   object State {
-    case object MissingJourneyHistory extends State with IsError
+    case object MissingJourneyHistory extends State
     case class WarmUp(clientType: ClientType, uid: String, agentName: String, normalisedAgentName: String) extends State
     case object NotFoundInvitation extends State with IsError
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])

@@ -485,7 +485,7 @@ session-lost-client.header=Sorry, you will need to start again
 session-lost-client.description.1=For your security, we have signed you out of the service.
 session-lost-client.description.2=We may not have saved your answers.
 session-lost-client.description.3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
-session-lost-client.manage-agents-link=You can <a href="/manage-agents">check who can deal with HMRC for you</a>.
+session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
 # Error messages for digital services

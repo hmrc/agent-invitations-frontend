@@ -73,12 +73,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         def getAgencyName(arn: Arn) = Future(agentName)
 
         "the affinity group does match the client type" in {
-          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
 
         "the affinity group does not match the client type" in {
-          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
       }
@@ -87,7 +89,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           Future(None)
         def getAgencyName(arn: Arn) = Future(agentName)
 
-        given(MissingJourneyHistory) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+        given(MissingJourneyHistory) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(
+          getAgencyName) should
           thenGo(NotFoundInvitation)
       }
     }
