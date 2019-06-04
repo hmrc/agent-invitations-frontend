@@ -145,5 +145,6 @@ GET         /declined                                                       @uk.
 GET         /all-responses-failed                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showAllResponsesFailed
 GET         /some-responses-failed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
 GET         /not-authorised                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.notAuthorised
+GET         /session-timeout                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 
 GET         /:clientType/:uid/:agentName                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)

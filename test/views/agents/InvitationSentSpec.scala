@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package views
+package views.agents
 
 import org.joda.time.LocalDate
 import org.scalatest.words.MatcherWords
@@ -22,10 +22,10 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
+import support.CustomMatchers._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationSentPageConfig
 import uk.gov.hmrc.play.test.UnitSpec
-import support.CustomMatchers._
 
 class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite {
   implicit val messages: Messages = Messages(Lang("en"), app.injector.instanceOf[MessagesApi])

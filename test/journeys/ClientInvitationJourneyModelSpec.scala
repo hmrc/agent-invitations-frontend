@@ -65,7 +65,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val normalisedAgentName = "agent-name"
   val agentName = "Agent Name"
 
-  "AgentInvitationFastTrackJourneyService" when {
+  "ClientInvitationJourneyModel" when {
     "at any state" should {
       "transition to WarmUp with agency name" when {
         def getAgentReferenceRecord(uid: String) =
@@ -73,12 +73,12 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         def getAgencyName(arn: Arn) = Future(agentName)
 
         "the affinity group does match the client type" in {
-          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
 
         "the affinity group does not match the client type" in {
-          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
       }
@@ -87,7 +87,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           Future(None)
         def getAgencyName(arn: Arn) = Future(agentName)
 
-        given(Root) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+        given(MissingJourneyHistory) when start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
           thenGo(NotFoundInvitation)
       }
     }
