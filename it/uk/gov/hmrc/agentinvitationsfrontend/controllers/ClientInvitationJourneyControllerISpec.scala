@@ -95,7 +95,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up" when {
-    behave like anActionHandlingSessionExpiry(controller.submitWarmUp)
+    "journey ID is not available or session expired" should {
+      behave like anActionHandlingSessionExpiry(controller.submitWarmUp)
+    }
 
     "journey ID is available in session cookie (e.g. already logged in)" should {
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
@@ -130,7 +132,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/to-decline" when {
-    behave like anActionHandlingSessionExpiry(controller.submitWarmUpConfirmDecline)
+    "journey ID is not available or session expired" should {
+      behave like anActionHandlingSessionExpiry(controller.submitWarmUpConfirmDecline)
+    }
 
     "journey ID is available in session cookie (e.g. already logged in)" should {
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up/to-decline")
