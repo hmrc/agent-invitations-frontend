@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, InvitationSentPageConfig, PendingAuthorisationExistsPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.auth.core._
@@ -365,13 +365,14 @@ class AgentsInvitationController @Inject()(
             routes.AgentsFastTrackInvitationController.showKnownFact().url
           else routes.AgentsInvitationController.showConfirmClient().url
         Ok(
-          pending_authorisation_exists(
+          pending_authorisation_exists(PendingAuthorisationExistsPageConfig(
             agentSession.requests.nonEmpty,
             backLinkUrl,
             agentSession.fromFastTrack,
+            featureFlags.enableTrackRequests,
             routes.AgentsInvitationController.showReviewAuthorisations(),
             routes.AgentsInvitationController.showClientType()
-          ))
+          )))
       }
     }
   }

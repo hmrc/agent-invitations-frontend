@@ -14,6 +14,7 @@ import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.repository.{AgentSessionCache, ClientConsentsCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
@@ -28,7 +29,27 @@ abstract class BaseISpec
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport
     with MongoSupport {
 
-  override implicit lazy val app: Application = appBuilder.build()
+  val featureFlags: FeatureFlags = new FeatureFlags()
+
+  val oppositeFeatureFlags: FeatureFlags = featureFlags.copy(
+    showHmrcMtdIt = !featureFlags.showHmrcMtdIt,
+    showPersonalIncome = !featureFlags.showPersonalIncome,
+    showHmrcMtdVat = !featureFlags.showHmrcMtdVat,
+    showKfcMtdIt = !featureFlags.showKfcMtdIt,
+    showKfcPersonalIncome = !featureFlags.showKfcPersonalIncome,
+    showKfcMtdVat = !featureFlags.showKfcMtdVat,
+    enableFastTrack = !featureFlags.enableFastTrack,
+    enableTrackRequests = !featureFlags.enableTrackRequests,
+    enableTrackCancelAuth = !featureFlags.enableTrackCancelAuth,
+    enableMtdItToConfirm = !featureFlags.enableMtdItToConfirm,
+    enableIrvToConfirm = !featureFlags.enableIrvToConfirm,
+    enableMtdVatToConfirm = !featureFlags.enableMtdVatToConfirm,
+    showAgentLedDeAuth = !featureFlags.showAgentLedDeAuth
+  )
+  val knownFactOffFeatureFlags: FeatureFlags = oppositeFeatureFlags
+    .copy(enableFastTrack = true, showHmrcMtdIt = true, showPersonalIncome = true, showHmrcMtdVat = true)
+
+  override implicit lazy val app: Application = appBuilder(featureFlags).build()
 
   val companyAuthUrl = "https://company-auth-url"
   val companyAuthSignOutPath = "/sign-out-path"
@@ -42,7 +63,7 @@ abstract class BaseISpec
 
   val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
 
-  protected def appBuilder: GuiceApplicationBuilder =
+  protected def appBuilder(featureFlags: FeatureFlags): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port"                                     -> wireMockPort,
@@ -67,19 +88,22 @@ abstract class BaseISpec
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,
-        "features.show-hmrc-mtd-it"                                           -> true,
-        "features.show-personal-income"                                       -> true,
-        "features.show-hmrc-mtd-vat"                                          -> true,
-        "features.show-kfc-mtd-it"                                            -> true,
-        "features.show-kfc-personal-income"                                   -> true,
-        "features.show-kfc-mtd-vat"                                           -> true,
-        "features.enable-fast-track"                                          -> true,
-        "features.enable-track-requests"                                      -> true,
-        "features.enable-track-cancel-auth-action"                            -> true,
-        "features.redirect-to-confirm-personal-income"                        -> false,
-        "features.redirect-to-confirm-mtd-it"                                 -> true,
-        "features.redirect-to-confirm-mtd-vat"                                -> true,
-        "features.show-agent-led-de-auth"                                     -> true,
+        "metrics.jvm"                                                         -> false,
+        "metrics.logback"                                                     -> false,
+        "passcodeAuthentication.enabled"                                      -> false,
+        "features.show-hmrc-mtd-it"                                           -> featureFlags.showHmrcMtdIt,
+        "features.show-personal-income"                                       -> featureFlags.showPersonalIncome,
+        "features.show-hmrc-mtd-vat"                                          -> featureFlags.showHmrcMtdVat,
+        "features.show-kfc-mtd-it"                                            -> featureFlags.showKfcMtdIt,
+        "features.show-kfc-personal-income"                                   -> featureFlags.showKfcPersonalIncome,
+        "features.show-kfc-mtd-vat"                                           -> featureFlags.showKfcMtdVat,
+        "features.enable-fast-track"                                          -> featureFlags.enableFastTrack,
+        "features.enable-track-requests"                                      -> featureFlags.enableTrackRequests,
+        "features.enable-track-cancel-auth-action"                            -> featureFlags.enableTrackCancelAuth,
+        "features.redirect-to-confirm-personal-income"                        -> featureFlags.enableIrvToConfirm,
+        "features.redirect-to-confirm-mtd-it"                                 -> featureFlags.enableMtdItToConfirm,
+        "features.redirect-to-confirm-mtd-vat"                                -> featureFlags.enableMtdVatToConfirm,
+        "features.show-agent-led-de-auth"                                     -> featureFlags.showAgentLedDeAuth,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                         -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
@@ -256,12 +280,15 @@ abstract class BaseISpec
       )
     )
 
-  protected def checkRedirectedToIVUplift(result: Future[Result], expectedCompletionUrl: String, expectedFailureUrl: String) = {
+  protected def checkRedirectedToIVUplift(
+    result: Future[Result],
+    expectedCompletionUrl: String,
+    expectedFailureUrl: String) = {
     val expectedRedirectUrl = CallOps.addParamsToUrl(
       url = "/mdtp/uplift?origin=aif",
       "confidenceLevel" -> Some("200"),
-      "completionURL" -> Some(expectedCompletionUrl),
-      "failureURL" -> Some(expectedFailureUrl)
+      "completionURL"   -> Some(expectedCompletionUrl),
+      "failureURL"      -> Some(expectedFailureUrl)
     )
 
     status(result) shouldBe SEE_OTHER

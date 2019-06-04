@@ -19,26 +19,29 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(authRequestsExist: Boolean, backLinkUrl: String, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.PendingAuthorisationExistsPageConfig
+@(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"problem.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
-  @back_link(backLinkUrl)
+  @back_link(config.backLinkUrl)
 
   <h1 class="heading-xlarge">@Messages("problem.header")</h1>
 
-  @if(authRequestsExist && !fromFastTrack) {
+  @if(config.authRequestsExist && !config.fromFastTrack) {
 
    <p>@Messages("pending-authorisation-exists.p")</p>
 
-   <a href=@reviewAuthsCall class="button">@Messages("pending-authorisation-exists.button")</a>
+   <a href=@config.reviewAuthsCall class="button">@Messages("pending-authorisation-exists.button")</a>
   }else {
     <p>@Messages("pending-authorisation-exists.no-requests.p")</p>
 
-   <div><a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a></div>
+    @if(config.trackFlag) {
+        <div><a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a></div>
+    }
 
-      @if(!fromFastTrack) {
-          <div class = "margin-top-30 text-link-small"><a href="@clientTypeCall">@Messages("pending-authorisation-exists.new-request.link")</a></div>
+      @if(!config.fromFastTrack) {
+          <div class = "margin-top-30 text-link-small"><a href="@config.clientTypeCall">@Messages("pending-authorisation-exists.new-request.link")</a></div>
       }
   }
 

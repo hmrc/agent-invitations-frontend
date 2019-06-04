@@ -396,12 +396,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case PendingInvitationExists(_, _) =>
       Ok(
         pending_authorisation_exists(
-          authRequestsExist = false,
-          backLinkFor(breadcrumbs).url,
-          fromFastTrack = true,
-          routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-          routes.AgentInvitationFastTrackJourneyController.showClientType()
-        ))
+          PendingAuthorisationExistsPageConfig(
+            authRequestsExist = false,
+            backLinkFor(breadcrumbs).url,
+            fromFastTrack = true,
+            featureFlags.enableTrackRequests,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+            routes.AgentInvitationFastTrackJourneyController.showClientType()
+          )))
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
       Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))

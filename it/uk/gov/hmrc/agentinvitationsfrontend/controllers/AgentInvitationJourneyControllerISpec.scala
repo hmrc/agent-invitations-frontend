@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder
+  override implicit lazy val app: Application = appBuilder(featureFlags)
     .overrides(new TestAgentInvitationJourneyModule)
     .build()
 
