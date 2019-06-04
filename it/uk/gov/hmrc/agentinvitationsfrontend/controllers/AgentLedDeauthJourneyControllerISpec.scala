@@ -541,7 +541,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "GET /fsm/agents/cancel-authorisation/response-failed" should {
     "display the response failed page" in {
-      journeyState.set(ResponseFailed, Nil)
+      journeyState.set(ResponseFailed(HMRCMTDIT, Some("Peter rabbit"), "AB123456A"), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/response-failed")
       val result = controller.showResponseFailed(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

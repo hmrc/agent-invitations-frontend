@@ -90,8 +90,12 @@ class AgentsErrorController @Inject()(
   val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       agentSessionCache.get.map {
-        case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
-        case Left(_)             => Ok(not_authorised("")) //TODO
+        case Right(mayBeSession) =>
+          Ok(
+            not_authorised(
+              mayBeSession.getOrElse(AgentSession()).service.getOrElse(""),
+              routes.AgentLedDeAuthController.showSelectService()))
+        case Left(_) => Ok(not_authorised("", routes.AgentLedDeAuthController.showSelectService())) //TODO
       }
     }
   }

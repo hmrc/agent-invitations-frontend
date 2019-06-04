@@ -32,6 +32,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmCancelFormats: OFormat[ConfirmCancel] = Json.format
   val NotAuthorisedFormats: OFormat[NotAuthorised] = Json.format
   val AuthorisationCancelledFormats: OFormat[AuthorisationCancelled] = Json.format
+  val ResponseFailedFormats: OFormat[ResponseFailed] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectServicePersonal    => SelectServicePersonalFormats.writes(s)
@@ -44,6 +45,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmCancel            => ConfirmCancelFormats.writes(s)
     case s: NotAuthorised            => NotAuthorisedFormats.writes(s)
     case s: AuthorisationCancelled   => AuthorisationCancelledFormats.writes(s)
+    case s: ResponseFailed           => ResponseFailedFormats.writes(s)
 
   }
 
@@ -62,7 +64,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmCancel"            => ConfirmCancelFormats.reads(properties)
     case "NotAuthorised"            => NotAuthorisedFormats.reads(properties)
     case "AuthorisationCancelled"   => AuthorisationCancelledFormats.reads(properties)
-    case "ResponseFailed"           => JsSuccess(ResponseFailed)
+    case "ResponseFailed"           => ResponseFailedFormats.reads(properties)
     case _                          => JsError(s"Unknown state name $stateName")
   }
 }

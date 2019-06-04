@@ -1,10 +1,11 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import java.util.UUID
 
 import com.google.inject.AbstractModule
 import play.api.Application
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthBehaviours
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec

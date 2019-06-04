@@ -508,7 +508,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(
           deleteRelationship,
           getAgencyName)(authorisedAgent)(Confirmation(true)) should thenGo(
-          ResponseFailed
+          ResponseFailed(HMRCMTDIT, Some("Holly Herndon"), nino)
         )
       }
     }

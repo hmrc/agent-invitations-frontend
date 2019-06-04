@@ -50,7 +50,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object KnownFactNotMatched extends State
     case class NotSignedUp(service: String) extends State
     case class NotAuthorised(service: String) extends State
-    case object ResponseFailed extends State
+    case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
   }
 
   object Transitions {
@@ -272,9 +272,16 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
           deleteRelationship(service, agent.arn, clientId).flatMap {
             case Some(true) =>
               getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
-            case _ => goto(ResponseFailed)
+            case _ => goto(ResponseFailed(service, clientName, clientId))
           }
         } else goto(root)
+
+      case ResponseFailed(service, clientName, clientId) =>
+        deleteRelationship(service, agent.arn, clientId).flatMap {
+          case Some(true) =>
+            getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
+          case _ => goto(ResponseFailed(service, clientName, clientId))
+        }
     }
   }
 }

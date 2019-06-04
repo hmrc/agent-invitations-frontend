@@ -138,8 +138,9 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "ResponseFailed" in {
-        val state = ResponseFailed
-        val json = Json.parse("""{"state":"ResponseFailed"}""")
+        val state = ResponseFailed("HMRC-MTD-IT", Some("Holly Herndon"), "AB123456A")
+        val json = Json.parse(
+          """{"state":"ResponseFailed", "properties": {"service": "HMRC-MTD-IT", "clientName":"Holly Herndon","clientId": "AB123456A"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

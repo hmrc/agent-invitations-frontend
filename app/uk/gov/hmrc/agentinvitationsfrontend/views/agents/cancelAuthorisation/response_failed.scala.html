@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.response-failed.header"), ""))) {
 
@@ -31,7 +31,7 @@
 
 <p id="responseFailedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
 
-@form(action = routes.AgentLedDeAuthController.submitConfirmCancel(), 'class -> "form js-form" ) {
+@form(action = submitCall, 'class -> "form js-form" ) {
  <input id="confirmCancel" type="hidden" value="true" name="accepted"/>
  <button class="button" type="submit" id="continue">@Messages("cancel-authorisation.response-failed.tryAgain")</button>
 }
