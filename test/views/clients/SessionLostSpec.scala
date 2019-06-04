@@ -54,7 +54,6 @@ class SessionLostSpec extends UnitSpec with MatcherWords with OneAppPerSuite {
     }
 
     "show message with a link to /manage-agents" in {
-      println(view())
       view() should containMessageWithParams(
         expectedMessageKey = "session-lost-client.manage-agents-link",
         expectedMessageParameters = externalUrls.agentClientManagementUrl
