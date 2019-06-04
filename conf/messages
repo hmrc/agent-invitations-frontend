@@ -172,9 +172,9 @@ cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
