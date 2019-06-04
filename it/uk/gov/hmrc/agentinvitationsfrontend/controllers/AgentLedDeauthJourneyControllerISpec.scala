@@ -342,29 +342,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
-    "redirect to cannot create request when a migration is happening" in {
-      journeyState.set(IdentifyClientBusiness, Nil)
-      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
-
-      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 423)
-      givenClientDetails(validVrn)
-
-      val result =
-        controller.submitIdentifyVatClient(
-          authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientIdentifier"       -> s"${validVrn.value}",
-              "registrationDate.year"  -> "2007",
-              "registrationDate.month" -> "7",
-              "registrationDate.day"   -> "7"),
-            arn.value
-          ))
-      status(result) shouldBe 303
-
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showCannotCreateRequest()
-        .url
-    }
   }
   "GET /fsm/agents/cancel-authorisation/confirm-client" should {
     "display the confirm client page for ITSA" in {
@@ -526,10 +503,10 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       )
     }
   }
-  "GET /fsm/agents/cancel-authorisation/not-matched" should {
+  "GET /fsm/agents/cancel-authorisation/client-not-found" should {
     "display the known facts dont match page" in {
       journeyState.set(KnownFactNotMatched, Nil)
-      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-matched")
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/client-not-found")
       val result = controller.showKnownFactNotMatched(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -548,18 +525,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         htmlEscapedMessage("not-enrolled.p1.HMRC-MTD-IT"),
         htmlEscapedMessage("not-enrolled.p2"))
-    }
-  }
-  "GET /fsm/agents/cancel-authorisation/not-signed-up" should {
-    "display the cannot create request page" in {
-      journeyState.set(CannotCreateRequest, Nil)
-      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-signed-up")
-      val result = controller.showCannotCreateRequest(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("cannot-create-request.header"),
-        htmlEscapedMessage("cannot-create-request.p1"))
     }
   }
   "GET /fsm/agents/cancel-authorisation/not-authorised" should {

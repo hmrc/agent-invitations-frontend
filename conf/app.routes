@@ -106,9 +106,8 @@ POST        /fsm/agents/cancel-authorisation/confirm-client                 @uk.
 GET         /fsm/agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmCancel
 POST        /fsm/agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmCancel
 GET         /fsm/agents/cancel-authorisation/cancelled                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showAuthorisationCancelled
-GET         /fsm/agents/cancel-authorisation/not-matched                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showKnownFactNotMatched
-GET         /fsm/agents/cancel-authorisation/not-enrolled                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotSignedUp
-GET         /fsm/agents/cancel-authorisation/cannot-create-request          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showCannotCreateRequest
+GET         /fsm/agents/cancel-authorisation/client-not-found               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showKnownFactNotMatched
+GET         /fsm/agents/cancel-authorisation/not-signed-up                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotSignedUp
 GET         /fsm/agents/cancel-authorisation/not-authorised                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showNotAuthorised
 GET         /fsm/agents/cancel-authorisation/response-failed                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showResponseFailed
 

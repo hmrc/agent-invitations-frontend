@@ -59,7 +59,6 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientBusiness"    => ConfirmClientBusinessFormats.reads(properties)
     case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
     case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)
-    case "CannotCreateRequest"      => JsSuccess(CannotCreateRequest)
     case "ConfirmCancel"            => ConfirmCancelFormats.reads(properties)
     case "NotAuthorised"            => NotAuthorisedFormats.reads(properties)
     case "AuthorisationCancelled"   => AuthorisationCancelledFormats.reads(properties)
