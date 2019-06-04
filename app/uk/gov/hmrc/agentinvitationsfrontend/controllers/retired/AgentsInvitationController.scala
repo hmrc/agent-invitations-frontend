@@ -21,7 +21,7 @@ import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
 import play.api.mvc._
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, RelationshipsConnector}
@@ -35,7 +35,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, InvitationSentPageConfig, PendingAuthorisationExistsPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 
 import scala.concurrent.duration.Duration
@@ -51,8 +50,7 @@ class AgentsInvitationController @Inject()(
   asaConnector: AgentServicesAccountConnector,
   auditService: AuditService,
   agentSessionCache: AgentSessionCache,
-  authActions: AuthActions,
-  val continueUrlActions: ContinueUrlActions)(
+  authActions: AuthActions)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,

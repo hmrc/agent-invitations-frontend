@@ -18,15 +18,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
 
-object ContinueUrlJsonFormat {
+object RedirectUrlJsonFormat {
 
-  private val continueUrlWrites: Writes[ContinueUrl] =
-    (__ \ "continueUrl").write[String].contramap(_.url)
+  private val redirectUrlWrites: Writes[RedirectUrl] =
+    (__ \ "continueUrl").write[String].contramap(_.get(UnsafePermitAll).url)
 
-  private val continueUrlReads: Reads[ContinueUrl] =
-    (__ \ "continueUrl").read[String].map(ContinueUrl.apply)
+  private val redirectUrlReads: Reads[RedirectUrl] =
+    (__ \ "continueUrl").read[String].map(RedirectUrl.apply)
 
-  implicit val continueUrlFormat = Format[ContinueUrl](continueUrlReads, continueUrlWrites)
+  implicit val redirectUrlFormat = Format[RedirectUrl](redirectUrlReads, redirectUrlWrites)
 }
