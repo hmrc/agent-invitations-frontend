@@ -16,17 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-import uk.gov.hmrc.play.binders.ContinueUrl
+import play.api.libs.json.{JsPath, Reads}
 
-object ContinueUrlJsonFormat {
+case class AgencyEmail(email: String)
 
-  private val continueUrlWrites: Writes[ContinueUrl] =
-    (__ \ "continueUrl").write[String].contramap(_.url)
+case class AgencyEmailNotFound(message: String) extends Exception(message)
 
-  private val continueUrlReads: Reads[ContinueUrl] =
-    (__ \ "continueUrl").read[String].map(ContinueUrl.apply)
-
-  implicit val continueUrlFormat = Format[ContinueUrl](continueUrlReads, continueUrlWrites)
+object AgencyEmail {
+  implicit val emailReads: Reads[AgencyEmail] =
+    (JsPath \ "agencyEmail").read[String].map(AgencyEmail(_))
 }

@@ -21,10 +21,10 @@ import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
 import play.api.mvc._
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{VatInvitation, _}
@@ -32,10 +32,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, _}
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, InvitationSentPageConfig, ReviewAuthorisationsPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{DeletePageConfig, InvitationSentPageConfig, PendingAuthorisationExistsPageConfig, ReviewAuthorisationsPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.domain.Nino
 
 import scala.concurrent.duration.Duration
@@ -48,10 +47,10 @@ class AgentsInvitationController @Inject()(
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   relationshipsConnector: RelationshipsConnector,
+  asaConnector: AgentServicesAccountConnector,
   auditService: AuditService,
   agentSessionCache: AgentSessionCache,
-  authActions: AuthActions,
-  val continueUrlActions: ContinueUrlActions)(
+  authActions: AuthActions)(
   implicit configuration: Configuration,
   externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -301,16 +300,18 @@ class AgentsInvitationController @Inject()(
               AgentSession(
                 clientTypeForInvitationSent = Some(clientTypeForInvitationSent),
                 continueUrl = session.continueUrl))
-            .map { _ =>
-              Ok(
-                invitation_sent(
-                  InvitationSentPageConfig(
+            .flatMap { _ =>
+              asaConnector.getAgencyEmail
+                .flatMap(email =>
+                  Ok(invitation_sent(InvitationSentPageConfig(
                     agentLink,
                     session.continueUrl,
                     continueUrlExists,
                     featureFlags.enableTrackRequests,
                     ClientType.fromEnum(clientTypeForInvitationSent),
-                    inferredExpiryDate)))
+                    inferredExpiryDate,
+                    email
+                  ))))
             }
         }
       }
@@ -362,13 +363,14 @@ class AgentsInvitationController @Inject()(
             routes.AgentsFastTrackInvitationController.showKnownFact().url
           else routes.AgentsInvitationController.showConfirmClient().url
         Ok(
-          pending_authorisation_exists(
+          pending_authorisation_exists(PendingAuthorisationExistsPageConfig(
             agentSession.requests.nonEmpty,
             backLinkUrl,
             agentSession.fromFastTrack,
+            featureFlags.enableTrackRequests,
             routes.AgentsInvitationController.showReviewAuthorisations(),
             routes.AgentsInvitationController.showClientType()
-          ))
+          )))
       }
     }
   }

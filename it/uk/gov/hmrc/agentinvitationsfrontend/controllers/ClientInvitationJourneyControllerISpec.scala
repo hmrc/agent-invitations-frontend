@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder
+  override implicit lazy val app: Application = appBuilder(featureFlags)
     .overrides(new TestClientInvitationJourneyModule)
     .build()
 
@@ -258,7 +258,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
           )
         ),
-        Nil)
+        Nil
+      )
 
       val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -290,7 +291,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
             consents
           )
-        ))
+        )
+      )
 
       val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200

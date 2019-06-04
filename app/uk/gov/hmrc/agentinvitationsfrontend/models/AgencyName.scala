@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.clients
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+package uk.gov.hmrc.agentinvitationsfrontend.models
+import play.api.libs.json.{JsPath, Reads}
 
-case class CheckAnswersPageConfig(
-  consents: Seq[ClientConsent],
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  submitCall: Call,
-  changeCall: String => Call,
-  backLink: Call) {
+case class AgencyName(name: Option[String])
 
-  val processedAgencyName: String = agencyName.stripSuffix(".")
+case class AgencyNameNotFound() extends Exception
+
+object AgencyName {
+  implicit val nameReads: Reads[AgencyName] =
+    (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
 }

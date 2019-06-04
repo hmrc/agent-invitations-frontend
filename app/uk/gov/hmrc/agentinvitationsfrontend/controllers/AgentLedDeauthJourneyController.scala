@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -156,10 +156,6 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: NotSignedUp =>
   }
 
-  val showCannotCreateRequest: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case CannotCreateRequest =>
-  }
-
   val showNotAuthorised: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: NotAuthorised =>
   }
@@ -182,7 +178,6 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
     case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
     case _: NotSignedUp              => routes.AgentLedDeauthJourneyController.showNotSignedUp()
-    case CannotCreateRequest         => routes.AgentLedDeauthJourneyController.showCannotCreateRequest()
     case _: NotAuthorised            => routes.AgentLedDeauthJourneyController.showNotAuthorised()
     case ResponseFailed              => routes.AgentLedDeauthJourneyController.showResponseFailed()
     case _                           => throw new Exception(s"Link not found for $state")
@@ -302,11 +297,12 @@ class AgentLedDeauthJourneyController @Inject()(
     case ConfirmCancel(service, clientName, _) =>
       Ok(
         confirm_cancel(
-          service,
-          clientName.getOrElse(""),
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
-          backLinkFor(breadcrumbs).url
+          ConfirmCancelPageConfig(
+            service,
+            clientName.getOrElse(""),
+            routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
+            backLinkFor(breadcrumbs).url)
         ))
 
     case AuthorisationCancelled(service, clientName, agencyName) =>
@@ -323,11 +319,6 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case NotSignedUp(service) =>
       Ok(not_signed_up(service, hasRequests = false))
-
-    case CannotCreateRequest =>
-      Ok(
-        cannot_create_request(
-          CannotCreateRequestConfig(hasRequests = false, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
 
     case NotAuthorised(service) => Ok(not_authorised(service))
 

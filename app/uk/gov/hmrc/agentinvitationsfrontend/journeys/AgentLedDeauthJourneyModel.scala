@@ -49,7 +49,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     //error states
     case object KnownFactNotMatched extends State
     case class NotSignedUp(service: String) extends State
-    case object CannotCreateRequest extends State
     case class NotAuthorised(service: String) extends State
     case object ResponseFailed extends State
   }
@@ -214,7 +213,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                          case Some(204) =>
                            getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(name => goto(finalState(name)))
                          case Some(403) => goto(KnownFactNotMatched)
-                         case Some(423) => goto(CannotCreateRequest)
                          case _         => goto(NotSignedUp(HMRCMTDVAT))
                        }
         } yield finalState

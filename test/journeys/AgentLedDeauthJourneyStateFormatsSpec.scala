@@ -123,18 +123,9 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-
       "NotSignedUp" in {
         val state = NotSignedUp("HMRC-MTD-IT")
         val json = Json.parse("""{"state":"NotSignedUp", "properties": {"service":"HMRC-MTD-IT"}}""")
-
-        Json.toJson(state) shouldBe json
-        json.as[State] shouldBe state
-      }
-
-      "CannotCreateRequest" in {
-        val state = CannotCreateRequest
-        val json = Json.parse("""{"state":"CannotCreateRequest"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

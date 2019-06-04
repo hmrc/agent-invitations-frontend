@@ -40,12 +40,14 @@
         <li class="margin-bottom-30">
             <p>@Messages("invitation-sent.l1")</p>
             <p><span id="invitationUrl" class="word-wrap">@invitationLink</span></p>
-            <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}"))</p>
+            <p>@Messages(s"invitation-sent.l1.p.${config.clientType}")</p>
         </li>
         <li>@Messages("invitation-sent.l2")</li>
         <li>@Html(Messages("invitation-sent.l3", displayDate))</li>
         <li>@Messages(s"invitation-sent.l4.${config.clientType}")</li>
     </ol>
+
+  <p>@Messages("invitation-sent.email.p", config.agencyEmail)</p>
 
 @if(config.hasContinueUrl) {
     <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>

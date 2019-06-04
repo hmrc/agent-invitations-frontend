@@ -201,6 +201,7 @@ class AgentInvitationsITSAControllerJourneyISpec extends BaseISpec with AuthBeha
             Some(validNino.value),
             Some(validPostcode),
             clientTypeForInvitationSent = Some(personal))))
+      givenGetAgencyEmailAgentStub
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
 

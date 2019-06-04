@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.clients
+package uk.gov.hmrc.agentinvitationsfrontend.views.agents
+
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class CheckAnswersPageConfig(
-  consents: Seq[ClientConsent],
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  submitCall: Call,
-  changeCall: String => Call,
-  backLink: Call) {
-
-  val processedAgencyName: String = agencyName.stripSuffix(".")
-}
+case class PendingAuthorisationExistsPageConfig(
+  authRequestsExist: Boolean,
+  backLinkUrl: String,
+  fromFastTrack: Boolean,
+  trackFlag: Boolean,
+  reviewAuthsCall: Call,
+  clientTypeCall: Call)

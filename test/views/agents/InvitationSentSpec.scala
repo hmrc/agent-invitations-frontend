@@ -39,7 +39,8 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
     hasContinueUrl = false,
     trackRequests = false,
     clientType = "someClientType",
-    expiryDate = LocalDate.parse("2001-02-03")
+    expiryDate = LocalDate.parse("2001-02-03"),
+    agencyEmail = "abc@xyz.com"
   )
   val view = uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.invitation_sent
 

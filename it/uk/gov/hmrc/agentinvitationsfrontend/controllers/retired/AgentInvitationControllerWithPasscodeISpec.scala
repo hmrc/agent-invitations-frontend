@@ -37,7 +37,7 @@ class AgentInvitationControllerWithPasscodeISpec extends BaseISpec {
 
   override implicit lazy val app: Application = appBuilder.build()
 
-  override protected def appBuilder: GuiceApplicationBuilder =
+  protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port"                                    -> wireMockPort,

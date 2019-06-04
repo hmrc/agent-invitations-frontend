@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder
+  override implicit lazy val app: Application = appBuilder(featureFlags)
     .overrides(new TestAgentInvitationJourneyModule)
     .build()
 
@@ -83,7 +83,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType and there are breadcrumbs" in {
         journeyState.set(
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
         )
 
         behave like itShowsClientTypePage(
@@ -91,7 +91,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
         )
       }
 
@@ -709,6 +709,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
         givenAgentReferenceRecordExistsForArn(arn, "FOO")
         givenAgentReference(arn, nino, personal)
+        givenGetAgencyEmailAgentStub
         journeyState.set(
           ReviewAuthorisationsPersonal(emptyBasket),
           List(
@@ -728,7 +729,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
         journeyState.get should have[State](
-          InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None))
+          InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com"))
       }
 
       "redirect to select-service when yes is selected" in {
@@ -756,7 +757,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "GET /invitation-sent" should {
       "show the invitation sent page" in {
         journeyState.set(
-          InvitationSentPersonal("invitation/link", None),
+          InvitationSentPersonal("invitation/link", None, "abc@xyz.com"),
           List(
             ReviewAuthorisationsPersonal(Set.empty),
             ConfirmClientItsa(
@@ -776,9 +777,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("invitation-sent.header"),
-            htmlEscapedMessage("title.suffix.agents")))
+            htmlEscapedMessage("title.suffix.agents"),
+            htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
+          )
+        )
 
-        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None))
+        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
     }
     "GET /delete" should {

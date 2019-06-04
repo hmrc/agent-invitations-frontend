@@ -428,7 +428,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-cancel.header")
       checkHtmlResultWithBodyText(
         result,
-        "If you cancel your authorisation, you will not be able to send Income Tax updates for some trading name")
+        "If you cancel this request, you will not be able to send Income Tax updates through software for some trading name")
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
   }

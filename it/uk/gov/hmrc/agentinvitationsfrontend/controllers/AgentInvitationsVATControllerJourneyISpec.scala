@@ -290,6 +290,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
             Some(validVrn.value),
             Some(validRegistrationDate),
             clientTypeForInvitationSent = Some(business))))
+      givenGetAgencyEmailAgentStub
 
       val result = invitationSent(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

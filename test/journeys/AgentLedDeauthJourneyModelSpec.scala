@@ -285,15 +285,6 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
           KnownFactNotMatched)
       }
-      "transition to CannotCreateRequest when there is a data migration in progress and flags are on" in {
-        def cannotCreateRequest(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(423))
-
-        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
-          cannotCreateRequest,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          CannotCreateRequest)
-      }
       "transition to NotSignedUp when client is not enrolled for VAT and flags are on" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
 
@@ -356,15 +347,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
           KnownFactNotMatched)
       }
-      "transition to CannotCreateRequest when there is a data migration in progress and flags are on" in {
-        def cannotCreateRequest(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(423))
 
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(
-          cannotCreateRequest,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          CannotCreateRequest)
-      }
       "transition to NotSignedUp when client is not enrolled and flags are on" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
 
