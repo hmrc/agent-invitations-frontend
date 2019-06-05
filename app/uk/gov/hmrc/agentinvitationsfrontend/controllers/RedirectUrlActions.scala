@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
-  private val policy = AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)
+  private val policy = UnsafePermitAll
 
   def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[RedirectUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
@@ -109,8 +109,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
   private def isRelativeOrAbsoluteWhiteListed(
     redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    if (!RedirectUrl.isRelativeUrl(
-          redirectUrl.get(AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)).url))
+    if (!RedirectUrl.isRelativeUrl(redirectUrl.get(policy).url))
       whiteListService.isAbsoluteUrlWhiteListed(redirectUrl)
     else Future.successful(true)
 

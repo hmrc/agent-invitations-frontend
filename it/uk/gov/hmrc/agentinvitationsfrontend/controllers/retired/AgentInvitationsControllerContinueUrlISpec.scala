@@ -11,13 +11,13 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, RedirectUrlPolicy}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, RedirectUrlPolicy, UnsafePermitAll}
 
 class AgentInvitationsControllerContinueUrlISpec extends BaseISpec {
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
-  val policy: RedirectUrlPolicy[Id] = AbsoluteWithHostnameFromWhitelist(Set("localhost", "www.tax.service.gov.uk"))
+  val policy: RedirectUrlPolicy[Id] = UnsafePermitAll
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")

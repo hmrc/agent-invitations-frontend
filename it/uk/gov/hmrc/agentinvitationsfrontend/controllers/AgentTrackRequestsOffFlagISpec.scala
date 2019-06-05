@@ -11,7 +11,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
 
 class AgentTrackRequestsOffFlagISpec extends BaseISpec {
@@ -27,7 +27,7 @@ class AgentTrackRequestsOffFlagISpec extends BaseISpec {
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
   lazy val requestTrackingController: AgentsRequestTrackingController =
     app.injector.instanceOf[AgentsRequestTrackingController]
-  private val policy = AbsoluteWithHostnameFromWhitelist(Set("localhost", "www.tax.service.gov.uk"))
+  private val policy = UnsafePermitAll
 
   "GET /agents/invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
