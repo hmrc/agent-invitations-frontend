@@ -24,7 +24,7 @@ import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.SsoConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,5 +46,5 @@ class HostnameWhiteListService @Inject()(config: Configuration, ssoConnector: Ss
   def hasInternalDomain(redirectUrl: RedirectUrl): Boolean = domainWhiteList.contains(getHost(redirectUrl))
 
   private def getHost(redirectUrl: RedirectUrl): String =
-    Try(new URL(redirectUrl.get(UnsafePermitAll).url).getHost).getOrElse("invalid")
+    Try(new URL(redirectUrl.get(AbsoluteWithHostnameFromWhitelist(domainWhiteList)).url).getHost).getOrElse("invalid")
 }

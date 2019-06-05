@@ -19,12 +19,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.mvc.{Request, Result}
-import play.api.mvc.Results.BadRequest
 import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -110,7 +109,8 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
   private def isRelativeOrAbsoluteWhiteListed(
     redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    if (!RedirectUrl.isRelativeUrl(redirectUrl.get(UnsafePermitAll).url))
+    if (!RedirectUrl.isRelativeUrl(
+          redirectUrl.get(AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)).url))
       whiteListService.isAbsoluteUrlWhiteListed(redirectUrl)
     else Future.successful(true)
 
