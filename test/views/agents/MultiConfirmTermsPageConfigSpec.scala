@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package views
+package views.agents
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.routes
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.play.test.UnitSpec
 
 class MultiConfirmTermsPageConfigSpec extends UnitSpec {
 

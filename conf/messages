@@ -481,6 +481,12 @@ some-responses-failed.advice=You can view which services you appointed {0} to de
 all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p=We could not save your responses. Please try again in 24 hours.
 
+# Client session expired/lost
+session-lost-client.header=Sorry, you will need to start again
+session-lost-client.description.1=For your security, we have signed you out of the service.
+session-lost-client.description.2=We may not have saved your answers.
+session-lost-client.description.3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
+session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
 # Error messages for digital services

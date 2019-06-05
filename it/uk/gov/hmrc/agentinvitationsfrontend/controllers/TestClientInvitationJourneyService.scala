@@ -20,6 +20,8 @@ class TestClientInvitationJourneyService extends ClientInvitationJourneyService 
     ec: ExecutionContext): Unit =
     Await.result(save((state, breadcrumbs)), timeout)
 
+  def setEmpty() = this.state = None
+
   def get: Option[StateAndBreadcrumbs] = state
 
   override protected def fetch(

@@ -35,7 +35,7 @@ trait ClientInvitationJourneyService extends PersistentJourneyService[HeaderCarr
 
   // do not keep errors or root in the journey history
   override val breadcrumbsRetentionStrategy: Breadcrumbs => Breadcrumbs =
-    _.filterNot(s => s.isInstanceOf[model.IsError] || s == model.State.Root)
+    _.filterNot(s => s.isInstanceOf[model.IsError] || s == model.State.MissingJourneyHistory)
 }
 
 @Singleton
@@ -51,7 +51,7 @@ class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: Se
     override val sessionName: String = journeyKey
     override val cacheRepository: CacheRepository = _cacheRepository
     override def getSessionId(implicit hc: HeaderCarrier): Option[String] =
-      hc.extraHeaders.find(_._1 == journeyKey).map(_._2)
+      hc.extraHeaders.collectFirst({ case (headerName, headerValue) if headerName == journeyKey => headerValue })
   }
 
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
