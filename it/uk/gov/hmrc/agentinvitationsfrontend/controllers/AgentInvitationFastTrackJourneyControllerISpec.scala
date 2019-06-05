@@ -438,7 +438,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("invitation-sent.header"))
+        htmlEscapedMessage("invitation-sent.header"),
+        htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
     }
   }
 

@@ -115,6 +115,7 @@ invitation-sent.l2=Ask your client to go to the link to accept your authorisatio
 invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if it expires without being accepted.
 invitation-sent.header.links=Other actions
 invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
