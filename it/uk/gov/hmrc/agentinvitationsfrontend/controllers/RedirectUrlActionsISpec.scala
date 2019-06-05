@@ -15,10 +15,10 @@ class RedirectUrlActionsISpec extends BaseISpec {
     "extractErrorUrl" should {
       "successfully extract a valid error url" in {
         implicit val request =
-          FakeRequest("GET", "/some/url?error=/some/error/url")
+          FakeRequest("GET", "/some/url?error=http%3A%2F%2Flocalhost%3A9999%2Fsome%2Furl")
 
         val result: Option[RedirectUrl] = await(redirectUrlActions.extractErrorUrl)
-        result shouldBe Some(RedirectUrl("/some/error/url"))
+        result shouldBe Some(RedirectUrl("http://localhost:9999/some/url"))
       }
       "return None when the error url is invalid" in {
         implicit val request = FakeRequest("GET", "/some/url?error=foo")
@@ -36,10 +36,10 @@ class RedirectUrlActionsISpec extends BaseISpec {
 
     "extractRedirectUrl" should {
       "successfully extract a valid continue url" in {
-        implicit val request = FakeRequest("GET", "/some/url?continue=/some/continue/url")
+        implicit val request = FakeRequest("GET", "http:/some/url?continue=http%3A%2F%2Flocalhost%3A9999%2Fsome%2Furl")
 
         val result: Option[RedirectUrl] = await(redirectUrlActions.extractRedirectUrl)
-        result shouldBe Some(RedirectUrl("/some/continue/url"))
+        result shouldBe Some(RedirectUrl("http://localhost:9999/some/url"))
       }
       "return None when the continue url is invalid" in {
         implicit val request = FakeRequest("GET", "/some/url?continue=foo")
