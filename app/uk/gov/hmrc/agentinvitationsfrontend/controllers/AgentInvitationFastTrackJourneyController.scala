@@ -38,9 +38,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrlPolicy, UnsafePermitAll}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
@@ -54,6 +51,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   asaConnector: AgentServicesAccountConnector,
   relationshipsService: RelationshipsService,
+  whitelistService: HostnameWhiteListService,
   authActions: AuthActionsImpl,
   val redirectUrlActions: RedirectUrlActions,
   override val journeyService: AgentInvitationFastTrackJourneyService)(
@@ -65,22 +63,19 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationFastTrackJourneyController._
+  import asaConnector._
   import authActions._
   import invitationsService._
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
   import relationshipsService.hasActiveRelationshipFor
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
-
-  import authActions._
-  import asaConnector._
+  import redirectUrlActions._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
-
-  private val policy: RedirectUrlPolicy[Id] = UnsafePermitAll
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -90,9 +85,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val agentFastTrack =
     action { implicit request =>
-      whenAuthorisedWithBootstrapAndForm(Transitions.prologue(redirectUrlActions.getErrorUrl.map(_.get(policy).url)))(
-        AsAgent)(agentFastTrackForm)(
-        Transitions.start(featureFlags)(redirectUrlActions.getRedirectUrl.map(_.get(policy).url)))
+      maybeRedirectUrlOrBadRequest { redirectUrl =>
+        maybeErrorUrlOrBadRequest { errorUrl =>
+          whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl))(AsAgent)(agentFastTrackForm)(
+            Transitions.start(featureFlags)(redirectUrl))
+        }
+      }
     }
 
   val showCheckDetails = actionShowStateWhenAuthorised(AsAgent) {
