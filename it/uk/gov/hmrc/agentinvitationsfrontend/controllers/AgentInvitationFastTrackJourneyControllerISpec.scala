@@ -135,7 +135,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
               "knownFact"            -> "BN32TN"),
             arn.value
           )))
-      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy. The continue URL is not whitelisted."
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the error url is not whitelisted" in {
       val request = FakeRequest(
@@ -153,7 +153,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
               "knownFact"            -> "BN32TN"),
             arn.value
           )))
-      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy. The error URL is not whitelisted."
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the continue url is invalid" in {
       val request = FakeRequest(

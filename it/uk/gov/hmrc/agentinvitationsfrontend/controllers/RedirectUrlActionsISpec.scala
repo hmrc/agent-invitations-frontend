@@ -105,45 +105,26 @@ class RedirectUrlActionsISpec extends BaseISpec {
         implicit val request =
           FakeRequest("GET", "/some/url?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client")
 
-        val result = await(redirectUrlActions.maybeRedirectUrlOrBadRequest(_ => Future(Ok("success"))))
+        val result =
+          await(
+            redirectUrlActions.maybeRedirectUrlOrBadRequest(
+              Some(RedirectUrl("http://localhost:9996/tax-history/select-client")))(_ => Future(Ok("success"))))
         status(result) shouldBe 200
       }
       "throw a Bad Request exception when the url domain is not whitelisted" in {
-        implicit val request = FakeRequest("GET", "/some/url?continue=www.google.com")
+        implicit val request = FakeRequest("GET", "/some/url?continue=https://www.google.com")
 
         intercept[BadRequestException] {
-          await(redirectUrlActions.maybeRedirectUrlOrBadRequest(_ => Future(Ok)))
+          await(redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("https://www.google.com")))(_ =>
+            Future(Ok)))
         }
       }
       "carry out the function block when there is no continue url" in {
         implicit val request =
           FakeRequest("GET", "/some/url")
 
-        val result = await(redirectUrlActions.maybeRedirectUrlOrBadRequest(_ => Future(Ok("success"))))
-        status(result) shouldBe 200
-      }
-    }
-
-    "maybeErrorUrlOrBadRequest" should {
-      "carry out the function block when the error url has a whitelisted domain" in {
-        implicit val request =
-          FakeRequest("GET", "/some/url?error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client")
-
-        val result = await(redirectUrlActions.maybeErrorUrlOrBadRequest(_ => Future(Ok("success"))))
-        status(result) shouldBe 200
-      }
-      "throw a Bad Request exception when the url domain is not whitelisted" in {
-        implicit val request = FakeRequest("GET", "/some/url?error=www.google.com")
-
-        intercept[BadRequestException] {
-          await(redirectUrlActions.maybeErrorUrlOrBadRequest(_ => Future(Ok)))
-        }
-      }
-      "carry out the function block when there is no error url" in {
-        implicit val request =
-          FakeRequest("GET", "/some/url")
-
-        val result = await(redirectUrlActions.maybeErrorUrlOrBadRequest(_ => Future(Ok("success"))))
+        val result =
+          await(redirectUrlActions.maybeRedirectUrlOrBadRequest(None)(_ => Future(Ok("success"))))
         status(result) shouldBe 200
       }
     }
