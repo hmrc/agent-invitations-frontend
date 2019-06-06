@@ -71,7 +71,7 @@ class AgentsFastTrackInvitationController @Inject()(
   import AgentsFastTrackInvitationController._
   import authActions._
 
-  val policy: RedirectUrlPolicy[Id] = AbsoluteWithHostnameFromWhitelist(Set("localhost", "www.tax.service.gov.uk"))
+  val policy: RedirectUrlPolicy[Id] = redirectUrlActions.policy
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 

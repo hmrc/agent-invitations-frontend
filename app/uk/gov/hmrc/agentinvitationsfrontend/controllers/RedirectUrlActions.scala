@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
-  private val policy = AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)
+  val policy = AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)
 
   def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[RedirectUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
@@ -121,25 +121,14 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     redirectUrl.flatMap(block(_))
   }
 
-  def maybeRedirectUrlOrBadRequest(block: Option[String] => Future[Result])(
+  def maybeRedirectUrlOrBadRequest(redirectUrlOpt: Option[RedirectUrl])(block: Option[String] => Future[Result])(
     implicit request: Request[Any]): Future[Result] =
-    getRedirectUrl match {
+    redirectUrlOpt match {
       case Some(redirectUrl) =>
         redirectUrl.getEither(policy) match {
           case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
           case Left(errorMessage) =>
-            throw new BadRequestException(s"$errorMessage. The continue URL is not whitelisted.")
-        }
-      case None => block(None)
-    }
-
-  def maybeErrorUrlOrBadRequest(block: Option[String] => Future[Result])(
-    implicit request: Request[Any]): Future[Result] =
-    getErrorUrl match {
-      case Some(errorUrl) =>
-        errorUrl.getEither(policy) match {
-          case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
-          case Left(errorMessage)     => throw new BadRequestException(s"$errorMessage. The error URL is not whitelisted.")
+            throw new BadRequestException(errorMessage)
         }
       case None => block(None)
     }

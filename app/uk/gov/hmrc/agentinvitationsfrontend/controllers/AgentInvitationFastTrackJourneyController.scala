@@ -51,7 +51,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   asaConnector: AgentServicesAccountConnector,
   relationshipsService: RelationshipsService,
-  whitelistService: HostnameWhiteListService,
   authActions: AuthActionsImpl,
   val redirectUrlActions: RedirectUrlActions,
   override val journeyService: AgentInvitationFastTrackJourneyService)(
@@ -85,8 +84,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val agentFastTrack =
     action { implicit request =>
-      maybeRedirectUrlOrBadRequest { redirectUrl =>
-        maybeErrorUrlOrBadRequest { errorUrl =>
+      maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
+        maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl))(AsAgent)(agentFastTrackForm)(
             Transitions.start(featureFlags)(redirectUrl))
         }
