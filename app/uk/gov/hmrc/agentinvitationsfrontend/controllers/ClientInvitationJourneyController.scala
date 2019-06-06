@@ -328,7 +328,6 @@ class ClientInvitationJourneyController @Inject()(
           SomeResponsesFailedPageConfig(
             failedConsents,
             agentName,
-            //this call is wrong, what should it be?
             routes.ClientInvitationJourneyController.submitSomeResponsesFailed())))
   }
 }
