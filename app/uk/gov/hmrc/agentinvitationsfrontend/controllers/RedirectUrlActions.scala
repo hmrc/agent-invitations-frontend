@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
-  val policy = AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)
+  val whitelistPolicy = AbsoluteWithHostnameFromWhitelist(whiteListService.domainWhiteList)
 
   def extractErrorUrl[A](implicit request: Request[A], ec: ExecutionContext): Future[Option[RedirectUrl]] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Option(request.session))
@@ -109,7 +109,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
 
   private def isRelativeOrAbsoluteWhiteListed(
     redirectUrl: RedirectUrl)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    if (!RedirectUrl.isRelativeUrl(redirectUrl.get(policy).url))
+    if (!RedirectUrl.isRelativeUrl(redirectUrl.get(whitelistPolicy).url))
       whiteListService.isAbsoluteUrlWhiteListed(redirectUrl)
     else Future.successful(true)
 
@@ -128,7 +128,7 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
         val unsafeUrl = redirectUrl.get(UnsafePermitAll).url
         if (RedirectUrl.isRelativeUrl(unsafeUrl)) block(Some(unsafeUrl))
         else
-          redirectUrl.getEither(policy) match {
+          redirectUrl.getEither(whitelistPolicy) match {
             case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
             case Left(errorMessage) =>
               throw new BadRequestException(errorMessage)

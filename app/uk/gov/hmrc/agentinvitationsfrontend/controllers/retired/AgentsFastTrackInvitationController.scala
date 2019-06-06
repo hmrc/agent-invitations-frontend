@@ -71,7 +71,7 @@ class AgentsFastTrackInvitationController @Inject()(
   import AgentsFastTrackInvitationController._
   import authActions._
 
-  val policy: RedirectUrlPolicy[Id] = redirectUrlActions.policy
+  val policy: RedirectUrlPolicy[Id] = redirectUrlActions.whitelistPolicy
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 
