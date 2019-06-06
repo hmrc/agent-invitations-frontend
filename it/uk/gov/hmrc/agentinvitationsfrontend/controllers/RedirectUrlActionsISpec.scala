@@ -111,6 +111,15 @@ class RedirectUrlActionsISpec extends BaseISpec {
               Some(RedirectUrl("http://localhost:9996/tax-history/select-client")))(_ => Future(Ok("success"))))
         status(result) shouldBe 200
       }
+      "carry out the function block when the continue url is relative" in {
+        implicit val request =
+          FakeRequest("GET", "/some/url?continue=%2Ffoo%2Fbar%2Fdah")
+
+        val result =
+          await(redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("/foo/bar/dah")))(_ =>
+            Future(Ok("success"))))
+        status(result) shouldBe 200
+      }
       "throw a Bad Request exception when the url domain is not whitelisted" in {
         implicit val request = FakeRequest("GET", "/some/url?continue=https://www.google.com")
 

@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.HostnameWhiteListService
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, UnsafePermitAll}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -125,11 +125,14 @@ class RedirectUrlActions @Inject()(whiteListService: HostnameWhiteListService) {
     implicit request: Request[Any]): Future[Result] =
     redirectUrlOpt match {
       case Some(redirectUrl) =>
-        redirectUrl.getEither(policy) match {
-          case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
-          case Left(errorMessage) =>
-            throw new BadRequestException(errorMessage)
-        }
+        val unsafeUrl = redirectUrl.get(UnsafePermitAll).url
+        if (RedirectUrl.isRelativeUrl(unsafeUrl)) block(Some(unsafeUrl))
+        else
+          redirectUrl.getEither(policy) match {
+            case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
+            case Left(errorMessage) =>
+              throw new BadRequestException(errorMessage)
+          }
       case None => block(None)
     }
 
