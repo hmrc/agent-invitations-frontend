@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import play.api.mvc.Request
+import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal

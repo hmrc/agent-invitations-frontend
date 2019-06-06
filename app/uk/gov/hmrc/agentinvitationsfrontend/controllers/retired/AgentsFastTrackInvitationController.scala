@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, kn
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, RedirectUrlPolicy, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, RedirectUrlPolicy}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
 
@@ -71,7 +71,7 @@ class AgentsFastTrackInvitationController @Inject()(
   import AgentsFastTrackInvitationController._
   import authActions._
 
-  val policy: RedirectUrlPolicy[Id] = UnsafePermitAll
+  val policy: RedirectUrlPolicy[Id] = redirectUrlActions.policy
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 
