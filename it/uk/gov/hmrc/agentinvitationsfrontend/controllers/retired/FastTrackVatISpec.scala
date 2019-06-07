@@ -90,6 +90,7 @@ class FastTrackVatISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details if service calling fast-track is correct for VAT" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -102,6 +103,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track does not contain vat-reg-date for VAT" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -115,6 +117,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track contains invalid vat-reg-date for VAT" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(business), serviceVAT, "vrn", validVrn.value, Some("invalid_reg_date"))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -128,6 +131,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track does not contain client type" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(None, serviceVAT, "vrn", validVrn.value, Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -141,6 +145,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT contains invalid vrn" in {
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(business), serviceVAT, "", "INVALID_VRN", None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
@@ -154,6 +159,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for VAT does not contain vrn" in {
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(business), serviceVAT)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
@@ -167,6 +173,7 @@ class FastTrackVatISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for VAT" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(business), "", "vrn", validVrn.value, Some(validRegistrationDate))
       val fastTrackFormData = agentFastTrackForm.fill(formData)

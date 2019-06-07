@@ -66,6 +66,7 @@ class FastTrackIRVISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details if service calling fast-track is correct for IRV" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), servicePIR, "ni", validNino.value, Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -78,6 +79,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for PIR contains invalid nino" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), servicePIR, "ni", "INVALID_NINO", Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -91,6 +93,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for IRV does not contain nino" in {
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(personal), servicePIR, "", "", Some(dateOfBirth))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
@@ -104,6 +107,7 @@ class FastTrackIRVISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for IRV" in {
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(personal), "", "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(

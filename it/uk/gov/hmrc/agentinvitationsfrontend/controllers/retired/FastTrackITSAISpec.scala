@@ -87,6 +87,7 @@ class FastTrackITSAISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 check-details if service calling fast-track is correct for ITSA" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, Some(validPostcode))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -99,7 +100,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track for does not contain postcode for ITSA" in {
-
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -112,6 +113,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 if service calling fast-track contains invalid postcode for ITSA" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), serviceITSA, "ni", validNino.value, Some("invali_postcode"))
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -124,7 +126,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 check-details if service calling fast-track for does not contain client type" in {
-
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(None, serviceITSA, "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -137,6 +139,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for ITSA contains invalid nino" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), serviceITSA, "ni", "INVALID_NINO", None).copy()
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -151,6 +154,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if service calling fast-track for ITSA does not contain nino" in {
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(personal), serviceITSA)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
@@ -164,6 +168,7 @@ class FastTrackITSAISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if there is no service but all other fields are valid for ITSA" in {
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(personal), "", "ni", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
