@@ -464,7 +464,7 @@ wrong-client-type.p3=You can create an account if you do not have one.
 wrong-client-type.button=Sign out and try again
 
 #Some Responses Failed
-some-responses-failed.header=Sorry, some of your responses could not be saved
+some-responses-failed.header=Sorry, there is a problem with the service
 some-responses-failed.p1=We could not save your response for the following services:
 some-responses-failed.li.itsa=Send your Income Tax updates through software
 some-responses-failed.li.afi=View your PAYE income record

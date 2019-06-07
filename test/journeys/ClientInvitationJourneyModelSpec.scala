@@ -296,9 +296,11 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           SomeResponsesFailed(
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)
+            ),
+            Seq(
+              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true),
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true, processed = true)
             )
           ))
       }
@@ -375,7 +377,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           )
         )
       }
+    }
 
+    "at state SomeResponsesFailed" should {
+      "transition to InvitationsAccepted with successfully processed consents" in {
+        given(
+          SomeResponsesFailed(
+            "Mr agent",
+            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true))
+          )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
+          InvitationsAccepted(
+            "Mr agent",
+            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true))))
+      }
     }
   }
 }

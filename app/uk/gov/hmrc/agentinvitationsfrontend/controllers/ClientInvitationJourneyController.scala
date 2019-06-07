@@ -202,6 +202,10 @@ class ClientInvitationJourneyController @Inject()(
     case _: SomeResponsesFailed =>
   }
 
+  def submitSomeResponsesFailed = action { implicit request =>
+    whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
+  }
+
   val notAuthorised: Action[AnyContent] = Action { implicit request =>
     Forbidden(
       not_authorised(
@@ -318,14 +322,13 @@ class ClientInvitationJourneyController @Inject()(
 
     case AllResponsesFailed => Ok(all_responses_failed())
 
-    case SomeResponsesFailed(agentName, consents) =>
+    case SomeResponsesFailed(agentName, failedConsents, _) =>
       Ok(
         some_responses_failed(
           SomeResponsesFailedPageConfig(
-            consents,
+            failedConsents,
             agentName,
-            //this call is wrong, what should it be?
-            routes.ClientInvitationJourneyController.showCheckAnswers())))
+            routes.ClientInvitationJourneyController.submitSomeResponsesFailed())))
   }
 }
 
