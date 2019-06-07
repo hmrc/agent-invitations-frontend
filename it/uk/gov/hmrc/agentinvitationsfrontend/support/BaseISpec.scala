@@ -26,8 +26,8 @@ import scala.concurrent.Future
 
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
-    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with TestDataCommonSupport
-    with MongoSupport {
+    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
+    with TestDataCommonSupport with MongoSupport {
 
   val featureFlags: FeatureFlags = new FeatureFlags()
 
@@ -85,6 +85,8 @@ abstract class BaseISpec
         "microservice.services.personal-tax-account.external-url"             -> personalTaxAccountUrl,
         "microservice.services.citizen-details.host"                          -> wireMockHost,
         "microservice.services.citizen-details.port"                          -> wireMockPort,
+        "microservice.services.sso.host"                                      -> wireMockHost,
+        "microservice.services.sso.port"                                      -> wireMockPort,
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,

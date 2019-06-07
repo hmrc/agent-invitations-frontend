@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, Request, Result}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, RelationshipsConnector, SsoConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{check_details, kn
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, RedirectUrlPolicy}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, RedirectUrlPolicy, UnsafePermitAll}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrlPolicy.Id
 
@@ -50,6 +50,7 @@ class AgentsFastTrackInvitationController @Inject()(
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   relationshipsConnector: RelationshipsConnector,
+  ssoConnector: SsoConnector,
   agentSessionCache: AgentSessionCache,
   authActions: AuthActions,
   val redirectUrlActions: RedirectUrlActions,
@@ -70,8 +71,6 @@ class AgentsFastTrackInvitationController @Inject()(
     ) {
   import AgentsFastTrackInvitationController._
   import authActions._
-
-  val policy: RedirectUrlPolicy[Id] = redirectUrlActions.whitelistPolicy
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 
@@ -221,7 +220,7 @@ class AgentsFastTrackInvitationController @Inject()(
                 case Some(continue) =>
                   Future successful Redirect(
                     continue
-                      .get(policy)
+                      .get(UnsafePermitAll)
                       .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
                 case None =>
                   throw new IllegalStateException("No Error Url Provided")
@@ -321,23 +320,23 @@ class AgentsFastTrackInvitationController @Inject()(
 
   private def withMaybeErrorUrlCached[A](
     block: Option[RedirectUrl] => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    redirectUrlActions.withMaybeErrorUrl {
+    redirectUrlActions.maybeRedirectUrlOrBadRequest(redirectUrlActions.getErrorUrl) {
       case None => block(None)
       case Some(redirectUrl) =>
         agentSessionCache.fetch
           .map(_.getOrElse(AgentSession()))
-          .flatMap(session => agentSessionCache.save(session.copy(errorUrl = Some(redirectUrl.get(policy).url))))
-          .flatMap(_ => block(Some(redirectUrl)))
+          .flatMap(session => agentSessionCache.save(session.copy(errorUrl = Some(redirectUrl))))
+          .flatMap(_ => block(Some(RedirectUrl(redirectUrl))))
     }
 
   private def withMaybeContinueUrlCached[A](
     block: => Future[Result])(implicit hc: HeaderCarrier, request: Request[A]): Future[Result] =
-    redirectUrlActions.withMaybeRedirectUrl {
+    redirectUrlActions.maybeRedirectUrlOrBadRequest(redirectUrlActions.getRedirectUrl) {
       case None => block
       case Some(redirectUrl) =>
         agentSessionCache.hardGet.flatMap { session =>
           agentSessionCache
-            .save(session.copy(continueUrl = Some(redirectUrl.get(policy).url)))
+            .save(session.copy(continueUrl = Some(redirectUrl)))
             .flatMap(_ => block)
         }
     }
