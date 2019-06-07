@@ -28,7 +28,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     val fastTrack = fastTrackController.agentFastTrack()
 
     "return 303 and redirect to error url if service calling fast-track does not have supported service in payload" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val formData = AgentFastTrackRequest(Some(personal), "INVALID_SERVICE")
       val fastTrackFormData = agentFastTrackForm.fill(formData)
       val result = fastTrack(
@@ -42,7 +42,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url with mixed form data" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val formData =
         AgentFastTrackRequest(Some(business), serviceITSA, "vrn", validNino.value, None)
       val fastTrackFormData = agentFastTrackForm.fill(formData)
@@ -56,7 +56,7 @@ class AgentInvitationControllerFastTrackISpec extends BaseISpec {
     }
 
     "return 303 and redirect to error url if the form is invalid" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val requestWithForm = request
         .withFormUrlEncodedBody("goo" -> "", "bah" -> "", "gah" -> "")
       val result = fastTrack(authorisedAsValidAgent(requestWithForm, arn.value))

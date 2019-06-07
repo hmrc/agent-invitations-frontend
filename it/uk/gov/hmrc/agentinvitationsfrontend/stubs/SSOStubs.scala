@@ -6,7 +6,7 @@ trait SSOStubs {
 
   me: WireMockSupport =>
 
-  def withWhitelistedDomains =
+  def givenWhitelistedDomains =
     stubFor(
       get(urlEqualTo("/sso/domains")).willReturn(
         aResponse()

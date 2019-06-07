@@ -81,7 +81,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -101,7 +101,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -122,7 +122,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "throw a Bad Request exception if the continue url is not whitelisted" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=https://www.google.com&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -141,7 +141,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the error url is not whitelisted" in {
-      withWhitelistedDomains
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=https://www.google.com"

@@ -42,7 +42,7 @@ class SsoConnector @Inject()(http: HttpGet, @Named("sso-baseUrl") baseUrl: URL, 
           (jsObj \ "externalDomains").as[Set[String]] ++ (jsObj \ "internalDomains").as[Set[String]]
         })
         .recover {
-          case e => throw new Exception(s"getting list of whitelisted domains failed: $e")
+          case e => throw new Exception(s"retrieval of whitelisted domains failed: $e")
         }
     }
 }
