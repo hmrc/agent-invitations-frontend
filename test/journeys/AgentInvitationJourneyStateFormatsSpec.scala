@@ -164,13 +164,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe KnownFactNotMatched(Set.empty)
       }
       "SomeAuthorisationsFailed" in {
-        Json.toJson(SomeAuthorisationsFailed(Set.empty)) shouldBe Json.obj(
-          "state"      -> "SomeAuthorisationsFailed",
-          "properties" -> Json.obj("basket" -> JsArray())
-        )
-        Json
-          .parse("""{"state":"SomeAuthorisationsFailed", "properties": {"basket": []}}""")
-          .as[State] shouldBe SomeAuthorisationsFailed(Set.empty)
+        val state = SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty)
+        val json = Json.parse(
+          """{"state":"SomeAuthorisationsFailed","properties":{"invitationLink":"invitation/link", "agencyEmail": "abc@xyz.com", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
       }
       "AllAuthorisationsFailed" in {
         Json.toJson(AllAuthorisationsFailed(Set.empty)) shouldBe Json.obj(

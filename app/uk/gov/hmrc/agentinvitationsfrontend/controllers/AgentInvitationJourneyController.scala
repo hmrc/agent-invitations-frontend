@@ -164,8 +164,11 @@ class AgentInvitationJourneyController @Inject()(
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                      => }
-  val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed   => }
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                    => }
+  val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed => }
+  val submitSomeAuthorisationsFailed = action { implicit request =>
+    whenAuthorised(AsAgent)(Transitions.continueSomeResponsesFailed)(redirect)
+  }
   val showAllAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: AllAuthorisationsFailed     => }
   val showClientNotSignedUp = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
   val showPendingAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
@@ -364,7 +367,7 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
-    case SomeAuthorisationsFailed(basket) =>
+    case SomeAuthorisationsFailed(_, _, _, basket) =>
       Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
 
     case AllAuthorisationsFailed(basket) =>
