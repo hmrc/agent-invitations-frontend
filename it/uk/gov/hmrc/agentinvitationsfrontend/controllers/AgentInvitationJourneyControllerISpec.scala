@@ -936,5 +936,29 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 itemId = "ABC123"))))
       }
     }
+    "POST /some-create-authorisations-failed" should {
+      "redirect to invitation sent" in {
+        journeyState.set(
+          SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty),
+          List(
+            SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty),
+            ReviewAuthorisationsPersonal(Set.empty),
+            ConfirmClientItsa(
+              AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino), Some(Postcode("BN114AW")))),
+              emptyBasket),
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+            SelectClientType(emptyBasket)
+          )
+        )
+
+        val result = controller.submitSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
+
+        journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+      }
+    }
   }
 }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.SomeResponsesFailed
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -49,7 +50,12 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ReviewAuthorisationsPersonal(basket: Basket) extends State
-    case class SomeAuthorisationsFailed(basket: Basket) extends State
+    case class SomeAuthorisationsFailed(
+      invitationLink: String,
+      continueUrl: Option[String],
+      agencyEmail: String,
+      basket: Basket)
+        extends State
     case class AllAuthorisationsFailed(basket: Basket) extends State
     case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
         extends State
@@ -415,6 +421,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     private def createAndProcessInvitations(
       successState: State,
+      someFailedState: Basket => State,
       basket: Basket,
       createMultipleInvitations: CreateMultipleInvitations,
       arn: Arn) =
@@ -423,7 +430,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
                  else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                    goto(AllAuthorisationsFailed(processedRequests))
-                 else goto(SomeAuthorisationsFailed(processedRequests))
+                 else goto(someFailedState(processedRequests))
       } yield result
 
     private def checkIfPendingOrActiveAndGoto(successState: State)(
@@ -500,14 +507,21 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                  agencyEmail =>
                                    createAndProcessInvitations(
                                      InvitationSentBusiness(agentLink, None, agencyEmail),
+                                     (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
                                      createMultipleInvitations,
-                                     authorisedAgent.arn))
+                                     authorisedAgent.arn
+                                 ))
                            }
                        }
             } yield result
           } else goto(IdentifyBusinessClient)
       }
+
+    def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
+      case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, _) =>
+        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail))
+    }
 
     def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -524,9 +538,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
               invitationLink <- getAgentLink(agent.arn, Some(personal))
               result <- createAndProcessInvitations(
                          InvitationSentPersonal(invitationLink, None, agencyEmail),
+                         (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                          basket,
                          createMultipleInvitations,
-                         agent.arn)
+                         agent.arn
+                       )
             } yield result
           }
       }

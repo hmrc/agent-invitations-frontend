@@ -77,7 +77,10 @@
           </p>
       }
 
-      <a href="@routes.AgentInvitationJourneyController.showInvitationSent.url" class="button">@Messages("create-auth-failed.button.continue")</a>
-
+      @form(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
+          <div class="form-group">
+              <button class="button" type="submit" id="continue">@Messages("create-auth-failed.button.continue")</button>
+          </div>
+      }
   }
 }

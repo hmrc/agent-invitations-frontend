@@ -599,7 +599,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ReviewAuthorisationsPersonal(Set(authorisationRequestNew1, authorisationRequestNew2))) when authorisationsReviewed(
           createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
-          thenGo(SomeAuthorisationsFailed(Set(authorisationRequestSuccess1, authorisationRequestFailed2)))
+          thenGo(
+            SomeAuthorisationsFailed(
+              "invitation/link",
+              None,
+              "abc@xyz.com",
+              Set(authorisationRequestSuccess1, authorisationRequestFailed2)))
       }
       "after deleteAuthorisationRequest with a valid itemId transition to DeleteAuthorisationRequestPersonal" in {
         val authorisationRequest = AuthorisationRequest(
@@ -669,6 +674,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(DeleteAuthorisationRequestPersonal(authorisationRequest, Set(authorisationRequest))) when confirmDeleteAuthorisationRequest(
           authorisedAgent)(Confirmation(false)) should
           thenGo(ReviewAuthorisationsPersonal(Set(authorisationRequest)))
+      }
+    }
+    "at state SomeAuthorisationFailed" should {
+      "go to InvitationSentPersonal state" in {
+        given(SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty)) when continueSomeResponsesFailed(
+          authorisedAgent) should
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
     }
   }
