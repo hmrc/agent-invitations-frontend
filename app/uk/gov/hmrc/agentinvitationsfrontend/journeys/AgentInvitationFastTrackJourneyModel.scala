@@ -100,8 +100,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     def start(features: FeatureFlags)(continueUrl: Option[String])(agent: AuthorisedAgent)(
       fastTrackRequest: AgentFastTrackRequest)(implicit request: Request[Any], hc: HeaderCarrier) = Transition {
-      case _ => {
-
+      case _ =>
         val isKfcEnabled = features.isKfcFlagOnForService(fastTrackRequest.service)
 
         def gotoNoKnownFactOrComplete(
@@ -148,7 +147,6 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
             goto(CheckDetailsNoClientTypeVat(fastTrackRequest, continueUrl))
         }
-      }
     }
 
     def checkIfPendingOrActiveAndGoto(

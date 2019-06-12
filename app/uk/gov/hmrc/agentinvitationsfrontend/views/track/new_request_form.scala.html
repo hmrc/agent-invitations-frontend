@@ -17,13 +17,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
 
 @import org.joda.time.LocalDate
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
 @form(
-    action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
+    action = Call("POST", addParamsToUrl(routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url,
+        "continue" -> Some(routes.AgentsRequestTrackingController.showTrackRequests().url))),
     'id -> s"fastTrackInvitationCreate-${index}",
     'class -> "form js-form"
 ) {
