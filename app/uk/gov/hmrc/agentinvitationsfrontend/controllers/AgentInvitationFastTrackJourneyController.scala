@@ -274,7 +274,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case NoPostcode(fastTrackRequest, _) =>
       Ok(
         known_fact(
-          getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
           KnownFactPageConfig(
             fastTrackRequest.service,
             Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
@@ -286,7 +286,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case NoDob(fastTrackRequest, _) =>
       Ok(
         known_fact(
-          getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
           KnownFactPageConfig(
             fastTrackRequest.service,
             Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
@@ -298,7 +298,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case NoVatRegDate(fastTrackRequest, _) =>
       Ok(
         known_fact(
-          getKnownFactFormForService(fastTrackRequest.service, featureFlags),
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
           KnownFactPageConfig(
             fastTrackRequest.service,
             Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
