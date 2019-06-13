@@ -38,6 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
@@ -86,8 +87,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
-          whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl))(AsAgent)(agentFastTrackForm)(
-            Transitions.start(featureFlags)(redirectUrl))
+          maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
+            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
+              Transitions.start(featureFlags)(redirectUrl))
+          }
         }
       }
     }
@@ -201,7 +204,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case Prologue(failureUrlOpt) =>
+    case Prologue(failureUrlOpt, refererUrlOpt) =>
       failureUrlOpt match {
         case Some(failureUrl) =>
           Call(
@@ -234,8 +237,13 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _ => throw new Exception(s"Link not found for $state")
   }
 
-  private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest)(
-    implicit request: Request[_]): Result =
+  private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
+    implicit request: Request[_]): Result = {
+    val backLinkOpt: Option[String] =
+      breadcrumbs.headOption match {
+        case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
+        case _                                                     => None
+      }
     Ok(
       check_details(
         checkDetailsForm,
@@ -245,9 +253,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           routes.AgentInvitationFastTrackJourneyController.progressToClientType(),
           routes.AgentInvitationFastTrackJourneyController.progressToKnownFact(),
           routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
-          routes.AgentInvitationFastTrackJourneyController.submitCheckDetails()
+          routes.AgentInvitationFastTrackJourneyController.submitCheckDetails(),
+          backLinkOpt
         )
       ))
+  }
 
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
@@ -255,21 +265,26 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case s: Prologue => Redirect(getCallFor(s))
 
-    case CheckDetailsCompleteItsa(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsCompleteItsa(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompleteIrv(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsCompleteIrv(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompletePersonalVat(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsCompletePersonalVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompleteBusinessVat(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsCompleteBusinessVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoPostcode(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsNoPostcode(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoDob(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsNoDob(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoVatRegDate(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsNoVatRegDate(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoClientTypeVat(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest)
+    case CheckDetailsNoClientTypeVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
     case NoPostcode(fastTrackRequest, _) =>
       Ok(
@@ -313,7 +328,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           formWithErrors.or(SelectClientTypeForm),
           ClientTypePageConfig(
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationFastTrackJourneyController.submitClientType())
+            routes.AgentInvitationFastTrackJourneyController.submitClientType()
+          )
         ))
 
     case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDIT =>

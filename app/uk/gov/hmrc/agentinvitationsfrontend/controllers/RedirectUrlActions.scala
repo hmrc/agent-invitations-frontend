@@ -28,20 +28,14 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
 
-  def getRedirectUrl[A](implicit request: Request[A]): Option[RedirectUrl] =
-    request.getQueryString("continue") match {
-      case Some(redirectUrl) =>
-        Try(RedirectUrl(redirectUrl)) match {
-          case Success(url) => Some(url)
-          case Failure(e) =>
-            throw new BadRequestException(s"[$redirectUrl] is not a valid continue URL, $e")
-        }
-      case None =>
-        None
-    }
+  def getRedirectUrl[A](implicit request: Request[A]): Option[RedirectUrl] = getUrl(request.getQueryString("continue"))
 
-  def getErrorUrl[A](implicit request: Request[A]): Option[RedirectUrl] =
-    request.getQueryString("error") match {
+  def getErrorUrl[A](implicit request: Request[A]): Option[RedirectUrl] = getUrl(request.getQueryString("error"))
+
+  def getRefererUrl[A](implicit request: Request[A]): Option[RedirectUrl] = getUrl(request.headers.get("Referer"))
+
+  def getUrl[A](urlOpt: Option[String])(implicit request: Request[A]): Option[RedirectUrl] =
+    urlOpt match {
       case Some(redirectUrl) =>
         Try(RedirectUrl(redirectUrl)) match {
           case Success(url) => Some(url)

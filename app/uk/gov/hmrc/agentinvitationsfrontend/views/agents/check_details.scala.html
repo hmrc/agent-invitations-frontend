@@ -48,9 +48,7 @@
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), config.serviceMessageKey))) {
 
-    @if(request.headers.get("Referer").isDefined){
-        @back_link_referer(request)
-    }
+    @config.backLinkUrl.map(url => back_link(url))
 
     @if(confirmForm.hasErrors) {
         @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
