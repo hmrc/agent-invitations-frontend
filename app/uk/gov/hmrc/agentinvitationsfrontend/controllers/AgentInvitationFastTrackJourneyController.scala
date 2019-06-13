@@ -208,7 +208,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           Call(
             "GET",
             failureUrl + s"?issue=${agentFastTrackForm.bindFromRequest.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-        case None => routes.AgentInvitationFastTrackJourneyController.showClientType()
+        case None => routes.AgentInvitationFastTrackJourneyController.agentFastTrack()
       }
     case _: SelectClientTypeVat             => routes.AgentInvitationFastTrackJourneyController.showClientType()
     case _: NoPostcode                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
@@ -258,176 +258,173 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
-    implicit request: Request[_]): Result = {
+    implicit request: Request[_]): Result = state match {
 
-    state match {
+    case s: Prologue => Redirect(getCallFor(s))
 
-      case s: Prologue => Redirect(getCallFor(s))
+    case CheckDetailsCompleteItsa(fastTrackRequest, c) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsCompleteItsa(fastTrackRequest, c) =>
-        gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompleteIrv(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsCompleteIrv(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompletePersonalVat(fastTrackRequest, c) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsCompletePersonalVat(fastTrackRequest, c) =>
-        gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompleteBusinessVat(fastTrackRequest, c) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsCompleteBusinessVat(fastTrackRequest, c) =>
-        gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoPostcode(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsNoPostcode(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoDob(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsNoDob(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoVatRegDate(fastTrackRequest, c) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsNoVatRegDate(fastTrackRequest, c) =>
-        gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoClientTypeVat(fastTrackRequest, c) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
 
-      case CheckDetailsNoClientTypeVat(fastTrackRequest, c) =>
-        gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
-
-      case NoPostcode(fastTrackRequest, _) =>
-        Ok(
-          known_fact(
-            formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
-            KnownFactPageConfig(
-              fastTrackRequest.service,
-              Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-              getSubmitKFFor(fastTrackRequest.service),
-              backLinkFor(breadcrumbs).url
-            )
-          ))
-
-      case NoDob(fastTrackRequest, _) =>
-        Ok(
-          known_fact(
-            formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
-            KnownFactPageConfig(
-              fastTrackRequest.service,
-              Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-              getSubmitKFFor(fastTrackRequest.service),
-              backLinkFor(breadcrumbs).url
-            )
-          ))
-
-      case NoVatRegDate(fastTrackRequest, _) =>
-        Ok(
-          known_fact(
-            formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
-            KnownFactPageConfig(
-              fastTrackRequest.service,
-              Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-              getSubmitKFFor(fastTrackRequest.service),
-              backLinkFor(breadcrumbs).url
-            )
-          ))
-
-      case SelectClientTypeVat(_, _) =>
-        Ok(
-          client_type(
-            formWithErrors.or(SelectClientTypeForm),
-            ClientTypePageConfig(
-              backLinkFor(breadcrumbs).url,
-              routes.AgentInvitationFastTrackJourneyController.submitClientType()
-            )
-          ))
-
-      case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDIT =>
-        Ok(
-          identify_client_itsa(
-            formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
-            featureFlags.showKfcMtdIt,
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient(),
+    case NoPostcode(fastTrackRequest, _) =>
+      Ok(
+        known_fact(
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
+          KnownFactPageConfig(
+            fastTrackRequest.service,
+            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+            getSubmitKFFor(fastTrackRequest.service),
             backLinkFor(breadcrumbs).url
           )
-        )
+        ))
 
-      case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDVAT =>
-        Ok(
-          identify_client_vat(
-            formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
-            featureFlags.showKfcMtdVat,
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+    case NoDob(fastTrackRequest, _) =>
+      Ok(
+        known_fact(
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
+          KnownFactPageConfig(
+            fastTrackRequest.service,
+            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+            getSubmitKFFor(fastTrackRequest.service),
             backLinkFor(breadcrumbs).url
           )
-        )
+        ))
 
-      case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCPIR =>
-        Ok(
-          identify_client_irv(
-            formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
-            featureFlags.showKfcPersonalIncome,
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient(),
+    case NoVatRegDate(fastTrackRequest, _) =>
+      Ok(
+        known_fact(
+          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service, featureFlags)),
+          KnownFactPageConfig(
+            fastTrackRequest.service,
+            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
+            getSubmitKFFor(fastTrackRequest.service),
             backLinkFor(breadcrumbs).url
           )
-        )
+        ))
 
-      case IdentifyBusinessClient(_, _) =>
-        Ok(
-          identify_client_vat(
-            formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
-            featureFlags.showKfcMtdVat,
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
-            backLinkFor(breadcrumbs).url
+    case SelectClientTypeVat(_, _) =>
+      Ok(
+        client_type(
+          formWithErrors.or(SelectClientTypeForm),
+          ClientTypePageConfig(
+            backLinkFor(breadcrumbs).url,
+            routes.AgentInvitationFastTrackJourneyController.submitClientType()
           )
+        ))
+
+    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDIT =>
+      Ok(
+        identify_client_itsa(
+          formWithErrors.or(IdentifyItsaClientForm(featureFlags.showKfcMtdIt)),
+          featureFlags.showKfcMtdIt,
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient(),
+          backLinkFor(breadcrumbs).url
         )
+      )
 
-      case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
-        Ok(
-          invitation_sent(
-            InvitationSentPageConfig(
-              invitationLink,
-              continueUrl,
-              continueUrl.isDefined,
-              featureFlags.enableTrackRequests,
-              ClientType.fromEnum(personal),
-              inferredExpiryDate,
-              agencyEmail)))
+    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDVAT =>
+      Ok(
+        identify_client_vat(
+          formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+          featureFlags.showKfcMtdVat,
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
 
-      case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
-        Ok(
-          invitation_sent(
-            InvitationSentPageConfig(
-              invitationLink,
-              continueUrl,
-              continueUrl.isDefined,
-              featureFlags.enableTrackRequests,
-              ClientType.fromEnum(business),
-              inferredExpiryDate,
-              agencyEmail)))
+    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCPIR =>
+      Ok(
+        identify_client_irv(
+          formWithErrors.or(IdentifyIrvClientForm(featureFlags.showKfcPersonalIncome)),
+          featureFlags.showKfcPersonalIncome,
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
 
-      case KnownFactNotMatched(_, _) =>
-        Ok(
-          not_matched(
-            hasJourneyCache = false,
-            routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
-          ))
+    case IdentifyBusinessClient(_, _) =>
+      Ok(
+        identify_client_vat(
+          formWithErrors.or(IdentifyVatClientForm(featureFlags.showKfcMtdVat)),
+          featureFlags.showKfcMtdVat,
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
 
-      case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
-        Ok(
-          active_authorisation_exists(
+    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
+      Ok(
+        invitation_sent(
+          InvitationSentPageConfig(
+            invitationLink,
+            continueUrl,
+            continueUrl.isDefined,
+            featureFlags.enableTrackRequests,
+            ClientType.fromEnum(personal),
+            inferredExpiryDate,
+            agencyEmail)))
+
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
+      Ok(
+        invitation_sent(
+          InvitationSentPageConfig(
+            invitationLink,
+            continueUrl,
+            continueUrl.isDefined,
+            featureFlags.enableTrackRequests,
+            ClientType.fromEnum(business),
+            inferredExpiryDate,
+            agencyEmail)))
+
+    case KnownFactNotMatched(_, _) =>
+      Ok(
+        not_matched(
+          hasJourneyCache = false,
+          routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+        ))
+
+    case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
+      Ok(
+        active_authorisation_exists(
+          authRequestsExist = false,
+          agentFastTrackRequest.service,
+          fromFastTrack = true,
+          routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+          routes.AgentInvitationFastTrackJourneyController.showClientType()
+        ))
+
+    case PendingInvitationExists(_, _) =>
+      Ok(
+        pending_authorisation_exists(
+          PendingAuthorisationExistsPageConfig(
             authRequestsExist = false,
-            agentFastTrackRequest.service,
+            backLinkFor(breadcrumbs).url,
             fromFastTrack = true,
+            featureFlags.enableTrackRequests,
             routes.AgentInvitationJourneyController.showReviewAuthorisations(),
             routes.AgentInvitationFastTrackJourneyController.showClientType()
-          ))
+          )))
 
-      case PendingInvitationExists(_, _) =>
-        Ok(
-          pending_authorisation_exists(
-            PendingAuthorisationExistsPageConfig(
-              authRequestsExist = false,
-              backLinkFor(breadcrumbs).url,
-              fromFastTrack = true,
-              featureFlags.enableTrackRequests,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-              routes.AgentInvitationFastTrackJourneyController.showClientType()
-            )))
-
-      case ClientNotSignedUp(fastTrackRequest, _) =>
-        Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))
-    }
+    case ClientNotSignedUp(fastTrackRequest, _) =>
+      Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))
   }
 }
 
