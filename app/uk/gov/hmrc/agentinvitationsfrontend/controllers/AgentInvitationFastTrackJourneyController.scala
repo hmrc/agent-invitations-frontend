@@ -38,6 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
@@ -86,9 +87,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
-          val refererUrl = request.headers.get("Referer")
-          whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
-            Transitions.start(featureFlags)(redirectUrl))
+          maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
+            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
+              Transitions.start(featureFlags)(redirectUrl))
+          }
         }
       }
     }
@@ -208,7 +210,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           Call(
             "GET",
             failureUrl + s"?issue=${agentFastTrackForm.bindFromRequest.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-        case None => routes.AgentInvitationFastTrackJourneyController.agentFastTrack()
+        case None => routes.AgentInvitationFastTrackJourneyController.showClientType()
       }
     case _: SelectClientTypeVat             => routes.AgentInvitationFastTrackJourneyController.showClientType()
     case _: NoPostcode                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()

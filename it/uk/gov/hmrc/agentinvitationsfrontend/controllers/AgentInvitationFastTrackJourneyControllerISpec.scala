@@ -106,7 +106,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val request = FakeRequest(
         "POST",
         "/agents/fast-track"
-      ).withHeaders("Referer" -> "some/referer/url")
+      ).withHeaders("Referer" -> "/some/referer/url")
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody(
@@ -123,7 +123,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         CheckDetailsCompleteItsa(
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
           None),
-        List(Prologue(None, Some("some/referer/url")), Prologue(None, None))
+        List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))
       )
     }
 
