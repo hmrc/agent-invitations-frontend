@@ -35,11 +35,11 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
   sealed trait State
 
-  val root: State = State.Prologue(None)
+  val root: State = State.Prologue(None, None)
 
   /* State should contain only minimal set of data required to proceed */
   object State {
-    case class Prologue(failureUrl: Option[String]) extends State
+    case class Prologue(failureUrl: Option[String], refererUrl: Option[String]) extends State
 
     case class CheckDetailsNoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
         extends State
@@ -94,8 +94,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
 
-    def prologue(failureUrl: Option[String]) = Transition {
-      case _ => goto(Prologue(failureUrl))
+    def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
+      case _ => goto(Prologue(failureUrl, refererUrl))
     }
 
     def start(features: FeatureFlags)(continueUrl: Option[String])(agent: AuthorisedAgent)(

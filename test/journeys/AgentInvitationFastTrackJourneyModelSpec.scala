@@ -61,7 +61,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsCompleteItsa when all required fields are present for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, postCode)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsCompleteItsa(fastTrackRequest.copy(clientType = Some(personal)), None))
@@ -69,7 +69,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsNoPostcode when the postcode is missing for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, None)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsNoPostcode(fastTrackRequest.copy(clientType = Some(personal)), None))
@@ -77,7 +77,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsCompleteIrv when all required fields are present for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCPIR, "ni", nino, dob)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsCompleteIrv(fastTrackRequest.copy(clientType = Some(personal)), None))
@@ -85,7 +85,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsNoDob when there is no dob for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCPIR, "ni", nino, None)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsNoDob(fastTrackRequest.copy(clientType = Some(personal)), None))
@@ -93,7 +93,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsCompleteVat when all required fields are present for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsCompletePersonalVat(fastTrackRequest, None))
@@ -101,7 +101,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, None)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsNoVatRegDate(fastTrackRequest, None))
@@ -109,7 +109,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsCompleteVat when all required fields are present for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsCompleteBusinessVat(fastTrackRequest, None))
@@ -117,7 +117,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, None)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsNoVatRegDate(fastTrackRequest, None))
@@ -125,7 +125,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to CheckDetailsNoClientTypeVat when there is no client type for vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "ni", nino, None)
 
-        given(Prologue(None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
+        given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
           thenGo(CheckDetailsNoClientTypeVat(fastTrackRequest, None))

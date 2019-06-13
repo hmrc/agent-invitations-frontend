@@ -50,8 +50,6 @@
 
     @if(config.backLinkUrl.isDefined){
       @back_link(config.backLinkUrl.get)
-    }else {
-      @back_link_referer(request)
     }
 
     @if(confirmForm.hasErrors) {

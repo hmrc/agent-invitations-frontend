@@ -86,7 +86,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
-          whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl))(AsAgent)(agentFastTrackForm)(
+          val refererUrl = request.headers.get("Referer")
+          whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
             Transitions.start(featureFlags)(redirectUrl))
         }
       }
@@ -201,7 +202,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case Prologue(failureUrlOpt) =>
+    case Prologue(failureUrlOpt, refererUrlOpt) =>
       failureUrlOpt match {
         case Some(failureUrl) =>
           Call(
@@ -248,10 +249,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           routes.AgentInvitationFastTrackJourneyController.progressToKnownFact(),
           routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
           routes.AgentInvitationFastTrackJourneyController.submitCheckDetails(),
-          if (breadcrumbs.headOption == Some(Prologue(None))) {
-            Some(continueUrl.get)
-          } else {
-            None
+          breadcrumbs.headOption match {
+            case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
+            case _                                                     => None
           }
         )
       ))
@@ -259,8 +259,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = {
-
-    println(s"^^^^^^^^^^^^^^^^^^^^^^^$breadcrumbs")
 
     state match {
 
@@ -323,13 +321,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case SelectClientTypeVat(_, continueUrl) =>
+      case SelectClientTypeVat(_, _) =>
         Ok(
           client_type(
             formWithErrors.or(SelectClientTypeForm),
             ClientTypePageConfig(
-              if (breadcrumbs.headOption.contains(Prologue(_))) continueUrl.get
-              else backLinkFor(breadcrumbs).url,
+              backLinkFor(breadcrumbs).url,
               routes.AgentInvitationFastTrackJourneyController.submitClientType()
             )
           ))

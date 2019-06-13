@@ -273,7 +273,7 @@ class AgentsFastTrackInvitationController @Inject()(
                 routes.AgentsFastTrackInvitationController.showKnownFact(),
                 getSubmitIdentifyClientCallBy(fastTrackRequest.service),
                 routes.AgentsFastTrackInvitationController.submitCheckDetails(),
-                None
+                request.headers.get("Referer")
               )
             ))
         case None => Redirect(routes.AgentsInvitationController.showClientType())
