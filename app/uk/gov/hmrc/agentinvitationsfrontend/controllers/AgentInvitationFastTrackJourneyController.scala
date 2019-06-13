@@ -235,10 +235,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _ => throw new Exception(s"Link not found for $state")
   }
 
-  private def gotoCheckDetailsWithRequest(
-    fastTrackRequest: AgentFastTrackRequest,
-    breadcrumbs: List[State],
-    continueUrl: Option[String])(implicit request: Request[_]): Result =
+  private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
+    implicit request: Request[_]): Result =
     Ok(
       check_details(
         checkDetailsForm,
@@ -262,26 +260,26 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case s: Prologue => Redirect(getCallFor(s))
 
-    case CheckDetailsCompleteItsa(fastTrackRequest, c) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompleteItsa(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompleteIrv(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompleteIrv(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompletePersonalVat(fastTrackRequest, c) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompletePersonalVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsCompleteBusinessVat(fastTrackRequest, c) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsCompleteBusinessVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoPostcode(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoPostcode(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoDob(fastTrackRequest, c) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoDob(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoVatRegDate(fastTrackRequest, c) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoVatRegDate(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
-    case CheckDetailsNoClientTypeVat(fastTrackRequest, c) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs, c)
+    case CheckDetailsNoClientTypeVat(fastTrackRequest, _) =>
+      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
 
     case NoPostcode(fastTrackRequest, _) =>
       Ok(
