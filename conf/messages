@@ -115,7 +115,6 @@ invitation-sent.l2=Ask your client to go to the link to accept your authorisatio
 invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if it expires without being accepted.
 invitation-sent.header.links=Other actions
 invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
@@ -465,7 +464,7 @@ wrong-client-type.p3=You can create an account if you do not have one.
 wrong-client-type.button=Sign out and try again
 
 #Some Responses Failed
-some-responses-failed.header=Sorry, some of your responses could not be saved
+some-responses-failed.header=Sorry, there is a problem with the service
 some-responses-failed.p1=We could not save your response for the following services:
 some-responses-failed.li.itsa=Send your Income Tax updates through software
 some-responses-failed.li.afi=View your PAYE income record
@@ -481,6 +480,12 @@ some-responses-failed.advice=You can view which services you appointed {0} to de
 all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p=We could not save your responses. Please try again in 24 hours.
 
+# Client session expired/lost
+session-lost-client.header=Sorry, you will need to start again
+session-lost-client.description.1=For your security, we have signed you out of the service.
+session-lost-client.description.2=We may not have saved your answers.
+session-lost-client.description.3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
+session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
 # Error messages for digital services

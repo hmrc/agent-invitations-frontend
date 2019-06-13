@@ -49,19 +49,19 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "Root"                => JsSuccess(Root)
-    case "WarmUp"              => WarmUpFormat.reads(properties)
-    case "NotFoundInvitation"  => JsSuccess(NotFoundInvitation)
-    case "Consent"             => ConsentFormat.reads(properties)
-    case "IncorrectClientType" => IncorrectClientTypeFormat.reads(properties)
-    case "MultiConsent"        => MultiConsentFormat.reads(properties)
-    case "SingleConsent"       => SingleConsentFormat.reads(properties)
-    case "CheckAnswers"        => CheckAnswersFormat.reads(properties)
-    case "InvitationsAccepted" => InvitationsAcceptedFormat.reads(properties)
-    case "InvitationsDeclined" => InvitationsDeclinedFormat.reads(properties)
-    case "SomeResponsesFailed" => SomeResponsesFailedFormat.reads(properties)
-    case "AllResponsesFailed"  => JsSuccess(AllResponsesFailed)
-    case "ConfirmDecline"      => ConfirmDeclineFormat.reads(properties)
+    case "MissingJourneyHistory" => JsSuccess(MissingJourneyHistory)
+    case "WarmUp"                => WarmUpFormat.reads(properties)
+    case "NotFoundInvitation"    => JsSuccess(NotFoundInvitation)
+    case "Consent"               => ConsentFormat.reads(properties)
+    case "IncorrectClientType"   => IncorrectClientTypeFormat.reads(properties)
+    case "MultiConsent"          => MultiConsentFormat.reads(properties)
+    case "SingleConsent"         => SingleConsentFormat.reads(properties)
+    case "CheckAnswers"          => CheckAnswersFormat.reads(properties)
+    case "InvitationsAccepted"   => InvitationsAcceptedFormat.reads(properties)
+    case "InvitationsDeclined"   => InvitationsDeclinedFormat.reads(properties)
+    case "SomeResponsesFailed"   => SomeResponsesFailedFormat.reads(properties)
+    case "AllResponsesFailed"    => JsSuccess(AllResponsesFailed)
+    case "ConfirmDecline"        => ConfirmDeclineFormat.reads(properties)
   }
 
 }

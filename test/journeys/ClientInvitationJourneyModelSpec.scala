@@ -65,7 +65,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val normalisedAgentName = "agent-name"
   val agentName = "Agent Name"
 
-  "AgentInvitationFastTrackJourneyService" when {
+  "ClientInvitationJourneyModel" when {
     "at any state" should {
       "transition to WarmUp with agency name" when {
         def getAgentReferenceRecord(uid: String) =
@@ -73,12 +73,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         def getAgencyName(arn: Arn) = Future(agentName)
 
         "the affinity group does match the client type" in {
-          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
 
         "the affinity group does not match the client type" in {
-          given(Root) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
+          given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(
+            getAgencyName) should
             thenGo(WarmUp(personal, uid, agentName, normalisedAgentName))
         }
       }
@@ -87,7 +89,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getAgentReferenceRecord(uid: String) = Future(None)
           def getAgencyName(arn: Arn) = Future(agentName)
 
-          given(Root) when
+          given(MissingJourneyHistory) when
             start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
             thenGo(NotFoundInvitation)
         }
@@ -97,7 +99,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Some(AgentReferenceRecord("uid123", arn, Seq(s"$normalisedAgentName-2"))))
           def getAgencyName(arn: Arn) = Future(agentName)
 
-          given(Root) when
+          given(MissingJourneyHistory) when
             start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
             thenGo(NotFoundInvitation)
         }
@@ -294,9 +296,11 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           SomeResponsesFailed(
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)
+            ),
+            Seq(
+              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true),
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true, processed = true)
             )
           ))
       }
@@ -373,7 +377,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           )
         )
       }
+    }
 
+    "at state SomeResponsesFailed" should {
+      "transition to InvitationsAccepted with successfully processed consents" in {
+        given(
+          SomeResponsesFailed(
+            "Mr agent",
+            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true))
+          )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
+          InvitationsAccepted(
+            "Mr agent",
+            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true))))
+      }
     }
   }
 }

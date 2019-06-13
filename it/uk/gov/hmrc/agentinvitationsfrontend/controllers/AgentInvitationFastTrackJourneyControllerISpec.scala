@@ -12,7 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -81,6 +81,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -100,6 +101,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -117,6 +119,81 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
         "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
+    }
+
+    "throw a Bad Request exception if the continue url is not whitelisted" in {
+      givenWhitelistedDomains
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=https://www.google.com&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
+    }
+    "throw a Bad Request exception if the error url is not whitelisted" in {
+      givenWhitelistedDomains
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=https://www.google.com"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
+    }
+    "throw a Bad Request exception if the continue url is invalid" in {
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=foo&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage startsWith "[foo] is not a valid continue URL"
+    }
+    "throw a Bad Request exception if the error url is invalid" in {
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=bar"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage startsWith "[bar] is not a valid error URL"
     }
   }
 
@@ -436,10 +513,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("invitation-sent.header"),
-        htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
     }
   }
 

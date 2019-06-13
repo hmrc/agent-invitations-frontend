@@ -3,13 +3,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import java.util.UUID
 
 import play.api.Application
-import play.api.mvc.{Request, Result}
+import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,8 +29,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   val emptyBasket = Set.empty[AuthorisationRequest]
 
-  def requestWithJourneyId(method: String, path: String) =
+  def requestWithJourneyIdInCookie(method: String, path: String): FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest(method, path).withSession(journeyIdKey -> UUID.randomUUID().toString)
+
+  def requestWithJourneyIdInQuery(method: String, path: String): FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest(method, CallOps.addParamsToUrl(path, journeyIdKey -> Some(UUID.randomUUID().toString)))
 
   "GET /invitations/:clientType/:uid/:agentName" when {
     trait Setup {
@@ -40,18 +43,18 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
-      journeyState.set(Root, Nil)
+      journeyState.setEmpty()
     }
 
     "journey ID is already present in the session cookie, show the warmup page" should {
       "work when signed in" in new Setup {
-        def request = FakeRequest("GET", endpointUrl)
-        val reqAuthorisedWithJourneyId = authorisedAsAnyIndividualClient(requestWithJourneyId("GET", endpointUrl))
+        val reqAuthorisedWithJourneyId =
+          authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
       "work when not signed in" in new Setup {
-        val reqWithJourneyId = requestWithJourneyId("GET", endpointUrl)
+        val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
@@ -59,9 +62,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       def checkWarmUpPageIsShown(result: Result) {
         status(result) shouldBe 200
 
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.header", "My Agency"))
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage("warm-up.header", "My Agency"),
+          htmlEscapedMessage("warm-up.inset", "My Agency"))
         checkIncludesText(result, "<p>So we can confirm who you are")
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("warm-up.inset", "My Agency"))
       }
     }
 
@@ -90,50 +95,83 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   }
 
-  "GET /warm-up" should {
-    def request = requestWithJourneyId("GET", "/warm-up")
-
-    "redirect to consent page if the invitation is found" in {
-      givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
-
-      val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+  "GET /warm-up" when {
+    "journey ID is not available or session expired" should {
+      behave like anActionHandlingSessionExpiry(controller.submitWarmUp)
     }
-    "redirect to not found invitation if the invitation is not found" in {
-      givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
-      val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+    "journey ID is available in session cookie (e.g. already logged in)" should {
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+      behave like warmupSubmitAccept(request)
+    }
+
+    "journey ID is not in the session cookie but is on the query string (e.g. just been redirected from successful login)" should {
+      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
+      behave like warmupSubmitAccept(request)
+    }
+
+    def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
+
+      "redirect to consent page if the invitation is found" in {
+        givenAllInvitationIdsByStatus(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+      }
+
+      "redirect to not found invitation if the invitation is not found" in {
+        givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
     }
   }
 
-  "GET /warm-up/to-decline" should {
-    def request = requestWithJourneyId("GET", "/warm-up/to-decline")
-
-    "redirect to confirm decline" in {
-      givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
-
-      val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
+  "GET /warm-up/to-decline" when {
+    "journey ID is not available or session expired" should {
+      behave like anActionHandlingSessionExpiry(controller.submitWarmUpConfirmDecline)
     }
-    "redirect to not found invitation" in {
-      givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
 
-      val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+    "journey ID is available in session cookie (e.g. already logged in)" should {
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up/to-decline")
+      behave like warmupSubmitDecline(request)
+    }
+
+    "journey ID is on the query string (e.g. just been redirected from successful login)" should {
+      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up/to-decline")
+      behave like warmupSubmitDecline(request)
+    }
+
+    def warmupSubmitDecline(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
+      "redirect to confirm decline" in {
+        givenAllInvitationIdsByStatus(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
+      }
+
+      "redirect to not found invitation" in {
+        givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
     }
   }
 
   "GET /warm-up/not-found" should {
-    def request = requestWithJourneyId("GET", "/warm-up/not-found")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/not-found")
+
+    behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
 
     "display the not found invitation page" in {
       journeyState.set(NotFoundInvitation, Nil)
@@ -146,7 +184,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/consent" should {
-    def request = requestWithJourneyId("GET", "/warm-up/consent")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/consent")
+
+    behave like anActionHandlingSessionExpiry(controller.showConsent)
 
     "display the multi consent page" in {
       journeyState.set(
@@ -165,7 +205,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/incorrect-client-type" should {
-    def request = requestWithJourneyId("GET", "/warm-up/incorrect-client-type")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/incorrect-client-type")
+
+    behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
 
     "display the incorrect client type page" in {
       journeyState.set(IncorrectClientType(personal), Nil)
@@ -179,7 +221,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/consent" should {
-    def request = requestWithJourneyId("POST", "/warm-up/consent")
+    def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
+
+    behave like anActionHandlingSessionExpiry(controller.submitConsent)
 
     "redirect to check answers when continuing" in {
       journeyState.set(
@@ -198,7 +242,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /consent/individual" should {
-    def request = requestWithJourneyId("GET", "/consent/individual")
+    def request = requestWithJourneyIdInCookie("GET", "/consent/individual")
+
+    behave like anActionHandlingSessionExpiry(controller.showConsentIndividual)
 
     "display the individual consent page" in {
       journeyState.set(
@@ -257,7 +303,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/check-answers" should {
-    def request = requestWithJourneyId("GET", "/warm-up/check-answers")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/check-answers")
+
+    behave like anActionHandlingSessionExpiry(controller.showCheckAnswers)
 
     "display the check answers page" in {
       journeyState.set(
@@ -277,7 +325,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/check-answers" should {
-    def request = requestWithJourneyId("POST", "/warm-up/check-answers")
+    def request = requestWithJourneyIdInCookie("POST", "/warm-up/check-answers")
+
+    behave like anActionHandlingSessionExpiry(controller.submitCheckAnswers)
 
     "redirect to invitations accepted when all invitations are successfully accepted" in {
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
@@ -383,7 +433,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/confirm-decline" should {
-    def request = requestWithJourneyId("GET", "/warm-up/confirm-decline")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/confirm-decline")
+
+    behave like anActionHandlingSessionExpiry(controller.showConfirmDecline)
 
     "display the confirm decline page" in {
       journeyState.set(
@@ -403,7 +455,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up/confirm-decline" should {
-    def request = requestWithJourneyId("POST", "/warm-up/confirm-decline")
+    def request = requestWithJourneyIdInCookie("POST", "/warm-up/confirm-decline")
+
+    behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
 
     "redirect to invitation declined when yes is selected" in {
       journeyState.set(
@@ -437,7 +491,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /warm-up/accepted" should {
-    def request = requestWithJourneyId("GET", "/warm-up/accepted")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/accepted")
+
+    behave like anActionHandlingSessionExpiry(controller.showInvitationsAccepted)
 
     "display the accepted page" in {
       journeyState
@@ -453,7 +509,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/rejected" should {
-    def request = requestWithJourneyId("GET", "/warm-up/rejected")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/rejected")
+
+    behave like anActionHandlingSessionExpiry(controller.showInvitationsDeclined)
 
     "display the rejected page" in {
       journeyState
@@ -469,7 +527,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
   "GET /warm-up/all-failed" should {
-    def request = requestWithJourneyId("GET", "/warm-up/all-failed")
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/all-failed")
+
+    behave like anActionHandlingSessionExpiry(controller.showAllResponsesFailed)
 
     "display the all responses failed page" in {
       journeyState
@@ -482,14 +542,20 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.p"))
     }
   }
-  "GET /warm-up/some-failed" should {
-    def request = requestWithJourneyId("GET", "/warm-up/some-failed")
+  "GET /some-responses-failed" should {
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/some-failed")
+
+    behave like anActionHandlingSessionExpiry(controller.showSomeResponsesFailed)
 
     "display the some responses failed page" in {
       journeyState
         .set(
-          SomeResponsesFailed("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
-          Nil)
+          SomeResponsesFailed(
+            "My Agency",
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+          Nil
+        )
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -498,4 +564,60 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.itsa"))
     }
   }
+
+  "POST /some-responses-failed" should {
+    def request = requestWithJourneyIdInCookie("POST", "/some-responses-failed")
+
+    "redirect to complete page with only successfully processed consents" in {
+      journeyState
+        .set(
+          SomeResponsesFailed(
+            "My Agency",
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+          Nil
+        )
+
+      val result = controller.submitSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
+
+      journeyState.get.get._1 shouldBe
+        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)))
+    }
+  }
+
+  "GET /session-timeout" should {
+    "display the session timeout/lost page" in {
+      journeyState.set(MissingJourneyHistory, Nil)
+      val result = controller.showMissingJourneyHistory(requestWithJourneyIdInCookie("GET", "/session-timeout"))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "session-lost-client.header")
+    }
+
+    "redirect to itself with a new journey ID if the journey ID is missing" in {
+      journeyState.set(MissingJourneyHistory, Nil)
+      val result = controller.showMissingJourneyHistory(FakeRequest("GET", "/session-timeout"))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+    }
+  }
+
+  private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
+    "redirect to /session-timeout if there is no journey ID/history available" when {
+      "logged in" in {
+        checkRedirectsToSessionExpiry(authorisedAsAnyIndividualClient(FakeRequest()))
+      }
+
+      "not logged in" in {
+        checkRedirectsToSessionExpiry(FakeRequest())
+      }
+
+      def checkRedirectsToSessionExpiry(request: FakeRequest[AnyContentAsEmpty.type]) = {
+        journeyState.setEmpty()
+        val result = await(action(request))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+      }
+    }
 }

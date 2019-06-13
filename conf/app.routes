@@ -35,6 +35,7 @@ GET         /agents/already-authorisation-pending                           @uk.
 GET         /agents/already-authorisation-present                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showActiveAuthorisationExists
 GET         /agents/all-create-authorisation-failed                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsFailed
 GET         /agents/some-create-authorisation-failed                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSomeAuthorisationsFailed
+POST        /agents/some-create-authorisation-failed                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSomeAuthorisationsFailed
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
@@ -123,6 +124,8 @@ GET         /accepted                                                       @uk.
 GET         /declined                                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsDeclined
 GET         /all-responses-failed                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showAllResponsesFailed
 GET         /some-responses-failed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
+POST        /some-responses-failed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.notAuthorised
+GET         /session-timeout                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 
 GET         /:clientType/:uid/:agentName                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)

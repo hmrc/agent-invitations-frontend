@@ -28,11 +28,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
   sealed trait State
   sealed trait IsError
 
-  val root: State = State.Root
+  val root: State = State.MissingJourneyHistory
 
   /* State should contain only minimal set of data required to proceed */
   object State {
-    case object Root extends State
+    case object MissingJourneyHistory extends State
     case class WarmUp(clientType: ClientType, uid: String, agentName: String, normalisedAgentName: String) extends State
     case object NotFoundInvitation extends State with IsError
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
@@ -50,7 +50,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State
     case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
     case object AllResponsesFailed extends State
-    case class SomeResponsesFailed(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class SomeResponsesFailed(
+      agentName: String,
+      failedConsents: Seq[ClientConsent],
+      successfulConsents: Seq[ClientConsent])
+        extends State
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
   }
@@ -192,9 +196,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
                      goto(InvitationsDeclined(agentName, consents))
                    else if (ClientConsent.allAcceptanceFailed(newConsents)) goto(AllResponsesFailed)
                    else if (ClientConsent.someAcceptanceFailed(newConsents))
-                     goto(SomeResponsesFailed(agentName, consents))
+                     goto(
+                       SomeResponsesFailed(
+                         agentName,
+                         newConsents.filter(_.processed == false),
+                         newConsents.filter(_.processed == true)))
                    else goto(InvitationsAccepted(agentName, consents))
         } yield result
+    }
+
+    def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
+      case SomeResponsesFailed(agentName, _, successfulConsents) =>
+        goto(InvitationsAccepted(agentName, successfulConsents))
     }
 
     def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {

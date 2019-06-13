@@ -227,17 +227,37 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               LocalDate.parse("2010-01-01"),
               "itsa",
               consent = true
-            ),
+            )
+          ),
+          Seq(
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
               "afi",
-              consent = true
-            )
-          )
+              consent = true,
+              processed = true
+            ))
         )
-        val json = Json.parse(
-          s"""{"state":"SomeResponsesFailed","properties":{"agentName": "agent name", $jsonConsents}}""".stripMargin)
+        val json =
+          Json.parse(s"""{"state":"SomeResponsesFailed","properties":{"agentName": "agent name", 
+               "failedConsents": [{
+                        |  "invitationId": {
+                        |    "value": "A1BEOZEO7MNO6"
+                        |  },
+                        |  "expiryDate": "2010-01-01",
+                        |  "serviceKey": "itsa",
+                        |  "consent": true,
+                        |  "processed": false
+                        |}],
+                        |"successfulConsents": [{
+                        |  "invitationId": {
+                        |    "value": "B1BEOZEO7MNO6"
+                        |  },
+                        |  "expiryDate": "2010-02-02",
+                        |  "serviceKey": "afi",
+                        |  "consent": true,
+                        |  "processed": true
+                        |}]}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
