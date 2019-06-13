@@ -236,7 +236,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
-    implicit request: Request[_]): Result =
+    implicit request: Request[_]): Result = {
+    val backLinkOpt: Option[String] =
+      breadcrumbs.headOption match {
+        case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
+        case _                                                     => None
+      }
     Ok(
       check_details(
         checkDetailsForm,
@@ -247,12 +252,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           routes.AgentInvitationFastTrackJourneyController.progressToKnownFact(),
           routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
           routes.AgentInvitationFastTrackJourneyController.submitCheckDetails(),
-          breadcrumbs.headOption match {
-            case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
-            case _                                                     => None
-          }
+          backLinkOpt
         )
       ))
+  }
 
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(

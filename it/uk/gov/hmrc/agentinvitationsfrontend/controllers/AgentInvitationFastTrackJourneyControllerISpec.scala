@@ -102,6 +102,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details when there is a referer in the header" in {
+      journeyState.clear
       val request = FakeRequest(
         "POST",
         "/agents/fast-track"
