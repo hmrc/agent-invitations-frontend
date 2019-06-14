@@ -539,7 +539,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.p"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.p1"))
     }
   }
   "GET /some-responses-failed" should {

@@ -472,13 +472,15 @@ some-responses-failed.li.vat=Submit your VAT returns through software
 some-responses-failed.itsa=We could not save your response for sending your Income Tax updates through software.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
-some-responses-failed.try-again=Please try again in 24 hours.
-some-responses-failed.what-next=What you can do next
-some-responses-failed.advice=You can view which services you appointed {0} to deal with.
+some-responses-failed.try-again=You can continue without these services, or try again later.
+some-responses-failed.advice=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
 
 #All responses failed
 all-responses-failed.header=Sorry, there is a problem with the service
-all-responses-failed.p=We could not save your responses. Please try again in 24 hours.
+all-responses-failed.p1=Try again later.
+all-responses-failed.p2=We may not have saved your responses.
+all-responses-failed.check=You can <a href = {0}>check who can deal with HMRC for you</a>.
+all-responses-failed.p3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
 
 # Client session expired/lost
 session-lost-client.header=Sorry, you will need to start again

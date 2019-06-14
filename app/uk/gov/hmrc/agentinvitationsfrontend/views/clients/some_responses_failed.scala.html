@@ -48,12 +48,9 @@
 
   <p>@Messages("some-responses-failed.try-again")</p>
 
-  <h2>@Messages("some-responses-failed.what-next")</h2>
-
   <p>@Messages("some-responses-failed.advice", config.agencyName)</p>
 
     @form(config.acceptInvitationCall) {
         <button id="continueToComplete" class="button" type="submit">@Messages("continue.button")</button>
     }
-
 }
