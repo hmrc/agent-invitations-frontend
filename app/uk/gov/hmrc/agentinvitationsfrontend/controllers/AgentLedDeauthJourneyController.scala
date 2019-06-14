@@ -254,7 +254,7 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_vat(
           formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
-          routes.AgentLedDeauthJourneyController.submitBusinessService(),
+          routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         ))
 
