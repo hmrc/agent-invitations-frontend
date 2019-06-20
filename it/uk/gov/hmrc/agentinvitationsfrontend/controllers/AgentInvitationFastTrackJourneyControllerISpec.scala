@@ -540,7 +540,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("invitation-sent.header"))
     }
   }
 
