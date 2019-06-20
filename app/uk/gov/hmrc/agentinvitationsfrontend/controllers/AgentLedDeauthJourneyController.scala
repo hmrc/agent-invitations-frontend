@@ -161,7 +161,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val showResponseFailed: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case ResponseFailed =>
+    case _: ResponseFailed =>
   }
 
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
@@ -179,7 +179,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
     case _: NotSignedUp              => routes.AgentLedDeauthJourneyController.showNotSignedUp()
     case _: NotAuthorised            => routes.AgentLedDeauthJourneyController.showNotAuthorised()
-    case ResponseFailed              => routes.AgentLedDeauthJourneyController.showResponseFailed()
+    case _: ResponseFailed           => routes.AgentLedDeauthJourneyController.showResponseFailed()
     case _                           => throw new Exception(s"Link not found for $state")
   }
 
@@ -254,7 +254,7 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_vat(
           formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
           featureFlags.showKfcMtdVat,
-          routes.AgentLedDeauthJourneyController.submitBusinessService(),
+          routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         ))
 
@@ -315,14 +315,14 @@ class AgentLedDeauthJourneyController @Inject()(
           s"${externalUrls.agentServicesAccountUrl}/agent-services-account"))
 
     case KnownFactNotMatched =>
-      Ok(no_client_found())
+      Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>
       Ok(not_signed_up(service, hasRequests = false))
 
-    case NotAuthorised(service) => Ok(not_authorised(service))
+    case NotAuthorised(service) => Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType()))
 
-    case ResponseFailed => Ok(response_failed())
+    case _: ResponseFailed => Ok(response_failed(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
 
   }
 }

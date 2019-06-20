@@ -1126,11 +1126,11 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Sorry, some of your responses could not be saved",
+        "Sorry, there is a problem with the service",
         "We could not save your response for the following services:",
         "Send your Income Tax updates through software",
         "Submit your VAT returns through software",
-        "You can view which services you appointed My Agency Name to deal with."
+        "You can continue without these services, or try again later."
       )
     }
 
@@ -1207,7 +1207,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
       checkHtmlResultWithBodyText(
         result,
         "Sorry, there is a problem with the service",
-        "We could not save your responses. Please try again in 24 hours.")
+        "We may not have saved your responses.")
     }
   }
 

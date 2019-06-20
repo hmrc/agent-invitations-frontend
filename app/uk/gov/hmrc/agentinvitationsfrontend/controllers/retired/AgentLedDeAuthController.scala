@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import javax.inject.{Inject, Named, Singleton}
 import play.api.data.Form
@@ -26,7 +26,7 @@ import play.twirl.api.HtmlFormat.Appendable
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.BaseInvitationController
+import uk.gov.hmrc.agentinvitationsfrontend.controllers._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ServiceTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -168,8 +168,12 @@ class AgentLedDeAuthController @Inject()(
   val notAuthorised: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       agentSessionCache.get.map {
-        case Right(mayBeSession) => Ok(not_authorised(mayBeSession.getOrElse(AgentSession()).service.getOrElse("")))
-        case Left(_)             => Ok(not_authorised("")) //TODO
+        case Right(mayBeSession) =>
+          Ok(
+            not_authorised(
+              mayBeSession.getOrElse(AgentSession()).service.getOrElse(""),
+              routes.AgentLedDeAuthController.showClientType()))
+        case Left(_) => Ok(not_authorised("", routes.AgentLedDeAuthController.showClientType())) //TODO
       }
     }
   }
@@ -284,13 +288,13 @@ class AgentLedDeAuthController @Inject()(
 
   def noClientFound(): Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { _ =>
-      Ok(cancelAuthorisation.no_client_found())
+      Ok(cancelAuthorisation.no_client_found(routes.AgentLedDeAuthController.showClientType()))
     })
   }
 
   def responseFailed(): Action[AnyContent] = Action.async { implicit request =>
     ifShowDeAuthFlag(withAuthorisedAsAgent { _ =>
-      Ok(cancelAuthorisation.response_failed())
+      Ok(cancelAuthorisation.response_failed(routes.AgentLedDeAuthController.submitConfirmCancel()))
     })
   }
 

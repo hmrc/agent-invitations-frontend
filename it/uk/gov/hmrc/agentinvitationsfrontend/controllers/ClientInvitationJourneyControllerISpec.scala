@@ -48,7 +48,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "journey ID is already present in the session cookie, show the warmup page" should {
       "work when signed in" in new Setup {
-        val reqAuthorisedWithJourneyId = authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
+        val reqAuthorisedWithJourneyId =
+          authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
@@ -61,11 +62,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       def checkWarmUpPageIsShown(result: Result) {
         status(result) shouldBe 200
 
-        checkHtmlResultWithBodyText(result,
+        checkHtmlResultWithBodyText(
+          result,
           htmlEscapedMessage("warm-up.header", "My Agency"),
-          htmlEscapedMessage("warm-up.inset","My Agency")
-        )
-        checkIncludesText(result,"<p>So we can confirm who you are")
+          htmlEscapedMessage("warm-up.inset", "My Agency"))
+        checkIncludesText(result, "<p>So we can confirm who you are")
       }
     }
 
@@ -538,10 +539,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.p"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.p1"))
     }
   }
-  "GET /warm-up/some-failed" should {
+  "GET /some-responses-failed" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/some-failed")
 
     behave like anActionHandlingSessionExpiry(controller.showSomeResponsesFailed)
@@ -549,14 +550,40 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the some responses failed page" in {
       journeyState
         .set(
-          SomeResponsesFailed("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
-          Nil)
+          SomeResponsesFailed(
+            "My Agency",
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+          Nil
+        )
 
       val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.itsa"))
+    }
+  }
+
+  "POST /some-responses-failed" should {
+    def request = requestWithJourneyIdInCookie("POST", "/some-responses-failed")
+
+    "redirect to complete page with only successfully processed consents" in {
+      journeyState
+        .set(
+          SomeResponsesFailed(
+            "My Agency",
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+          Nil
+        )
+
+      val result = controller.submitSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
+
+      journeyState.get.get._1 shouldBe
+        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)))
     }
   }
 
@@ -576,7 +603,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  private def anActionHandlingSessionExpiry(action: Action[AnyContent]) = {
+  private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
       "logged in" in {
         checkRedirectsToSessionExpiry(authorisedAsAnyIndividualClient(FakeRequest()))
@@ -593,5 +620,4 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
       }
     }
-  }
 }

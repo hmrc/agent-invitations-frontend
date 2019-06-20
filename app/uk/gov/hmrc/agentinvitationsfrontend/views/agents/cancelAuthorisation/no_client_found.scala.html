@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("cancel-authorisation.not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.not-matched.header"), ""))) {
 
@@ -29,6 +29,6 @@
 
 <p id="notMatchedAdvice">@Messages("cancel-authorisation.not-matched.advice")</p>
 
-<a id="showClientTypeButton" href="@routes.AgentLedDeAuthController.showClientType()" class="button">@Messages("cancel-authorisation.start-over.button")</a>
+<a id="showClientTypeButton" href=@clientTypeCall class="button">@Messages("cancel-authorisation.start-over.button")</a>
 
 }

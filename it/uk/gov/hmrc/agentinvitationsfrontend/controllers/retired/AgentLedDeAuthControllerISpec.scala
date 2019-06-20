@@ -1,4 +1,4 @@
-package uk.gov.hmrc.agentinvitationsfrontend.controllers
+package uk.gov.hmrc.agentinvitationsfrontend.controllers.retired
 
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -9,6 +9,7 @@ import org.joda.time.LocalDate
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.retired.AgentsInvitationController.agentConfirmationForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthBehaviours, retired}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, Confirmation, Services}
@@ -82,7 +83,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
         hasMessage("cancel-authorisation.select-service.hint")
       )
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
+      checkResultContainsBackLink(result, "/invitations2/agents/cancel-authorisation/client-type")
     }
 
     "return 200 with expected page content when the clientType is business" in {
@@ -103,7 +104,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
         hasMessage("business-select-service.yes"),
         hasMessage("business-select-service.no")
       )
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
+      checkResultContainsBackLink(result, "/invitations2/agents/cancel-authorisation/client-type")
     }
   }
 
@@ -190,7 +191,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
             htmlEscapedMessage("identify-client.vat-registration-date.label"))
         }
 
-        checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/select-service")
+        checkResultContainsBackLink(result, "/invitations2/agents/cancel-authorisation/select-service")
       }
     }
 
@@ -345,7 +346,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.header")
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.yes")
       checkHtmlResultWithBodyMsgs(result, "cancel-authorisation.confirm-client.no")
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
+      checkResultContainsBackLink(result, "/invitations2/agents/cancel-authorisation/identify-client")
     }
   }
 
@@ -429,7 +430,7 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
       checkHtmlResultWithBodyText(
         result,
         "If you cancel this request, you will not be able to send Income Tax updates through software for some trading name")
-      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
+      checkResultContainsBackLink(result, "/invitations2/agents/cancel-authorisation/confirm-client")
     }
   }
 

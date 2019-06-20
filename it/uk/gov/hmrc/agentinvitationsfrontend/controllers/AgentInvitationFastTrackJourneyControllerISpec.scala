@@ -12,7 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -76,11 +76,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", submittedNinoStr.toUpperCase, Some("BN32TN")),
             None),
-          List(Prologue(None)))
+          List(Prologue(None, None))
+        )
       }
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -99,7 +101,34 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
 
+    "redirect to check-details when there is a referer in the header" in {
+      journeyState.clear
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track"
+      ).withHeaders("Referer" -> "/some/referer/url")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "HMRC-MTD-IT",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> "AB123456A",
+            "knownFact"            -> "BN32TN"),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+      journeyState.get shouldBe Some(
+        CheckDetailsCompleteItsa(
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
+          None),
+        List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))
+      )
+    }
+
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
+      givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -118,6 +147,81 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(
         "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
     }
+
+    "throw a Bad Request exception if the continue url is not whitelisted" in {
+      givenWhitelistedDomains
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=https://www.google.com&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
+    }
+    "throw a Bad Request exception if the error url is not whitelisted" in {
+      givenWhitelistedDomains
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=https://www.google.com"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
+    }
+    "throw a Bad Request exception if the continue url is invalid" in {
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=foo&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage startsWith "[foo] is not a valid continue URL"
+    }
+    "throw a Bad Request exception if the error url is invalid" in {
+      val request = FakeRequest(
+        "POST",
+        "/agents/fast-track?continue=continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=bar"
+      )
+      intercept[BadRequestException] {
+        await(
+          controller.agentFastTrack(authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientType"           -> "personal",
+              "service"              -> "foo",
+              "clientIdentifierType" -> "ni",
+              "clientIdentifier"     -> "AB123456A",
+              "knownFact"            -> "BN32TN"),
+            arn.value
+          )))
+      }.getMessage startsWith "[bar] is not a valid error URL"
+    }
   }
 
   "GET /agents/check-details" should {
@@ -127,7 +231,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         CheckDetailsCompleteItsa(
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN")),
           None),
-        List(Prologue(None)))
+        List(Prologue(None, None)))
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -146,7 +250,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenGetAgencyEmailAgentStub
       journeyState.set(
         CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN")), None),
-        List(Prologue(None)))
+        List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -158,7 +262,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to client-identify" in {
       journeyState.set(
         CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")), None),
-        List(Prologue(None)))
+        List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
@@ -179,7 +283,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
@@ -223,7 +327,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
             CheckDetailsCompleteItsa(
               AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW")),
               None),
-            Prologue(None))
+            Prologue(None, None))
         )
 
         val result = controller.submitIdentifyItsaClient(
@@ -259,7 +363,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
             CheckDetailsCompleteIrv(
               AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, Some("1990-10-10")),
               None),
-            Prologue(None))
+            Prologue(None, None))
         )
 
         val result = controller.submitIdentifyIrvClient(
@@ -287,7 +391,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompletePersonalVat(
             AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.submitIdentifyVatClient(
@@ -314,7 +418,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
@@ -343,7 +447,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         NoPostcode(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
         List(
           CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.submitKnownFactItsa(
@@ -361,7 +465,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         NoDob(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
         List(
           CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val requestWithForm = request.withFormUrlEncodedBody(
@@ -386,7 +490,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompletePersonalVat(
             AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val requestWithForm = request.withFormUrlEncodedBody(
@@ -411,7 +515,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showClientType(authorisedAsValidAgent(request, arn.value))
@@ -430,7 +534,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
@@ -438,8 +542,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("invitation-sent.header"),
-        htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
+        htmlEscapedMessage("invitation-sent.header"))
     }
   }
 
@@ -452,7 +555,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showClientNotSignedUp(authorisedAsValidAgent(request, arn.value))
@@ -472,7 +575,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
@@ -493,7 +596,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -513,7 +616,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = oppositeController.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -535,7 +638,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           CheckDetailsCompleteItsa(
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
             None),
-          Prologue(None))
+          Prologue(None, None))
       )
 
       val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))

@@ -33,8 +33,9 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
     "serialize and deserialize state" when {
       "Prologue" in {
         val state =
-          Prologue(Some("failure/url"))
-        val json = Json.parse("""{"state":"Prologue","properties":{"failureUrl": "failure/url"}}""")
+          Prologue(Some("failure/url"), Some("referer/url"))
+        val json =
+          Json.parse("""{"state":"Prologue","properties":{"failureUrl": "failure/url", "refererUrl": "referer/url"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
