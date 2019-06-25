@@ -25,10 +25,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 object VatClientForm {
 
-  def form(showKfcMtdVat: Boolean): Form[VatClient] = Form(
+  def form: Form[VatClient] = Form(
     mapping(
       "clientIdentifier" -> normalizedText.verifying(validVrn),
-      "registrationDate" -> optionalIf(showKfcMtdVat, DateFieldHelper.dateFieldsMapping(validVatDateFormat))
+      "registrationDate" -> DateFieldHelper.dateFieldsMapping(validVatDateFormat)
     )(VatClient.apply)(VatClient.unapply)
   )
 }

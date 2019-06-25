@@ -149,7 +149,9 @@ class AgentsInvitationController @Inject()(
                           case Some(r) => r
                           case None =>
                             val updatedBasket = existingSession.requests ++ Seq(
-                              AuthorisationRequest(clientName, Invitation(clientType, service, clientId, knownFact)))
+                              AuthorisationRequest(
+                                clientName,
+                                Invitation(clientType, service, clientId, knownFact.getOrElse(""))))
                             agentSessionCache
                               .save(
                                 AgentSession(
@@ -379,16 +381,20 @@ class AgentsInvitationController @Inject()(
     implicit request: Request[_]): Future[Result] = {
     val invitationEither: Either[Result, Invitation] = agentSession.service match {
       case Some(HMRCPIR) =>
-        val kf = if (featureFlags.showKfcPersonalIncome) agentSession.knownFact.map(DOB(_)) else None
-        Right(PirInvitation(Nino(agentSession.clientIdentifier.getOrElse("")), kf))
+        val kf = agentSession.knownFact.map(DOB(_))
+        Right(PirInvitation(Nino(agentSession.clientIdentifier.getOrElse("")), kf.getOrElse(DOB(""))))
 
       case Some(HMRCMTDIT) =>
-        val kf = if (featureFlags.showKfcMtdIt) agentSession.knownFact.map(Postcode(_)) else None
-        Right(ItsaInvitation(Nino(agentSession.clientIdentifier.getOrElse("")), kf))
+        val kf = agentSession.knownFact.map(Postcode(_))
+        Right(ItsaInvitation(Nino(agentSession.clientIdentifier.getOrElse("")), kf.getOrElse(Postcode(""))))
 
       case Some(HMRCMTDVAT) =>
-        val kf = if (featureFlags.showKfcMtdVat) agentSession.knownFact.map(VatRegDate(_)) else None
-        Right(VatInvitation(agentSession.clientType, Vrn(agentSession.clientIdentifier.getOrElse("")), kf))
+        val kf = agentSession.knownFact.map(VatRegDate(_))
+        Right(
+          VatInvitation(
+            agentSession.clientType,
+            Vrn(agentSession.clientIdentifier.getOrElse("")),
+            kf.getOrElse(VatRegDate(""))))
 
       case e =>
         Logger.warn(s"unsupported service: $e, redirecting to /client-type")

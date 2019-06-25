@@ -127,12 +127,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)(
       hasPendingInvitationsFor: HasPendingInvitations)(hasActiveRelationshipFor: HasActiveRelationship)(
-      redirectToConfirmItsaFlag: Boolean)(showKfcItsa: Boolean)(getClientName: GetClientName)(
-      createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
-      agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
-      case IdentifyPersonalClient(HMRCMTDIT, basket) if showKfcItsa && redirectToConfirmItsaFlag =>
+      getClientName: GetClientName)(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
+      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(itsaClient: ItsaClient) = Transition {
+      case IdentifyPersonalClient(HMRCMTDIT, basket) =>
         for {
-          postcodeMatches <- checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode.getOrElse(""))
+          postcodeMatches <- checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
           endState <- postcodeMatches match {
                        case Some(true) =>
                          getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientName =>
@@ -140,71 +139,24 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ConfirmClientItsa(
                                AuthorisationRequest(
                                  clientName.getOrElse(""),
-                                 ItsaInvitation(
-                                   Nino(itsaClient.clientIdentifier),
-                                   itsaClient.postcode.map(Postcode.apply))),
+                                 ItsaInvitation(Nino(itsaClient.clientIdentifier), Postcode(itsaClient.postcode))),
                                basket))
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket))
                      }
         } yield endState
-
-      case IdentifyPersonalClient(HMRCMTDIT, basket) if !showKfcItsa && redirectToConfirmItsaFlag =>
-        getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientName =>
-          goto(
-            ConfirmClientItsa(
-              AuthorisationRequest(
-                clientName.getOrElse(""),
-                ItsaInvitation(Nino(itsaClient.clientIdentifier), itsaClient.postcode.map(Postcode.apply))),
-              basket))
-        }
-
-      case IdentifyPersonalClient(HMRCMTDIT, basket) if showKfcItsa && !redirectToConfirmItsaFlag =>
-        for {
-          postcodeMatches <- checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode.getOrElse(""))
-
-          endState <- postcodeMatches match {
-                       case Some(true) =>
-                         getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientName =>
-                           val newState = ConfirmClientItsa(
-                             AuthorisationRequest(
-                               clientName.getOrElse(""),
-                               ItsaInvitation(
-                                 Nino(itsaClient.clientIdentifier),
-                                 itsaClient.postcode.map(Postcode.apply))),
-                             basket
-                           )
-                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
-                             .apply(newState)
-                         }
-                       case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
-                     }
-        } yield endState
-
-      case IdentifyPersonalClient(HMRCMTDIT, basket) if !showKfcItsa && !redirectToConfirmItsaFlag =>
-        getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientName =>
-          val newState = ConfirmClientItsa(
-            AuthorisationRequest(
-              clientName.getOrElse(""),
-              ItsaInvitation(Nino(itsaClient.clientIdentifier), itsaClient.postcode.map(Postcode.apply))),
-            basket)
-          clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
-        }
     }
 
     def identifiedVatClient(checkRegDateMatches: CheckRegDateMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
-      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmVatFlag: Boolean)(showKfcVat: Boolean)(
-      getClientName: GetClientName)(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
-      case IdentifyPersonalClient(HMRCMTDVAT, basket) if showKfcVat && redirectToConfirmVatFlag =>
+      hasActiveRelationshipFor: HasActiveRelationship)(getClientName: GetClientName)(
+      createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      agent: AuthorisedAgent)(vatClient: VatClient) = Transition {
+      case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         for {
           regDateMatches <- checkRegDateMatches(
                              Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate.getOrElse("")))
+                             LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
                        case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
@@ -215,7 +167,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                  VatInvitation(
                                    Some(personal),
                                    Vrn(vatClient.clientIdentifier),
-                                   vatClient.registrationDate.map(VatRegDate.apply))),
+                                   VatRegDate(vatClient.registrationDate))),
                                basket
                              ))
                          }
@@ -224,67 +176,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
                      }
         } yield endState
 
-      case IdentifyPersonalClient(HMRCMTDVAT, basket) if !showKfcVat && redirectToConfirmVatFlag =>
-        getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { name =>
-          goto(
-            ConfirmClientPersonalVat(
-              AuthorisationRequest(
-                name.getOrElse(""),
-                VatInvitation(
-                  Some(personal),
-                  Vrn(vatClient.clientIdentifier),
-                  vatClient.registrationDate.map(VatRegDate.apply))),
-              basket
-            ))
-        }
-
-      case IdentifyPersonalClient(HMRCMTDVAT, basket) if showKfcVat && !redirectToConfirmVatFlag =>
+      case IdentifyBusinessClient =>
         for {
           regDateMatches <- checkRegDateMatches(
                              Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate.getOrElse("")))
-
-          endState <- regDateMatches match {
-                       case Some(204) =>
-                         getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
-                           val newState = ConfirmClientPersonalVat(
-                             AuthorisationRequest(
-                               clientName.getOrElse(""),
-                               VatInvitation(
-                                 Some(business),
-                                 Vrn(vatClient.clientIdentifier),
-                                 vatClient.registrationDate.map(VatRegDate.apply))),
-                             basket
-                           )
-                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
-                             .apply(newState)
-                         }
-                       case Some(_) => goto(KnownFactNotMatched(basket))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
-                     }
-        } yield endState
-
-      case IdentifyPersonalClient(HMRCMTDVAT, basket) if !showKfcVat && !redirectToConfirmVatFlag =>
-        getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
-          val newState = ConfirmClientPersonalVat(
-            AuthorisationRequest(
-              clientName.getOrElse(""),
-              VatInvitation(
-                Some(business),
-                Vrn(vatClient.clientIdentifier),
-                vatClient.registrationDate.map(VatRegDate.apply))),
-            basket
-          )
-          clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
-        }
-
-      case IdentifyBusinessClient if showKfcVat && redirectToConfirmVatFlag =>
-        for {
-          regDateMatches <- checkRegDateMatches(
-                             Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate.getOrElse("")))
+                             LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
                        case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
@@ -295,72 +191,23 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                  VatInvitation(
                                    Some(business),
                                    Vrn(vatClient.clientIdentifier),
-                                   vatClient.registrationDate.map(VatRegDate.apply)))))
+                                   VatRegDate(vatClient.registrationDate)))))
                          }
                        case Some(_) => goto(KnownFactNotMatched(Set.empty))
                        case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
-
-      case IdentifyBusinessClient if !showKfcVat && redirectToConfirmVatFlag =>
-        getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { name =>
-          goto(
-            ConfirmClientBusinessVat(
-              AuthorisationRequest(
-                name.getOrElse(""),
-                VatInvitation(
-                  Some(business),
-                  Vrn(vatClient.clientIdentifier),
-                  vatClient.registrationDate.map(VatRegDate.apply)))))
-        }
-      case IdentifyBusinessClient if showKfcVat && !redirectToConfirmVatFlag => {
-        for {
-          regDateMatches <- checkRegDateMatches(
-                             Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate.getOrElse("")))
-
-          endState <- regDateMatches match {
-                       case Some(204) =>
-                         getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
-                           val newState = ConfirmClientBusinessVat(
-                             AuthorisationRequest(
-                               clientName.getOrElse(""),
-                               VatInvitation(
-                                 Some(business),
-                                 Vrn(vatClient.clientIdentifier),
-                                 vatClient.registrationDate.map(VatRegDate.apply))))
-                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
-                             .apply(newState)
-                         }
-                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
-                     }
-        } yield endState
-      }
-      case IdentifyBusinessClient if !showKfcVat && !redirectToConfirmVatFlag =>
-        getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
-          val newState = ConfirmClientBusinessVat(
-            AuthorisationRequest(
-              clientName.getOrElse(""),
-              VatInvitation(
-                Some(business),
-                Vrn(vatClient.clientIdentifier),
-                vatClient.registrationDate.map(VatRegDate.apply))))
-          clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
-        }
     }
 
     type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
 
     def identifiedIrvClient(checkDobMatches: CheckDOBMatches)(hasPendingInvitationsFor: HasPendingInvitations)(
-      hasActiveRelationshipFor: HasActiveRelationship)(redirectToConfirmIrvFlag: Boolean)(showKfcPir: Boolean)(
-      getClientName: GetClientName)(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
-      case IdentifyPersonalClient(HMRCPIR, basket) if showKfcPir && redirectToConfirmIrvFlag =>
+      hasActiveRelationshipFor: HasActiveRelationship)(getClientName: GetClientName)(
+      createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      agent: AuthorisedAgent)(irvClient: IrvClient) = Transition {
+      case IdentifyPersonalClient(HMRCPIR, basket) =>
         for {
-          dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse("")))
+          dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
           endState <- dobMatches match {
                        case Some(true) =>
                          getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
@@ -368,7 +215,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ConfirmClientIrv(
                                AuthorisationRequest(
                                  clientName.getOrElse(""),
-                                 PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
+                                 PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob))),
                                basket
                              ))
                          }
@@ -376,47 +223,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
                        case None        => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
-
-      case IdentifyPersonalClient(HMRCPIR, basket) if !showKfcPir && redirectToConfirmIrvFlag =>
-        getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
-          goto(
-            ConfirmClientIrv(
-              AuthorisationRequest(
-                clientName.getOrElse(""),
-                PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
-              basket))
-        }
-      case IdentifyPersonalClient(HMRCPIR, basket) if showKfcPir && !redirectToConfirmIrvFlag =>
-        for {
-          dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob.getOrElse("")))
-
-          endState <- dobMatches match {
-                       case Some(true) =>
-                         getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
-                           val newState = ConfirmClientIrv(
-                             AuthorisationRequest(
-                               clientName.getOrElse(""),
-                               PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
-                             basket)
-                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
-                             .apply(newState)
-                         }
-                       case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None        => goto(KnownFactNotMatched(basket))
-                     }
-        } yield endState
-
-      case IdentifyPersonalClient(HMRCPIR, basket) if !showKfcPir && !redirectToConfirmIrvFlag =>
-        getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
-          val newState = ConfirmClientIrv(
-            AuthorisationRequest(
-              clientName.getOrElse(""),
-              PirInvitation(Nino(irvClient.clientIdentifier), irvClient.dob.map(DOB.apply))),
-            basket)
-          clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(agent)(Confirmation(true)).apply(newState)
-        }
     }
 
     private def createAndProcessInvitations(

@@ -59,14 +59,10 @@ class InvitationsService @Inject()(
     } yield invitation)
       .map(storedInvitation => {
         val id = storedInvitation.selfUrl.toString.split("/").toStream.last
-        if ((storedInvitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
-              | (storedInvitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
-              | (storedInvitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-          invitationsConnector
-            .getAgentReferenceRecord(storedInvitation.arn)
-            .map(agentRefRecord =>
-              auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
-        } else auditService.sendAgentInvitationSubmitted(arn, id, invitation, "", "Not Required")
+        invitationsConnector
+          .getAgentReferenceRecord(storedInvitation.arn)
+          .map(agentRefRecord =>
+            auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
         InvitationId(id)
       })
       .recoverWith {
@@ -98,15 +94,11 @@ class InvitationsService @Inject()(
       } yield invitation)
         .map(invitation => {
           val id = invitation.selfUrl.toString.split("/").toStream.last
-          if ((invitation.service == Services.HMRCMTDIT && featureFlags.showKfcMtdIt)
-                | (invitation.service == Services.HMRCPIR && featureFlags.showKfcPersonalIncome)
-                | (invitation.service == Services.HMRCMTDVAT && featureFlags.showKfcMtdVat)) {
-            invitationsConnector
-              .getAgentReferenceRecord(invitation.arn)
-              .map(agentRefRecord =>
-                auditService
-                  .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
-          } else auditService.sendAgentInvitationSubmitted(arn, id, authRequest.invitation, "", "Not Required")
+          invitationsConnector
+            .getAgentReferenceRecord(invitation.arn)
+            .map(agentRefRecord =>
+              auditService
+                .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
           authRequest.copy(state = AuthorisationRequest.CREATED)
         })
         .recover {

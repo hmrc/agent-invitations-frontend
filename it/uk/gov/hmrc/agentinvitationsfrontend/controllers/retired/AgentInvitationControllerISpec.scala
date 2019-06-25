@@ -157,7 +157,8 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
       await(sessionStore.save(invitation))
       val result = selectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         htmlEscapedMessage("business-select-service.header"),
         htmlEscapedMessage("business-select-service.yes"),
         htmlEscapedMessage("business-select-service.no"),
@@ -268,7 +269,7 @@ class AgentInvitationControllerISpec extends BaseISpec with AuthBehaviours {
     "return 5xx for Unsupported service" in {
       await(sessionStore.save(AgentSession(None, Some("UNSUPPORTED_SERVICE"))))
       val unsupportedForm =
-        VatClientForm.form(featureFlags.showKfcMtdVat).fill(VatClient("123456789", None))
+        VatClientForm.form.fill(VatClient("123456789", ""))
 
       intercept[Exception] {
         await(

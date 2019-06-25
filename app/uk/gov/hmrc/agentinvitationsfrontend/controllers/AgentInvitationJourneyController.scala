@@ -106,27 +106,26 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitIdentifyItsaClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form(featureFlags.showKfcMtdIt))(
+    whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdItToConfirm)(featureFlags.showKfcMtdIt)(
-        getClientNameByService)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)
+        relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
+        createAgentLink)(getAgencyEmail)
     )
   }
 
   val submitIdentifyVatClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(VatClientForm.form(featureFlags.showKfcMtdVat))(
+    whenAuthorisedWithForm(AsAgent)(VatClientForm.form)(
       Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableMtdVatToConfirm)(featureFlags.showKfcMtdVat)(
-        getClientNameByService)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)
+        relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
+        createAgentLink)(getAgencyEmail)
     )
   }
 
   val submitIdentifyIrvClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(IrvClientForm.form(featureFlags.showKfcPersonalIncome))(
+    whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)(featureFlags.enableIrvToConfirm)(
-        featureFlags.showKfcPersonalIncome)(getClientNameByService)(createMultipleInvitations)(createAgentLink)(
-        getAgencyEmail)
+        relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
+        createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -246,8 +245,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
       Ok(
         identify_client_itsa(
-          formWithErrors.or(ItsaClientForm.form(featureFlags.showKfcMtdIt)),
-          featureFlags.showKfcMtdIt,
+          formWithErrors.or(ItsaClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
           backLinkFor(breadcrumbs).url
         )
@@ -256,8 +254,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCMTDVAT, _) =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
-          featureFlags.showKfcMtdVat,
+          formWithErrors.or(VatClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         )
@@ -266,8 +263,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCPIR, _) =>
       Ok(
         identify_client_irv(
-          formWithErrors.or(IrvClientForm.form(featureFlags.showKfcPersonalIncome)),
-          featureFlags.showKfcPersonalIncome,
+          formWithErrors.or(IrvClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
           backLinkFor(breadcrumbs).url
         )
@@ -276,8 +272,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyBusinessClient =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
-          featureFlags.showKfcMtdVat,
+          formWithErrors.or(VatClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         )

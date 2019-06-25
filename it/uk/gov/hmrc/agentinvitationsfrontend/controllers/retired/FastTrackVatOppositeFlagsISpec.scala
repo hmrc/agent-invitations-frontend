@@ -21,7 +21,7 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
   override implicit val defaultTimeout = 35 seconds
 
   override implicit lazy val app: Application =
-    appBuilder(featureFlags.copy(showKfcMtdVat = false)).build()
+    appBuilder(featureFlags).build()
 
   lazy val controller: AgentsInvitationController = app.injector.instanceOf[AgentsInvitationController]
   lazy val fastTrackController: AgentsFastTrackInvitationController =
@@ -208,31 +208,6 @@ class FastTrackVatOppositeFlagsISpec extends BaseISpec {
       val result = await(
         fastTrackController.submitCheckDetails(
           authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
-    }
-
-    "render confirm_invitations when client type is provided, known fact is not required and YES is selected for VAT service" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validVrn.value, serviceVAT)
-      givenCheckRelationshipVatWithStatus(arn, validVrn.value, 404)
-      givenInvitationCreationSucceeds(
-        arn,
-        Some(personal),
-        validVrn.value,
-        invitationIdVAT,
-        validVrn.value,
-        "vrn",
-        serviceVAT,
-        "VRN")
-      givenAgentReference(arn, "BBBBBBBB", personal)
-      givenAgentReferenceRecordExistsForArn(arn, "uid")
-
-      await(sessionStore.save(agentSession.copy(clientType = Some(personal), fromFastTrack = fromFastTrack)))
-
-      val result = await(
-        fastTrackController.submitCheckDetails(
-          authorisedAsValidAgent(request, arn.value).withFormUrlEncodedBody("accepted" -> "true")))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations2/agents/invitation-sent")
     }

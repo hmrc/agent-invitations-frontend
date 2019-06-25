@@ -24,24 +24,13 @@ case class FeatureFlags @Inject()(
   @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean = true,
   @Named("features.show-personal-income") showPersonalIncome: Boolean = true,
   @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean = true,
-  @Named("features.show-kfc-mtd-it") showKfcMtdIt: Boolean = true,
-  @Named("features.show-kfc-personal-income") showKfcPersonalIncome: Boolean = true,
-  @Named("features.show-kfc-mtd-vat") showKfcMtdVat: Boolean = true,
   @Named("features.enable-fast-track") enableFastTrack: Boolean = true,
   @Named("features.enable-track-requests") enableTrackRequests: Boolean = true,
   @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false,
   @Named("features.redirect-to-confirm-personal-income") enableIrvToConfirm: Boolean = false,
   @Named("features.redirect-to-confirm-mtd-it") enableMtdItToConfirm: Boolean = true,
   @Named("features.redirect-to-confirm-mtd-vat") enableMtdVatToConfirm: Boolean = true,
-  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true) {
-
-  def isKfcFlagOnForService(service: String) =
-    service match {
-      case HMRCMTDIT  => showKfcMtdIt
-      case HMRCPIR    => showKfcPersonalIncome
-      case HMRCMTDVAT => showKfcMtdVat
-    }
-}
+  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true) {}
 
 object FeatureFlags {
   def apply(): FeatureFlags = new FeatureFlags()

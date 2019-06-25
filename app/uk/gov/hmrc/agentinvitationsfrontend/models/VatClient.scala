@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, Json}
 
-case class VatClient(clientIdentifier: String, registrationDate: Option[String])
+case class VatClient(clientIdentifier: String, registrationDate: String)
 
 object VatClient {
   implicit val format: Format[VatClient] = Json.format[VatClient]

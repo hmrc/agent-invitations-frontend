@@ -77,10 +77,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "ConfirmClientItsa" in {
         val state = ConfirmClientItsa(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW"))),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
           """{"state":"ConfirmClientItsa","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
@@ -89,10 +86,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "ConfirmClientIrv" in {
         val state = ConfirmClientIrv(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            PirInvitation(Nino("AB123456A"), Some(DOB("1990-10-10"))),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", PirInvitation(Nino("AB123456A"), DOB("1990-10-10")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
           """{"state":"ConfirmClientIrv","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"PirInvitation","data":{"clientType":"personal","service":"PERSONAL-INCOME-RECORD","clientIdentifier":"AB123456A","clientIdentifierType":"ni","dob":{"value":"1990-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
@@ -104,7 +98,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state = ConfirmClientPersonalVat(
           AuthorisationRequest(
             "Sylvia Plath",
-            VatInvitation(Some(personal), Vrn("123456"), Some(VatRegDate("2010-10-10"))),
+            VatInvitation(Some(personal), Vrn("123456"), VatRegDate("2010-10-10")),
             itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
@@ -116,7 +110,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state = ConfirmClientBusinessVat(
           AuthorisationRequest(
             "Sylvia Plath",
-            VatInvitation(Some(business), Vrn("123456"), Some(VatRegDate("2010-10-10"))),
+            VatInvitation(Some(business), Vrn("123456"), VatRegDate("2010-10-10")),
             itemId = "ABC"))
         val json = Json.parse(
           """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"}}}""")
@@ -182,10 +176,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "DeleteAuthorisationsPersonal" in {
         val state = DeleteAuthorisationRequestPersonal(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            ItsaInvitation(Nino("AB123456A"), Some(Postcode("BN114AW"))),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
           """{"state":"DeleteAuthorisationRequestPersonal","properties":{"authorisationRequest":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")

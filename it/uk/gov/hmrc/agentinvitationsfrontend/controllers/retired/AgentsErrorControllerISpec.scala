@@ -16,9 +16,9 @@ class AgentsErrorControllerISpec extends BaseISpec with AuthBehaviours {
   lazy val controller: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-  val itsaInvitation = ItsaInvitation(validNino, Some(Postcode(validPostcode)))
-  val pirInvitation = PirInvitation(validNino, Some(DOB(dateOfBirth)))
-  val vatInvitation = VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate)))
+  val itsaInvitation = ItsaInvitation(validNino, Postcode(validPostcode))
+  val pirInvitation = PirInvitation(validNino, DOB(dateOfBirth))
+  val vatInvitation = VatInvitation(Some(business), validVrn, VatRegDate(validRegistrationDate))
 
   "GET /agents/not-matched" should {
     val request = FakeRequest("GET", "/agents/not-matched")

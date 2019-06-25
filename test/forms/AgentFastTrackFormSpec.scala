@@ -284,130 +284,89 @@ class AgentFastTrackFormSpec extends UnitSpec {
       }
     }
 
-    "when feature flags are switched off" when {
-      val featureFlags = FeatureFlags(showKfcMtdIt = false, showKfcMtdVat = false, showKfcPersonalIncome = false)
-      "return no error message" when {
-        "provided correct ITSA Data without postcode" in {
-          val data = Json.obj(
-            "clientType"           -> "personal",
-            "service"              -> HMRCMTDIT,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackForm.bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
+    "agentFastTrackKnownFactForm" when {
+      "feature flags are on" when {
+        val featureFlags = FeatureFlags()
+
+        "return no error message" when {
+          "provided correct ITSA Data" in {
+            val data = Json.obj("knownFact" -> "DH14EJ")
+            val fastTrackForm =
+              knownFactsForm(postcodeMapping).bind(data)
+            fastTrackForm.errors.isEmpty shouldBe true
+          }
+
+          "provided correct IRV Data" in {
+            val data = Json.obj(
+              "knownFact.year"  -> "2000",
+              "knownFact.month" -> "01",
+              "knownFact.day"   -> "01"
+            )
+            val fastTrackForm =
+              knownFactsForm(dateOfBirthMapping).bind(data)
+            fastTrackForm.errors.isEmpty shouldBe true
+          }
+
+          "provided correct VAT Data" in {
+            val data = Json.obj(
+              "knownFact.year"  -> "2000",
+              "knownFact.month" -> "01",
+              "knownFact.day"   -> "01"
+            )
+            val fastTrackForm = knownFactsForm(vatRegDateMapping).bind(data)
+            fastTrackForm.errors.isEmpty shouldBe true
+          }
         }
 
-        "provided correct IRV Data without Date of birth" in {
-          val data = Json.obj(
-            "clientType"           -> "personal",
-            "service"              -> HMRCPIR,
-            "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> "WM123456C",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackForm.bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
-        }
-
-        "provided correct VAT Data without Vat Registation Date" in {
-          val data = Json.obj(
-            "clientType"           -> "business",
-            "service"              -> HMRCMTDVAT,
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "101747696",
-            "knownFact"            -> ""
-          )
-          val fastTrackForm = agentFastTrackForm.bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
-        }
-      }
-    }
-  }
-
-  "agentFastTrackKnownFactForm" when {
-    "feature flags are on" when {
-      val featureFlags = FeatureFlags()
-
-      "return no error message" when {
-        "provided correct ITSA Data" in {
-          val data = Json.obj("knownFact" -> "DH14EJ")
-          val fastTrackForm =
-            knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
-        }
-
-        "provided correct IRV Data" in {
-          val data = Json.obj(
-            "knownFact.year"  -> "2000",
-            "knownFact.month" -> "01",
-            "knownFact.day"   -> "01"
-          )
-          val fastTrackForm =
-            knownFactsForm(dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
-        }
-
-        "provided correct VAT Data" in {
-          val data = Json.obj(
-            "knownFact.year"  -> "2000",
-            "knownFact.month" -> "01",
-            "knownFact.day"   -> "01"
-          )
-          val fastTrackForm = knownFactsForm(vatRegDateMapping(featureFlags)).bind(data)
-          fastTrackForm.errors.isEmpty shouldBe true
-        }
-      }
-
-      "return error message" when {
-        "provided empty known fact for ITSA" in {
-          val data = Json.obj("knownFact" -> "")
-          val fastTrackForm =
-            knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.postcode.required")))
-        }
-        "provided invalid characters in known fact for ITSA" in {
-          val data = Json.obj("knownFact" -> "DH!4EJ")
-          val fastTrackForm =
-            knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-characters")))
-        }
-        "provided invalid format in known fact for ITSA" in {
-          val data = Json.obj("knownFact" -> "DH14EJXXX")
-          val fastTrackForm =
-            knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt)).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
-        }
-        "provided empty known fact for IRV" in {
-          val data = Json.obj("knownFact.year" -> "", "knownFact.month" -> "", "knownFact.day" -> "")
-          val fastTrackForm =
-            knownFactsForm(dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.irv-date-of-birth.required")))
-        }
-        "provided invalid known fact for IRV" in {
-          val data = Json.obj("knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
-          val fastTrackForm =
-            knownFactsForm(dateOfBirthMapping(featureFlags.showKfcPersonalIncome)).bind(data)
-          fastTrackForm.errors shouldBe Seq(
-            FormError("knownFact.year", List("error.year.invalid-format")),
-            FormError("knownFact.month", List("error.month.invalid-format")),
-            FormError("knownFact.day", List("error.day.invalid-format"))
-          )
-        }
-        "provided empty known fact for VAT" in {
-          val data = Json.obj("knownFact.year" -> "", "knownFact.month" -> "", "knownFact.day" -> "")
-          val fastTrackForm = knownFactsForm(vatRegDateMapping(featureFlags)).bind(data)
-          fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.vat-registration-date.required")))
-        }
-        "provided invalid known fact for VAT" in {
-          val data = Json.obj("knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
-          val fastTrackForm = knownFactsForm(vatRegDateMapping(featureFlags)).bind(data)
-          fastTrackForm.errors shouldBe Seq(
-            FormError("knownFact.year", List("error.year.invalid-format")),
-            FormError("knownFact.month", List("error.month.invalid-format")),
-            FormError("knownFact.day", List("error.day.invalid-format"))
-          )
+        "return error message" when {
+          "provided empty known fact for ITSA" in {
+            val data = Json.obj("knownFact" -> "")
+            val fastTrackForm =
+              knownFactsForm(postcodeMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.postcode.required")))
+          }
+          "provided invalid characters in known fact for ITSA" in {
+            val data = Json.obj("knownFact" -> "DH!4EJ")
+            val fastTrackForm =
+              knownFactsForm(postcodeMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-characters")))
+          }
+          "provided invalid format in known fact for ITSA" in {
+            val data = Json.obj("knownFact" -> "DH14EJXXX")
+            val fastTrackForm =
+              knownFactsForm(postcodeMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("enter-postcode.invalid-format")))
+          }
+          "provided empty known fact for IRV" in {
+            val data = Json.obj("knownFact.year" -> "", "knownFact.month" -> "", "knownFact.day" -> "")
+            val fastTrackForm =
+              knownFactsForm(dateOfBirthMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.irv-date-of-birth.required")))
+          }
+          "provided invalid known fact for IRV" in {
+            val data = Json.obj("knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+            val fastTrackForm =
+              knownFactsForm(dateOfBirthMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(
+              FormError("knownFact.year", List("error.year.invalid-format")),
+              FormError("knownFact.month", List("error.month.invalid-format")),
+              FormError("knownFact.day", List("error.day.invalid-format"))
+            )
+          }
+          "provided empty known fact for VAT" in {
+            val data = Json.obj("knownFact.year" -> "", "knownFact.month" -> "", "knownFact.day" -> "")
+            val fastTrackForm = knownFactsForm(vatRegDateMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(FormError("knownFact", List("error.vat-registration-date.required")))
+          }
+          "provided invalid known fact for VAT" in {
+            val data = Json.obj("knownFact.year" -> "aaaa", "knownFact.month" -> "aa", "knownFact.day" -> "aa")
+            val fastTrackForm = knownFactsForm(vatRegDateMapping).bind(data)
+            fastTrackForm.errors shouldBe Seq(
+              FormError("knownFact.year", List("error.year.invalid-format")),
+              FormError("knownFact.month", List("error.month.invalid-format")),
+              FormError("knownFact.day", List("error.day.invalid-format"))
+            )
+          }
         }
       }
     }

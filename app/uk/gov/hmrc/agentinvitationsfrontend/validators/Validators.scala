@@ -21,8 +21,7 @@ import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, ValidateHelper}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
@@ -44,28 +43,17 @@ object Validators {
 
   val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
 
-  def validPostcode(
-    isKfcFlagOn: Boolean,
-    invalidFormatFailure: String,
-    emptyFailure: String,
-    invalidCharactersFailure: String) = Constraint[String] { input: String =>
-    if (isKfcFlagOn) {
+  def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String) =
+    Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
       else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
       else if (!input.matches(postcodeRegex)) Invalid(ValidationError(invalidFormatFailure))
       else Valid
-    } else Valid
-  }
+    }
 
-  def postcodeMapping(featureEnabled: Boolean): Mapping[Option[String]] =
-    optionalIf(
-      featureEnabled,
-      trimmedUppercaseText.verifying(
-        validPostcode(
-          featureEnabled,
-          "enter-postcode.invalid-format",
-          "error.postcode.required",
-          "enter-postcode.invalid-characters"))
+  def postcodeMapping: Mapping[String] =
+    trimmedUppercaseText.verifying(
+      validPostcode("enter-postcode.invalid-format", "error.postcode.required", "enter-postcode.invalid-characters")
     )
 
   val validVrn =
@@ -78,11 +66,7 @@ object Validators {
   def validNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
 
-  def dateOfBirthMapping(showKfcPersonalIncome: Boolean): Mapping[Option[String]] =
-    optionalIf(
-      showKfcPersonalIncome,
-      dateFieldsMapping(validDobDateFormat)
-    )
+  def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
 
   def validUtr(nonEmptyFailure: String = "error.utr.required", invalidFailure: String = "enter-utr.invalid-format") =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
@@ -114,6 +98,5 @@ object Validators {
       Invalid(ValidationError(errorMessage))
   }
 
-  def vatRegDateMapping(featureFlags: FeatureFlags): Mapping[Option[String]] =
-    optionalIf(featureFlags.showKfcMtdVat, dateFieldsMapping(validVatDateFormat))
+  def vatRegDateMapping: Mapping[String] = dateFieldsMapping(validVatDateFormat)
 }

@@ -23,20 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 
-@(agentInvitationsForm : Form[VatClient], knownFactFlag: Boolean, submitFormCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@featureSwitchOn()(content: Html) = {
-    @if(knownFactFlag) { @content }
-}
-
-@featureSwitchOff(featureName: String)(content: Html) = {
-@if(!knownFactFlag) { @content }
-}
-
-@titleSwitch = @{
-    if(knownFactFlag) {"identify-client.header"}
-    else {"identify-client.vrn.header"}
-}
+@(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
     if(agentInvitationsForm("knownFact.day").hasErrors || agentInvitationsForm("knownFact.month").hasErrors || agentInvitationsForm("knownFact.year").hasErrors)
@@ -44,7 +31,7 @@
 }
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages(s"$titleSwitch"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"$titleSwitch"), "vat"))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "vat"))) {
 
     @back_link(backLinkUrl)
 
@@ -52,27 +39,12 @@
         @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
-  @featureSwitchOn(){<h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
+  <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
   <p>@Messages("identify-client.vat.p1")</p>
-}
 
  @form(
   action = submitFormCall, 'class -> "form js-form") {
-
-     @featureSwitchOff("features.show-kfc-mtd-vat") {
-         <div class="form-group margin-top-30">
-         @input(
-             agentInvitationsForm("clientIdentifier"),
-             '_label -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("identify-client.vrn.header") + """</h1>"""),
-             '_inputClass -> "form-control",
-             '_inputHint -> Html("""<p class="normal-text margin-top-30">""" + Messages("identify-client.itsa.p1") + """</p>""" + """<span>""" + Messages("identify-client.vrn.hint") + """</span>"""),
-             '_labelClass -> "soft--ends"
-         )
-         </div>
-     }
-
-     @featureSwitchOn() {
 
          <div class="form-group">
              @input(
@@ -94,7 +66,6 @@
                  '_legendClass -> "flush--ends"
              )
         </div>
-     }
 
      <div class="form-group">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

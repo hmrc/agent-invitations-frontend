@@ -29,15 +29,6 @@ case class CheckDetailsPageConfig(
   submitFormCall: Call,
   backLinkUrl: Option[String]) {
 
-  private val shouldShowKF: Boolean = {
-    fastTrackRequest.service match {
-      case "HMRC-MTD-IT" if featureFlags.showKfcMtdIt                     => true
-      case "PERSONAL-INCOME-RECORD" if featureFlags.showKfcPersonalIncome => true
-      case "HMRC-MTD-VAT" if featureFlags.showKfcMtdVat                   => true
-      case _                                                              => false
-    }
-  }
-
   val serviceMessageKey: String = {
     fastTrackRequest.service match {
       case "HMRC-MTD-IT"            => "itsa"
@@ -48,8 +39,8 @@ case class CheckDetailsPageConfig(
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
-  val needKnownFact: Boolean = shouldShowKF && fastTrackRequest.knownFact.getOrElse("").isEmpty
+  val needKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").isEmpty
 
-  val showKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").nonEmpty && shouldShowKF
+  val showKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").nonEmpty
 
 }

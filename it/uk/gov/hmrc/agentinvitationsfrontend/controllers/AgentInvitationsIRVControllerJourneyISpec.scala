@@ -157,7 +157,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             Some("ni"),
             Some(validNino.value),
             Some(dateOfBirth),
-            requests = Set(AuthorisationRequest("clientName", PirInvitation(validNino, Some(DOB(dateOfBirth)))))
+            requests = Set(AuthorisationRequest("clientName", PirInvitation(validNino, DOB(dateOfBirth))))
           )))
 
         givenGetAllPendingInvitationsReturnsEmpty(arn, validNino.value, servicePIR)
@@ -185,7 +185,7 @@ class AgentInvitationsIRVControllerJourneyISpec extends BaseISpec with AuthBehav
             Some("ni"),
             Some(validNino.value),
             Some(dateOfBirth),
-            requests = Set(AuthorisationRequest("clientName", PirInvitation(Nino("AB123456B"), Some(DOB(dateOfBirth)))))
+            requests = Set(AuthorisationRequest("clientName", PirInvitation(Nino("AB123456B"), DOB(dateOfBirth))))
           )))
 
         givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
