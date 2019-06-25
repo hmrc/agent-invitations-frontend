@@ -165,6 +165,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
   val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                    => }
+  val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
   val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed => }
   val submitSomeAuthorisationsFailed = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.continueSomeResponsesFailed)(redirect)
@@ -192,6 +193,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
     case _: ClientNotSignedUp         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
@@ -366,6 +368,15 @@ class AgentInvitationJourneyController @Inject()(
           basket.nonEmpty,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
+
+    case CannotCreateRequest(basket) =>
+      Ok(
+        cannot_create_request(
+          CannotCreateRequestConfig(
+            basket.nonEmpty,
+            fromFastTrack = false,
+            routes.AgentInvitationJourneyController.showIdentifyClient().url))
+      )
 
     case SomeAuthorisationsFailed(_, _, _, basket) =>
       Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))

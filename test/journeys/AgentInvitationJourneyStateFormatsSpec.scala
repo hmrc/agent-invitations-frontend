@@ -163,6 +163,15 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"KnownFactNotMatched", "properties": {"basket": []}}""")
           .as[State] shouldBe KnownFactNotMatched(Set.empty)
       }
+      "CannotCreateRequest" in {
+        Json.toJson(CannotCreateRequest(Set.empty)) shouldBe Json.obj(
+          "state"      -> "CannotCreateRequest",
+          "properties" -> Json.obj("basket" -> JsArray())
+        )
+        Json
+          .parse("""{"state":"CannotCreateRequest", "properties": {"basket": []}}""")
+          .as[State] shouldBe CannotCreateRequest(Set.empty)
+      }
       "SomeAuthorisationsFailed" in {
         val state = SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty)
         val json = Json.parse(

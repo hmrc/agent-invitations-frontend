@@ -230,6 +230,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgentLink)(getAgencyEmail)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
+      "transition to CannotCreateRequest when a migration is in process" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(423))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(false)(true)(clientName)(createMultipleInvitations)(
+          getAgentLink)(getAgencyEmail)(authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
+          thenGo(CannotCreateRequest(emptyBasket))
+      }
       "transition to PendingInvitationExists for vat service when redirect flag is off" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
@@ -301,7 +308,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgentLink)(getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", Some("1990-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
-
     }
 
     "at state IdentifyBusinessClient" should {
@@ -348,6 +354,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           hasNoActiveRelationship)(true)(true)(clientName)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
           authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
           thenGo(KnownFactNotMatched(emptyBasket))
+      }
+      "transition to CannotCreateRequest" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(423))
+        given(IdentifyBusinessClient) when identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(
+          hasNoActiveRelationship)(true)(true)(clientName)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+          authorisedAgent)(VatClient("123456", Some("2010-10-10"))) should
+          thenGo(CannotCreateRequest(emptyBasket))
       }
       "transition to PendingInvitationExists" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
