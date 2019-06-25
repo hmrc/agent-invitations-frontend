@@ -203,7 +203,29 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(403))
         given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
+          getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should thenGo(
+          KnownFactNotMatched(emptyBasket))
+      }
+      "transition to CannotCreateRequest when a migration is in process" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(423))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
           getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+          thenGo(CannotCreateRequest(emptyBasket))
+      }
+      "transition to PendingInvitationExists for vat service when redirect flag is off" in {
+        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
+          hasPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
+          getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should thenGo(
+          PendingInvitationExists(personal, emptyBasket))
+      }
+      "transition to KnownFactNotMatched when the nino and dob don't match" in {
+        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
+        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
+          getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
       "transition to KnownFactNotMatched when client not found" in {
@@ -252,6 +274,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
           authorisedAgent)(VatClient("123456", "2010-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
+      }
+      "transition to CannotCreateRequest" in {
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(423))
+        given(IdentifyBusinessClient) when identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(
+          hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+          authorisedAgent)(VatClient("123456", "2010-10-10")) should
+          thenGo(CannotCreateRequest(emptyBasket))
       }
       "transition to PendingInvitationExists" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)

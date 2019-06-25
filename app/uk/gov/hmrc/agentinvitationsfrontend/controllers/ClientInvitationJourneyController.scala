@@ -123,6 +123,14 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
+  def submitToConsent(clientType: String, uid: String) = action { implicit request =>
+    whenAuthorised(AsClient)(
+      Transitions.goDirectlyToMultiConsent(ClientType.toEnum(clientType), uid)(
+        getAgentReferenceRecord,
+        getAgencyName,
+        getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+  }
+
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
   }

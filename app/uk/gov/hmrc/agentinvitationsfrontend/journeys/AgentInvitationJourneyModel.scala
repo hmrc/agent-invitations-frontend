@@ -45,6 +45,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
+    case class CannotCreateRequest(basket: Basket) extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientIrv(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
@@ -171,8 +172,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                basket
                              ))
                          }
-                       case Some(_) => goto(KnownFactNotMatched(basket))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+                       case Some(423) => goto(CannotCreateRequest(basket))
+                       case Some(_)   => goto(KnownFactNotMatched(basket))
+                       case None      => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
                      }
         } yield endState
 
@@ -192,9 +194,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                    Some(business),
                                    Vrn(vatClient.clientIdentifier),
                                    VatRegDate(vatClient.registrationDate)))))
+
                          }
-                       case Some(_) => goto(KnownFactNotMatched(Set.empty))
-                       case None    => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case Some(423) => goto(CannotCreateRequest(Set.empty))
+                       case Some(_)   => goto(KnownFactNotMatched(Set.empty))
+                       case None      => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
     }

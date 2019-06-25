@@ -441,6 +441,34 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             SelectClientType(emptyBasket))
         )
       }
+      "redirect to /agents/cannot-create-request when  there is a migration in progress" in {
+        givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 423)
+
+        journeyState.set(
+          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+
+        val result = controller.submitIdentifyVatClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientIdentifier"       -> "202949960",
+              "registrationDate.year"  -> "2010",
+              "registrationDate.month" -> "10",
+              "registrationDate.day"   -> "10"),
+            arn.value
+          ))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showCannotCreateRequest().url)
+
+        journeyState.get should have[State](
+          CannotCreateRequest(emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+      }
     }
 
     "POST /agents/identify-irv-client" when {
