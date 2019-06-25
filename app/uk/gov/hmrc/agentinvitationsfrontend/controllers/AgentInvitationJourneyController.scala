@@ -372,11 +372,7 @@ class AgentInvitationJourneyController @Inject()(
     case CannotCreateRequest(basket) =>
       Ok(
         cannot_create_request(
-          CannotCreateRequestConfig(
-            basket.nonEmpty,
-            fromFastTrack = false,
-            routes.AgentInvitationJourneyController.showIdentifyClient().url))
-      )
+          CannotCreateRequestConfig(basket.nonEmpty, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
 
     case SomeAuthorisationsFailed(_, _, _, basket) =>
       Ok(invitation_creation_failed(SomeInvitationCreationFailedPageConfig(basket)))
