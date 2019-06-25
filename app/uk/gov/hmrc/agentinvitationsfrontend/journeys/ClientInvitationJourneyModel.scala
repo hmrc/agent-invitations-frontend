@@ -218,6 +218,24 @@ object ClientInvitationJourneyModel extends JourneyModel {
           case None          => throw new IllegalStateException("the key for this consent was not found")
         }
     }
-  }
 
+    def goDirectlyToMultiConsent(clientType: ClientType, uid: String)(
+      getAgentReferenceRecord: GetAgentReferenceRecord,
+      getAgencyName: GetAgencyName,
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
+      Transition {
+        case _ =>
+          for {
+            record <- getAgentReferenceRecord(uid)
+            result <- record match {
+                       case Some(r) =>
+                         getAgencyName(r.arn).flatMap { name =>
+                           getConsents(getPendingInvitationIdsAndExpiryDates)(name, uid).flatMap(consents =>
+                             goto(MultiConsent(clientType, uid, name, consents)))
+                         }
+                       case _ => goto(NotFoundInvitation)
+                     }
+          } yield result
+      }
+  }
 }
