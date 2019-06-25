@@ -385,7 +385,7 @@ abstract class BaseInvitationController(
           .flatMap {
             case Some(r) if agentSession.fromFastTrack => r
             case _ =>
-              if (agentSession.isDeAuthJourney && !featureFlags.enableMtdVatToConfirm) {
+              if (agentSession.isDeAuthJourney) {
                 relationshipsService
                   .checkRelationshipExistsForService(
                     arn,
@@ -436,7 +436,7 @@ abstract class BaseInvitationController(
                      .flatMap {
                        case Some(r) if agentSession.fromFastTrack => r
                        case _ =>
-                         if (agentSession.isDeAuthJourney && !featureFlags.enableMtdItToConfirm) {
+                         if (agentSession.isDeAuthJourney) {
                            relationshipsService
                              .checkRelationshipExistsForService(
                                arn,
@@ -491,7 +491,7 @@ abstract class BaseInvitationController(
             .flatMap {
               case Some(r) if agentSession.fromFastTrack => r
               case _ =>
-                if (agentSession.isDeAuthJourney && !featureFlags.enableIrvToConfirm) {
+                if (agentSession.isDeAuthJourney) {
                   relationshipsService
                     .checkRelationshipExistsForService(
                       arn,
@@ -530,11 +530,9 @@ abstract class BaseInvitationController(
         val knownFact = agentSession.knownFact
 
         service match {
-          case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
+          case HMRCMTDIT =>
             Redirect(confirmClientCall)
-          case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
-            Redirect(confirmClientCall)
-          case HMRCPIR if featureFlags.enableIrvToConfirm =>
+          case HMRCMTDVAT =>
             Redirect(confirmClientCall)
           case _ =>
             val result = for {
@@ -547,15 +545,11 @@ abstract class BaseInvitationController(
                                         .hasActiveRelationshipFor(agent.arn, clientIdentifier, service)
             } yield (hasPendingInvitations, hasActiveRelationship)
 
-            val serviceEnabled = (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-              (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-              (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm)
-
             result.flatMap {
-              case (true, _) if serviceEnabled =>
+              case (true, _) =>
                 Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
 
-              case (_, true) if serviceEnabled => Redirect(routes.AgentsErrorController.activeRelationshipExists())
+              case (_, true) => Redirect(routes.AgentsErrorController.activeRelationshipExists())
 
               case _ =>
                 invitationsService

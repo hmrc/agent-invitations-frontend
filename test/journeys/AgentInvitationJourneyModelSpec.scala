@@ -206,29 +206,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
-      "transition to ConfirmClientIrv" in {
-        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should matchPattern {
-          case (
-              ConfirmClientIrv(
-                AuthorisationRequest(
-                  "Piglet",
-                  PirInvitation(Nino("AB123456A"), DOB("1990-10-10"), personal, HMRCPIR, "ni"),
-                  AuthorisationRequest.NEW,
-                  _),
-                `emptyBasket`),
-              _) =>
-        }
-      }
-      "transition to KnownFactNotMatched when the nino and dob don't match" in {
-        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
-        given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
-          thenGo(KnownFactNotMatched(emptyBasket))
-      }
       "transition to KnownFactNotMatched when client not found" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(

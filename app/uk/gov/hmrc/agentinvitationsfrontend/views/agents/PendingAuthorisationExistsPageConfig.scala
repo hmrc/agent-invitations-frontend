@@ -22,6 +22,5 @@ case class PendingAuthorisationExistsPageConfig(
   authRequestsExist: Boolean,
   backLinkUrl: String,
   fromFastTrack: Boolean,
-  trackFlag: Boolean,
   reviewAuthsCall: Call,
   clientTypeCall: Call)

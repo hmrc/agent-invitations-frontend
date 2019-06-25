@@ -540,9 +540,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
     }
   }
 
@@ -604,26 +602,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.track.button")
-    }
-
-    "show the already-authorisation-pending page with no track button when track request flag is off" in {
-      SharedMetricRegistries.clear()
-      appOppositeJourneyState.set(
-        PendingInvitationExists(
-          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
-          None),
-        List(
-          CheckDetailsCompleteItsa(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")),
-            None),
-          Prologue(None, None))
-      )
-
-      val result = oppositeController.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
-      checkHtmlResultWithNotBodyText(result, "Track your authorisation requests")
     }
   }
 

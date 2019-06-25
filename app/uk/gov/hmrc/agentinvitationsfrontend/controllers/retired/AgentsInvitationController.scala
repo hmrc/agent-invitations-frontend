@@ -304,16 +304,18 @@ class AgentsInvitationController @Inject()(
                 continueUrl = session.continueUrl))
             .flatMap { _ =>
               asaConnector.getAgencyEmail
-                .flatMap(email =>
-                  Ok(invitation_sent(InvitationSentPageConfig(
-                    agentLink,
-                    session.continueUrl,
-                    continueUrlExists,
-                    featureFlags.enableTrackRequests,
-                    ClientType.fromEnum(clientTypeForInvitationSent),
-                    inferredExpiryDate,
-                    email
-                  ))))
+                .flatMap(
+                  email =>
+                    Ok(
+                      invitation_sent(
+                        InvitationSentPageConfig(
+                          agentLink,
+                          session.continueUrl,
+                          continueUrlExists,
+                          ClientType.fromEnum(clientTypeForInvitationSent),
+                          inferredExpiryDate,
+                          email
+                        ))))
             }
         }
       }
@@ -369,7 +371,6 @@ class AgentsInvitationController @Inject()(
             agentSession.requests.nonEmpty,
             backLinkUrl,
             agentSession.fromFastTrack,
-            featureFlags.enableTrackRequests,
             routes.AgentsInvitationController.showReviewAuthorisations(),
             routes.AgentsInvitationController.showClientType()
           )))

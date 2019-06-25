@@ -152,8 +152,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         for {
           finalState <- dobMatchResult match {
                          case Some(true) =>
-                           getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap(name =>
-                             goto(ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))))
+                           getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap(
+                             name =>
+                               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true))
+                                 .apply(ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(HMRCPIR))
                        }

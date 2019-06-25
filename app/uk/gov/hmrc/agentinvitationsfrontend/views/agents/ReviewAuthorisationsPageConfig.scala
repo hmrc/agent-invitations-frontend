@@ -27,10 +27,8 @@ case class ReviewAuthorisationsPageConfig(
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String) =
     authorisationRequest.invitation.service match {
-      case "HMRC-MTD-IT" if !featureFlags.enableMtdItToConfirm          => noNameMessage
-      case "PERSONAL-INCOME-RECORD" if !featureFlags.enableIrvToConfirm => noNameMessage
-      case "HMRC-MTD-VAT" if !featureFlags.enableMtdVatToConfirm        => noNameMessage
-      case _                                                            => authorisationRequest.clientName.stripSuffix(".")
+      case "PERSONAL-INCOME-RECORD" => noNameMessage
+      case _                        => authorisationRequest.clientName.stripSuffix(".")
     }
 
   val numberOfItems: Int = requests.size

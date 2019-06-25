@@ -26,7 +26,6 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper.optionalIf
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -371,7 +370,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             invitationLink,
             continueUrl,
             continueUrl.isDefined,
-            featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
             inferredExpiryDate,
             agencyEmail)))
@@ -383,7 +381,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             invitationLink,
             continueUrl,
             continueUrl.isDefined,
-            featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
             inferredExpiryDate,
             agencyEmail)))
@@ -413,7 +410,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             authRequestsExist = false,
             backLinkFor(breadcrumbs).url,
             fromFastTrack = true,
-            featureFlags.enableTrackRequests,
             routes.AgentInvitationJourneyController.showReviewAuthorisations(),
             routes.AgentInvitationFastTrackJourneyController.showClientType()
           )))

@@ -188,14 +188,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             hasActiveRelationships)(authorisedAgent)(ItsaClient(nino, ""))
         }.getMessage shouldBe "Postcode expected but none found"
       }
-      "transition to ConfirmClientIrv when dob matches" in {
+      "transition to ConfirmCancel when dob matches" in {
         def dobMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(true))
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
           dobMatches,
           getClientName,
           hasActiveRelationships)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmClientIrv(Some("John Smith"), Nino(nino)))
+          ConfirmCancel(HMRCPIR, Some("John Smith"), nino))
       }
       "transition to KnownFactNotMatched when dob does not match" in {
         def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))

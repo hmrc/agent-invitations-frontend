@@ -338,7 +338,6 @@ class AgentInvitationJourneyController @Inject()(
             invitationLink,
             None,
             continueUrl.isDefined,
-            featureFlags.enableTrackRequests,
             ClientType.fromEnum(personal),
             inferredExpiryDate,
             agencyEmail)))
@@ -350,7 +349,6 @@ class AgentInvitationJourneyController @Inject()(
             invitationLink,
             None,
             continueUrl.isDefined,
-            featureFlags.enableTrackRequests,
             ClientType.fromEnum(business),
             inferredExpiryDate,
             agencyEmail)))
@@ -385,7 +383,6 @@ class AgentInvitationJourneyController @Inject()(
             basket.nonEmpty,
             backLinkFor(breadcrumbs).url,
             fromFastTrack = false,
-            featureFlags.enableTrackRequests,
             routes.AgentInvitationJourneyController.showReviewAuthorisations(),
             routes.AgentInvitationJourneyController.showClientType()
           )))

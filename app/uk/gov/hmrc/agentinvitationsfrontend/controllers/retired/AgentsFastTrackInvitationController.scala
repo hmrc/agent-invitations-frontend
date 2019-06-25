@@ -211,44 +211,39 @@ class AgentsFastTrackInvitationController @Inject()(
 
   def agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
-      if (featureFlags.enableFastTrack) {
-        agentFastTrackForm
-          .bindFromRequest()
-          .fold(
-            formErrors => {
-              withMaybeErrorUrlCached {
-                case Some(continue) =>
-                  Future successful Redirect(
-                    continue
-                      .get(UnsafePermitAll)
-                      .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-                case None =>
-                  throw new IllegalStateException("No Error Url Provided")
-              }
-            },
-            fastTrackRequest => {
-              val agentSession = AgentSession(
-                clientType = fastTrackRequest.clientType,
-                service = Some(fastTrackRequest.service),
-                clientIdentifierType = Some(fastTrackRequest.clientIdentifierType),
-                clientIdentifier = Some(fastTrackRequest.clientIdentifier),
-                knownFact = fastTrackRequest.knownFact,
-                fromFastTrack = true,
-                clientTypeForInvitationSent = fastTrackRequest.clientType
-              )
-              agentSessionCache.save(agentSession).flatMap { _ =>
-                withMaybeContinueUrlCached {
-                  ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, agent.isWhitelisted) {
-                    Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
-                  }
+      agentFastTrackForm
+        .bindFromRequest()
+        .fold(
+          formErrors => {
+            withMaybeErrorUrlCached {
+              case Some(continue) =>
+                Future successful Redirect(
+                  continue
+                    .get(UnsafePermitAll)
+                    .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
+              case None =>
+                throw new IllegalStateException("No Error Url Provided")
+            }
+          },
+          fastTrackRequest => {
+            val agentSession = AgentSession(
+              clientType = fastTrackRequest.clientType,
+              service = Some(fastTrackRequest.service),
+              clientIdentifierType = Some(fastTrackRequest.clientIdentifierType),
+              clientIdentifier = Some(fastTrackRequest.clientIdentifier),
+              knownFact = fastTrackRequest.knownFact,
+              fromFastTrack = true,
+              clientTypeForInvitationSent = fastTrackRequest.clientType
+            )
+            agentSessionCache.save(agentSession).flatMap { _ =>
+              withMaybeContinueUrlCached {
+                ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, agent.isWhitelisted) {
+                  Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
                 }
               }
             }
-          )
-      } else {
-        Logger(getClass).warn("Fast-Track feature flag is switched off")
-        Future successful BadRequest
-      }
+          }
+        )
     }
   }
 

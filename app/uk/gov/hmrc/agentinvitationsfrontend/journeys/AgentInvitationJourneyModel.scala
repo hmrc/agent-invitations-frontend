@@ -208,16 +208,18 @@ object AgentInvitationJourneyModel extends JourneyModel {
       case IdentifyPersonalClient(HMRCPIR, basket) =>
         for {
           dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
+
           endState <- dobMatches match {
                        case Some(true) =>
                          getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
-                           goto(
-                             ConfirmClientIrv(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob))),
-                               basket
-                             ))
+                           val newState = ConfirmClientIrv(
+                             AuthorisationRequest(
+                               clientName.getOrElse(""),
+                               PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob))),
+                             basket)
+                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
+                             .apply(newState)
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
