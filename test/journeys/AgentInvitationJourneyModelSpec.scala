@@ -213,14 +213,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should
           thenGo(CannotCreateRequest(emptyBasket))
       }
-      "transition to PendingInvitationExists for vat service when redirect flag is off" in {
-        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] = Future.successful(true)
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
-        given(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket)) when identifiedVatClient(checkRegDateMatches)(
-          hasPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should thenGo(
-          PendingInvitationExists(personal, emptyBasket))
-      }
       "transition to KnownFactNotMatched when the nino and dob don't match" in {
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when identifiedIrvClient(checkDobMatches)(
