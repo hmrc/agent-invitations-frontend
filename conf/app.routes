@@ -30,6 +30,7 @@ POST        /agents/delete                                                 @uk.g
 #Error Agent Endpoints
 GET         /agents/not-signed-up                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientNotSignedUp
 GET         /agents/not-matched                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showNotMatched
+GET         /agents/cannot-create-request                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showCannotCreateRequest
 GET         /agents/all-authorisations-removed                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsRemoved
 GET         /agents/already-authorisation-pending                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showPendingAuthorisationExists
 GET         /agents/already-authorisation-present                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showActiveAuthorisationExists

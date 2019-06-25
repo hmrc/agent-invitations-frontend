@@ -40,6 +40,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
+  val CannotCreateRequestFormat = Json.format[CannotCreateRequest]
   val SomeAuthorisationsFailedFormat = Json.format[SomeAuthorisationsFailed]
   val AllAuthorisationsFailedFormat = Json.format[AllAuthorisationsFailed]
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
@@ -57,6 +58,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: InvitationSentPersonal             => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness             => InvitationSentBusinessFormat.writes(s)
     case s: KnownFactNotMatched                => KnownFactNotMatchedFormat.writes(s)
+    case s: CannotCreateRequest                => CannotCreateRequestFormat.writes(s)
     case s: SomeAuthorisationsFailed           => SomeAuthorisationsFailedFormat.writes(s)
     case s: AllAuthorisationsFailed            => AllAuthorisationsFailedFormat.writes(s)
     case s: ClientNotSignedUp                  => ClientNotSignedUpFormat.writes(s)
@@ -79,6 +81,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "InvitationSentPersonal"             => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"             => InvitationSentBusinessFormat.reads(properties)
     case "KnownFactNotMatched"                => KnownFactNotMatchedFormat.reads(properties)
+    case "CannotCreateRequest"                => CannotCreateRequestFormat.reads(properties)
     case "SomeAuthorisationsFailed"           => SomeAuthorisationsFailedFormat.reads(properties)
     case "AllAuthorisationsFailed"            => AllAuthorisationsFailedFormat.reads(properties)
     case "ClientNotSignedUp"                  => ClientNotSignedUpFormat.reads(properties)
