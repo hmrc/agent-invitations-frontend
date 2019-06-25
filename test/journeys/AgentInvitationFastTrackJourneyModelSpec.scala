@@ -452,82 +452,196 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
     }
 
     "at KnownFactNotMatched, calling tryAgainNotMatchedKnownFact" when {
-      def findsRequestInBreadcrumbs(originalRequest: AgentFastTrackRequest): () => Future[Option[AgentFastTrackRequest]] =
+      def findsRequestInBreadcrumbs(
+        originalRequest: AgentFastTrackRequest): () => Future[Option[AgentFastTrackRequest]] =
         () => Future.successful(Some(originalRequest))
 
       "original request was for MTD-VAT" when {
-        val completedFastTrack = AgentFastTrackRequest(
+        val completedPersonalVatFastTrack = AgentFastTrackRequest(
           clientType = Some(ClientType.personal),
-          service = HMRCMTDVAT, "vrn", vrn,
+          service = HMRCMTDVAT,
+          "vrn",
+          vrn,
           knownFact = Some("2001-01-01")
         )
 
         "clientType was missing" when {
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            fastTrackRequest = completedPersonalVatFastTrack,
+            continueUrl = None
+          )
+
           "known fact was missing, transition to SelectClientTypeVat" in {
-            val originalFastTrackRequest = completedFastTrack.copy(
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
               clientType = None,
               knownFact = None
             )
 
-            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+            val expectedFinalState = SelectClientTypeVat(
+              fastTrackRequest = originalFastTrackRequest,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
               tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
-              thenGo(SelectClientTypeVat(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+              thenGo(expectedFinalState)
           }
           "known fact was supplied but wrong, transition to SelectClientTypeVat" in {
-            val originalFastTrackRequest = completedFastTrack.copy(
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
               clientType = None,
               knownFact = Some("2001-01-01")
             )
 
-            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+            val expectedFinalState = SelectClientTypeVat(
+              fastTrackRequest = originalFastTrackRequest.copy(knownFact = None),
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
               tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
-              thenGo(SelectClientTypeVat(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+              thenGo(expectedFinalState)
           }
         }
 
         "clientType was personal" when {
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            fastTrackRequest = completedPersonalVatFastTrack,
+            continueUrl = None
+          )
+
           "known fact was missing, transition to NoVatRegDate" in {
-            val originalFastTrackRequest = completedFastTrack.copy(
-              clientType = Some(ClientType.personal),
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
               knownFact = None
             )
 
-            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+            val expectedFinalState = NoVatRegDate(
+              fastTrackRequest = originalFastTrackRequest,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
               tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
-              thenGo(NoVatRegDate(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+              thenGo(expectedFinalState)
           }
           "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
-            ???
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
+              knownFact = Some("2001-01-01")
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(TryAgainWithoutFastTrack)
           }
         }
 
         "clientType was business" when {
+          val completedBusinessVatFastTrack = completedPersonalVatFastTrack.copy(
+            clientType = Some(ClientType.business)
+          )
+
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            fastTrackRequest = completedBusinessVatFastTrack,
+            continueUrl = None
+          )
+
           "known fact was missing, transition to NoVatRegDate" in {
-            ???
+            val originalFastTrackRequest = completedBusinessVatFastTrack.copy(
+              knownFact = None
+            )
+
+            val expectedFinalState = NoVatRegDate(fastTrackRequest = originalFastTrackRequest, None)
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(expectedFinalState)
           }
           "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
-            ???
+            val originalFastTrackRequest = completedBusinessVatFastTrack.copy(
+              knownFact = Some("2001-01-01")
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(TryAgainWithoutFastTrack)
           }
         }
       }
 
       "original request was for MTD-IT service (and clientType was personal)" when {
+        val completedItsaFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCMTDIT,
+          "ni",
+          nino,
+          knownFact = Some("AA11AA")
+        )
+        val knownFactNotMatchedState = KnownFactNotMatched(
+          fastTrackRequest = completedItsaFastTrack,
+          continueUrl = None
+        )
+
         "knownFact was missing, transition to NoPostcode" in {
-          ???
+          val originalFastTrackRequest = completedItsaFastTrack.copy(
+            knownFact = None
+          )
+
+          val expectedFinalState = NoPostcode(
+            fastTrackRequest = originalFastTrackRequest,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+            thenGo(expectedFinalState)
         }
 
         "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
-          ???
+          val originalFastTrackRequest = completedItsaFastTrack.copy(
+            knownFact = Some("AA11AA")
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+            thenGo(TryAgainWithoutFastTrack)
         }
       }
 
-      "original request was for IRV service" when {
+      "original request was for IRV service (and clientType was personal)" when {
+        val completedIrvFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCPIR,
+          "ni",
+          nino,
+          knownFact = Some("AA11AA")
+        )
+        val knownFactNotMatchedState = KnownFactNotMatched(
+          fastTrackRequest = completedIrvFastTrack,
+          continueUrl = None
+        )
+
         "knownFact was missing, transition to NoDob" in {
-          ???
+          val originalFastTrackRequest = completedIrvFastTrack.copy(
+            knownFact = None
+          )
+
+          val expectedFinalState = NoDob(
+            fastTrackRequest = originalFastTrackRequest,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+            thenGo(expectedFinalState)
         }
 
         "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
-          ???
+          val originalFastTrackRequest = completedIrvFastTrack.copy(
+            knownFact = Some("2000-01-01")
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+            thenGo(TryAgainWithoutFastTrack)
         }
       }
     }

@@ -487,7 +487,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       }
     }
 
-    def tryAgainNotMatchedKnownFact(findOriginalFastTrackRequest: FindOriginalFastTrackRequest)(agent: AuthorisedAgent) =
+    def tryAgainNotMatchedKnownFact(findOriginalFastTrackRequest: FindOriginalFastTrackRequest)(
+      agent: AuthorisedAgent) =
       Transition {
         case KnownFactNotMatched(fastTrackRequest, continueUrl) =>
           val ftrWithoutKF = fastTrackRequest.copy(knownFact = None)
@@ -502,7 +503,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           def stateToTryAgainAt(ftr: AgentFastTrackRequest) =
             ftr match {
               case AgentFastTrackRequest(None, Services.HMRCMTDVAT, _, _, _) =>
-                SelectClientTypeVat(ftrWithoutKF, continueUrl)
+                val ftrWithoutKFOrClientType = ftrWithoutKF.copy(clientType = None)
+                SelectClientTypeVat(ftrWithoutKFOrClientType, continueUrl)
               case AgentFastTrackRequest(Some(_), Services.HMRCMTDVAT, _, _, None) =>
                 stateForMissingKnownFact(Services.HMRCMTDVAT)
               case AgentFastTrackRequest(_, _, _, _, Some(_)) =>
