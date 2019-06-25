@@ -24,6 +24,7 @@ import play.api.{Configuration, Mode}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
+import play.api.libs.json.Json
 import play.api.mvc.Results.{Redirect, Status}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -126,6 +127,14 @@ class ClientInvitationJourneyController @Inject()(
     action { implicit request =>
       whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
     }
+  }
+
+  def submitToConsent(clientType: String, uid: String) = action { implicit request =>
+    whenAuthorised(AsClient)(
+      Transitions.goDirectlyToMultiConsent(ClientType.toEnum(clientType), uid)(
+        getAgentReferenceRecord,
+        getAgencyName,
+        getAllClientInvitationsInfoForAgentAndStatus))(redirect)
   }
 
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
