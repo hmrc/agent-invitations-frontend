@@ -42,7 +42,7 @@ import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, Re
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -197,7 +197,25 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                      => }
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched => }
+
+  val redirectTryAgainNotMatchedKnownFact = action { implicit request =>
+    whenAuthorised(AsAgent)(Transitions.tryAgainNotMatchedKnownFact(findOriginalFastTrackRequest _))(redirect)
+  }
+
+  private def findOriginalFastTrackRequest()(implicit rh: RequestHeader): Future[Option[AgentFastTrackRequest]] =
+    journeyService.currentState.map(_.flatMap {
+      case (_, breadcrumbs) =>
+        val breadcrumbsUpToLatestPrologue = breadcrumbs.takeWhile {
+          case _: Prologue => false
+          case _           => true
+        }
+
+        breadcrumbsUpToLatestPrologue.reverse
+          .find(_.agentFastTrackRequest.isDefined)
+          .flatMap(_.agentFastTrackRequest)
+    })
+
   val showClientNotSignedUp = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
   val showPendingAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
   val showActiveAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: ActiveAuthorisationExists => }
@@ -229,6 +247,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: KnownFactNotMatched             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case TryAgainWithoutFastTrack           => routes.AgentInvitationJourneyController.agentsRoot()
     case _: ClientNotSignedUp               => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
     case _: PendingInvitationExists =>
       routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
@@ -400,8 +419,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       Ok(
         not_matched(
           hasJourneyCache = false,
-          routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
-          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+          tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
+          reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
         ))
 
     case ActiveAuthorisationExists(agentFastTrackRequest, _) =>

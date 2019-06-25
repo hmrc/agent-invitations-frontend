@@ -566,8 +566,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
-  "GET /agents/not-matched-single" should {
-    val request = FakeRequest("GET", "/agents/fast-track/not-matched")
+  "GET /agents/no-match" should {
+    val request = FakeRequest("GET", "/agents/fast-track/no-match")
+
     "show the client-type page" in {
       journeyState.set(
         KnownFactNotMatched(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW")), None),
@@ -583,6 +584,82 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "not-matched.header")
     }
+//
+//    "show a 'Try Again' link to the most appropriate place" when {
+//      "link to /agents/select-client if original fastrack request is for VAT service with everything supplied except for 'knownFact'" in {
+//        val requestMissingKF = AgentFastTrackRequest(
+//          clientType = Some(personal),
+//          service = HMRCMTDVAT, clientIdentifierType = "vrn", clientIdentifier = vrn,
+//          knownFact = None
+//        )
+//        val requestWithWrongKF = requestMissingKF.copy(knownFact = Some("1990-10-10"))
+//
+//        journeyState.set(
+//          state = KnownFactNotMatched(requestWithWrongKF, None),
+//          breadcrumbs = List(
+//            NoVatRegDate(requestMissingKF, None),
+//            CheckDetailsNoVatRegDate(requestMissingKF, None),
+//            Prologue(None, None)
+//          )
+//        )
+//
+//        val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
+//
+//        status(result) shouldBe 200
+//        result shouldContainUrl routes.AgentInvitationFastTrackJourneyController.showClientType().url
+//      }
+//
+//      "link to /agents/more-details if original fastrack request is for a non-VAT service with everything supplied except for KF" in {
+//        val requestMissingKF = AgentFastTrackRequest(
+//          clientType = Some(personal),
+//          service = HMRCMTDIT, clientIdentifierType = "ni", clientIdentifier = "AB123456A",
+//          knownFact = None
+//        )
+//        val requestWithWrongKF = requestMissingKF.copy(knownFact = Some("BN114AW"))
+//
+//        journeyState.set(
+//          state = KnownFactNotMatched(requestWithWrongKF, None),
+//          breadcrumbs = List(
+//            NoPostcode(requestMissingKF, None),
+//            CheckDetailsNoPostcode(requestMissingKF, None),
+//            Prologue(None, None)
+//          )
+//        )
+//
+//        val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
+//
+//        status(result) shouldBe 200
+//        checkHtmlResultWithBodyMsgs(result, "known-fact.HMRC-MTD-IT.heading")
+//        result shouldHaveUrl routes.AgentInvitationFastTrackJourneyController.showKnownFact().url
+//      }
+//
+//      "link to non-fastrack journey's /agents/client-details if original fastrack request is fully supplied" in {
+//        val requestWithWrongKF = AgentFastTrackRequest(
+//          clientType = Some(personal),
+//          service = HMRCMTDIT, clientIdentifierType = "ni", clientIdentifier = "AB123456A",
+//          knownFact = Some("BN114AW")
+//        )
+//
+//        journeyState.set(
+//          state = KnownFactNotMatched(requestWithWrongKF, None),
+//          breadcrumbs = List(
+//            CheckDetailsCompleteItsa(requestWithWrongKF, None),
+//            Prologue(None, None)
+//          )
+//        )
+//
+//        val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
+//
+//        status(result) shouldBe 200
+//        checkHtmlResultWithBodyMsgs(result, "the.other.journeys.page.header")
+//        result shouldHaveUrl routes.AgentInvitationJourneyController.showClientType().url
+//      }
+//
+//      "link to non-fastrack journey's /agents/client-details if original fastrack request is missing more than just KF" in {
+//        //AgentInvitationJourneyController.showClientType
+//        pending
+//      }
+//    }
   }
 
   "GET /agents/authorisation-already-pending" should {

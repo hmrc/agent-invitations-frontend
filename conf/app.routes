@@ -65,6 +65,7 @@ GET         /agents/sent-invitation                                        @uk.g
 #Error Fast Track Endpoints
 GET         /agents/client-not-signed-up                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientNotSignedUp
 GET         /agents/no-match                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showNotMatched
+GET         /agents/no-match-try-again                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact
 GET         /agents/authorisation-already-requested                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
 GET         /agents/already-authorised                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
 

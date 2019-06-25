@@ -235,6 +235,13 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+      "TryAgainWithoutFastTrack" in {
+        val state = TryAgainWithoutFastTrack
+        val json = Json.parse("""{"state":"TryAgainWithoutFastTrack"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
   }
 }

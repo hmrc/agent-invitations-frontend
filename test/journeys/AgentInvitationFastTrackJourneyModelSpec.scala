@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -448,6 +448,87 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
           hasNoActiveRelationship)(featureFlags)(authorisedAgent)(personal) should
           thenGo(NoVatRegDate(fastTrackRequest.copy(clientType = Some(personal)), None))
+      }
+    }
+
+    "at KnownFactNotMatched, calling tryAgainNotMatchedKnownFact" when {
+      def findsRequestInBreadcrumbs(originalRequest: AgentFastTrackRequest): () => Future[Option[AgentFastTrackRequest]] =
+        () => Future.successful(Some(originalRequest))
+
+      "original request was for MTD-VAT" when {
+        val completedFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCMTDVAT, "vrn", vrn,
+          knownFact = Some("2001-01-01")
+        )
+
+        "clientType was missing" when {
+          "known fact was missing, transition to SelectClientTypeVat" in {
+            val originalFastTrackRequest = completedFastTrack.copy(
+              clientType = None,
+              knownFact = None
+            )
+
+            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(SelectClientTypeVat(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+          }
+          "known fact was supplied but wrong, transition to SelectClientTypeVat" in {
+            val originalFastTrackRequest = completedFastTrack.copy(
+              clientType = None,
+              knownFact = Some("2001-01-01")
+            )
+
+            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(SelectClientTypeVat(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+          }
+        }
+
+        "clientType was personal" when {
+          "known fact was missing, transition to NoVatRegDate" in {
+            val originalFastTrackRequest = completedFastTrack.copy(
+              clientType = Some(ClientType.personal),
+              knownFact = None
+            )
+
+            given(KnownFactNotMatched(originalFastTrackRequest, None)) when
+              tryAgainNotMatchedKnownFact(findsRequestInBreadcrumbs(originalFastTrackRequest))(authorisedAgent) should
+              thenGo(NoVatRegDate(fastTrackRequest = completedFastTrack.copy(knownFact = None), None))
+          }
+          "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+            ???
+          }
+        }
+
+        "clientType was business" when {
+          "known fact was missing, transition to NoVatRegDate" in {
+            ???
+          }
+          "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+            ???
+          }
+        }
+      }
+
+      "original request was for MTD-IT service (and clientType was personal)" when {
+        "knownFact was missing, transition to NoPostcode" in {
+          ???
+        }
+
+        "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+          ???
+        }
+      }
+
+      "original request was for IRV service" when {
+        "knownFact was missing, transition to NoDob" in {
+          ???
+        }
+
+        "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+          ???
+        }
       }
     }
   }

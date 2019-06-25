@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import play.api.mvc.{Request, Result}
+import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
@@ -33,52 +33,105 @@ import scala.concurrent.Future
 
 object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
-  sealed trait State
+  sealed trait State {
+    def agentFastTrackRequest: Option[AgentFastTrackRequest]
+  }
 
   val root: State = State.Prologue(None, None)
 
   /* State should contain only minimal set of data required to proceed */
   object State {
-    case class Prologue(failureUrl: Option[String], refererUrl: Option[String]) extends State
+    case class Prologue(failureUrl: Option[String], refererUrl: Option[String]) extends State {
+      def agentFastTrackRequest = None
+    }
 
     case class CheckDetailsNoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
-    case class CheckDetailsNoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
+    case class CheckDetailsNoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
     case class CheckDetailsNoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
     case class CheckDetailsNoClientTypeVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
     case class CheckDetailsCompleteItsa(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
     case class CheckDetailsCompleteIrv(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
     case class CheckDetailsCompletePersonalVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+
     case class CheckDetailsCompleteBusinessVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
 
-    case class NoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
-    case class NoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
-    case class NoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+    case class NoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+    case class NoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+    case class NoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
 
-    case class SelectClientTypeVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+    case class SelectClientTypeVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
 
     case class IdentifyPersonalClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
     case class IdentifyBusinessClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
 
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
-        extends State
+        extends State {
+      def agentFastTrackRequest = None
+    }
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
-        extends State
+        extends State {
+      def agentFastTrackRequest = None
+    }
 
     case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
     case class ActiveAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-        extends State
-    case class KnownFactNotMatched(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
-    case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+        extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+    case class KnownFactNotMatched(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+    case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State {
+      def agentFastTrackRequest = Some(fastTrackRequest)
+    }
+    case object TryAgainWithoutFastTrack extends State {
+      def agentFastTrackRequest = None
+    }
   }
 
   object Transitions {
@@ -93,6 +146,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
+    type FindOriginalFastTrackRequest = () => Future[Option[AgentFastTrackRequest]]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
@@ -432,6 +486,38 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           .apply(newState)
       }
     }
+
+    def tryAgainNotMatchedKnownFact(findOriginalFastTrackRequest: FindOriginalFastTrackRequest)(agent: AuthorisedAgent) =
+      Transition {
+        case KnownFactNotMatched(fastTrackRequest, continueUrl) =>
+          val ftrWithoutKF = fastTrackRequest.copy(knownFact = None)
+
+          def stateForMissingKnownFact(forService: String) =
+            forService match {
+              case Services.HMRCMTDVAT => NoVatRegDate(ftrWithoutKF, continueUrl)
+              case Services.HMRCMTDIT  => NoPostcode(ftrWithoutKF, continueUrl)
+              case Services.HMRCPIR    => NoDob(ftrWithoutKF, continueUrl)
+            }
+
+          def stateToTryAgainAt(ftr: AgentFastTrackRequest) =
+            ftr match {
+              case AgentFastTrackRequest(None, Services.HMRCMTDVAT, _, _, _) =>
+                SelectClientTypeVat(ftrWithoutKF, continueUrl)
+              case AgentFastTrackRequest(Some(_), Services.HMRCMTDVAT, _, _, None) =>
+                stateForMissingKnownFact(Services.HMRCMTDVAT)
+              case AgentFastTrackRequest(_, _, _, _, Some(_)) =>
+                TryAgainWithoutFastTrack
+              case AgentFastTrackRequest(_, service, _, _, None) =>
+                stateForMissingKnownFact(service)
+            }
+
+          for {
+            optOriginalFtr <- findOriginalFastTrackRequest()
+            ftr = optOriginalFtr.getOrElse(ftrWithoutKF)
+            tryAgainState = stateToTryAgainAt(ftr)
+            state <- goto(tryAgainState)
+          } yield state
+      }
 
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
