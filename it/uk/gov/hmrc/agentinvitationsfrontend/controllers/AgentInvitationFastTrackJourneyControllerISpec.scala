@@ -456,6 +456,21 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
     }
+
+    "redirect to not-matched (Postcode)" in new ItsaNotMatchedScenario {
+      journeyState.set(
+        NoPostcode(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
+        List(
+          CheckDetailsCompleteItsa(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None), None),
+          Prologue(None, None))
+      )
+
+      val result = controller.submitKnownFactItsa(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
+    }
   }
 
   "POST /agents/more-details-irv" should {
@@ -478,6 +493,26 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+    }
+
+    "redirect to not-matched (DOB)" in new IrvNotMatchedScenario {
+      journeyState.set(
+        NoDob(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
+        List(
+          CheckDetailsCompleteIrv(AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None), None),
+          Prologue(None, None))
+      )
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "knownFact.year"  -> "1990",
+        "knownFact.month" -> "10",
+        "knownFact.day"   -> "10"
+      )
+
+      val result = controller.submitKnownFactIrv(authorisedAsValidAgent(requestWithForm, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
     }
   }
 
@@ -503,6 +538,28 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+    }
+
+    "redirect to not-matched (Vat Reg. Date)" in new VatNotMatchedScenario {
+      journeyState.set(
+        NoVatRegDate(AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None), None),
+        List(
+          CheckDetailsCompletePersonalVat(
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10")),
+            None),
+          Prologue(None, None))
+      )
+
+      val requestWithForm = request.withFormUrlEncodedBody(
+        "knownFact.year"  -> "2010",
+        "knownFact.month" -> "10",
+        "knownFact.day"   -> "10"
+      )
+
+      val result = controller.submitKnownFactVat(authorisedAsValidAgent(requestWithForm, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
     }
   }
 
@@ -659,6 +716,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenGetAgencyEmailAgentStub
   }
 
+  class ItsaNotMatchedScenario {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
+    givenCheckRelationshipItsaWithStatus(arn, nino, 404)
+    givenNonMatchingClientIdAndPostcode(Nino(nino), "BN32TN")
+  }
+
   class IrvHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
     givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
@@ -670,6 +733,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenGetAgencyEmailAgentStub
   }
 
+  class IrvNotMatchedScenario {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCPIR)
+    givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
+    givenNonMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
+  }
+
   class VatHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
     givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 204)
@@ -679,5 +748,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
     givenGetAgencyEmailAgentStub
+  }
+
+  class VatNotMatchedScenario {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+    givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 403)
+    givenCheckRelationshipVatWithStatus(arn, vrn, 404)
   }
 }
