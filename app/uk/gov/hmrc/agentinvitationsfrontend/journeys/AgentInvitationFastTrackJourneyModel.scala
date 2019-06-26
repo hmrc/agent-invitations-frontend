@@ -217,10 +217,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       invitation: Invitation,
       continueUrl: Option[String])(
       hasPendingInvitationsFor: HasPendingInvitations,
-      hasActiveRelationshipFor: HasActiveRelationship,
-      createInvitation: CreateInvitation,
-      getAgentLink: GetAgentLink,
-      getAgencyEmail: GetAgencyEmail): Future[State] =
+      hasActiveRelationshipFor: HasActiveRelationship
+    )(createInvitation: CreateInvitation, getAgentLink: GetAgentLink, getAgencyEmail: GetAgencyEmail): Future[State] =
       for {
         hasPendingInvitations <- hasPendingInvitationsFor(
                                   arn,
@@ -318,15 +316,15 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             agent.arn,
             ItsaInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(Postcode.apply)),
             continueUrl
-          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink, getAgencyEmail)
+          )(hasPendingInvitations, hasActiveRelationship) _
           if (featureFlags.showKfcMtdIt) {
             checkPostcodeMatches(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.getOrElse(""))
               .flatMap {
-                case Some(true)  => checkAndGotoInvitationSent
+                case Some(true)  => checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
                 case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case None        => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
-          } else checkAndGotoInvitationSent
+          } else checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
       }
 
@@ -337,17 +335,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             agent.arn,
             PirInvitation(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.map(DOB.apply)),
             continueUrl
-          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink, getAgencyEmail)
+          )(hasPendingInvitations, hasActiveRelationship) _
           if (featureFlags.showKfcPersonalIncome) {
             checkDobMatches(
               Nino(fastTrackRequest.clientIdentifier),
               LocalDate.parse(fastTrackRequest.knownFact.getOrElse("")))
               .flatMap {
-                case Some(true)  => checkAndGotoInvitationSent
+                case Some(true)  => checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
                 case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case None        => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
-          } else checkAndGotoInvitationSent
+          } else checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
 
       case CheckDetailsCompletePersonalVat(originalFtr, fastTrackRequest, continueUrl) =>
@@ -360,17 +358,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               Vrn(fastTrackRequest.clientIdentifier),
               fastTrackRequest.knownFact.map(VatRegDate.apply)),
             continueUrl
-          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink, getAgencyEmail)
+          )(hasPendingInvitations, hasActiveRelationship) _
           if (featureFlags.showKfcMtdVat) {
             checkRegDateMatches(
               Vrn(fastTrackRequest.clientIdentifier),
               LocalDate.parse(fastTrackRequest.knownFact.getOrElse("")))
               .flatMap {
-                case Some(204) => checkAndGotoInvitationSent
+                case Some(204) => checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
                 case Some(_)   => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case None      => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
-          } else checkAndGotoInvitationSent
+          } else checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
 
       case CheckDetailsCompleteBusinessVat(originalFtr, fastTrackRequest, continueUrl) =>
@@ -383,17 +381,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               Vrn(fastTrackRequest.clientIdentifier),
               fastTrackRequest.knownFact.map(VatRegDate.apply)),
             continueUrl
-          )(hasPendingInvitations, hasActiveRelationship, createInvitation, getAgentLink, getAgencyEmail)
+          )(hasPendingInvitations, hasActiveRelationship) _
           if (featureFlags.showKfcMtdVat) {
             checkRegDateMatches(
               Vrn(fastTrackRequest.clientIdentifier),
               LocalDate.parse(fastTrackRequest.knownFact.getOrElse("")))
               .flatMap {
-                case Some(204) => checkAndGotoInvitationSent
+                case Some(204) => checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
                 case Some(_)   => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case None      => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
-          } else checkAndGotoInvitationSent
+          } else checkAndGotoInvitationSent(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyBusinessClient(originalFtr, fastTrackRequest, continueUrl))
     }
 

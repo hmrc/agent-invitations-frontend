@@ -30,6 +30,7 @@ POST        /agents/delete                                                 @uk.g
 #Error Agent Endpoints
 GET         /agents/not-signed-up                                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientNotSignedUp
 GET         /agents/not-matched                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showNotMatched
+GET         /agents/cannot-create-request                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showCannotCreateRequest
 GET         /agents/all-authorisations-removed                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsRemoved
 GET         /agents/already-authorisation-pending                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showPendingAuthorisationExists
 GET         /agents/already-authorisation-present                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showActiveAuthorisationExists
@@ -128,5 +129,6 @@ GET         /some-responses-failed                                          @uk.
 POST        /some-responses-failed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.notAuthorised
 GET         /session-timeout                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
+GET         /consent/:clientType/:uid                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitToConsent(clientType: String, uid: String)
 
 GET         /:clientType/:uid/:agentName                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)

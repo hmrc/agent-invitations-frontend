@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.util.UUID
-
-import com.sun.xml.internal.ws.client.RequestContext
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Mode}
+import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.Results.{Redirect, Status}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
@@ -36,7 +32,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -127,6 +122,25 @@ class ClientInvitationJourneyController @Inject()(
       whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
     }
   }
+
+  def submitToConsent(clientType: String, uid: String) =
+    Action.async { implicit request =>
+      journeyId match {
+        case None =>
+          // redirect to itself with new journeyId generated
+          Future.successful(
+            appendJourneyId(
+              Results.Redirect(routes.ClientInvitationJourneyController.submitToConsent(clientType, uid)))(request))
+        case _ =>
+          apply(
+            Transitions.goDirectlyToMultiConsent(ClientType.toEnum(clientType), uid)(
+              getAgentReferenceRecord,
+              getAgencyName,
+              getAllClientInvitationsInfoForAgentAndStatus),
+            redirect
+          )
+      }
+    }
 
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
@@ -266,7 +280,9 @@ class ClientInvitationJourneyController @Inject()(
             consents,
             submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
             checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
-            backLink = backLinkFor(breadcrumbs)
+            backLink =
+              if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+              else Call("GET", externalUrls.agentClientManagementUrl)
           )
         ))
 
