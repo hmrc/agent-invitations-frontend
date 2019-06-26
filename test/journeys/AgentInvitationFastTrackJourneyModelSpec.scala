@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
-import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -64,7 +64,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsCompleteItsa(fastTrackRequest.copy(clientType = Some(personal)), None))
+          thenGo(
+            CheckDetailsCompleteItsa(
+              originalFastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              fastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              None
+            ))
       }
       "transition to CheckDetailsNoPostcode when the postcode is missing for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, None)
@@ -72,7 +77,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsNoPostcode(fastTrackRequest.copy(clientType = Some(personal)), None))
+          thenGo(
+            CheckDetailsNoPostcode(
+              originalFastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              fastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              None
+            ))
       }
       "transition to CheckDetailsCompleteIrv when all required fields are present for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCPIR, "ni", nino, dob)
@@ -80,7 +90,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsCompleteIrv(fastTrackRequest.copy(clientType = Some(personal)), None))
+          thenGo(
+            CheckDetailsCompleteIrv(
+              originalFastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              fastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              None
+            ))
       }
       "transition to CheckDetailsNoDob when there is no dob for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCPIR, "ni", nino, None)
@@ -88,7 +103,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsNoDob(fastTrackRequest.copy(clientType = Some(personal)), None))
+          thenGo(
+            CheckDetailsNoDob(
+              originalFastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              fastTrackRequest = fastTrackRequest.copy(clientType = Some(personal)),
+              None
+            ))
       }
       "transition to CheckDetailsCompleteVat when all required fields are present for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
@@ -96,7 +116,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsCompletePersonalVat(fastTrackRequest, None))
+          thenGo(
+            CheckDetailsCompletePersonalVat(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
       }
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, None)
@@ -104,7 +129,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsNoVatRegDate(fastTrackRequest, None))
+          thenGo(
+            CheckDetailsNoVatRegDate(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
       }
       "transition to CheckDetailsCompleteVat when all required fields are present for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
@@ -112,7 +142,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsCompleteBusinessVat(fastTrackRequest, None))
+          thenGo(
+            CheckDetailsCompleteBusinessVat(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
       }
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, None)
@@ -120,7 +155,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsNoVatRegDate(fastTrackRequest, None))
+          thenGo(
+            CheckDetailsNoVatRegDate(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
       }
       "transition to CheckDetailsNoClientTypeVat when there is no client type for vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "ni", nino, None)
@@ -128,7 +168,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(featureFlags)(None)(authorisedAgent)(fastTrackRequest)(
           FakeRequest(),
           HeaderCarrier()) should
-          thenGo(CheckDetailsNoClientTypeVat(fastTrackRequest, None))
+          thenGo(
+            CheckDetailsNoClientTypeVat(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
       }
     }
 
@@ -149,40 +194,41 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for itsa" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteItsa(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for itsa if feature flag is off" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags.copy(showKfcMtdIt = false))(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteItsa(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags.copy(showKfcMtdIt = false))(authorisedAgent)(
+          Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for irv" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
 
-        given(CheckDetailsCompleteIrv(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteIrv(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for irv if feature flag is off" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
 
-        given(CheckDetailsCompleteIrv(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags.copy(showKfcPersonalIncome = false))(authorisedAgent)(
-          Confirmation(true)) should
+        given(CheckDetailsCompleteIrv(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags.copy(showKfcPersonalIncome = false))(
+          authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for personal vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(CheckDetailsCompletePersonalVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
+        given(CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
@@ -190,7 +236,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSentPersonal if all fields are present, no pending or active invitations and known facts match for personal vat if feature flag is off" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(CheckDetailsCompletePersonalVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
+        given(CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags.copy(showKfcMtdVat = false))(authorisedAgent)(
           Confirmation(true)) should
@@ -199,7 +245,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for business vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(CheckDetailsCompleteBusinessVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
+        given(CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
@@ -207,7 +253,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for business vat if feature flag is off" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
 
-        given(CheckDetailsCompleteBusinessVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
+        given(CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags.copy(showKfcMtdVat = false))(authorisedAgent)(
           Confirmation(true)) should
@@ -215,88 +261,107 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       }
       "transition to IdentifyPersonalClient when the form is false for itsa" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(fastTrackRequest, None))
+        given(CheckDetailsCompleteItsa(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for irv" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(CheckDetailsCompleteIrv(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(fastTrackRequest, None))
+        given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for personal vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(CheckDetailsCompletePersonalVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
-          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(fastTrackRequest, None))
+        given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for business vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(CheckDetailsCompleteBusinessVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
-          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyBusinessClient(fastTrackRequest, None))
+        given(CheckDetailsCompleteBusinessVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyBusinessClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for itsa" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(false))
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
-          thenGo(KnownFactNotMatched(fastTrackRequest, None))
+        given(CheckDetailsCompleteItsa(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(true)) should
+          thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for irv" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
 
-        given(CheckDetailsCompleteIrv(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
-          thenGo(KnownFactNotMatched(fastTrackRequest, None))
+        given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+          thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(400))
 
-        given(CheckDetailsCompletePersonalVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
-          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
-          thenGo(KnownFactNotMatched(fastTrackRequest, None))
+        given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(true)) should
+          thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
         def checkPostcodeMatches(nino: Nino, postcode: String) = Future(None)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for afi service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
 
-        given(CheckDetailsCompleteIrv(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteIrv(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ni", nino, vatRegDate)
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(None)
 
-        given(CheckDetailsCompletePersonalVat(fastTrackRequest, None)) when checkedDetailsAllInformation(
-          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-          hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompletePersonalVat(
+          aFastTrackRequestWithDiffParams(fastTrackRequest),
+          fastTrackRequest,
+          None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to PendingInvitationExists when there is already a pending invitation for this request" in {
@@ -304,9 +369,10 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(PendingInvitationExists(fastTrackRequest, None))
       }
       "transition to ActiveAuthorisationExists when there is already an active relationship between agent and client for this service" in {
@@ -314,20 +380,26 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
 
-        given(CheckDetailsCompleteItsa(fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasActiveRelationship)(featureFlags)(authorisedAgent)(Confirmation(true)) should
+        given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasActiveRelationship)(featureFlags)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(fastTrackRequest, None))
       }
       "transition to NoPostcode when there is no known fact in the request" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, None)
-        given(CheckDetailsNoPostcode(fastTrackRequest, None)) when checkedDetailsNoKnownFact(authorisedAgent) should
-          thenGo(NoPostcode(fastTrackRequest, None))
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
+
+        given(CheckDetailsNoPostcode(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsNoKnownFact(authorisedAgent) should
+          thenGo(NoPostcode(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to SelectClientType when there is no client type in the request" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, postCode)
-        given(CheckDetailsNoClientTypeVat(fastTrackRequest, None)) when checkedDetailsNoClientType(authorisedAgent) should
-          thenGo(SelectClientTypeVat(fastTrackRequest, None))
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
+        given(CheckDetailsNoClientTypeVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsNoClientType(authorisedAgent) should
+          thenGo(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None))
       }
     }
     "at IdentifyPersonalClient" should {
@@ -345,33 +417,37 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSent for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
 
-        given(IdentifyPersonalClient(fastTrackRequest, None)) when identifiedClientItsa(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(ItsaClient("AB123456C", Some("BN32TM"))) should
+        given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          identifiedClientItsa(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(ItsaClient("AB123456C", Some("BN32TM"))) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
 
-        given(IdentifyPersonalClient(fastTrackRequest, None)) when identifiedClientIrv(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(IrvClient("AB123456C", Some("1990-10-10"))) should
+        given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          identifiedClientIrv(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(IrvClient("AB123456C", Some("1990-10-10"))) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, vatRegDate)
 
-        given(IdentifyPersonalClient(fastTrackRequest, None)) when identifiedClientVat(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(VatClient("1234567", Some("2010-10-10"))) should
+        given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(VatClient("1234567", Some("2010-10-10"))) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, vatRegDate)
 
-        given(IdentifyBusinessClient(fastTrackRequest, None)) when identifiedClientVat(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(VatClient("1234567", Some("2010-10-10"))) should
+        given(IdentifyBusinessClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(VatClient("1234567", Some("2010-10-10"))) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
     }
@@ -390,33 +466,37 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSent for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
 
-        given(NoPostcode(fastTrackRequest, None)) when moreDetailsItsa(checkPostcodeMatches)(checkDobMatches)(
-          checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Some("BN114AW")) should
+        given(NoPostcode(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          moreDetailsItsa(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(
+            Some("BN114AW")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
 
-        given(NoDob(fastTrackRequest, None)) when moreDetailsIrv(checkPostcodeMatches)(checkDobMatches)(
-          checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Some("1991-10-10")) should
+        given(NoDob(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          moreDetailsIrv(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(
+            Some("1991-10-10")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, vatRegDate)
 
-        given(NoVatRegDate(fastTrackRequest, None)) when moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(
-          checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Some("2011-10-10")) should
+        given(NoVatRegDate(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(
+            Some("2011-10-10")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSent for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, vatRegDate)
 
-        given(NoVatRegDate(fastTrackRequest, None)) when moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(
-          checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(Some("2011-10-10")) should
+        given(NoVatRegDate(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(authorisedAgent)(
+            Some("2011-10-10")) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
     }
@@ -436,19 +516,256 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to InvitationSent for vat service when there is a known fact present" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, vatRegDate)
 
-        given(SelectClientTypeVat(fastTrackRequest, None)) when selectedClientType(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(personal) should
+        given(SelectClientTypeVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(personal) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to MoreDetails for vat service when there is no known fact" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(SelectClientTypeVat(fastTrackRequest, None)) when selectedClientType(checkPostcodeMatches)(
-          checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-          hasNoActiveRelationship)(featureFlags)(authorisedAgent)(personal) should
-          thenGo(NoVatRegDate(fastTrackRequest.copy(clientType = Some(personal)), None))
+        given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(featureFlags)(
+            authorisedAgent)(personal) should
+          thenGo(NoVatRegDate(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
+      }
+    }
+
+    "at KnownFactNotMatched, calling tryAgainNotMatchedKnownFact" when {
+
+      "original request was for MTD-VAT" when {
+        val completedPersonalVatFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCMTDVAT,
+          "vrn",
+          vrn,
+          knownFact = Some("2001-01-01")
+        )
+
+        "clientType was missing" when {
+          "known fact was missing, transition to SelectClientTypeVat" in {
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
+              clientType = None,
+              knownFact = None
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedPersonalVatFastTrack,
+              continueUrl = None
+            )
+
+            val expectedFinalState = SelectClientTypeVat(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = originalFastTrackRequest,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(expectedFinalState)
+          }
+          "known fact was supplied but wrong, transition to SelectClientTypeVat" in {
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
+              clientType = None,
+              knownFact = Some("2001-01-01")
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedPersonalVatFastTrack,
+              continueUrl = None
+            )
+
+            val expectedFinalState = SelectClientTypeVat(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = originalFastTrackRequest.copy(knownFact = None),
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(expectedFinalState)
+          }
+        }
+
+        "clientType was personal" when {
+          "known fact was missing, transition to NoVatRegDate" in {
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
+              knownFact = None
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedPersonalVatFastTrack,
+              continueUrl = None
+            )
+
+            val expectedFinalState = NoVatRegDate(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = originalFastTrackRequest,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(expectedFinalState)
+          }
+          "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+            val originalFastTrackRequest = completedPersonalVatFastTrack.copy(
+              knownFact = Some("2001-01-01")
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedPersonalVatFastTrack,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(TryAgainWithoutFastTrack)
+          }
+        }
+
+        "clientType was business" when {
+          val completedBusinessVatFastTrack = completedPersonalVatFastTrack.copy(
+            clientType = Some(ClientType.business)
+          )
+
+          "known fact was missing, transition to NoVatRegDate" in {
+            val originalFastTrackRequest = completedBusinessVatFastTrack.copy(
+              knownFact = None
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedBusinessVatFastTrack,
+              continueUrl = None
+            )
+
+            val expectedFinalState = NoVatRegDate(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = originalFastTrackRequest,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(expectedFinalState)
+          }
+          "known fact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+            val originalFastTrackRequest = completedBusinessVatFastTrack.copy(
+              knownFact = Some("2001-01-01")
+            )
+            val knownFactNotMatchedState = KnownFactNotMatched(
+              originalFastTrackRequest = originalFastTrackRequest,
+              fastTrackRequest = completedBusinessVatFastTrack,
+              continueUrl = None
+            )
+
+            given(knownFactNotMatchedState) when
+              tryAgainNotMatchedKnownFact(authorisedAgent) should
+              thenGo(TryAgainWithoutFastTrack)
+          }
+        }
+      }
+
+      "original request was for MTD-IT service (and clientType was personal)" when {
+        val completedItsaFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCMTDIT,
+          "ni",
+          nino,
+          knownFact = Some("AA11AA")
+        )
+
+        "knownFact was missing, transition to NoPostcode" in {
+          val originalFastTrackRequest = completedItsaFastTrack.copy(
+            knownFact = None
+          )
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = completedItsaFastTrack,
+            continueUrl = None
+          )
+
+          val expectedFinalState = NoPostcode(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = originalFastTrackRequest,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(authorisedAgent) should
+            thenGo(expectedFinalState)
+        }
+
+        "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+          val originalFastTrackRequest = completedItsaFastTrack.copy(
+            knownFact = Some("AA11AA")
+          )
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = completedItsaFastTrack,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(authorisedAgent) should
+            thenGo(TryAgainWithoutFastTrack)
+        }
+      }
+
+      "original request was for IRV service (and clientType was personal)" when {
+        val completedIrvFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.personal),
+          service = HMRCPIR,
+          "ni",
+          nino,
+          knownFact = Some("AA11AA")
+        )
+
+        "knownFact was missing, transition to NoDob" in {
+          val originalFastTrackRequest = completedIrvFastTrack.copy(
+            knownFact = None
+          )
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = completedIrvFastTrack,
+            continueUrl = None
+          )
+
+          val expectedFinalState = NoDob(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = originalFastTrackRequest,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(authorisedAgent) should
+            thenGo(expectedFinalState)
+        }
+
+        "knownFact was supplied but wrong, transition to TryAgainWithoutFastTrack" in {
+          val originalFastTrackRequest = completedIrvFastTrack.copy(
+            knownFact = Some("2000-01-01")
+          )
+          val knownFactNotMatchedState = KnownFactNotMatched(
+            originalFastTrackRequest = originalFastTrackRequest,
+            fastTrackRequest = completedIrvFastTrack,
+            continueUrl = None
+          )
+
+          given(knownFactNotMatchedState) when
+            tryAgainNotMatchedKnownFact(authorisedAgent) should
+            thenGo(TryAgainWithoutFastTrack)
+        }
       }
     }
   }
+
+  def aFastTrackRequestWithDiffParams(toThisFastTrackRequest: AgentFastTrackRequest) =
+    toThisFastTrackRequest.clientType match {
+      case Some(_) => toThisFastTrackRequest.copy(clientType = None)
+      case None    => toThisFastTrackRequest.copy(clientType = Some(personal))
+    }
 }

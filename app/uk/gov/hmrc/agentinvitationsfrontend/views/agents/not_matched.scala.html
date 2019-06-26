@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(hasJourneyCache: Boolean, identifyClientCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"not-matched.header"), ""))) {
 
@@ -29,7 +29,7 @@
 
   <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
 
-  <a id="showIdentifyClientButton" href="@identifyClientCall" class="button">@Messages(s"not-matched.button")</a>
+  <a id="tryAgainButton" href="@tryAgainCall" class="button">@Messages(s"not-matched.button")</a>
 
   @if(hasJourneyCache) {
    <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link-small" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@Messages("review-auths.link")</a></p>

@@ -91,6 +91,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "InvitationSentPersonal"          => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"          => InvitationSentBusinessFormat.reads(properties)
     case "KnownFactNotMatched"             => KnownFactNotMatchedFormat.reads(properties)
+    case "TryAgainWithoutFastTrack"        => JsSuccess(TryAgainWithoutFastTrack)
     case "ClientNotSignedUp"               => ClientNotSignedUpFormat.reads(properties)
     case "PendingInvitationExists"         => PendingInvitationExistsFormat.reads(properties)
     case "ActiveAuthorisationExists"       => ActiveAuthorisationExistsFormat.reads(properties)
