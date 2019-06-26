@@ -40,7 +40,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -192,7 +192,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                      => }
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched => }
+
+  val redirectTryAgainNotMatchedKnownFact = action { implicit request =>
+    whenAuthorised(AsAgent)(Transitions.tryAgainNotMatchedKnownFact)(redirect)
+  }
+
   val showClientNotSignedUp = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
   val showPendingAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
   val showActiveAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: ActiveAuthorisationExists => }
@@ -224,6 +229,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: KnownFactNotMatched             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case TryAgainWithoutFastTrack           => routes.AgentInvitationJourneyController.agentsRoot()
     case _: ClientNotSignedUp               => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
     case _: PendingInvitationExists =>
       routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
@@ -260,64 +266,67 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case s: Prologue => Redirect(getCallFor(s))
 
-    case CheckDetailsCompleteItsa(fastTrackRequest, _) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsCompleteItsa(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsCompleteIrv(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsCompleteIrv(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsCompletePersonalVat(fastTrackRequest, _) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsCompletePersonalVat(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsCompleteBusinessVat(fastTrackRequest, _) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsCompleteBusinessVat(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsNoPostcode(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsNoPostcode(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsNoDob(fastTrackRequest, _) => gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsNoDob(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsNoVatRegDate(fastTrackRequest, _) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsNoVatRegDate(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case CheckDetailsNoClientTypeVat(fastTrackRequest, _) =>
-      gotoCheckDetailsWithRequest(fastTrackRequest, breadcrumbs)
+    case CheckDetailsNoClientTypeVat(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-    case NoPostcode(fastTrackRequest, _) =>
+    case NoPostcode(_, ftr, _) =>
       Ok(
         known_fact(
-          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service)),
+          formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
-            fastTrackRequest.service,
-            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-            getSubmitKFFor(fastTrackRequest.service),
+            ftr.service,
+            Services.determineServiceMessageKeyFromService(ftr.service),
+            getSubmitKFFor(ftr.service),
             backLinkFor(breadcrumbs).url
           )
         ))
 
-    case NoDob(fastTrackRequest, _) =>
+    case NoDob(_, ftr, _) =>
       Ok(
         known_fact(
-          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service)),
+          formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
-            fastTrackRequest.service,
-            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-            getSubmitKFFor(fastTrackRequest.service),
+            ftr.service,
+            Services.determineServiceMessageKeyFromService(ftr.service),
+            getSubmitKFFor(ftr.service),
             backLinkFor(breadcrumbs).url
           )
         ))
 
-    case NoVatRegDate(fastTrackRequest, _) =>
+    case NoVatRegDate(_, ftr, _) =>
       Ok(
         known_fact(
-          formWithErrors.or(getKnownFactFormForService(fastTrackRequest.service)),
+          formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
-            fastTrackRequest.service,
-            Services.determineServiceMessageKeyFromService(fastTrackRequest.service),
-            getSubmitKFFor(fastTrackRequest.service),
+            ftr.service,
+            Services.determineServiceMessageKeyFromService(ftr.service),
+            getSubmitKFFor(ftr.service),
             backLinkFor(breadcrumbs).url
           )
         ))
 
-    case SelectClientTypeVat(_, _) =>
+    case SelectClientTypeVat(_, _, _) =>
       Ok(
         client_type(
           formWithErrors.or(SelectClientTypeForm),
@@ -327,7 +336,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         ))
 
-    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDIT =>
+    case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDIT =>
       Ok(
         identify_client_itsa(
           formWithErrors.or(IdentifyItsaClientForm),
@@ -336,7 +345,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         )
       )
 
-    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCMTDVAT =>
+    case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDVAT =>
       Ok(
         identify_client_vat(
           formWithErrors.or(IdentifyVatClientForm),
@@ -345,7 +354,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         )
       )
 
-    case IdentifyPersonalClient(ftRequest, _) if ftRequest.service == HMRCPIR =>
+    case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCPIR =>
       Ok(
         identify_client_irv(
           formWithErrors.or(IdentifyIrvClientForm),
@@ -354,7 +363,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         )
       )
 
-    case IdentifyBusinessClient(_, _) =>
+    case IdentifyBusinessClient(_, _, _) =>
       Ok(
         identify_client_vat(
           formWithErrors.or(IdentifyVatClientForm),
@@ -385,12 +394,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             inferredExpiryDate,
             agencyEmail)))
 
-    case KnownFactNotMatched(_, _) =>
+    case KnownFactNotMatched(_, _, _) =>
       Ok(
         not_matched(
           hasJourneyCache = false,
-          routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
-          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+          tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
+          reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
         ))
 
     case ActiveAuthorisationExists(agentFastTrackRequest, _) =>

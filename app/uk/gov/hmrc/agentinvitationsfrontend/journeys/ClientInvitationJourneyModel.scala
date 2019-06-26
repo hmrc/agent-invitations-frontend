@@ -222,7 +222,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     def goDirectlyToMultiConsent(clientType: ClientType, uid: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord,
       getAgencyName: GetAgencyName,
-      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates) =
       Transition {
         case _ =>
           for {
