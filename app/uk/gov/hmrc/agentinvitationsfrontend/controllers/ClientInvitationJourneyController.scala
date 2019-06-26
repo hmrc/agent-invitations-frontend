@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.util.UUID
-
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.data.Form
@@ -283,7 +281,7 @@ class ClientInvitationJourneyController @Inject()(
             submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
             checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
             backLink =
-              if (breadcrumbs.exists(x => x.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+              if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
               else Call("GET", externalUrls.agentClientManagementUrl)
           )
         ))
