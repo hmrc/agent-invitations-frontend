@@ -128,6 +128,6 @@ GET         /some-responses-failed                                          @uk.
 POST        /some-responses-failed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.notAuthorised
 GET         /session-timeout                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
-POST        /consent/:clientType/:uid                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitToConsent(clientType: String, uid: String)
+GET         /consent/:clientType/:uid                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitToConsent(clientType: String, uid: String)
 
 GET         /:clientType/:uid/:agentName                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)

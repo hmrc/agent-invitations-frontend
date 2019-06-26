@@ -123,13 +123,24 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def submitToConsent(clientType: String, uid: String) = action { implicit request =>
-    whenAuthorised(AsClient)(
-      Transitions.goDirectlyToMultiConsent(ClientType.toEnum(clientType), uid)(
-        getAgentReferenceRecord,
-        getAgencyName,
-        getAllClientInvitationsInfoForAgentAndStatus))(redirect)
-  }
+  def submitToConsent(clientType: String, uid: String) =
+    Action.async { implicit request =>
+      journeyId match {
+        case None =>
+          // redirect to itself with new journeyId generated
+          Future.successful(
+            appendJourneyId(
+              Results.Redirect(routes.ClientInvitationJourneyController.submitToConsent(clientType, uid)))(request))
+        case _ =>
+          apply(
+            Transitions.goDirectlyToMultiConsent(ClientType.toEnum(clientType), uid)(
+              getAgentReferenceRecord,
+              getAgencyName,
+              getAllClientInvitationsInfoForAgentAndStatus),
+            redirect
+          )
+      }
+    }
 
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
@@ -269,7 +280,9 @@ class ClientInvitationJourneyController @Inject()(
             consents,
             submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
             checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
-            backLink = backLinkFor(breadcrumbs)
+            backLink =
+              if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+              else Call("GET", externalUrls.agentClientManagementUrl)
           )
         ))
 

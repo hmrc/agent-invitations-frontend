@@ -404,7 +404,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         given(root) when goDirectlyToMultiConsent(personal, "uid123")(
           getAgentReferenceRecord,
           getAgencyName,
-          getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should thenGo(
+          getPendingInvitationIdsAndExpiryDates) should thenGo(
           MultiConsent(
             personal,
             "uid123",
@@ -420,7 +420,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         given(root) when goDirectlyToMultiConsent(personal, "uid123")(
           getAgentReferenceRecord,
           getAgencyName,
-          getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should thenGo(
+          getPendingInvitationIdsAndExpiryDates) should thenGo(
           NotFoundInvitation
         )
       }
