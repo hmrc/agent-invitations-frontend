@@ -112,10 +112,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
       itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def postcodeMatchResult: Future[Option[Boolean]] =
-        if (itsaClient.postcode.nonEmpty) checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
-        else throw new Exception("Postcode expected but none found")
-
       def goToState(kfcResult: Option[Boolean]): Future[State] =
         for {
           finalState <- kfcResult match {
@@ -127,14 +123,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                        }
         } yield finalState
 
-      def checkPostCodeAndGoToState: Future[State] =
-        for {
-          postcodeMatches <- postcodeMatchResult
-          finalState      <- goToState(postcodeMatches)
-        } yield finalState
-
       Transition {
-        case IdentifyClientPersonal(HMRCMTDIT) => checkPostCodeAndGoToState
+        case IdentifyClientPersonal(HMRCMTDIT) =>
+          for {
+            postcodeMatches <- if (itsaClient.postcode.nonEmpty)
+                                checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
+                              else throw new Exception("Postcode expected but none found")
+            finalState <- goToState(postcodeMatches)
+          } yield finalState
       }
     }
 
@@ -143,10 +139,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       getClientName: GetClientName,
       hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
       irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
-
-      def dobMatchResult: Future[Option[Boolean]] =
-        if (irvClient.dob.nonEmpty) checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
-        else throw new Exception("Date of birth expected but none found")
 
       def goToState(dobMatchResult: Option[Boolean]): Future[State] =
         for {
@@ -161,14 +153,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
                        }
         } yield finalState
 
-      def checkDobAndGoToState: Future[State] =
-        for {
-          dobMatches <- dobMatchResult
-          finalState <- goToState(dobMatches)
-        } yield finalState
-
       Transition {
-        case IdentifyClientPersonal(HMRCPIR) => checkDobAndGoToState
+        case IdentifyClientPersonal(HMRCPIR) =>
+          for {
+            dobMatches <- if (irvClient.dob.nonEmpty)
+                           checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
+                         else throw new Exception("Date of birth expected but none found")
+            finalState <- goToState(dobMatches)
+          } yield finalState
       }
     }
 

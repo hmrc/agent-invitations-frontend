@@ -18,7 +18,6 @@ error.client-type.required=Select the type of client you need authorisation from
 identify-client.header=Enter your client''s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
-identify-client.nino.header=What is your client''s National Insurance number?
 identify-client.utr.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
@@ -52,7 +51,6 @@ utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on
 error.utr.required=Enter your client''s UTR
 enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
-identify-client.vrn.header=What is your client''s VAT registration number?
 error.vrn.required=Enter your client''s VAT registration number
 enter-vrn.regex-failure=VAT registration number must be 9 numbers
 enter-vrn.checksum-failure=Enter a valid VAT registration number
