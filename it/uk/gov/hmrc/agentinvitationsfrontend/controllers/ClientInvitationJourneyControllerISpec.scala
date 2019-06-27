@@ -603,20 +603,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /consent/:clientType/:uid" should {
-    def request = requestWithJourneyIdInCookie("GET", "/consent/:clientType/:uid")
-
-    "show to the multi consent page" in {
-      givenAgentReferenceRecordExistsForUid(arn, uid)
-      givenGetAgencyNameClientStub(arn)
-      givenAllInvitationIdsByStatus(uid, "Pending")
-
-      val result = controller.submitToConsent("personal", uid)(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
-    }
-  }
-
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
       "logged in" in {
