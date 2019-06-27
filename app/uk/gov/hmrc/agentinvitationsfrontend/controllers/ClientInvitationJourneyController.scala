@@ -137,7 +137,7 @@ class ClientInvitationJourneyController @Inject()(
               getAgentReferenceRecord,
               getAgencyName,
               getAllClientInvitationsInfoForAgentAndStatus),
-            redirect
+            display
           )
       }
     }

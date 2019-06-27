@@ -603,17 +603,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "POST /consent/:clientType/:uid" should {
-    def request = requestWithJourneyIdInCookie("POST", "/consent/:clientType/:uid")
+  "GET /consent/:clientType/:uid" should {
+    def request = requestWithJourneyIdInCookie("GET", "/consent/:clientType/:uid")
 
-    "redirect to the mulit consent page" in {
+    "show to the multi consent page" in {
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
       givenAllInvitationIdsByStatus(uid, "Pending")
 
       val result = controller.submitToConsent("personal", uid)(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
     }
   }
 
