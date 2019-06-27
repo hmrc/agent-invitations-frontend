@@ -78,17 +78,17 @@ class AgentFastTrackFormSpec extends UnitSpec {
           fastTrackForm.errors.isEmpty shouldBe true
         }
 
-        "provided incorrect VRN" in {
+        "provided VRN that is valid according to the VRN regex but has a bad checksum digit (i.e. checksum validation is not performed)" in {
+          val vrnWithBadChecksum = "101747642"
           val data = Json.obj(
             "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "101747695",
+            "clientIdentifier"     -> vrnWithBadChecksum,
             "knownFact"            -> "1970-01-01"
           )
           val fastTrackForm = agentFastTrackForm.bind(data)
-          fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_VRN")))
+          fastTrackForm.errors.isEmpty shouldBe true
         }
 
         "provided no known fact for IRV" in {
@@ -205,17 +205,19 @@ class AgentFastTrackFormSpec extends UnitSpec {
           fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_NINO")))
         }
 
-        "provided incorrect VRN" in {
+        "provided incorrect VRN (according to the VRN regex)" in {
+          val invalidVrn = "A01747641"
           val data = Json.obj(
             "clientType"           -> "business",
             "service"              -> HMRCMTDVAT,
             "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> "101747695",
+            "clientIdentifier"     -> invalidVrn,
             "knownFact"            -> "1970-01-01"
           )
           val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
-          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifier", List("INVALID_VRN")))
+          fastTrackForm.errors shouldBe Seq(
+            FormError("clientIdentifier", List(s"INVALID_CLIENT_ID_RECEIVED:$invalidVrn")))
         }
 
         "provided incorrect clientIdentifierType" in {
@@ -228,6 +230,7 @@ class AgentFastTrackFormSpec extends UnitSpec {
           )
           val fastTrackForm = agentFastTrackForm.bind(data)
           fastTrackForm.errors.nonEmpty shouldBe true
+          fastTrackForm.errors shouldBe Seq(FormError("clientIdentifierType", List(s"UNSUPPORTED_CLIENT_ID_TYPE")))
         }
 
         "provided no clientIdentifier" in {

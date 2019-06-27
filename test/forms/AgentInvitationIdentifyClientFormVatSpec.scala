@@ -52,6 +52,13 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors.isEmpty shouldBe true
         }
 
+        "VRN looks valid but the checksum digit is invalid (i.e. checksum digits are not validated)" in {
+          val vrnWithBadChecksum = "101747697"
+          val dataWithRegistrationDateLowercase = validData + ("clientIdentifier" -> vrnWithBadChecksum)
+          println(agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors)
+          agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors.isEmpty shouldBe true
+        }
+
         "unbinding the form" in {
           val unboundForm = VatClientForm
             .form(featureFlags.showKfcMtdVat)
@@ -136,17 +143,6 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           )
           val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
           vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.regex-failure")))
-        }
-
-        "VRN is invalid for checksum" in {
-          val dataWithInvalidVrn = Map(
-            "clientIdentifier"       -> "101747697",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "1",
-            "registrationDate.day"   -> "1"
-          )
-          val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
-          vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.checksum-failure")))
         }
 
         "VRN is empty" in {

@@ -39,19 +39,16 @@ object ValidateHelper {
       }
   }
 
-  def validateVrnField(nonEmptyFailure: String, regexFailure: String, checksumFailure: String) = Constraint[String] {
-    fieldValue: String =>
-      nonEmpty(nonEmptyFailure)(fieldValue) match {
-        case i: Invalid =>
-          i
-        case Valid =>
-          if (!fieldValue.matches("[0-9]{9}"))
-            Invalid(ValidationError(regexFailure))
-          else if (!Vrn.isValid(fieldValue.trim.toUpperCase))
-            Invalid(ValidationError(checksumFailure))
-          else
-            Valid
-      }
+  def validateVrnField(nonEmptyFailure: String, regexFailure: String) = Constraint[String] { fieldValue: String =>
+    nonEmpty(nonEmptyFailure)(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if (!Vrn.isValid(fieldValue.trim.toUpperCase))
+          Invalid(ValidationError(regexFailure))
+        else
+          Valid
+    }
   }
 
   def optionalIf[A](isOn: Boolean, mapping: Mapping[A]): Mapping[Option[A]] = OptionalMappingIf(isOn, mapping)
