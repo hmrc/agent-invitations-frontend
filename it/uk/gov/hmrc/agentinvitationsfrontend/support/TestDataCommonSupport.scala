@@ -28,7 +28,6 @@ trait TestDataCommonSupport {
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VRN"
   val validVrn = Vrn("101747696")
-  val invalidVrn = Vrn("101747692")
   val validRegistrationDate = "2007-07-07"
   val dateOfBirth = "1980-07-07"
   val validVrn9755 = Vrn("101747641")

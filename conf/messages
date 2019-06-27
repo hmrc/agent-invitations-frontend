@@ -55,7 +55,6 @@ enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 identify-client.vrn.header=What is your client''s VAT registration number?
 error.vrn.required=Enter your client''s VAT registration number
 enter-vrn.regex-failure=VAT registration number must be 9 numbers
-enter-vrn.checksum-failure=Enter a valid VAT registration number
 
 # Vat registration date
 identify-client.vat-registration-date.label=VAT registration date
