@@ -604,9 +604,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /consent/:clientType/:uid" should {
-    def request = requestWithJourneyIdInCookie("POST", "/consent/:clientType/:uid")
+    def request = requestWithJourneyIdInCookie("GET", "/consent/:clientType/:uid")
 
-    "redirect to the mulit consent page" in {
+    "show to the multi consent page" in {
       givenAgentReferenceRecordExistsForUid(arn, uid)
       givenGetAgencyNameClientStub(arn)
       givenAllInvitationIdsByStatus(uid, "Pending")
