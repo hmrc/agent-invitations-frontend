@@ -44,7 +44,7 @@ object ValidateHelper {
       case i: Invalid =>
         i
       case Valid =>
-        if (!Vrn.isValid(fieldValue.trim.toUpperCase))
+        if (!Vrn.isValid(fieldValue))
           Invalid(ValidationError(regexFailure))
         else
           Valid
