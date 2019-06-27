@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.ConfirmClientIrv
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.SomeResponsesFailed
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}

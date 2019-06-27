@@ -18,7 +18,6 @@ package journeys
 
 import org.joda.time.LocalDate
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions._
@@ -48,8 +47,6 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-  val featureFlags = FeatureFlags()
-
   val nino = "AB123456A"
   val postCode = Some("BN114AW")
   val vrn = "123456"

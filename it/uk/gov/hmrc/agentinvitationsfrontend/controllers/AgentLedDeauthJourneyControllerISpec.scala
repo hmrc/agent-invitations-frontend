@@ -277,7 +277,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
   }
   "POST /agents/cancel-authorisation/identify-irv-client" should {
-    "redirect to confirm cancel because redirect to confirm flag is off by default" in {
+    "redirect to confirm cancel" in {
       journeyState.set(IdentifyClientPersonal(HMRCPIR), Nil)
       val request = FakeRequest("POST", "agents/cancel-authorisation/identify-irv-client")
 

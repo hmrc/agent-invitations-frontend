@@ -125,13 +125,11 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
           )
         }
 
-        "show a link to track recent authorisation requests" when {
-          "track requests feature is on" in {
-            view(pageConfNoContinueUrl) should containLink(
-              expectedMessageKey = "invitation-sent.trackRequests",
-              expectedHref = "/invitations/track"
-            )
-          }
+        "show a link to track recent authorisation requests" in {
+          view(pageConfNoContinueUrl) should containLink(
+            expectedMessageKey = "invitation-sent.trackRequests",
+            expectedHref = "/invitations/track"
+          )
         }
       }
 
@@ -153,14 +151,12 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
           )
         }
 
-        "show a link to track recent authorisation requests, which opens in a new window" when {
-          "track requests feature is on" in {
-            view(pageConfContinueUrl) should containLinkWithSubstring(
-              expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
-                "invitation-sent.new-window"),
-              expectedHref = "/invitations/track"
-            )
-          }
+        "show a link to track recent authorisation requests, which opens in a new window" in {
+          view(pageConfContinueUrl) should containLinkWithSubstring(
+            expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
+              "invitation-sent.new-window"),
+            expectedHref = "/invitations/track"
+          )
         }
       }
     }

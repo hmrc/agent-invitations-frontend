@@ -213,7 +213,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           getClientName,
           hasActiveRelationships)(authorisedAgent)(irvClient) should thenGo(NotSignedUp(HMRCPIR))
       }
-      "throw an Exception when the client has no dob and the KF flag is on" in {
+      "throw an Exception when the client has no dob" in {
         def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
 
         intercept[Exception] {

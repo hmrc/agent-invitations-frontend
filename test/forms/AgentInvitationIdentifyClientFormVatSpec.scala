@@ -17,7 +17,7 @@
 package forms
 
 import play.api.data.FormError
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{DateFieldHelper, FeatureFlags}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
 import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 import uk.gov.hmrc.play.test.UnitSpec
@@ -26,153 +26,148 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
   "agentInvitationIdentifyClientFormVat" when {
 
-    "featureFlags are on" when {
+    val agentInvitationIdentifyClientForm = VatClientForm.form
+    val validData: Map[String, String] = Map(
+      "clientIdentifier"       -> "101747696",
+      "registrationDate.year"  -> "2000",
+      "registrationDate.month" -> "1",
+      "registrationDate.day"   -> "1"
+    )
 
-      val featureFlags = FeatureFlags()
-      val agentInvitationIdentifyClientForm = VatClientForm.form
-      val validData: Map[String, String] = Map(
-        "clientIdentifier"       -> "101747696",
-        "registrationDate.year"  -> "2000",
-        "registrationDate.month" -> "1",
-        "registrationDate.day"   -> "1"
-      )
-
-      "return no error message" when {
-        "VRN and registrationDate are valid" in {
-          agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
-        }
-
-        "VRN and registrationDate are valid, but registrationDate contains spaces" in {
-          val dataWithRegistrationDateSpaces = validData + ("registrationDate" -> "  2000-01-01  ")
-          agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateSpaces).errors.isEmpty shouldBe true
-        }
-
-        "VRN and registrationDate are valid, but VRN has spaces" in {
-          val dataWithRegistrationDateLowercase = validData + ("clientIdentifier" -> "  101747696  ")
-          agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors.isEmpty shouldBe true
-        }
-
-        "unbinding the form" in {
-          val unboundForm = VatClientForm.form.mapping
-            .unbind(
-              VatClient("101747696", "2000-01-01")
-            )
-          unboundForm("registrationDate.year") shouldBe "2000"
-          unboundForm("registrationDate.month") shouldBe "1"
-          unboundForm("registrationDate.day") shouldBe "1"
-          unboundForm("clientIdentifier") shouldBe "101747696"
-        }
+    "return no error message" when {
+      "VRN and registrationDate are valid" in {
+        agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
       }
 
-      "return an error message" when {
-        "registrationDate is invalid" in {
-          val dataWithInvalidRegistrationDate = Map(
-            "clientIdentifier"       -> "101747696",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "13",
-            "registrationDate.day"   -> "1"
+      "VRN and registrationDate are valid, but registrationDate contains spaces" in {
+        val dataWithRegistrationDateSpaces = validData + ("registrationDate" -> "  2000-01-01  ")
+        agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateSpaces).errors.isEmpty shouldBe true
+      }
+
+      "VRN and registrationDate are valid, but VRN has spaces" in {
+        val dataWithRegistrationDateLowercase = validData + ("clientIdentifier" -> "  101747696  ")
+        agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors.isEmpty shouldBe true
+      }
+
+      "unbinding the form" in {
+        val unboundForm = VatClientForm.form.mapping
+          .unbind(
+            VatClient("101747696", "2000-01-01")
           )
-          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidRegistrationDate)
-          registrationDateForm.errors shouldBe Seq(
-            FormError("registrationDate", List("enter-vat-registration-date.invalid-format")))
-        }
-
-        "registrationDate is partially empty" in {
-          val dataWithEmptyRegistrationDate = Map(
-            "clientIdentifier"       -> "101747696",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "",
-            "registrationDate.day"   -> "1"
-          )
-          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-          registrationDateForm.errors shouldBe Seq(
-            FormError("registrationDate", List("error.vat-registration-date.required")))
-        }
-
-        "registrationDate is empty" in {
-          val dataWithEmptyRegistrationDate = Map(
-            "clientIdentifier"       -> "101747696",
-            "registrationDate.year"  -> "",
-            "registrationDate.month" -> "",
-            "registrationDate.day"   -> "")
-          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-          registrationDateForm.errors shouldBe Seq(
-            FormError("registrationDate", List("error.vat-registration-date.required")))
-        }
-
-        "registrationDate is missing" in {
-          val dataWithEmptyRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
-          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-          registrationDateForm.errors should contain(FormError("registrationDate.year", List("error.required")))
-          registrationDateForm.errors should contain(FormError("registrationDate.month", List("error.required")))
-          registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.required")))
-        }
-
-        "registrationDate has invalid characters" in {
-          val dataWithInvalidCharactersRegistrationDate = Map(
-            "clientIdentifier"       -> "101747696",
-            "registrationDate.year"  -> "abcd",
-            "registrationDate.month" -> "ef",
-            "registrationDate.day"   -> "gh"
-          )
-          val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidCharactersRegistrationDate)
-          registrationDateForm.errors should contain(
-            FormError("registrationDate.day", List("error.day.invalid-format")))
-          registrationDateForm.errors should contain(
-            FormError("registrationDate.month", List("error.month.invalid-format")))
-          registrationDateForm.errors should contain(
-            FormError("registrationDate.year", List("error.year.invalid-format")))
-
-        }
-
-        "VRN is invalid for regex" in {
-          val dataWithInvalidVrn = Map(
-            "clientIdentifier"       -> "12345",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "1",
-            "registrationDate.day"   -> "1"
-          )
-          val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
-          vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.regex-failure")))
-        }
-
-        "VRN is invalid for checksum" in {
-          val dataWithInvalidVrn = Map(
-            "clientIdentifier"       -> "101747697",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "1",
-            "registrationDate.day"   -> "1"
-          )
-          val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
-          vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.checksum-failure")))
-        }
-
-        "VRN is empty" in {
-          val dataWithEmptyVrn = Map(
-            "clientIdentifier"       -> "",
-            "registrationDate.year"  -> "2000",
-            "registrationDate.month" -> "1",
-            "registrationDate.day"   -> "1")
-          val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn)
-          vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
-        }
+        unboundForm("registrationDate.year") shouldBe "2000"
+        unboundForm("registrationDate.month") shouldBe "1"
+        unboundForm("registrationDate.day") shouldBe "1"
+        unboundForm("clientIdentifier") shouldBe "101747696"
       }
     }
 
-    "parseDateIntoFields" should {
-      "Convert a date string into it's day, month and year fields" in {
-        DateFieldHelper.parseDateIntoFields("2000-01-01") shouldBe Some(("2000", "1", "1"))
+    "return an error message" when {
+      "registrationDate is invalid" in {
+        val dataWithInvalidRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "2000",
+          "registrationDate.month" -> "13",
+          "registrationDate.day"   -> "1"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(
+          FormError("registrationDate", List("enter-vat-registration-date.invalid-format")))
       }
 
-      "Return None when date cannot be converted" in {
-        DateFieldHelper.parseDateIntoFields("20010101") shouldBe None
+      "registrationDate is partially empty" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "2000",
+          "registrationDate.month" -> "",
+          "registrationDate.day"   -> "1"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(
+          FormError("registrationDate", List("error.vat-registration-date.required")))
+      }
+
+      "registrationDate is empty" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "",
+          "registrationDate.month" -> "",
+          "registrationDate.day"   -> "")
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(
+          FormError("registrationDate", List("error.vat-registration-date.required")))
+      }
+
+      "registrationDate is missing" in {
+        val dataWithEmptyRegistrationDate = Map("clientIdentifier" -> "101747696", "service" -> "HMRC-MTD-VAT")
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors should contain(FormError("registrationDate.year", List("error.required")))
+        registrationDateForm.errors should contain(FormError("registrationDate.month", List("error.required")))
+        registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.required")))
+      }
+
+      "registrationDate has invalid characters" in {
+        val dataWithInvalidCharactersRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "abcd",
+          "registrationDate.month" -> "ef",
+          "registrationDate.day"   -> "gh"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidCharactersRegistrationDate)
+        registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.day.invalid-format")))
+        registrationDateForm.errors should contain(
+          FormError("registrationDate.month", List("error.month.invalid-format")))
+        registrationDateForm.errors should contain(
+          FormError("registrationDate.year", List("error.year.invalid-format")))
+
+      }
+
+      "VRN is invalid for regex" in {
+        val dataWithInvalidVrn = Map(
+          "clientIdentifier"       -> "12345",
+          "registrationDate.year"  -> "2000",
+          "registrationDate.month" -> "1",
+          "registrationDate.day"   -> "1"
+        )
+        val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
+        vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.regex-failure")))
+      }
+
+      "VRN is invalid for checksum" in {
+        val dataWithInvalidVrn = Map(
+          "clientIdentifier"       -> "101747697",
+          "registrationDate.year"  -> "2000",
+          "registrationDate.month" -> "1",
+          "registrationDate.day"   -> "1"
+        )
+        val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidVrn)
+        vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-vrn.checksum-failure")))
+      }
+
+      "VRN is empty" in {
+        val dataWithEmptyVrn = Map(
+          "clientIdentifier"       -> "",
+          "registrationDate.year"  -> "2000",
+          "registrationDate.month" -> "1",
+          "registrationDate.day"   -> "1")
+        val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn)
+        vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
       }
     }
+  }
 
-    "formatDateFromFields" should {
-      "Convert a date in fields to a string" in {
-        DateFieldHelper.formatDateFromFields("2000", "1", "1") shouldBe "2000-01-01"
-      }
+  "parseDateIntoFields" should {
+    "Convert a date string into it's day, month and year fields" in {
+      DateFieldHelper.parseDateIntoFields("2000-01-01") shouldBe Some(("2000", "1", "1"))
+    }
+
+    "Return None when date cannot be converted" in {
+      DateFieldHelper.parseDateIntoFields("20010101") shouldBe None
+    }
+  }
+
+  "formatDateFromFields" should {
+    "Convert a date in fields to a string" in {
+      DateFieldHelper.formatDateFromFields("2000", "1", "1") shouldBe "2000-01-01"
     }
   }
 }

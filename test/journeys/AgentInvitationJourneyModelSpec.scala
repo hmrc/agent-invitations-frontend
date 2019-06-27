@@ -350,37 +350,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
     }
 
-    "at ConfirmClientIrv" should {
-      val authorisationRequest =
-        AuthorisationRequest("Piglet", PirInvitation(Nino("AB123456A"), DOB("1990-10-10")))
-      def createMultipleInvitations(
-        arn: Arn,
-        clientType: Option[ClientType],
-        requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
-      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
-        Future.successful(false)
-      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
-        Future.successful(false)
-      def getAgencyEmail() = Future("abc@xyz.com")
-      "transition to SelectClientType" in {
-        given(ConfirmClientIrv(authorisationRequest, emptyBasket)) when start should thenGo(
-          SelectClientType(emptyBasket))
-      }
-      "transition to ReviewAuthorisationsPersonal" in {
-        given(ConfirmClientIrv(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
-          getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
-          Confirmation(true)) should
-          thenMatch { case ReviewAuthorisationsPersonal(basket) if basket.nonEmpty => }
-      }
-      "transition to SelectPersonalService" in {
-        given(ConfirmClientIrv(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
-          getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
-          Confirmation(false)) should
-          thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
-      }
-    }
-
     "at ConfirmClientPersonalVat" should {
       def createMultipleInvitations(
         arn: Arn,
