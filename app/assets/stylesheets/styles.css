@@ -273,6 +273,10 @@ fieldset .div-underline:last-child {
     margin-bottom: 20px;
 }
 
+details .panel[aria-hidden=true] a {
+    display: none; /* Accessibility requirement - Aria hidden elements do not contain focusable elements */
+}
+
 @media (min-width: 641px) and (max-width: 768px){
 
     h3.context, .table-cell span {
