@@ -393,38 +393,5 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true))))
       }
     }
-
-    "at any state" should {
-      "go to Consent" in {
-        def getAgentReferenceRecord(uid: String) =
-          Future(Some(AgentReferenceRecord("uid123", arn, Seq(normalisedAgentName, s"$normalisedAgentName-2"))))
-        def getAgencyName(arn: Arn) = Future(agentName)
-        def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-          Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-        given(root) when goDirectlyToMultiConsent(personal, "uid123")(
-          getAgentReferenceRecord,
-          getAgencyName,
-          getPendingInvitationIdsAndExpiryDates) should thenGo(
-          MultiConsent(
-            personal,
-            "uid123",
-            agentName,
-            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))
-        )
-      }
-      "go to Not found invitations when there is no reference record found" in {
-        def getAgentReferenceRecord(uid: String) = Future(None)
-        def getAgencyName(arn: Arn) = Future(agentName)
-        def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-          Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-        given(root) when goDirectlyToMultiConsent(personal, "uid123")(
-          getAgentReferenceRecord,
-          getAgencyName,
-          getPendingInvitationIdsAndExpiryDates) should thenGo(
-          NotFoundInvitation
-        )
-      }
-
-    }
   }
 }

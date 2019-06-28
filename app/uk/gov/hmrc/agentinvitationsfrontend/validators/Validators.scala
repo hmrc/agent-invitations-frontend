@@ -57,7 +57,7 @@ object Validators {
     )
 
   val validVrn =
-    ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure", "enter-vrn.checksum-failure")
+    ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure")
 
   val validVatDateFormat: Constraint[String] =
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
@@ -73,14 +73,13 @@ object Validators {
 
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     fieldValue match {
-      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) =>
-        if (Vrn.isValid(clientId)) Valid
-        else Invalid(ValidationError("INVALID_VRN"))
       case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
         if (Nino.isValid(clientId)) Valid
         else Invalid(ValidationError("INVALID_NINO"))
+      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) && Vrn.isValid(clientId) => Valid
       case _ =>
         Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
+
     }
   }
 
