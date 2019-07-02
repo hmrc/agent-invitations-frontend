@@ -18,7 +18,6 @@ package forms
 
 import play.api.data.FormError
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ItsaClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ItsaClient
 import uk.gov.hmrc.play.test.UnitSpec
@@ -27,103 +26,64 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
   "IdentifyClientForm" when {
 
-    "feature flags are on" when {
+    val agentInvitationIdentifyClientForm = ItsaClientForm.form
+    val validData = Json.obj("clientIdentifier" -> "WM123456C", "postcode" -> "W12 7TQ")
 
-      val featureFlags = FeatureFlags()
-      val agentInvitationIdentifyClientForm = ItsaClientForm.form(featureFlags.showKfcMtdIt)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "postcode" -> "W12 7TQ")
-
-      "return no error message" when {
-        "NINO and postcode are valid" in {
-          agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
-        }
-
-        "NINO and postcode are valid, but postcode contains spaces" in {
-          val dataWithPostcodeSpaces = validData + ("postcode" -> JsString("  W12 7TQ  "))
-          agentInvitationIdentifyClientForm.bind(dataWithPostcodeSpaces).errors.isEmpty shouldBe true
-        }
-
-        "NINO and postcode are valid, but postcode is lower case" in {
-          val dataWithPostcodeLowercase = validData + ("postcode" -> JsString("w12 7tq"))
-          agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
-        }
-
-        "NINO and postcode are valid, but NINO has spaces" in {
-          val dataWithPostcodeLowercase = validData + ("clientIdentifier" -> JsString("  WM123456C  "))
-          agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
-        }
-
-        "NINO and postcode are valid, but NINO is lower case" in {
-          val dataWithPostcodeLowercase = validData + ("clientIdentifier" -> JsString("wn123456c"))
-          agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
-        }
-
-        "unbinding the form" in {
-          val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(ItsaClient("AE123456C", Some("AA1 1AA")))
-          unboundForm("postcode") shouldBe "AA1 1AA"
-          unboundForm("clientIdentifier") shouldBe "AE123456C"
-        }
+    "return no error message" when {
+      "NINO and postcode are valid" in {
+        agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
       }
 
-      "return an error message" when {
-        "postcode is invalid" in {
-          val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
-          val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("enter-postcode.invalid-format")))
-        }
+      "NINO and postcode are valid, but postcode contains spaces" in {
+        val dataWithPostcodeSpaces = validData + ("postcode" -> JsString("  W12 7TQ  "))
+        agentInvitationIdentifyClientForm.bind(dataWithPostcodeSpaces).errors.isEmpty shouldBe true
+      }
 
-        "postcode is empty" in {
-          val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
-          val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode)
-          postcodeForm.errors shouldBe Seq(FormError("postcode", List("error.postcode.required")))
-        }
+      "NINO and postcode are valid, but postcode is lower case" in {
+        val dataWithPostcodeLowercase = validData + ("postcode" -> JsString("w12 7tq"))
+        agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
+      }
 
-        "NINO is invalid" in {
-          val dataWithInvalidNino = validData + ("clientIdentifier" -> JsString("12345"))
-          val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidNino)
-          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-nino.invalid-format")))
-        }
+      "NINO and postcode are valid, but NINO has spaces" in {
+        val dataWithPostcodeLowercase = validData + ("clientIdentifier" -> JsString("  WM123456C  "))
+        agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
+      }
 
-        "NINO is empty" in {
-          val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
-          val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyNino)
-          ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.nino.required")))
-        }
+      "NINO and postcode are valid, but NINO is lower case" in {
+        val dataWithPostcodeLowercase = validData + ("clientIdentifier" -> JsString("wn123456c"))
+        agentInvitationIdentifyClientForm.bind(dataWithPostcodeLowercase).errors.isEmpty shouldBe true
+      }
+
+      "unbinding the form" in {
+        val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(ItsaClient("AE123456C", "AA1 1AA"))
+        unboundForm("postcode") shouldBe "AA1 1AA"
+        unboundForm("clientIdentifier") shouldBe "AE123456C"
       }
     }
 
-    "feature flags are off" when {
-      val featureFlags = FeatureFlags().copy(showKfcMtdIt = false)
-      val agentInvitationIdentifyClientForm = ItsaClientForm.form(featureFlags.showKfcMtdIt)
-      val validData = Json.obj("clientIdentifier" -> "WM123456C", "postcode" -> "W12 7TQ")
-
-      "return no error message" when {
-        "NINO and postcode are valid" in {
-          agentInvitationIdentifyClientForm.bind(validData).errors.isEmpty shouldBe true
-        }
-
-        "NINO is valid but postcode is not" in {
-          val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
-          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors.isEmpty shouldBe true
-        }
-
-        "NINO is valid and postcode is empty" in {
-          val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
-          agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode).errors.isEmpty shouldBe true
-        }
+    "return an error message" when {
+      "postcode is invalid" in {
+        val dataWithInvalidPostcode = validData + ("postcode" -> JsString("W12"))
+        val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode)
+        postcodeForm.errors shouldBe Seq(FormError("postcode", List("enter-postcode.invalid-format")))
       }
 
-      "return an error message" when {
-        "NINO is invalid" in {
-          val dataWithInvalidPostcode = validData + ("clientIdentifier" -> JsString("12345"))
-          agentInvitationIdentifyClientForm.bind(dataWithInvalidPostcode).errors shouldBe Seq(
-            FormError("clientIdentifier", List("enter-nino.invalid-format")))
-        }
-        "NINO is empty" in {
-          val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
-          agentInvitationIdentifyClientForm.bind(dataWithEmptyNino).errors shouldBe Seq(
-            FormError("clientIdentifier", List("error.nino.required")))
-        }
+      "postcode is empty" in {
+        val dataWithEmptyPostcode = validData + ("postcode" -> JsString(""))
+        val postcodeForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyPostcode)
+        postcodeForm.errors shouldBe Seq(FormError("postcode", List("error.postcode.required")))
+      }
+
+      "NINO is invalid" in {
+        val dataWithInvalidNino = validData + ("clientIdentifier" -> JsString("12345"))
+        val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidNino)
+        ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("enter-nino.invalid-format")))
+      }
+
+      "NINO is empty" in {
+        val dataWithEmptyNino = validData + ("clientIdentifier" -> JsString(""))
+        val ninoForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyNino)
+        ninoForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.nino.required")))
       }
     }
   }

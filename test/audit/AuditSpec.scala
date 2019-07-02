@@ -23,7 +23,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.models.PirInvitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{DOB, PirInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -55,7 +55,7 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
         service.sendAgentInvitationSubmitted(
           arn,
           invitationId,
-          PirInvitation(Nino("WM123456C"), None),
+          PirInvitation(Nino("WM123456C"), DOB("1993-09-21")),
           "uid",
           result
         )(hc, FakeRequest("GET", "/path"), concurrent.ExecutionContext.Implicits.global))

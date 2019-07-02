@@ -48,10 +48,10 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT)
   val nino = "AB123456A"
-  val postCode = Some("BN114AW")
+  val postCode = "BN114AW"
   val vrn = "123456"
-  val vatRegDate = Some("2010-10-10")
-  val dob = Some("1990-10-10")
+  val vatRegDate = "2010-10-10"
+  val dob = "1990-10-10"
 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
@@ -150,177 +150,112 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       def getClientName(clientId: String, service: String) = Future(Some("John Smith"))
       def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
       val itsaClient = ItsaClient(nino, postCode)
-      val itsaClientNoPostcode = ItsaClient(nino, None)
       val irvClient = IrvClient(nino, dob)
-      val irvClientNoDob = IrvClient(nino, None)
       val vatClient = VatClient(vrn, vatRegDate)
-      val vatClientNoVatRegDate = VatClient(vrn, None)
 
-      "transition to ConfirmClientItsa when postcode matches and flags are on" in {
+      "transition to ConfirmClientItsa when postcode matches" in {
         def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
 
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
           postcodeMatches,
           getClientName,
-          hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
+          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(
           ConfirmClientItsa(Some("John Smith"), Nino(nino)))
       }
-      "transition to KnownFactNotMatched when postcode does not match and flags are on" in {
+      "transition to KnownFactNotMatched when postcode does not match" in {
         def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
 
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
           postcodeDoesNotMatch,
           getClientName,
-          hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
-          KnownFactNotMatched)
+          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(KnownFactNotMatched)
       }
-      "transition to NotSignedUp when client is not enrolled for itsa and flags are on" in {
+      "transition to NotSignedUp when client is not enrolled for itsa" in {
         def clientNotSignedUp(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
 
         given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
           clientNotSignedUp,
           getClientName,
-          hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
-          NotSignedUp(HMRCMTDIT))
+          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(NotSignedUp(HMRCMTDIT))
       }
-      "transition to ConfirmClientItsa disregarding whether postcode matched when KF flag is off" in {
-        def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
-
-        given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
-          postcodeDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(showKFCItsa = false, redirectToConfirmItsa = true)(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClientItsa(Some("John Smith"), Nino(nino)))
-      }
-      "transition to ConfirmCancel when redirect-to-confirm flag is off" in {
-        def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
-
-        given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
-          postcodeMatches,
-          getClientName,
-          hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = false)(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmCancel(HMRCMTDIT, Some("John Smith"), nino))
-      }
-      "throw an Exception when the client has no postcode and the KF flag is on" in {
+      "throw an Exception when the client has no postcode" in {
         def postcodeNotMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
 
         intercept[Exception] {
           given(IdentifyClientPersonal(HMRCMTDIT)) when submitIdentifyClientItsa(
             postcodeNotMatches,
             getClientName,
-            hasActiveRelationships)(showKFCItsa = true, redirectToConfirmItsa = true)(authorisedAgent)(
-            itsaClientNoPostcode)
+            hasActiveRelationships)(authorisedAgent)(ItsaClient(nino, ""))
         }.getMessage shouldBe "Postcode expected but none found"
       }
-      "transition to ConfirmClientIrv when dob matches and flags are on" in {
+      "transition to ConfirmCancel when dob matches" in {
         def dobMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(true))
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
           dobMatches,
           getClientName,
-          hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmClientIrv(Some("John Smith"), Nino(nino)))
+          hasActiveRelationships)(authorisedAgent)(irvClient) should thenGo(
+          ConfirmCancel(HMRCPIR, Some("John Smith"), nino))
       }
-      "transition to KnownFactNotMatched when dob does not match and flags are on" in {
+      "transition to KnownFactNotMatched when dob does not match" in {
         def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
           dobDoesNotMatch,
           getClientName,
-          hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          KnownFactNotMatched)
+          hasActiveRelationships)(authorisedAgent)(irvClient) should thenGo(KnownFactNotMatched)
       }
-      "transition to NotSignedUp when client endpoint returns None and flags are on" in {
+      "transition to NotSignedUp when client endpoint returns None" in {
         def clientNotSignedUp(nino: Nino, localDate: LocalDate): Future[Option[Boolean]] = Future(None)
 
         given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
           clientNotSignedUp,
           getClientName,
-          hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          NotSignedUp(HMRCPIR))
+          hasActiveRelationships)(authorisedAgent)(irvClient) should thenGo(NotSignedUp(HMRCPIR))
       }
-      "transition to ConfirmClientIrv and disregard whether dob matches when KF flag is off" in {
-        def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Option[Boolean]] = Future(None)
-
-        given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
-          dobNotMatches,
-          getClientName,
-          hasActiveRelationships)(showKFCIrv = false, redirectToConfirmIrv = true)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmClientIrv(Some("John Smith"), Nino(nino)))
-      }
-      "transition to ConfirmCancel when redirect-to-confirm irv flag is off" in {
-        def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
-
-        given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
-          dobNotMatches,
-          getClientName,
-          hasActiveRelationships)(showKFCIrv = false, redirectToConfirmIrv = false)(authorisedAgent)(irvClient) should thenGo(
-          ConfirmCancel(HMRCPIR, Some("John Smith"), nino))
-      }
-      "throw an Exception when the client has no dob and the KF flag is on" in {
+      "throw an Exception when the client has no dob" in {
         def dobNotMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
 
         intercept[Exception] {
           given(IdentifyClientPersonal(HMRCPIR)) when submitIdentifyClientIrv(
             dobNotMatches,
             getClientName,
-            hasActiveRelationships)(showKFCIrv = true, redirectToConfirmIrv = true)(authorisedAgent)(irvClientNoDob)
+            hasActiveRelationships)(authorisedAgent)(IrvClient(nino, ""))
         }.getMessage shouldBe "Date of birth expected but none found"
       }
-      "transition to ConfirmClientVat when vat reg date matches and flags are on" in {
+      "transition to ConfirmClientVat when vat reg date matches" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
           vatRegDateMatches,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(
           ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn)))
       }
-      "transition to KnownFactNotMatched when vat reg date does not match and flags are on" in {
+      "transition to KnownFactNotMatched when vat reg date does not match" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
           vatRegDateDoesNotMatch,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          KnownFactNotMatched)
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
-      "transition to NotSignedUp when client is not enrolled for VAT and flags are on" in {
+      "transition to NotSignedUp when client is not enrolled for VAT" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
           clientNotSignedUp,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          NotSignedUp(HMRCMTDVAT))
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
-      "transition to ConfirmClientPersonalVat disregarding whether known fact matches when KF flag is off" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
-
-        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn)))
-      }
-      "transition to ConfirmCancel when redirect-to-confirm vat flag is off" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
-
-        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = false)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmCancel(HMRCMTDVAT, Some("John Smith"), vrn))
-      }
-      "throw an Exception when the client has no vat reg date and the KF flag is on" in {
+      "throw an Exception when the client has no vat reg date" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         intercept[Exception] {
           given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(
             vatRegDateDoesNotMatch,
             getClientName,
-            hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(
-            vatClientNoVatRegDate)
+            hasActiveRelationships)(authorisedAgent)(VatClient(vrn, ""))
         }.getMessage shouldBe "Vat registration date expected but none found"
       }
     }
@@ -329,51 +264,31 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       def getClientName(clientId: String, service: String) = Future(Some("John Smith"))
       def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
       val vatClient = VatClient(vrn, vatRegDate)
-      "transition to ConfirmClientVat when known fact matches and flags are on" in {
+      "transition to ConfirmClientVat when known fact matches" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(
           vatRegDateMatches,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(
           ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
       }
-      "transition to KnownFactNotMatched when known fact does not match and flags are on" in {
+      "transition to KnownFactNotMatched when known fact does not match" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(
           vatRegDateDoesNotMatch,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          KnownFactNotMatched)
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
 
-      "transition to NotSignedUp when client is not enrolled and flags are on" in {
+      "transition to NotSignedUp when client is not enrolled" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(
           clientNotSignedUp,
           getClientName,
-          hasActiveRelationships)(showKFCVat = true, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          NotSignedUp(HMRCMTDVAT))
-      }
-      "transition to ConfirmClientBusiness disregarding whether known fact matches when KF flag is off" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
-
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = true)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
-      }
-      "transition to ConfirmCancel when redirect to confirm vat flag is off" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
-
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(showKFCVat = false, redirectToConfirmVat = false)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmCancel(HMRCMTDVAT, Some("John Smith"), vrn))
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
     }
     "at state ConfirmClientItsa" should {

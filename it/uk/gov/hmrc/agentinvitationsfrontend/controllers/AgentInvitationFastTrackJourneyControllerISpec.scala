@@ -73,11 +73,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
 
-        val expectedFtr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", submittedNinoStr.toUpperCase, Some("BN32TN"))
-        journeyState.get shouldBe Some((
-          CheckDetailsCompleteItsa(originalFastTrackRequest = expectedFtr, fastTrackRequest = expectedFtr, None),
-          List(Prologue(None, None)))
-        )
+        val expectedFtr =
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", submittedNinoStr.toUpperCase, Some("BN32TN"))
+        journeyState.get shouldBe Some(
+          (
+            CheckDetailsCompleteItsa(originalFastTrackRequest = expectedFtr, fastTrackRequest = expectedFtr, None),
+            List(Prologue(None, None))))
       }
     }
 
@@ -120,10 +121,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
       val expectedFtr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN"))
-      journeyState.get shouldBe Some((
-        CheckDetailsCompleteItsa(originalFastTrackRequest = expectedFtr, fastTrackRequest = expectedFtr, None),
-        List(Prologue(None, Some("/some/referer/url")), Prologue(None, None)))
-      )
+      journeyState.get shouldBe Some(
+        (
+          CheckDetailsCompleteItsa(originalFastTrackRequest = expectedFtr, fastTrackRequest = expectedFtr, None),
+          List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))))
     }
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
@@ -228,10 +229,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN"))
       journeyState.set(
-        CheckDetailsCompleteItsa(
-          originalFastTrackRequest = ftr,
-          fastTrackRequest = ftr,
-          None),
+        CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
@@ -555,9 +553,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
       journeyState.set(
         NoVatRegDate(originalFtr, ftr, None),
-        List(
-          CheckDetailsCompletePersonalVat(originalFtr, originalFtr, None),
-          Prologue(None, None))
+        List(CheckDetailsCompletePersonalVat(originalFtr, originalFtr, None), Prologue(None, None))
       )
 
       val requestWithForm = request.withFormUrlEncodedBody(
@@ -607,9 +603,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
     }
   }
 
@@ -670,24 +664,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.track.button")
-    }
-
-    "show the already-authorisation-pending page with no track button when track request flag is off" in {
-      SharedMetricRegistries.clear()
-      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
-      appOppositeJourneyState.set(
-        PendingInvitationExists(ftr, None),
-        List(
-          CheckDetailsCompleteItsa(ftr, ftr, None),
-          Prologue(None, None)
-        )
-      )
-
-      val result = oppositeController.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
-      checkHtmlResultWithNotBodyText(result, "Track your authorisation requests")
     }
   }
 

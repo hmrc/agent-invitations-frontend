@@ -37,7 +37,6 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
     relativeInvitationUrl = "/invitationUrl",
     continueUrlOpt = None,
     hasContinueUrl = false,
-    trackRequests = false,
     clientType = "someClientType",
     expiryDate = LocalDate.parse("2001-02-03"),
     agencyEmail = "abc@xyz.com"
@@ -126,20 +125,11 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
           )
         }
 
-        "show a link to track recent authorisation requests only if the track requests feature is toggled on" when {
-          "track requests feature is on" in {
-            view(pageConfNoContinueUrl.copy(trackRequests = true)) should containLink(
-              expectedMessageKey = "invitation-sent.trackRequests",
-              expectedHref = "/invitations/track"
-            )
-          }
-
-          "track requests feature is off" in {
-            view(pageConfNoContinueUrl.copy(trackRequests = false)) shouldNot containLink(
-              expectedMessageKey = "invitation-sent.trackRequests",
-              expectedHref = "/invitations/track"
-            )
-          }
+        "show a link to track recent authorisation requests" in {
+          view(pageConfNoContinueUrl) should containLink(
+            expectedMessageKey = "invitation-sent.trackRequests",
+            expectedHref = "/invitations/track"
+          )
         }
       }
 
@@ -161,21 +151,12 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
           )
         }
 
-        "show a link to track recent authorisation requests, which opens in a new window, only if the track requests feature is toggled on" when {
-          "track requests feature is on" in {
-            view(pageConfContinueUrl.copy(trackRequests = true)) should containLinkWithSubstring(
-              expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
-                "invitation-sent.new-window"),
-              expectedHref = "/invitations/track"
-            )
-          }
-
-          "track requests feature is off" in {
-            view(pageConfContinueUrl.copy(trackRequests = false)) shouldNot containLinkWithSubstring(
-              expectedSubstring = messages("invitation-sent.trackRequests"),
-              expectedHref = "/invitations/track"
-            )
-          }
+        "show a link to track recent authorisation requests, which opens in a new window" in {
+          view(pageConfContinueUrl) should containLinkWithSubstring(
+            expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
+              "invitation-sent.new-window"),
+            expectedHref = "/invitations/track"
+          )
         }
       }
     }

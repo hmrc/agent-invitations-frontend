@@ -24,7 +24,7 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
-@(knownFactForm: Form[Option[String]], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)

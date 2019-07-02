@@ -99,28 +99,18 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form(featureFlags.showHmrcMtdIt))(
-      submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService, hasActiveRelationshipFor)(
-        featureFlags.showKfcMtdIt,
-        featureFlags.enableMtdItToConfirm))
+    whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
+      submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
   val submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(IrvClientForm.form(featureFlags.showPersonalIncome))(
-      submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService, hasActiveRelationshipFor)(
-        featureFlags.showKfcPersonalIncome,
-        featureFlags.enableIrvToConfirm
-      )
-    )
+    whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
+      submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
   val submitIdentifyVatClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(VatClientForm.form(featureFlags.showKfcMtdVat))(
-      submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService, hasActiveRelationshipFor)(
-        featureFlags.showKfcMtdVat,
-        featureFlags.enableMtdVatToConfirm
-      )
-    )
+    whenAuthorisedWithForm(AsAgent)(VatClientForm.form)(
+      submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
   val showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -225,16 +215,14 @@ class AgentLedDeauthJourneyController @Inject()(
         case Services.HMRCMTDIT =>
           Ok(
             identify_client_itsa(
-              ItsaClientForm.form(featureFlags.showKfcMtdIt),
-              featureFlags.showKfcMtdIt,
+              ItsaClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
               backLinkFor(breadcrumbs).url
             ))
         case Services.HMRCPIR =>
           Ok(
             identify_client_irv(
-              IrvClientForm.form(featureFlags.showKfcPersonalIncome),
-              featureFlags.showKfcPersonalIncome,
+              IrvClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
               backLinkFor(breadcrumbs).url
             )
@@ -242,8 +230,7 @@ class AgentLedDeauthJourneyController @Inject()(
         case Services.HMRCMTDVAT =>
           Ok(
             identify_client_vat(
-              formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
-              featureFlags.showKfcMtdVat,
+              formWithErrors.or(VatClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
               backLinkFor(breadcrumbs).url
             ))
@@ -252,8 +239,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientBusiness =>
       Ok(
         identify_client_vat(
-          formWithErrors.or(VatClientForm.form(featureFlags.showKfcMtdVat)),
-          featureFlags.showKfcMtdVat,
+          formWithErrors.or(VatClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         ))

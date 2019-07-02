@@ -74,14 +74,14 @@ class AgentsFastTrackInvitationController @Inject()(
 
   val agentFastTrackRoot = routes.AgentsFastTrackInvitationController.agentFastTrack()
 
-  val agentFastTrackPostcodeForm: Form[Option[String]] =
-    knownFactsForm(postcodeMapping(featureFlags.showKfcMtdIt))
+  val agentFastTrackPostcodeForm: Form[String] =
+    knownFactsForm(postcodeMapping)
 
-  val agentFastTrackDateOfBirthForm: Form[Option[String]] =
-    knownFactsForm(dateOfBirthMapping(featureFlags.showKfcPersonalIncome))
+  val agentFastTrackDateOfBirthForm: Form[String] =
+    knownFactsForm(dateOfBirthMapping)
 
-  val agentFastTrackVatRegDateForm: Form[Option[String]] =
-    knownFactsForm(vatRegDateMapping(featureFlags))
+  val agentFastTrackVatRegDateForm: Form[String] =
+    knownFactsForm(vatRegDateMapping)
 
   val showKnownFact: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
@@ -124,7 +124,7 @@ class AgentsFastTrackInvitationController @Inject()(
                   )
                 )),
               kf => {
-                val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
+                val updatedCache = agentSession.copy(knownFact = Some(kf), fromFastTrack = true)
                 agentSessionCache
                   .save(updatedCache)
                   .flatMap { _ =>
@@ -156,7 +156,7 @@ class AgentsFastTrackInvitationController @Inject()(
                   )
                 )),
               kf => {
-                val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
+                val updatedCache = agentSession.copy(knownFact = Some(kf), fromFastTrack = true)
                 agentSessionCache
                   .save(updatedCache)
                   .flatMap { _ =>
@@ -188,7 +188,7 @@ class AgentsFastTrackInvitationController @Inject()(
                   )
                 )),
               kf => {
-                val updatedCache = agentSession.copy(knownFact = kf, fromFastTrack = true)
+                val updatedCache = agentSession.copy(knownFact = Some(kf), fromFastTrack = true)
                 agentSessionCache
                   .save(updatedCache)
                   .flatMap { _ =>
@@ -211,44 +211,39 @@ class AgentsFastTrackInvitationController @Inject()(
 
   def agentFastTrack: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
-      if (featureFlags.enableFastTrack) {
-        agentFastTrackForm
-          .bindFromRequest()
-          .fold(
-            formErrors => {
-              withMaybeErrorUrlCached {
-                case Some(continue) =>
-                  Future successful Redirect(
-                    continue
-                      .get(UnsafePermitAll)
-                      .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-                case None =>
-                  throw new IllegalStateException("No Error Url Provided")
-              }
-            },
-            fastTrackRequest => {
-              val agentSession = AgentSession(
-                clientType = fastTrackRequest.clientType,
-                service = Some(fastTrackRequest.service),
-                clientIdentifierType = Some(fastTrackRequest.clientIdentifierType),
-                clientIdentifier = Some(fastTrackRequest.clientIdentifier),
-                knownFact = fastTrackRequest.knownFact,
-                fromFastTrack = true,
-                clientTypeForInvitationSent = fastTrackRequest.clientType
-              )
-              agentSessionCache.save(agentSession).flatMap { _ =>
-                withMaybeContinueUrlCached {
-                  ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, agent.isWhitelisted) {
-                    Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
-                  }
+      agentFastTrackForm
+        .bindFromRequest()
+        .fold(
+          formErrors => {
+            withMaybeErrorUrlCached {
+              case Some(continue) =>
+                Future successful Redirect(
+                  continue
+                    .get(UnsafePermitAll)
+                    .url + s"?issue=${formErrors.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
+              case None =>
+                throw new IllegalStateException("No Error Url Provided")
+            }
+          },
+          fastTrackRequest => {
+            val agentSession = AgentSession(
+              clientType = fastTrackRequest.clientType,
+              service = Some(fastTrackRequest.service),
+              clientIdentifierType = Some(fastTrackRequest.clientIdentifierType),
+              clientIdentifier = Some(fastTrackRequest.clientIdentifier),
+              knownFact = fastTrackRequest.knownFact,
+              fromFastTrack = true,
+              clientTypeForInvitationSent = fastTrackRequest.clientType
+            )
+            agentSessionCache.save(agentSession).flatMap { _ =>
+              withMaybeContinueUrlCached {
+                ifShouldShowService(agentSession.service.getOrElse(""), featureFlags, agent.isWhitelisted) {
+                  Redirect(routes.AgentsFastTrackInvitationController.showCheckDetails())
                 }
               }
             }
-          )
-      } else {
-        Logger(getClass).warn("Fast-Track feature flag is switched off")
-        Future successful BadRequest
-      }
+          }
+        )
     }
   }
 
@@ -346,7 +341,7 @@ class AgentsFastTrackInvitationController @Inject()(
 
 object AgentsFastTrackInvitationController {
 
-  def knownFactsForm(knownFactsMapping: Mapping[Option[String]]) =
+  def knownFactsForm(knownFactsMapping: Mapping[String]) =
     Form(single("knownFact" -> knownFactsMapping))
 
   val validateFastTrackForm: Constraint[AgentFastTrackRequest] =

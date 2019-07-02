@@ -24,7 +24,6 @@ case class InvitationSentPageConfig(
   relativeInvitationUrl: String,
   continueUrlOpt: Option[String],
   hasContinueUrl: Boolean,
-  trackRequests: Boolean,
   clientType: String,
   expiryDate: LocalDate,
   agencyEmail: String)(implicit externalUrls: ExternalUrls) {

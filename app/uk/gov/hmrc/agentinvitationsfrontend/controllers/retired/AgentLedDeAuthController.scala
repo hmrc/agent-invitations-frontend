@@ -273,10 +273,9 @@ class AgentLedDeAuthController @Inject()(
     body: => Future[Result])(implicit request: Request[_]): Future[Result] =
     withAuthorisedAsAgent { _ =>
       agentSession.service match {
-        case Some(HMRCMTDIT) if featureFlags.enableMtdItToConfirm   => Redirect(confirmClientCall)
-        case Some(HMRCMTDVAT) if featureFlags.enableMtdVatToConfirm => Redirect(confirmClientCall)
-        case Some(HMRCPIR) if featureFlags.enableIrvToConfirm       => Redirect(confirmClientCall)
-        case _                                                      =>
+        case Some(HMRCMTDIT)  => Redirect(confirmClientCall)
+        case Some(HMRCMTDVAT) => Redirect(confirmClientCall)
+        case _                =>
           //TODO: Fix this loose check
           agentSession.clientType match {
             case Some(ClientType.personal) => Redirect(routes.AgentLedDeAuthController.showConfirmCancel())

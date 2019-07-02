@@ -23,10 +23,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 object ItsaClientForm {
 
-  def form(showKfcMtdIt: Boolean): Form[ItsaClient] = Form(
+  def form: Form[ItsaClient] = Form(
     mapping(
       "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
-      "postcode"         -> postcodeMapping(showKfcMtdIt)
+      "postcode"         -> postcodeMapping
     )(ItsaClient.apply)(ItsaClient.unapply)
   )
 }

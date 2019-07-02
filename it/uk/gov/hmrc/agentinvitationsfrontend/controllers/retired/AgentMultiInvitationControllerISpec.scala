@@ -33,9 +33,9 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
   lazy val errorController: AgentsErrorController = app.injector.instanceOf[AgentsErrorController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-  val clientDetail1 = AuthorisationRequest("Gareth Gates Sr",  ItsaInvitation(validNino, Some(Postcode(validPostcode))))
-  val clientDetail2 = AuthorisationRequest("Malcolm Pirson",  PirInvitation(validNino, Some(DOB(dateOfBirth))))
-  val clientDetail3 = AuthorisationRequest("Sara Vaterloo", VatInvitation(Some(personal), validVrn, Some(VatRegDate(validRegistrationDate))))
+  val clientDetail1 = AuthorisationRequest("Gareth Gates Sr",  ItsaInvitation(validNino, Postcode(validPostcode)))
+  val clientDetail2 = AuthorisationRequest("Malcolm Pirson",  PirInvitation(validNino, DOB(dateOfBirth)))
+  val clientDetail3 = AuthorisationRequest("Sara Vaterloo", VatInvitation(Some(personal), validVrn, VatRegDate(validRegistrationDate)))
 
   "GET /agents/select-service" should {
     val request = FakeRequest("GET", "/agents/select-service")
@@ -43,7 +43,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
     "show the select personal service page with review authorisations link if there is content in the authorisationRequest cache" in {
       await(sessionStore.save(
         AgentSession(
-          Some(personal), requests =  Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))))
+          Some(personal), requests =  Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Postcode(validPostcode)))))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Return to authorisation requests")
@@ -55,7 +55,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       await(sessionStore.save(
         AgentSession(
           Some(business),
-          requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))))))
+          requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, VatRegDate(validRegistrationDate)))))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHasAgentSignOutLink(result)
@@ -75,7 +75,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       await(sessionStore.save(
         AgentSession(
           None,
-          requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))))))
+          requests = Set(AuthorisationRequest("Gareth Gates", VatInvitation(Some(business), validVrn, VatRegDate(validRegistrationDate)))))))
       val result = controller.showSelectService()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(retired.routes.AgentsInvitationController.showClientType().url)
@@ -90,7 +90,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       await(sessionStore.save(
         AgentSession(
           Some(personal),
-          requests = Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Some(Postcode(validPostcode))))))))
+          requests = Set(AuthorisationRequest("Gareth Gates", ItsaInvitation(validNino, Postcode(validPostcode)))))))
       val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request,    arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -356,7 +356,7 @@ class AgentMultiInvitationControllerISpec extends BaseISpec with AuthBehaviours 
       val authRequest1 =
         AuthorisationRequest(
           "Mr Client ITSA",
-          ItsaInvitation(validNino, Some(Postcode(validPostcode))),
+          ItsaInvitation(validNino, Postcode(validPostcode)),
           AuthorisationRequest.NEW,
           "itemId")
 

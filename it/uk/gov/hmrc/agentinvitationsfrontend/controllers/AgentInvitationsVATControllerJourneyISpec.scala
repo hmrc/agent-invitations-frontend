@@ -329,7 +329,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with no requests in basket" in {
       await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT))))
 
-      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
+      val form = VatClientForm.form.fill(VatClient(validVrn.value, ""))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
@@ -343,12 +343,11 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "return 403 for authorised Agent who submitted known facts of an not enrolled VAT client with requests in basket" in {
-      val authRequest: AuthorisationRequest = AuthorisationRequest(
-        "clientName",
-        VatInvitation(Some(business), validVrn, Some(VatRegDate(validRegistrationDate))))
+      val authRequest: AuthorisationRequest =
+        AuthorisationRequest("clientName", VatInvitation(Some(business), validVrn, VatRegDate(validRegistrationDate)))
       await(sessionStore.save(AgentSession(Some(business), Some(serviceVAT), requests = Set(authRequest))))
 
-      val form = VatClientForm.form(true).fill(VatClient(validVrn.value, None))
+      val form = VatClientForm.form.fill(VatClient(validVrn.value, ""))
       val result =
         notEnrolled(authorisedAsValidAgent(request.withFormUrlEncodedBody(form.data.toSeq: _*), arn.value))
 
@@ -491,9 +490,8 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     }
 
     "redirect to pending authorisations exist if there are already pending invitations in the basket for this client" in {
-      val authRequest = AuthorisationRequest(
-        "clientName",
-        VatInvitation(Some(personal), validVrn, Some(VatRegDate(validRegistrationDate))))
+      val authRequest =
+        AuthorisationRequest("clientName", VatInvitation(Some(personal), validVrn, VatRegDate(validRegistrationDate)))
       await(
         sessionStore.save(
           AgentSession(
@@ -516,7 +514,7 @@ class AgentInvitationsVATControllerJourneyISpec extends BaseISpec with AuthBehav
     "redirect to already-authorisation-present when YES is selected but there is already an active relationship for this agent and client" in {
       val authRequest = AuthorisationRequest(
         "clientName",
-        VatInvitation(Some(business), validVrn9755, Some(VatRegDate(validRegistrationDate))))
+        VatInvitation(Some(business), validVrn9755, VatRegDate(validRegistrationDate)))
       await(
         sessionStore.save(
           AgentSession(

@@ -17,7 +17,6 @@
 package forms
 
 import play.api.data.FormError
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.forms.IrvClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.play.test.UnitSpec
@@ -41,87 +40,82 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
   val dateRequiredFormError: FormError = FormError("dob", List(dateRequiredMessage))
 
   "agentInvitationIdentifyClientFormIrv" when {
+    val validData: Map[String, String] = Map(
+      "clientIdentifier" -> "WM123456C",
+      "dob.year"         -> "2000",
+      "dob.month"        -> "1",
+      "dob.day"          -> "1"
+    )
 
-    "featureFlags are on" when {
+    val agentInvitationIdentifyClientForm = IrvClientForm.form
 
-      val validData: Map[String, String] = Map(
-        "clientIdentifier" -> "WM123456C",
-        "dob.year"         -> "2000",
-        "dob.month"        -> "1",
-        "dob.day"          -> "1"
-      )
-
-      val featureFlags = FeatureFlags()
-      val agentInvitationIdentifyClientForm = IrvClientForm.form(featureFlags.showKfcPersonalIncome)
-
-      "return no error message" when {
-        "return no error message for valid Nino" in {
-          val ninoForm = agentInvitationIdentifyClientForm.bind(validData)
-          ninoForm.errors.isEmpty shouldBe true
-        }
-
-        "return no error message for valid Nino with spaces" in {
-          val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "  WM123456C  "))
-          ninoForm.errors.isEmpty shouldBe true
-        }
-
-        "return no error message for valid lower case Nino" in {
-          val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "wn123456c"))
-          ninoForm.errors.isEmpty shouldBe true
-        }
-
-        "return no errors when unbinding the form" in {
-          val unboundForm =
-            agentInvitationIdentifyClientForm.mapping.unbind(IrvClient("AE123456C", Some("1980-01-01")))
-          unboundForm("clientIdentifier") shouldBe "AE123456C"
-        }
+    "return no error message" when {
+      "return no error message for valid Nino" in {
+        val ninoForm = agentInvitationIdentifyClientForm.bind(validData)
+        ninoForm.errors.isEmpty shouldBe true
       }
 
-      "return an error message" when {
+      "return no error message for valid Nino with spaces" in {
+        val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "  WM123456C  "))
+        ninoForm.errors.isEmpty shouldBe true
+      }
 
-        "return an error message for invalid Nino" in {
-          val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "12345"))
-          ninoForm.errors.contains(ninoFormatFormError) shouldBe true
-          ninoForm.errors.length shouldBe 1
-        }
+      "return no error message for valid lower case Nino" in {
+        val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "wn123456c"))
+        ninoForm.errors.isEmpty shouldBe true
+      }
 
-        "return an error message for empty Nino" in {
-          val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> ""))
-          ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
-          ninoForm.errors.length shouldBe 1
-        }
+      "return no errors when unbinding the form" in {
+        val unboundForm =
+          agentInvitationIdentifyClientForm.mapping.unbind(IrvClient("AE123456C", "1980-01-01"))
+        unboundForm("clientIdentifier") shouldBe "AE123456C"
+      }
+    }
 
-        "return an error message for invalid characters" in {
-          val invalidDate: Map[String, String] = Map(
-            "clientIdentifier" -> "WM123456C",
-            "dob.year"         -> "abdc",
-            "dob.month"        -> "ef",
-            "dob.day"          -> "gh"
-          )
-          val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
-          ninoForm.errors shouldBe Seq(yearFormatFormError, monthFormatFormError, dayFormatFormError)
-          ninoForm.errors.length shouldBe 3
-        }
+    "return an error message" when {
 
-        "return an error message for no date" in {
-          val invalidDate: Map[String, String] = Map(
-            "clientIdentifier" -> "WM123456C",
-            "dob.year"         -> "",
-            "dob.month"        -> "",
-            "dob.day"          -> ""
-          )
-          val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
-          ninoForm.errors shouldBe Seq(dateRequiredFormError)
-          ninoForm.errors.length shouldBe 1
-        }
+      "return an error message for invalid Nino" in {
+        val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> "12345"))
+        ninoForm.errors.contains(ninoFormatFormError) shouldBe true
+        ninoForm.errors.length shouldBe 1
+      }
 
-        "return an error message for empty form" in {
-          val invalidData: Map[String, String] =
-            Map("clientIdentifier" -> "", "dob.year" -> "", "dob.month" -> "", "dob.day" -> "")
-          val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
-          ninoForm.errors shouldBe Seq(ninoEmptyFormError, dateRequiredFormError)
-          ninoForm.errors.length shouldBe 2
-        }
+      "return an error message for empty Nino" in {
+        val ninoForm = agentInvitationIdentifyClientForm.bind(validData + ("clientIdentifier" -> ""))
+        ninoForm.errors.contains(ninoEmptyFormError) shouldBe true
+        ninoForm.errors.length shouldBe 1
+      }
+
+      "return an error message for invalid characters" in {
+        val invalidDate: Map[String, String] = Map(
+          "clientIdentifier" -> "WM123456C",
+          "dob.year"         -> "abdc",
+          "dob.month"        -> "ef",
+          "dob.day"          -> "gh"
+        )
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
+        ninoForm.errors shouldBe Seq(yearFormatFormError, monthFormatFormError, dayFormatFormError)
+        ninoForm.errors.length shouldBe 3
+      }
+
+      "return an error message for no date" in {
+        val invalidDate: Map[String, String] = Map(
+          "clientIdentifier" -> "WM123456C",
+          "dob.year"         -> "",
+          "dob.month"        -> "",
+          "dob.day"          -> ""
+        )
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
+        ninoForm.errors shouldBe Seq(dateRequiredFormError)
+        ninoForm.errors.length shouldBe 1
+      }
+
+      "return an error message for empty form" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "", "dob.year" -> "", "dob.month" -> "", "dob.day" -> "")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(ninoEmptyFormError, dateRequiredFormError)
+        ninoForm.errors.length shouldBe 2
       }
     }
   }

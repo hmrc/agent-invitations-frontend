@@ -51,21 +51,17 @@ sealed trait Invitation {
 
   val clientIdentifierType: String
 
-  val knownFact: Option[KnownFact]
+  val knownFact: KnownFact
 
   val clientId: String = clientIdentifier.value
 }
 
 object Invitation {
-  def apply(
-    clientType: Option[ClientType],
-    service: String,
-    clientIdentifier: String,
-    knownFact: Option[String]): Invitation =
+  def apply(clientType: Option[ClientType], service: String, clientIdentifier: String, knownFact: String): Invitation =
     service match {
-      case Services.HMRCMTDIT  => ItsaInvitation(Nino(clientIdentifier), knownFact.map(Postcode(_)))
-      case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier), knownFact.map(VatRegDate(_)))
-      case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier), knownFact.map(DOB(_)))
+      case Services.HMRCMTDIT  => ItsaInvitation(Nino(clientIdentifier), Postcode(knownFact))
+      case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier), VatRegDate(knownFact))
+      case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier), DOB(knownFact))
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -107,12 +103,12 @@ object Invitation {
 
 case class ItsaInvitation(
   clientIdentifier: Nino,
-  postcode: Option[Postcode],
+  postcode: Postcode,
   clientType: Option[ClientType] = Some(ClientType.personal),
   service: String = Services.HMRCMTDIT,
   clientIdentifierType: String = "ni")
     extends Invitation {
-  val knownFact: Option[Postcode] = postcode
+  val knownFact: Postcode = postcode
 }
 
 object ItsaInvitation {
@@ -121,12 +117,12 @@ object ItsaInvitation {
 
 case class PirInvitation(
   clientIdentifier: Nino,
-  dob: Option[DOB],
+  dob: DOB,
   clientType: Option[ClientType] = Some(ClientType.personal),
   service: String = Services.HMRCPIR,
   clientIdentifierType: String = "ni")
     extends Invitation {
-  val knownFact: Option[DOB] = dob
+  val knownFact: DOB = dob
 }
 
 object PirInvitation {
@@ -136,11 +132,11 @@ object PirInvitation {
 case class VatInvitation(
   clientType: Option[ClientType],
   clientIdentifier: Vrn,
-  vatRegDate: Option[VatRegDate],
+  vatRegDate: VatRegDate,
   service: String = Services.HMRCMTDVAT,
   clientIdentifierType: String = "vrn")
     extends Invitation {
-  val knownFact: Option[VatRegDate] = vatRegDate
+  val knownFact: VatRegDate = vatRegDate
 }
 
 object VatInvitation {

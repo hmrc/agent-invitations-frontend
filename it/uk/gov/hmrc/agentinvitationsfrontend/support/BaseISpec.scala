@@ -35,19 +35,9 @@ abstract class BaseISpec
     showHmrcMtdIt = !featureFlags.showHmrcMtdIt,
     showPersonalIncome = !featureFlags.showPersonalIncome,
     showHmrcMtdVat = !featureFlags.showHmrcMtdVat,
-    showKfcMtdIt = !featureFlags.showKfcMtdIt,
-    showKfcPersonalIncome = !featureFlags.showKfcPersonalIncome,
-    showKfcMtdVat = !featureFlags.showKfcMtdVat,
-    enableFastTrack = !featureFlags.enableFastTrack,
-    enableTrackRequests = !featureFlags.enableTrackRequests,
     enableTrackCancelAuth = !featureFlags.enableTrackCancelAuth,
-    enableMtdItToConfirm = !featureFlags.enableMtdItToConfirm,
-    enableIrvToConfirm = !featureFlags.enableIrvToConfirm,
-    enableMtdVatToConfirm = !featureFlags.enableMtdVatToConfirm,
     showAgentLedDeAuth = !featureFlags.showAgentLedDeAuth
   )
-  val knownFactOffFeatureFlags: FeatureFlags = oppositeFeatureFlags
-    .copy(enableFastTrack = true, showHmrcMtdIt = true, showPersonalIncome = true, showHmrcMtdVat = true)
 
   override implicit lazy val app: Application = appBuilder(featureFlags).build()
 
@@ -96,15 +86,7 @@ abstract class BaseISpec
         "features.show-hmrc-mtd-it"                                           -> featureFlags.showHmrcMtdIt,
         "features.show-personal-income"                                       -> featureFlags.showPersonalIncome,
         "features.show-hmrc-mtd-vat"                                          -> featureFlags.showHmrcMtdVat,
-        "features.show-kfc-mtd-it"                                            -> featureFlags.showKfcMtdIt,
-        "features.show-kfc-personal-income"                                   -> featureFlags.showKfcPersonalIncome,
-        "features.show-kfc-mtd-vat"                                           -> featureFlags.showKfcMtdVat,
-        "features.enable-fast-track"                                          -> featureFlags.enableFastTrack,
-        "features.enable-track-requests"                                      -> featureFlags.enableTrackRequests,
         "features.enable-track-cancel-auth-action"                            -> featureFlags.enableTrackCancelAuth,
-        "features.redirect-to-confirm-personal-income"                        -> featureFlags.enableIrvToConfirm,
-        "features.redirect-to-confirm-mtd-it"                                 -> featureFlags.enableMtdItToConfirm,
-        "features.redirect-to-confirm-mtd-vat"                                -> featureFlags.enableMtdVatToConfirm,
         "features.show-agent-led-de-auth"                                     -> featureFlags.showAgentLedDeAuth,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",

@@ -205,26 +205,15 @@ abstract class BaseInvitationController(
         case Some(cache) =>
           cache.service match {
             case Some(HMRCMTDIT) =>
-              Ok(
-                identify_client_itsa(
-                  ItsaClientForm.form(featureFlags.showKfcMtdIt),
-                  featureFlags.showKfcMtdIt,
-                  submitIdentifyClientItsaCall,
-                  selectServiceCall.url))
+              Ok(identify_client_itsa(ItsaClientForm.form, submitIdentifyClientItsaCall, selectServiceCall.url))
 
             case Some(HMRCMTDVAT) =>
-              Ok(
-                identify_client_vat(
-                  VatClientForm.form(featureFlags.showKfcMtdVat),
-                  featureFlags.showKfcMtdVat,
-                  submitIdentifyClientVatCall,
-                  selectServiceCall.url))
+              Ok(identify_client_vat(VatClientForm.form, submitIdentifyClientVatCall, selectServiceCall.url))
 
             case Some(HMRCPIR) =>
               Ok(
                 identify_client_irv(
-                  IrvClientForm.form(featureFlags.showKfcPersonalIncome),
-                  featureFlags.showKfcPersonalIncome,
+                  IrvClientForm.form,
                   submitIdentifyClientIrvCall,
                   selectServiceCall.url
                 ))
@@ -252,17 +241,11 @@ abstract class BaseInvitationController(
 
   def identifyItsaClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
     withAuthorisedAsAgent { agent =>
-      ItsaClientForm
-        .form(featureFlags.showKfcMtdIt)
+      ItsaClientForm.form
         .bindFromRequest()
         .fold(
           formWithErrors =>
-            Ok(
-              identify_client_itsa(
-                formWithErrors,
-                featureFlags.showKfcMtdIt,
-                submitIdentifyClientItsaCall,
-                selectServiceCall.url)),
+            Ok(identify_client_itsa(formWithErrors, submitIdentifyClientItsaCall, selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
               case Some(cache) if cache.service.contains(HMRCMTDIT) =>
@@ -270,13 +253,11 @@ abstract class BaseInvitationController(
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
                     clientIdentifierType = Some("ni"),
-                    knownFact = userInput.postcode)
+                    knownFact = Some(userInput.postcode))
                 agentSessionCache
                   .save(updatedSession)
                   .flatMap { updatedSession =>
-                    val itsaInvitation = ItsaInvitation(
-                      Nino(userInput.clientIdentifier),
-                      if (featureFlags.showKfcMtdIt) userInput.postcode.map(Postcode(_)) else None)
+                    val itsaInvitation = ItsaInvitation(Nino(userInput.clientIdentifier), Postcode(userInput.postcode))
                     knownFactCheckItsa(agent.arn, updatedSession, itsaInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
@@ -289,17 +270,10 @@ abstract class BaseInvitationController(
 
   def identifyVatClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
     withAuthorisedAsAgent { agent =>
-      VatClientForm
-        .form(featureFlags.showKfcMtdVat)
+      VatClientForm.form
         .bindFromRequest()
         .fold(
-          formWithErrors =>
-            Ok(
-              identify_client_vat(
-                formWithErrors,
-                featureFlags.showKfcMtdVat,
-                submitIdentifyClientVatCall,
-                selectServiceCall.url)),
+          formWithErrors => Ok(identify_client_vat(formWithErrors, submitIdentifyClientVatCall, selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
               case Some(cache) if cache.service.contains(HMRCMTDVAT) =>
@@ -307,7 +281,7 @@ abstract class BaseInvitationController(
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
                     clientIdentifierType = Some("vrn"),
-                    knownFact = userInput.registrationDate)
+                    knownFact = Some(userInput.registrationDate))
                 agentSessionCache
                   .save(updatedSession)
                   .flatMap { updatedSession =>
@@ -315,7 +289,7 @@ abstract class BaseInvitationController(
                       VatInvitation(
                         updatedSession.clientType,
                         Vrn(userInput.clientIdentifier),
-                        if (featureFlags.showKfcMtdVat) userInput.registrationDate.map(VatRegDate(_)) else None)
+                        VatRegDate(userInput.registrationDate))
                     knownFactCheckVat(agent.arn, updatedSession, vatInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
@@ -326,17 +300,10 @@ abstract class BaseInvitationController(
 
   def identifyIrvClient(implicit request: Request[_], hc: HeaderCarrier): Future[Result] =
     withAuthorisedAsAgent { agent =>
-      IrvClientForm
-        .form(featureFlags.showKfcPersonalIncome)
+      IrvClientForm.form
         .bindFromRequest()
         .fold(
-          formWithErrors =>
-            Ok(
-              identify_client_irv(
-                formWithErrors,
-                featureFlags.showKfcPersonalIncome,
-                submitIdentifyClientIrvCall,
-                selectServiceCall.url)),
+          formWithErrors => Ok(identify_client_irv(formWithErrors, submitIdentifyClientIrvCall, selectServiceCall.url)),
           userInput =>
             agentSessionCache.fetch.flatMap {
               case Some(cache) if cache.service.contains(HMRCPIR) =>
@@ -344,14 +311,12 @@ abstract class BaseInvitationController(
                   cache.copy(
                     clientIdentifier = Some(userInput.clientIdentifier),
                     clientIdentifierType = Some("ni"),
-                    knownFact = userInput.dob)
+                    knownFact = Some(userInput.dob))
                 agentSessionCache
                   .save(updatedSession)
                   .flatMap { updatedSession =>
                     val pirInvitation =
-                      PirInvitation(
-                        Nino(userInput.clientIdentifier),
-                        if (featureFlags.showKfcPersonalIncome) userInput.dob.map(DOB(_)) else None)
+                      PirInvitation(Nino(userInput.clientIdentifier), DOB(userInput.dob))
                     knownFactCheckIrv(agent.arn, updatedSession, pirInvitation, agent.isWhitelisted)
                   }
               case Some(cache) if cache != AgentSession.emptyAgentSession => Redirect(selectServiceCall)
@@ -409,56 +374,48 @@ abstract class BaseInvitationController(
     agentSession: AgentSession,
     vatInvitation: VatInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    vatInvitation.vatRegDate.map(date => LocalDate.parse(date.value)) match {
-      case Some(vatRegDate) =>
-        invitationsService
-          .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, vatRegDate) flatMap {
-          case Some(204) =>
-            maybeResultIfPendingInvitationsOrRelationshipExistFor(
-              arn,
-              agentSession.clientIdentifier.getOrElse(""),
-              agentSession.service.getOrElse(""),
-              agentSession)
-              .flatMap {
-                case Some(r) if agentSession.fromFastTrack => r
-                case _ =>
-                  if (agentSession.isDeAuthJourney && !featureFlags.enableMtdVatToConfirm) {
-                    relationshipsService
-                      .checkRelationshipExistsForService(
-                        arn,
-                        agentSession.service.getOrElse(""),
-                        agentSession.clientIdentifier.getOrElse(""))
-                      .flatMap {
-                        case true =>
-                          redirectOrShowConfirmClient(agentSession, featureFlags) {
-                            createInvitation(arn, vatInvitation)
-                          }
-                        case false =>
-                          Redirect(routes.AgentsErrorController.notAuthorised())
+    invitationsService
+      .checkVatRegistrationDateMatches(vatInvitation.clientIdentifier, LocalDate.parse(vatInvitation.vatRegDate.value)) flatMap {
+      case Some(204) =>
+        maybeResultIfPendingInvitationsOrRelationshipExistFor(
+          arn,
+          agentSession.clientIdentifier.getOrElse(""),
+          agentSession.service.getOrElse(""),
+          agentSession)
+          .flatMap {
+            case Some(r) if agentSession.fromFastTrack => r
+            case _ =>
+              if (agentSession.isDeAuthJourney) {
+                relationshipsService
+                  .checkRelationshipExistsForService(
+                    arn,
+                    agentSession.service.getOrElse(""),
+                    agentSession.clientIdentifier.getOrElse(""))
+                  .flatMap {
+                    case true =>
+                      redirectOrShowConfirmClient(agentSession, featureFlags) {
+                        createInvitation(arn, vatInvitation)
                       }
-                  } else {
-                    redirectOrShowConfirmClient(agentSession, featureFlags) {
-                      createInvitation(arn, vatInvitation)
-                    }
+                    case false =>
+                      Redirect(routes.AgentsErrorController.notAuthorised())
                   }
+              } else {
+                redirectOrShowConfirmClient(agentSession, featureFlags) {
+                  createInvitation(arn, vatInvitation)
+                }
               }
-          case Some(403) =>
-            Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
-            Redirect(notMatchedCall)
-            Redirect(routes.AgentsErrorController.notMatched())
-          case Some(423) =>
-            Logger(getClass).warn(
-              s"${arn.value}'s Invitation Creation Failed: Vat Details are currently being migrated.")
-            Redirect(routes.AgentsErrorController.cannotCreateRequest())
-          case None =>
-            Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
-            Redirect(routes.AgentsInvitationController.notSignedUp())
-          case _ => throw new IllegalStateException("Unknown response occurred while verifying known facts for VAT")
-        }
+          }
+      case Some(403) =>
+        Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Date Does Not Match.")
+        Redirect(notMatchedCall)
+        Redirect(routes.AgentsErrorController.notMatched())
+      case Some(423) =>
+        Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Vat Details are currently being migrated.")
+        Redirect(routes.AgentsErrorController.cannotCreateRequest())
       case None =>
-        redirectOrShowConfirmClient(agentSession, featureFlags) {
-          createInvitation(arn, vatInvitation)
-        }
+        Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: VAT Registration Not Found.")
+        Redirect(routes.AgentsInvitationController.notSignedUp())
+      case _ => throw new IllegalStateException("Unknown response occurred while verifying known facts for VAT")
     }
 
   protected def knownFactCheckItsa(
@@ -466,127 +423,101 @@ abstract class BaseInvitationController(
     agentSession: AgentSession,
     itsaInvitation: ItsaInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    itsaInvitation.postcode match {
-      case Some(postcode) =>
-        for {
-          hasPostcode <- invitationsService
-                          .checkPostcodeMatches(itsaInvitation.clientIdentifier, postcode.value)
-          result <- hasPostcode match {
-                     case Some(true) =>
-                       maybeResultIfPendingInvitationsOrRelationshipExistFor(
-                         arn,
-                         agentSession.clientIdentifier.getOrElse(""),
-                         agentSession.service.getOrElse(""),
-                         agentSession)
-                         .flatMap {
-                           case Some(r) if agentSession.fromFastTrack => r
-                           case _ =>
-                             if (agentSession.isDeAuthJourney && !featureFlags.enableMtdItToConfirm) {
-                               relationshipsService
-                                 .checkRelationshipExistsForService(
-                                   arn,
-                                   agentSession.service.getOrElse(""),
-                                   agentSession.clientIdentifier.getOrElse(""))
-                                 .flatMap {
-                                   case true =>
-                                     redirectOrShowConfirmClient(agentSession, featureFlags) {
-                                       createInvitation(arn, itsaInvitation)
-                                     }
-                                   case false =>
-                                     Redirect(routes.AgentsErrorController.notAuthorised())
+    for {
+      hasPostcode <- invitationsService
+                      .checkPostcodeMatches(itsaInvitation.clientIdentifier, itsaInvitation.postcode.value)
+      result <- hasPostcode match {
+                 case Some(true) =>
+                   maybeResultIfPendingInvitationsOrRelationshipExistFor(
+                     arn,
+                     agentSession.clientIdentifier.getOrElse(""),
+                     agentSession.service.getOrElse(""),
+                     agentSession)
+                     .flatMap {
+                       case Some(r) if agentSession.fromFastTrack => r
+                       case _ =>
+                         if (agentSession.isDeAuthJourney) {
+                           relationshipsService
+                             .checkRelationshipExistsForService(
+                               arn,
+                               agentSession.service.getOrElse(""),
+                               agentSession.clientIdentifier.getOrElse(""))
+                             .flatMap {
+                               case true =>
+                                 redirectOrShowConfirmClient(agentSession, featureFlags) {
+                                   createInvitation(arn, itsaInvitation)
                                  }
-                             } else {
-                               redirectOrShowConfirmClient(agentSession, featureFlags) {
-                                 createInvitation(arn, itsaInvitation)
-                               }
+                               case false =>
+                                 Redirect(routes.AgentsErrorController.notAuthorised())
                              }
+                         } else {
+                           redirectOrShowConfirmClient(agentSession, featureFlags) {
+                             createInvitation(arn, itsaInvitation)
+                           }
                          }
-                     case Some(false) =>
-                       Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
-                       auditService.sendAgentInvitationSubmitted(
-                         arn,
-                         "",
-                         itsaInvitation,
-                         "",
-                         "Fail",
-                         Some("POSTCODE_DOES_NOT_MATCH"))
-                       toFuture(Redirect(notMatchedCall))
-                     case None =>
-                       Logger(getClass).warn(
-                         s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
-                       auditService.sendAgentInvitationSubmitted(
-                         arn,
-                         "",
-                         itsaInvitation,
-                         "",
-                         "Fail",
-                         Some("CLIENT_REGISTRATION_NOT_FOUND"))
-                       toFuture(Redirect(routes.AgentsInvitationController.notSignedUp()))
-                   }
-        } yield result
-      case None =>
-        redirectOrShowConfirmClient(agentSession, featureFlags) {
-          createInvitation(arn, itsaInvitation)
-        }
-    }
+                     }
+                 case Some(false) =>
+                   Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Postcode Does Not Match.")
+                   auditService
+                     .sendAgentInvitationSubmitted(arn, "", itsaInvitation, "", "Fail", Some("POSTCODE_DOES_NOT_MATCH"))
+                   toFuture(Redirect(notMatchedCall))
+                 case None =>
+                   Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Client Registration Not Found.")
+                   auditService.sendAgentInvitationSubmitted(
+                     arn,
+                     "",
+                     itsaInvitation,
+                     "",
+                     "Fail",
+                     Some("CLIENT_REGISTRATION_NOT_FOUND"))
+                   toFuture(Redirect(routes.AgentsInvitationController.notSignedUp()))
+               }
+    } yield result
 
   protected def knownFactCheckIrv(
     arn: Arn,
     agentSession: AgentSession,
     pirInvitation: PirInvitation,
     isWhitelisted: Boolean)(implicit request: Request[_]): Future[Result] =
-    if (featureFlags.showKfcPersonalIncome) {
-      pirInvitation.dob match {
-        case Some(dob) =>
-          invitationsService
-            .checkCitizenRecordMatches(pirInvitation.clientIdentifier, LocalDate.parse(dob.value))
+    invitationsService
+      .checkCitizenRecordMatches(pirInvitation.clientIdentifier, LocalDate.parse(pirInvitation.dob.value))
+      .flatMap {
+        case Some(true) =>
+          maybeResultIfPendingInvitationsOrRelationshipExistFor(
+            arn,
+            agentSession.clientIdentifier.getOrElse(""),
+            agentSession.service.getOrElse(""),
+            agentSession)
             .flatMap {
-              case Some(true) =>
-                maybeResultIfPendingInvitationsOrRelationshipExistFor(
-                  arn,
-                  agentSession.clientIdentifier.getOrElse(""),
-                  agentSession.service.getOrElse(""),
-                  agentSession)
-                  .flatMap {
-                    case Some(r) if agentSession.fromFastTrack => r
-                    case _ =>
-                      if (agentSession.isDeAuthJourney && !featureFlags.enableIrvToConfirm) {
-                        relationshipsService
-                          .checkRelationshipExistsForService(
-                            arn,
-                            agentSession.service.getOrElse(""),
-                            agentSession.clientIdentifier.getOrElse(""))
-                          .flatMap {
-                            case true =>
-                              redirectOrShowConfirmClient(agentSession, featureFlags) {
-                                createInvitation(arn, pirInvitation)
-                              }
-                            case false =>
-                              Redirect(routes.AgentsErrorController.notAuthorised())
-                          }
-                      } else {
+              case Some(r) if agentSession.fromFastTrack => r
+              case _ =>
+                if (agentSession.isDeAuthJourney) {
+                  relationshipsService
+                    .checkRelationshipExistsForService(
+                      arn,
+                      agentSession.service.getOrElse(""),
+                      agentSession.clientIdentifier.getOrElse(""))
+                    .flatMap {
+                      case true =>
                         redirectOrShowConfirmClient(agentSession, featureFlags) {
                           createInvitation(arn, pirInvitation)
                         }
-                      }
+                      case false =>
+                        Redirect(routes.AgentsErrorController.notAuthorised())
+                    }
+                } else {
+                  redirectOrShowConfirmClient(agentSession, featureFlags) {
+                    createInvitation(arn, pirInvitation)
                   }
-              case Some(false) =>
-                Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
-                Redirect(notMatchedCall)
-              case None =>
-                Logger(getClass).warn(
-                  s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
-                Redirect(notMatchedCall)
+                }
             }
+        case Some(false) =>
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: Not Matched from Citizen-Details.")
+          Redirect(notMatchedCall)
         case None =>
-          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No KnownFact Provided")
+          Logger(getClass).warn(s"${arn.value}'s Invitation Creation Failed: No Record found from Citizen-Details.")
           Redirect(notMatchedCall)
       }
-    } else {
-      redirectOrShowConfirmClient(agentSession, featureFlags) {
-        createInvitation(arn, pirInvitation)
-      }
-    }
 
   def redirectOrShowConfirmClient(agentSession: AgentSession, featureFlags: FeatureFlags)(body: => Future[Result])(
     implicit request: Request[_]): Future[Result] =
@@ -599,11 +530,9 @@ abstract class BaseInvitationController(
         val knownFact = agentSession.knownFact
 
         service match {
-          case HMRCMTDIT if featureFlags.enableMtdItToConfirm =>
+          case HMRCMTDIT =>
             Redirect(confirmClientCall)
-          case HMRCMTDVAT if featureFlags.enableMtdVatToConfirm =>
-            Redirect(confirmClientCall)
-          case HMRCPIR if featureFlags.enableIrvToConfirm =>
+          case HMRCMTDVAT =>
             Redirect(confirmClientCall)
           case _ =>
             val result = for {
@@ -616,15 +545,11 @@ abstract class BaseInvitationController(
                                         .hasActiveRelationshipFor(agent.arn, clientIdentifier, service)
             } yield (hasPendingInvitations, hasActiveRelationship)
 
-            val serviceEnabled = (service == HMRCPIR && !featureFlags.enableIrvToConfirm) ||
-              (service == HMRCMTDIT && !featureFlags.enableMtdItToConfirm) ||
-              (service == HMRCMTDVAT && !featureFlags.enableMtdVatToConfirm)
-
             result.flatMap {
-              case (true, _) if serviceEnabled =>
+              case (true, _) =>
                 Redirect(routes.AgentsInvitationController.pendingAuthorisationExists())
 
-              case (_, true) if serviceEnabled => Redirect(routes.AgentsErrorController.activeRelationshipExists())
+              case (_, true) => Redirect(routes.AgentsErrorController.activeRelationshipExists())
 
               case _ =>
                 invitationsService
@@ -633,7 +558,7 @@ abstract class BaseInvitationController(
                     val updatedBasket = agentSession.requests ++ Set(
                       AuthorisationRequest(
                         clientName.getOrElse(""),
-                        Invitation(clientType, service, clientIdentifier, knownFact)))
+                        Invitation(clientType, service, clientIdentifier, knownFact.getOrElse(""))))
                     agentSessionCache.save(
                       AgentSession(
                         clientType = clientType,
@@ -665,31 +590,22 @@ abstract class BaseInvitationController(
       case None =>
         agentSession match {
           case AgentSession(Some(clientType), Some(service), _, Some(clientIdentifier), knownFact, _, _, _, _, _, _) =>
-            val knownFactRequired = knownFact.isEmpty &&
-              ((service == HMRCPIR && featureFlags.showKfcPersonalIncome)
-                || (service == HMRCMTDVAT && featureFlags.showKfcMtdVat)
-                || (service == HMRCMTDIT && featureFlags.showKfcMtdIt))
+            val knownFactRequired = knownFact.isEmpty
 
             if (knownFactRequired) {
               Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())
             } else {
               service match {
                 case HMRCPIR =>
-                  val pirInvitation = PirInvitation(
-                    Nino(clientIdentifier),
-                    if (featureFlags.showKfcPersonalIncome) knownFact.map(DOB(_)) else None)
+                  val pirInvitation = PirInvitation(Nino(clientIdentifier), DOB(knownFact.getOrElse("")))
                   knownFactCheckIrv(arn, agentSession, pirInvitation, isWhitelisted)
                 case HMRCMTDVAT =>
-                  val vatInvitation = VatInvitation(
-                    Some(clientType),
-                    Vrn(clientIdentifier),
-                    if (featureFlags.showKfcMtdVat) knownFact.map(VatRegDate(_)) else None)
+                  val vatInvitation =
+                    VatInvitation(Some(clientType), Vrn(clientIdentifier), VatRegDate(knownFact.getOrElse("")))
                   knownFactCheckVat(arn, agentSession, vatInvitation, isWhitelisted)
                 case HMRCMTDIT =>
                   val itsaInvitation =
-                    ItsaInvitation(
-                      Nino(clientIdentifier),
-                      if (featureFlags.showKfcMtdIt) knownFact.map(Postcode(_)) else None)
+                    ItsaInvitation(Nino(clientIdentifier), Postcode(knownFact.getOrElse("")))
                   knownFactCheckItsa(arn, agentSession, itsaInvitation, isWhitelisted)
                 case _ =>
                   Redirect(routes.AgentsFastTrackInvitationController.showKnownFact())

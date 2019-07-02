@@ -23,10 +23,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 object IrvClientForm {
 
-  def form(showKfcPersonalIncome: Boolean): Form[IrvClient] = Form(
+  def form: Form[IrvClient] = Form(
     mapping(
       "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
-      "dob"              -> dateOfBirthMapping(showKfcPersonalIncome)
+      "dob"              -> dateOfBirthMapping
     )(IrvClient.apply)(IrvClient.unapply)
   )
 }

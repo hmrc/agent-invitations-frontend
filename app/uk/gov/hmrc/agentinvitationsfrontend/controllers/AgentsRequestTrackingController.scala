@@ -66,25 +66,16 @@ class AgentsRequestTrackingController @Inject()(
   import authActions._
 
   val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
-    if (featureFlags.enableTrackRequests) {
-      withAuthorisedAsAgent { agent =>
-        implicit val now: LocalDate = LocalDate.now()
-        for {
-          invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
-                                          agent.arn,
-                                          agent.isWhitelisted,
-                                          trackRequestsShowLastDays)
-        } yield
-          Ok(
-            track(
-              TrackPageConfig(
-                invitationsAndRelationships,
-                trackRequestsShowLastDays,
-                featureFlags.enableTrackCancelAuth)))
-      }
-    } else {
-      Logger(getClass).warn("Feature flag to enable track page is off")
-      Future successful BadRequest
+    withAuthorisedAsAgent { agent =>
+      implicit val now: LocalDate = LocalDate.now()
+      for {
+        invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
+                                        agent.arn,
+                                        agent.isWhitelisted,
+                                        trackRequestsShowLastDays)
+      } yield
+        Ok(track(
+          TrackPageConfig(invitationsAndRelationships, trackRequestsShowLastDays, featureFlags.enableTrackCancelAuth)))
     }
   }
 
