@@ -290,15 +290,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case CheckDetailsCompleteItsa(originalFtr, fastTrackRequest, continueUrl) => {
         if (confirmation.choice) {
-          val checkAndGotoInvitationSent = checkIfPendingOrActiveAndGoto(
-            fastTrackRequest,
-            agent.arn,
-            ItsaInvitation(Nino(fastTrackRequest.clientIdentifier), Postcode(fastTrackRequest.knownFact.getOrElse(""))),
-            continueUrl
-          )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
           checkPostcodeMatches(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.getOrElse(""))
             .flatMap {
-              case Some(true)  => checkAndGotoInvitationSent
+              case Some(true) =>
+                checkIfPendingOrActiveAndGoto(
+                  fastTrackRequest,
+                  agent.arn,
+                  ItsaInvitation(
+                    Nino(fastTrackRequest.clientIdentifier),
+                    Postcode(fastTrackRequest.knownFact.getOrElse(""))),
+                  continueUrl
+                )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
               case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
               case None        => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
             }
