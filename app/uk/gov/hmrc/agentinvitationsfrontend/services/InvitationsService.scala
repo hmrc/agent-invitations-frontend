@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
@@ -34,7 +34,7 @@ import scala.util.control.NonFatal
 
 @Singleton
 class InvitationsService @Inject()(
-  invitationsConnector: InvitationsConnector,
+  val invitationsConnector: InvitationsConnector,
   featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
@@ -187,8 +187,9 @@ class InvitationsService @Inject()(
                             Services.determineServiceMessageKey(invitationId) match {
                               case "itsa" =>
                                 invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
-                              case "afi" => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
-                              case "vat" => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
+                              case "afi"   => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
+                              case "vat"   => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
+                              case "trust" => invitationsConnector.acceptTrustInvitation(Utr(i.clientId), invitationId)
                             }
                         }
     } yield result
@@ -203,8 +204,9 @@ class InvitationsService @Inject()(
                             Services.determineServiceMessageKey(invitationId) match {
                               case "itsa" =>
                                 invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)
-                              case "afi" => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
-                              case "vat" => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
+                              case "afi"   => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
+                              case "vat"   => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
+                              case "trust" => invitationsConnector.rejectTrustInvitation(Utr(i.clientId), invitationId)
                             }
                         }
     } yield result

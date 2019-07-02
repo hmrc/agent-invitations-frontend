@@ -127,6 +127,31 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
         }
       }
     }
+
+    "service is for Trust" should {
+      val agentInvitationTrust = AgentInvitation(Some(business), "HMRC-TERS-ORG", "utr", validUtr.value)
+      "return a link of a Trust created invitation" in {
+        givenInvitationCreationSucceeds(
+          arn,
+          Some(business),
+          validUtr.value,
+          invitationIdTrust,
+          validUtr.value,
+          "utr",
+          serviceTrust,
+          identifierTrust)
+        val result: Option[String] = await(connector.createInvitation(arn, agentInvitationTrust))
+        result.isDefined shouldBe true
+        result.get should include("agent-client-authorisation/clients/UTR/4937455253/invitations/received/DF99K6PXSBHTF")
+      }
+
+      "return an error if unexpected response when creating Trust invitation" in {
+        givenInvitationCreationFails(arn)
+        intercept[BadRequestException] {
+          await(connector.createInvitation(arn, agentInvitationTrust))
+        }
+      }
+    }
   }
 
   "Get All Agency Invitations" should {
@@ -346,6 +371,29 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
         verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
       }
     }
+
+    "service is for Trust" should {
+      "return status 204 if Trust invitation was accepted" in {
+        givenAcceptInvitationSucceeds(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe true
+        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+      }
+
+      "return an error if Trust invitation is already actioned" in {
+        givenAcceptInvitationReturnsAlreadyActioned(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe false
+        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+      }
+
+      "return an error if Trust invitation not found" in {
+        givenAcceptInvitationReturnsNotFound(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe false
+        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+      }
+    }
   }
 
   "Reject invitation" when {
@@ -416,6 +464,29 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
+      }
+    }
+
+    "service is for Trust" should {
+      "return status 204 if Trust invitation was rejected" in {
+        givenRejectInvitationSucceeds(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe true
+        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+      }
+
+      "return an error if Trust invitation is already actioned" in {
+        givenRejectInvitationReturnsAlreadyActioned(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe false
+        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+      }
+
+      "return an error if Trust invitation not found" in {
+        givenRejectInvitationReturnsNotFound(validUtr.value, invitationIdTrust, identifierTrust)
+        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
+        result shouldBe false
+        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
       }
     }
   }

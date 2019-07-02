@@ -43,6 +43,7 @@ object StoredInvitation {
     case "HMRC-MTD-IT"            => "ni"
     case "HMRC-MTD-VAT"           => "vrn"
     case "PERSONAL-INCOME-RECORD" => "ni"
+    case "HMRC-TERS-ORG"          => "utr"
     case _                        => throw new IllegalArgumentException()
   }
 

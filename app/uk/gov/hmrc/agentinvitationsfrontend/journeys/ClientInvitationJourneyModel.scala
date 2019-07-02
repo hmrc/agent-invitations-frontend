@@ -73,6 +73,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       (affinityGroup, clientType) match {
         case ("Individual", ClientType.personal)   => true
         case ("Organisation", ClientType.business) => true
+        case ("Organisation", ClientType.trust)    => true
         case _                                     => false
       }
 
@@ -140,10 +141,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
     def determineNewConsents(oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] =
       oldConsents.map { oldConsent =>
         oldConsent.serviceKey match {
-          case "itsa" => oldConsent.copy(consent = formTerms.itsaConsent)
-          case "afi"  => oldConsent.copy(consent = formTerms.afiConsent)
-          case "vat"  => oldConsent.copy(consent = formTerms.vatConsent)
-          case _      => throw new IllegalStateException("the service key was not supported")
+          case "itsa"  => oldConsent.copy(consent = formTerms.itsaConsent)
+          case "afi"   => oldConsent.copy(consent = formTerms.afiConsent)
+          case "vat"   => oldConsent.copy(consent = formTerms.vatConsent)
+          case "trust" => oldConsent.copy(consent = formTerms.vatConsent)
+          case _       => throw new IllegalStateException("the service key was not supported")
         }
       }
 
@@ -158,10 +160,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
       oldConsents: Seq[ClientConsent],
       formTerms: ConfirmedTerms): Seq[ClientConsent] = {
       val newConsent = changedConsent.serviceKey match {
-        case "itsa" => changedConsent.copy(consent = formTerms.itsaConsent)
-        case "afi"  => changedConsent.copy(consent = formTerms.afiConsent)
-        case "vat"  => changedConsent.copy(consent = formTerms.vatConsent)
-        case _      => throw new IllegalStateException("the service key was not supported")
+        case "itsa"  => changedConsent.copy(consent = formTerms.itsaConsent)
+        case "afi"   => changedConsent.copy(consent = formTerms.afiConsent)
+        case "vat"   => changedConsent.copy(consent = formTerms.vatConsent)
+        case "trust" => changedConsent.copy(consent = formTerms.vatConsent)
+        case _       => throw new IllegalStateException("the service key was not supported")
       }
       oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
     }

@@ -61,6 +61,7 @@ class ClientsMultiInvitationController @Inject()(
     (affinityGroup, clientType) match {
       case ("Individual", "personal")   => true
       case ("Organisation", "business") => true
+      case ("Organisation", "trust")    => true
       case _                            => false
     }
 
@@ -155,8 +156,9 @@ class ClientsMultiInvitationController @Inject()(
         val itsaChoice = request.session.get("itsaChoice").getOrElse("false").toBoolean
         val afiChoice = request.session.get("afiChoice").getOrElse("false").toBoolean
         val vatChoice = request.session.get("vatChoice").getOrElse("false").toBoolean
+        val trustChoice = request.session.get("trustChoice").getOrElse("false").toBoolean
         val serviceKey = request.session.get("whichConsent").getOrElse("")
-        val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice)
+        val confirmedTermsSession = ConfirmedTerms(itsaChoice, afiChoice, vatChoice, trustChoice)
         confirmTermsMultiForm
           .bindFromRequest()
           .value match {
@@ -190,13 +192,35 @@ class ClientsMultiInvitationController @Inject()(
     boundConfirmTerms: ConfirmedTerms): ConfirmedTerms =
     individualServiceKey match {
       case "itsa" =>
-        ConfirmedTerms(boundConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+        ConfirmedTerms(
+          boundConfirmTerms.itsaConsent,
+          sessionConfirmTerms.afiConsent,
+          sessionConfirmTerms.vatConsent,
+          sessionConfirmTerms.trustConsent)
       case "afi" =>
-        ConfirmedTerms(sessionConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, sessionConfirmTerms.vatConsent)
+        ConfirmedTerms(
+          sessionConfirmTerms.itsaConsent,
+          boundConfirmTerms.afiConsent,
+          sessionConfirmTerms.vatConsent,
+          sessionConfirmTerms.trustConsent)
       case "vat" =>
-        ConfirmedTerms(sessionConfirmTerms.itsaConsent, sessionConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
+        ConfirmedTerms(
+          sessionConfirmTerms.itsaConsent,
+          sessionConfirmTerms.afiConsent,
+          boundConfirmTerms.vatConsent,
+          sessionConfirmTerms.trustConsent)
+      case "trust" =>
+        ConfirmedTerms(
+          sessionConfirmTerms.itsaConsent,
+          sessionConfirmTerms.afiConsent,
+          sessionConfirmTerms.vatConsent,
+          boundConfirmTerms.trustConsent)
       case _ =>
-        ConfirmedTerms(boundConfirmTerms.itsaConsent, boundConfirmTerms.afiConsent, boundConfirmTerms.vatConsent)
+        ConfirmedTerms(
+          boundConfirmTerms.itsaConsent,
+          boundConfirmTerms.afiConsent,
+          boundConfirmTerms.vatConsent,
+          boundConfirmTerms.trustConsent)
     }
 
   def showCheckAnswers(clientType: String, uid: String): Action[AnyContent] = Action.async { implicit request =>
@@ -431,9 +455,10 @@ object ClientsMultiInvitationController {
   val confirmTermsMultiForm: Form[ConfirmedTerms] =
     Form[ConfirmedTerms](
       mapping(
-        "confirmedTerms.itsa" -> boolean,
-        "confirmedTerms.afi"  -> boolean,
-        "confirmedTerms.vat"  -> boolean
+        "confirmedTerms.itsa"  -> boolean,
+        "confirmedTerms.afi"   -> boolean,
+        "confirmedTerms.vat"   -> boolean,
+        "confirmedTerms.trust" -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def updateMultiInvitation(
@@ -441,9 +466,10 @@ object ClientsMultiInvitationController {
     confirmedTerms: ConfirmedTerms): ClientConsentsJourneyState = {
 
     val hasConsent: String => Boolean = {
-      case "itsa" => confirmedTerms.itsaConsent
-      case "afi"  => confirmedTerms.afiConsent
-      case "vat"  => confirmedTerms.vatConsent
+      case "itsa"  => confirmedTerms.itsaConsent
+      case "afi"   => confirmedTerms.afiConsent
+      case "vat"   => confirmedTerms.vatConsent
+      case "trust" => confirmedTerms.trustConsent
     }
 
     item.copy(consents = item.consents.map(c => c.copy(consent = hasConsent(c.serviceKey))))

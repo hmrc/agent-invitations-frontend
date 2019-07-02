@@ -46,24 +46,20 @@ object Services {
   val VRN = "VRN"
   val messageKeyForVAT = "vat"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
+  val TRUST = "HMRC-TERS-ORG"
+  val messageKeyForTrust = "trust"
+
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST)
   val supportedTypes = List("ni", "vrn", "utr")
 
-  val supportedClientTypes = List("personal", "business")
-
-  def determineService(invitationId: InvitationId): Service =
-    invitationId.value.head match {
-      case 'A' => ValidService(HMRCMTDIT, HMRCMTDIT, MTDITID, MTDITID, messageKeyForITSA)
-      case 'B' => ValidService(HMRCPIR, HMRCNI, NINO, NI, messageKeyForAfi)
-      case 'C' => ValidService(HMRCMTDVAT, HMRCMTDVAT, VRN, VRN, messageKeyForVAT)
-      case _   => InvalidService
-    }
+  val supportedClientTypes = List("personal", "business", "trust")
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {
       case 'A' => messageKeyForITSA
       case 'B' => messageKeyForAfi
       case 'C' => messageKeyForVAT
+      case 'D' => messageKeyForTrust
       case _   => "Service is missing"
     }
 
@@ -72,5 +68,6 @@ object Services {
       case HMRCMTDIT  => messageKeyForITSA
       case HMRCPIR    => messageKeyForAfi
       case HMRCMTDVAT => messageKeyForVAT
+      case TRUST      => messageKeyForTrust
     }
 }

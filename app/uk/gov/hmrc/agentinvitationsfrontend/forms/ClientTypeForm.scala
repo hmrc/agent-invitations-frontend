@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 object ClientTypeForm {
   val form = Form(
     single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
+      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business", "trust").contains _)
     ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
 }

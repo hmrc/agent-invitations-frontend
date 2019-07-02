@@ -17,19 +17,18 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logger
 import play.api.libs.json.JsObject
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -265,6 +264,34 @@ class InvitationsConnector @Inject()(
         false
     }
 
+  def acceptTrustInvitation(utr: Utr, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/accept").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Create Trust Relationship Failed: ${e.getMessage}")
+        false
+    }
+
+  def rejectTrustInvitation(utr: Utr, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/reject").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Reject Trust Invitation Failed: ${e.getMessage}")
+        false
+    }
+
   def cancelInvitation(arn: Arn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
@@ -313,6 +340,18 @@ class InvitationsConnector @Inject()(
       http
         .GET[Seq[InvitationIdAndExpiryDate]](url.toString)
     }
+
+  def getTrustDetails(utr: Utr)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[TrustDetails]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/organisations/trust/${utr.value}").toString
+
+    monitor(s"ConsumedAPI-Get-Trust-KnownFacts-GET") {
+      http.GET[HttpResponse](url).map { response =>
+        response.status match {
+          case 200 => Option(response.json).flatMap(_.asOpt[TrustDetailsResponse].map(_.trustDetails))
+        }
+      }
+    }
+  }
 
   object Reads {
 

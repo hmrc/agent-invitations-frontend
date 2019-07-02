@@ -1,0 +1,55 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
+
+@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "vat"))) {
+
+    @back_link(backLinkUrl)
+
+    @if(trustClientForm.hasErrors) {
+         @errorSummary(Messages("error.summary.heading"), trustClientForm, Seq.empty, Some("identify-trust-client"))
+    }
+
+    <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-trust-client.header")</h1>
+
+    <p>@Html(Messages("identify-trust-client.p1"))</p>
+
+    @form(action = submitFormCall, 'class -> "form js-form") {
+
+        <div class="form-group margin-top-30">
+            @input(
+            trustClientForm("utr"),
+            '_inputClass -> "form-control",
+            '_labelClass -> "soft--ends"
+            )
+        </div>
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        </div>
+
+    }
+}

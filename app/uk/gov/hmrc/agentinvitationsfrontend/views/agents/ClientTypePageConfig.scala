@@ -23,5 +23,6 @@ case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call)(implicit 
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))
-  val clientTypes = personalOption ++ businessOption
+  val trustOption = Seq("trust"       -> Messages("client-type.trust"))
+  val clientTypes = personalOption ++ businessOption ++ trustOption
 }

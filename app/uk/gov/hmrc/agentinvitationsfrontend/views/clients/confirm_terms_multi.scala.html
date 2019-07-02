@@ -58,11 +58,21 @@
     </ul>
 }
 
+@trustTerms = {
+<span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</span>
+<ul class="list list-bullet">
+    <li>@Messages("confirm-terms-multi.trust.list.item1")</li>
+    <li>@Messages("confirm-terms-multi.trust.list.item2")</li>
+    <li>@Messages("confirm-terms-multi.trust.list.item3")</li>
+</ul>
+}
+
 @suitableTerms(serviceKey: String, expiryDate: String) = {
     @{serviceKey match {
         case "itsa" => itsaTerms
         case "afi" => pirTerms
         case "vat" => vatTerms
+        case "trust" => trustTerms
     }}
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
 }

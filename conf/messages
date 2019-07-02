@@ -12,6 +12,7 @@ client-type.header=What type of client do you need authorisation from?
 client-type.p1=If you need authorisation to deal with both your client''s business and personal tax affairs, you need to ask for these separately.
 client-type.personal=An individual or sole trader
 client-type.business=A company or partnership
+client-type.trust=A trustee of a trust
 error.client-type.required=Select the type of client you need authorisation from
 
 # Identify Client
@@ -85,6 +86,7 @@ select-service.header=What do you want the client to authorise you to do?
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
 select-service.alt-suggestion.vat-only=You can use this service to ask for a client''s authorisation to submit their VAT returns through software.
+select-service.alt-suggestion.trust-only=You can use this service to ask for a client''s authorisation to maintain a trust.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
@@ -92,6 +94,17 @@ business-select-service.header=Do you want to submit this client''s VAT returns 
 business-select-service.yes=Yes
 business-select-service.no=No
 error.business-service.required=Select yes if you want to submit this client''s VAT returns through software
+
+## Trust select service
+trust-select-service.header=Do you want to maintain a trust for this client?
+trust-select-service.yes=Yes
+trust-select-service.no=No
+error.trust-service.required=Select yes if you want to maintain a trust for this client
+
+## Identify Trust Client
+identify-trust-client.title=Enter your client''s details
+identify-trust-client.header=What is the trust''s Unique Taxpayer Reference?
+identify-trust-client.p1=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called 'reference', 'UTR' or 'official use'. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 continue.button=Continue
 button.back=Back
@@ -108,10 +121,12 @@ invitation-sent.header=What you need to do next
 invitation-sent.l1=Copy this link and email it to your client.
 invitation-sent.l1.p.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their individual or sole trader tax affairs.
 invitation-sent.l1.p.business=You only need to send it to them once. They can use this link to access your authorisation requests for their business taxes.
+invitation-sent.l1.p.trust=They can use this link to access your authorisation request.
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
 invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.l4.trust=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request.
 invitation-sent.header.links=Other actions
 invitation-sent.continueToASAccount.button=Go to agent services account home
@@ -147,6 +162,7 @@ review-authorisations.p=You have added {0}.
 review-authorisations.table.HMRC-MTD-IT=Send their Income Tax updates through software
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
 review-authorisations.table.HMRC-MTD-VAT=Submit their VAT returns through software
+review-authorisations.table.HMRC-TERS-ORG=Maintain a trust
 review-authorisations.table.remove=Remove
 review-authorisations.subheader=Do you need to add another authorisation for this client?
 review-authorisations.radio.yes=Yes
@@ -259,6 +275,7 @@ create-auth-failed.p1=We could not create the following authorisation {0}.
 create-auth-failed.HMRC-MTD-IT=Send their Income Tax updates through software
 create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
 create-auth-failed.HMRC-MTD-VAT=Submit their VAT returns through software
+create-auth-failed.HMRC-TERS-ORG=Maintain a trust
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
 create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
@@ -541,6 +558,7 @@ recent-invitations.table-row-header.actions=Actions
 recent-invitations.invitation.service.HMRC-MTD-IT=Send their Income Tax updates through software
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
 recent-invitations.invitation.service.HMRC-MTD-VAT=Submit their VAT returns through software
+recent-invitations.invitation.service.HMRC-TERS-ORG=Maintain a trust
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
 recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:

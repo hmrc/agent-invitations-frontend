@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait TestDataCommonSupport {
@@ -43,4 +43,9 @@ trait TestDataCommonSupport {
   val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
 
   val hash = "12345678"
+
+  val validUtr = Utr("4937455253")
+  val invitationIdTrust = InvitationId("DF99K6PXSBHTF")
+  val serviceTrust = "HMRC-TERS-ORG"
+  val identifierTrust = "UTR"
 }
