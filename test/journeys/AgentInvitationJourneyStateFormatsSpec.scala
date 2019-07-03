@@ -61,6 +61,13 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"SelectBusinessService"}""")
           .as[State] shouldBe SelectBusinessService
       }
+      "SelectTrustService" in {
+        Json.toJson(SelectTrustService) shouldBe Json
+          .obj("state" -> "SelectTrustService")
+        Json
+          .parse("""{"state":"SelectTrustService"}""")
+          .as[State] shouldBe SelectTrustService
+      }
       "IdentifyPersonalClient" in {
         Json.toJson(IdentifyPersonalClient(HMRCMTDIT, Set.empty)) shouldBe Json.obj(
           "state"      -> "IdentifyPersonalClient",
@@ -75,6 +82,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"IdentifyBusinessClient"}""")
           .as[State] shouldBe IdentifyBusinessClient
+      }
+      "IdentifyTrustClient" in {
+        Json.toJson(IdentifyTrustClient) shouldBe Json.obj("state" -> "IdentifyTrustClient")
+        Json
+          .parse("""{"state":"IdentifyTrustClient"}""")
+          .as[State] shouldBe IdentifyTrustClient
       }
       "ConfirmClientItsa" in {
         val state = ConfirmClientItsa(
@@ -123,7 +136,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ConfirmClientTrust(AuthorisationRequest("Sylvia Plath", TrustInvitation(Utr("4937455253")), itemId = "ABC"))
         val json = Json.parse(
-          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"trust","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
+          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"business","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -176,6 +189,13 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse("""{"state":"CannotCreateRequest", "properties": {"basket": []}}""")
           .as[State] shouldBe CannotCreateRequest(Set.empty)
+      }
+      "TrustNotFound" in {
+        Json.toJson(TrustNotFound) shouldBe Json
+          .obj("state" -> "TrustNotFound")
+        Json
+          .parse("""{"state":"TrustNotFound"}""")
+          .as[State] shouldBe TrustNotFound
       }
       "SomeAuthorisationsFailed" in {
         val state = SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty)

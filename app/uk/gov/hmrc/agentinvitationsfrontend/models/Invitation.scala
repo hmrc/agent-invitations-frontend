@@ -154,7 +154,7 @@ object VatInvitation {
 
 case class TrustInvitation(
   clientIdentifier: Utr,
-  clientType: Option[ClientType] = Some(ClientType.trust),
+  clientType: Option[ClientType] = Some(ClientType.business),
   service: String = Services.TRUST,
   clientIdentifierType: String = "utr")
     extends Invitation {

@@ -23,19 +23,16 @@ object ClientType {
 
   case object personal extends ClientType
   case object business extends ClientType
-  case object trust extends ClientType
 
   def toEnum: String => ClientType = {
     case "personal" => personal
     case "business" => business
-    case "trust"    => trust
     case alien      => throw new Exception(s"Client type $alien not supported")
   }
 
   def fromEnum: ClientType => String = {
     case ClientType.personal => "personal"
     case ClientType.business => "business"
-    case ClientType.trust    => "trust"
   }
 
   implicit val formats: Format[ClientType] = new EnumFormats[ClientType] {
