@@ -97,7 +97,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 basket
               ))
           case ClientType.business => goto(SelectBusinessService)
-          case ClientType.`trust`  => goto(SelectTrustService)
+          case ClientType.trust    => goto(SelectTrustService)
         }
     }
 
