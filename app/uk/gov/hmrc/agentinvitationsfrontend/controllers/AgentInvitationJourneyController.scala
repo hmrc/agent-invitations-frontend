@@ -159,7 +159,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val showReviewAuthorisations = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ReviewAuthorisationsPersonal | _: ReviewAuthorisationsTrust =>
+    case _: ReviewAuthorisationsPersonal =>
   }
 
   val submitReviewAuthorisations = action { implicit request =>
@@ -176,7 +176,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
-    case _: InvitationSentPersonal | _: InvitationSentBusiness | _: InvitationSentTrust =>
+    case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
   val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                    => }
   val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
@@ -205,12 +205,10 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
-    case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentTrust       => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
     case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
@@ -379,17 +377,6 @@ class AgentInvitationJourneyController @Inject()(
           backLinkFor(breadcrumbs).url
         ))
 
-    case ReviewAuthorisationsTrust(basket) =>
-      Ok(
-        review_authorisations(
-          ReviewAuthorisationsPageConfig(
-            Set(basket),
-            featureFlags,
-            routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-          formWithErrors.or(ReviewAuthorisationsForm),
-          backLinkFor(breadcrumbs).url
-        ))
-
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       Ok(
         delete(
@@ -415,17 +402,6 @@ class AgentInvitationJourneyController @Inject()(
             None,
             continueUrl.isDefined,
             ClientType.fromEnum(business),
-            inferredExpiryDate,
-            agencyEmail)))
-
-    case InvitationSentTrust(invitationLink, continueUrl, agencyEmail) =>
-      Ok(
-        invitation_sent(
-          InvitationSentPageConfig(
-            invitationLink,
-            None,
-            continueUrl.isDefined,
-            ClientType.fromEnum(trust),
             inferredExpiryDate,
             agencyEmail)))
 

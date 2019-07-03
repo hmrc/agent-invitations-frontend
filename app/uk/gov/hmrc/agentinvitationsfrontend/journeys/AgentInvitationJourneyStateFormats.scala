@@ -33,11 +33,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientPersonalVatFormat = Json.format[ConfirmClientPersonalVat]
   val ConfirmClientBusinessVatFormat = Json.format[ConfirmClientBusinessVat]
   val ReviewAuthorisationsPersonalFormat = Json.format[ReviewAuthorisationsPersonal]
-  val ReviewAuthorisationsTrustFormat = Json.format[ReviewAuthorisationsTrust]
   val DeleteAuthorisationRequestPersonalFormat = Json.format[DeleteAuthorisationRequestPersonal]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
-  val InvitationSentTrustFormat = Json.format[InvitationSentTrust]
   val PendingInvitationExistsFormat = Json.format[PendingInvitationExists]
   val ActiveAuthorisationExistsFormat = Json.format[ActiveAuthorisationExists]
 
@@ -60,11 +58,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientBusinessVat           => ConfirmClientBusinessVatFormat.writes(s)
     case s: ConfirmClientTrust                 => ConfirmClientTrustFormat.writes(s)
     case s: ReviewAuthorisationsPersonal       => ReviewAuthorisationsPersonalFormat.writes(s)
-    case s: ReviewAuthorisationsTrust          => ReviewAuthorisationsTrustFormat.writes(s)
     case s: DeleteAuthorisationRequestPersonal => DeleteAuthorisationRequestPersonalFormat.writes(s)
     case s: InvitationSentPersonal             => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness             => InvitationSentBusinessFormat.writes(s)
-    case s: InvitationSentTrust                => InvitationSentTrustFormat.writes(s)
     case s: KnownFactNotMatched                => KnownFactNotMatchedFormat.writes(s)
     case s: CannotCreateRequest                => CannotCreateRequestFormat.writes(s)
     case s: SomeAuthorisationsFailed           => SomeAuthorisationsFailedFormat.writes(s)
@@ -88,11 +84,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)
     case "ConfirmClientBusinessVat"           => ConfirmClientBusinessVatFormat.reads(properties)
     case "ReviewAuthorisationsPersonal"       => ReviewAuthorisationsPersonalFormat.reads(properties)
-    case "ReviewAuthorisationsTrust"          => ReviewAuthorisationsTrustFormat.reads(properties)
     case "DeleteAuthorisationRequestPersonal" => DeleteAuthorisationRequestPersonalFormat.reads(properties)
     case "InvitationSentPersonal"             => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"             => InvitationSentBusinessFormat.reads(properties)
-    case "InvitationSentTrust"                => InvitationSentTrustFormat.reads(properties)
     case "KnownFactNotMatched"                => KnownFactNotMatchedFormat.reads(properties)
     case "TrustNotFound"                      => JsSuccess(TrustNotFound)
     case "CannotCreateRequest"                => CannotCreateRequestFormat.reads(properties)

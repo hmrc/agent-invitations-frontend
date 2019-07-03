@@ -104,7 +104,8 @@ error.trust-service.required=Select yes if you want to maintain a trust for this
 ## Identify Trust Client
 identify-trust-client.title=Enter your client''s details
 identify-trust-client.header=What is the trust''s Unique Taxpayer Reference?
-identify-trust-client.p1=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called 'reference', 'UTR' or 'official use'. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p1=This will help us match their details against information we hold.
+identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called 'reference', 'UTR' or 'official use'. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 continue.button=Continue
 button.back=Back
@@ -585,6 +586,7 @@ confirm-cancel.header=Are you sure you want to cancel this authorisation request
 confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for this client.
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
 confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for this client.
+confirm-cancel.subheader.HMRC-TERS-ORG=If you cancel this request, you will not be able to submit tax returns through software for this client.
 confirm-cancel.radio.yes=Yes
 confirm-cancel.radio.no=No
 error.confirmCancel.invalid=This field is required
@@ -594,6 +596,7 @@ request-cancelled.header=Authorisation request cancelled
 request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to send Income Tax updates through software for this client.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to submit VAT returns through software for this client.
+request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to submit tax returns through software for this client.
 request-cancelled.panel= {0} will not be able to respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 

@@ -54,7 +54,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ConfirmClientTrust(request: AuthorisationRequest) extends State
     case class ReviewAuthorisationsPersonal(basket: Basket) extends State
-    case class ReviewAuthorisationsTrust(request: AuthorisationRequest) extends State
     case class SomeAuthorisationsFailed(
       invitationLink: String,
       continueUrl: Option[String],
@@ -67,8 +66,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
         extends State
     case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
-        extends State
-    case class InvitationSentTrust(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
         extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
     case object AllAuthorisationsRemoved extends State
@@ -361,11 +358,28 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
         case ConfirmClientTrust(request) =>
           if (confirmation.choice) {
-            checkIfPendingOrActiveAndGoto(ReviewAuthorisationsTrust(request))(
-              trust,
-              authorisedAgent.arn,
-              request.invitation.clientId,
-              TRUST)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+            for {
+              hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
+              agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
+              result <- if (hasPendingInvitations) {
+                         goto(PendingInvitationExists(trust, Set.empty))
+                       } else {
+                         hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
+                           .flatMap {
+                             case true => goto(ActiveAuthorisationExists(trust, TRUST, Set.empty))
+                             case false =>
+                               getAgencyEmail().flatMap(
+                                 agencyEmail =>
+                                   createAndProcessInvitations(
+                                     InvitationSentBusiness(agentLink, None, agencyEmail),
+                                     (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
+                                     Set(request),
+                                     createMultipleInvitations,
+                                     authorisedAgent.arn
+                                 ))
+                           }
+                       }
+            } yield result
           } else goto(IdentifyTrustClient)
       }
 
@@ -391,23 +405,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
                          InvitationSentPersonal(invitationLink, None, agencyEmail),
                          (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                          basket,
-                         createMultipleInvitations,
-                         agent.arn
-                       )
-            } yield result
-          }
-
-        case ReviewAuthorisationsTrust(basket) =>
-          if (confirmation.choice)
-            goto(???)
-          else {
-            for {
-              agencyEmail    <- getAgencyEmail()
-              invitationLink <- getAgentLink(agent.arn, Some(trust))
-              result <- createAndProcessInvitations(
-                         InvitationSentTrust(invitationLink, None, agencyEmail),
-                         (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
-                         Set(basket),
                          createMultipleInvitations,
                          agent.arn
                        )
