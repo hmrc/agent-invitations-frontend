@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -52,7 +52,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val vrn = "123456"
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
-  val utr = Utr("4937455253")
 
   "AgentInvitationJourneyService" when {
     "at state SelectClientType" should {
@@ -60,16 +59,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectClientType(emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
       "transition to SelectPersonalService" in {
-        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)("personal") should thenGo(
+        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
           SelectPersonalService(availableServices, emptyBasket))
       }
       "transition to SelectBusinessService" in {
-        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)("business") should thenGo(
+        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
           SelectBusinessService)
-      }
-      "transition to SelectTrustService" in {
-        given(SelectClientType(emptyBasket)) when selectedClientType(authorisedAgent)("trust") should thenGo(
-          SelectTrustService)
       }
     }
 
@@ -143,17 +138,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         intercept[Exception] {
           given(SelectBusinessService) when selectedBusinessService(false)(authorisedAgent)(Confirmation(true))
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
-      }
-    }
-
-    "at state SelectTrustService" should {
-      "transition to IdentifyTrustClient when yes is selected" in {
-        given(SelectTrustService) when selectedTrustService(authorisedAgent)(Confirmation(true)) should thenGo(
-          IdentifyTrustClient)
-      }
-      "transition to root when no is selected" in {
-        given(SelectTrustService) when selectedTrustService(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType(emptyBasket))
       }
     }
 
@@ -335,20 +319,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
     }
 
-    "at state IdentifyTrustClient" should {
-      "transition to ConfirmClientTrust if the client has some trust details" in {
-        def getTrustDetails(trustClient: TrustClient) =
-          Future(Some(TrustDetails(utr.value, "trusty name", TrustAddress("1", "2", country = "UK"), "HMRC-TERS-ORG")))
-        given(IdentifyTrustClient) when identifiedTrustClient(getTrustDetails)(authorisedAgent)(TrustClient(utr)) should
-          thenMatch { case _: ConfirmClientTrust => }
-      }
-      "transition to TrustNotFound when the client has no trust details" in {
-        def getTrustDetails(trustClient: TrustClient) = Future(None)
-        given(IdentifyTrustClient) when identifiedTrustClient(getTrustDetails)(authorisedAgent)(TrustClient(utr)) should
-          thenGo(TrustNotFound)
-      }
-    }
-
     "at ConfirmClientItsa" should {
       val authorisationRequest =
         AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")))
@@ -442,46 +412,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
           Confirmation(false)) should
           thenGo(IdentifyBusinessClient)
-      }
-    }
-
-    "at ConfirmClientTrust" should {
-      val authorisationRequest =
-        AuthorisationRequest("Piglet", TrustInvitation(utr))
-      def createMultipleInvitations(
-        arn: Arn,
-        clientType: Option[ClientType],
-        requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
-      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
-      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
-        Future.successful(false)
-      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
-        Future.successful(false)
-      def getAgencyEmail() = Future("abc@xyz.com")
-      "transition to InvitationSentBusiness when invitation is successfully created" in {
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
-      }
-      "transition to PendingInvitationExists when a pending invitation already exists for this service" in {
-        def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
-          Future.successful(true)
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          PendingInvitationExists(business, emptyBasket))
-      }
-      "transition to ActiveAuthorisationExists when there is already a relationship for this service" in {
-        def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
-          Future.successful(true)
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          ActiveAuthorisationExists(business, "HMRC-TERS-ORG", emptyBasket))
-      }
-      "transition to IdentifyTrustClient when no is selected" in {
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should thenGo(
-          IdentifyTrustClient)
-
       }
     }
 

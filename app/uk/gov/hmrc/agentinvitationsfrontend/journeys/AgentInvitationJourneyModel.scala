@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal, trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -87,17 +87,17 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
     type GetTrustDetails = TrustClient => Future[Option[TrustDetails]]
 
-    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+    def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
       case SelectClientType(basket) =>
         clientType match {
-          case "personal" =>
+          case ClientType.personal =>
             goto(
               SelectPersonalService(
                 if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
                 basket
               ))
-          case "business" => goto(SelectBusinessService)
-          case "trust"    => goto(SelectTrustService)
+          case ClientType.business => goto(SelectBusinessService)
+          case ClientType.`trust`  => goto(SelectTrustService)
         }
     }
 
@@ -362,11 +362,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
               result <- if (hasPendingInvitations) {
-                         goto(PendingInvitationExists(business, Set.empty))
+                         goto(PendingInvitationExists(trust, Set.empty))
                        } else {
                          hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
                            .flatMap {
-                             case true => goto(ActiveAuthorisationExists(business, TRUST, Set.empty))
+                             case true => goto(ActiveAuthorisationExists(trust, TRUST, Set.empty))
                              case false =>
                                getAgencyEmail().flatMap(
                                  agencyEmail =>

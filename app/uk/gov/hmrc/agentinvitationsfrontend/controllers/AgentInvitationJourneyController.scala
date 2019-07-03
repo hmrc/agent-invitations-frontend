@@ -26,7 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal, trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
@@ -79,7 +79,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeWithTrustsForm.form)(Transitions.selectedClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(Transitions.selectedClientType)
   }
 
   val showSelectService = actionShowStateWhenAuthorised(AsAgent) {
@@ -231,9 +231,9 @@ class AgentInvitationJourneyController @Inject()(
           getCallFor(_).url)
 
       Ok(
-        client_type_trusts(
-          formWithErrors.or(ClientTypeWithTrustsForm.form),
-          ClientTypeTrustsPageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType())
+        client_type(
+          formWithErrors.or(ClientTypeForm.form),
+          ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType())
         ))
     }
 
