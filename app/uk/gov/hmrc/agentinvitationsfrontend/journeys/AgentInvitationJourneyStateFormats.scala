@@ -49,9 +49,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType                   => SelectClientTypeFormat.writes(s)
     case s: SelectPersonalService              => SelectPersonalServiceFormat.writes(s)
-    case SelectTrustService                    => JsString(SelectTrustService.productPrefix)
     case s: IdentifyPersonalClient             => IdentifyPersonalClientFormat.writes(s)
-    case IdentifyTrustClient                   => JsString(IdentifyTrustClient.productPrefix)
     case s: ConfirmClientItsa                  => ConfirmClientItsaFormat.writes(s)
     case s: ConfirmClientIrv                   => ConfirmClientIrvFormat.writes(s)
     case s: ConfirmClientPersonalVat           => ConfirmClientPersonalVatFormat.writes(s)

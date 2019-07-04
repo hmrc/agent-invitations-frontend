@@ -73,7 +73,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
       (affinityGroup, clientType) match {
         case ("Individual", ClientType.personal)   => true
         case ("Organisation", ClientType.business) => true
-        case ("Organisation", ClientType.trust)    => true
         case _                                     => false
       }
 

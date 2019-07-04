@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal, trust}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -87,17 +87,17 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
     type GetTrustDetails = TrustClient => Future[Option[TrustDetails]]
 
-    def selectedClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
+    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
         clientType match {
-          case ClientType.personal =>
+          case "personal" =>
             goto(
               SelectPersonalService(
                 if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
                 basket
               ))
-          case ClientType.business => goto(SelectBusinessService)
-          case ClientType.`trust`  => goto(SelectTrustService)
+          case "business" => goto(SelectBusinessService)
+          case "trust"    => goto(SelectTrustService)
         }
     }
 
@@ -131,10 +131,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    def selectedTrustService(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
+    def selectedTrustService(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectTrustService =>
         if (confirmed.choice) {
-          goto(IdentifyTrustClient)
+          if (showTrustsFlag) goto(IdentifyTrustClient)
+          else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
         } else {
           goto(root)
         }
@@ -362,11 +363,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
               result <- if (hasPendingInvitations) {
-                         goto(PendingInvitationExists(trust, Set.empty))
+                         goto(PendingInvitationExists(business, Set.empty))
                        } else {
                          hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
                            .flatMap {
-                             case true => goto(ActiveAuthorisationExists(trust, TRUST, Set.empty))
+                             case true => goto(ActiveAuthorisationExists(business, TRUST, Set.empty))
                              case false =>
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
