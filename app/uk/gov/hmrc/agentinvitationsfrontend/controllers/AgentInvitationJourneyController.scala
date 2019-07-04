@@ -236,7 +236,8 @@ class AgentInvitationJourneyController @Inject()(
           formWithErrors.or(ClientTypeWithTrustsForm.form),
           ClientTypeWithTrustsPageConfig(
             backLinkForClientType,
-            routes.AgentInvitationJourneyController.submitClientType())
+            routes.AgentInvitationJourneyController.submitClientType(),
+            featureFlags.showHmrcTrust)
         ))
     }
 

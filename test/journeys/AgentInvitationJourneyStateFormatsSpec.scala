@@ -123,7 +123,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ConfirmClientTrust(AuthorisationRequest("Sylvia Plath", TrustInvitation(Utr("4937455253")), itemId = "ABC"))
         val json = Json.parse(
-          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"trust","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
+          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"business","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
