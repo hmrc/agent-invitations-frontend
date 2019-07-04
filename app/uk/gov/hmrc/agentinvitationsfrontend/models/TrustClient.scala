@@ -16,4 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class ConfirmedTerms(itsaConsent: Boolean, afiConsent: Boolean, vatConsent: Boolean, trustConsent: Boolean)
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+
+case class TrustClient(utr: Utr)
+
+object TrustClient {
+  implicit val format: Format[TrustClient] = Json.format[TrustClient]
+
+}

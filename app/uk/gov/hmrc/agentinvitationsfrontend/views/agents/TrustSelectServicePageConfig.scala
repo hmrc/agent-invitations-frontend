@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
-case class ConfirmedTerms(itsaConsent: Boolean, afiConsent: Boolean, vatConsent: Boolean, trustConsent: Boolean)
+import play.api.i18n.Messages
+import play.api.mvc.Call
+
+case class TrustSelectServicePageConfig(basketFlag: Boolean, submitCall: Call, backLink: String, reviewAuthsCall: Call)(
+  implicit messages: Messages) {}

@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.models
+package uk.gov.hmrc.agentinvitationsfrontend.forms
 
-case class ConfirmedTerms(itsaConsent: Boolean, afiConsent: Boolean, vatConsent: Boolean, trustConsent: Boolean)
+import play.api.data.Form
+import play.api.data.Forms.mapping
+import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validUtr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+object TrustClientForm {
+
+  def form: Form[TrustClient] = Form(
+    mapping(
+      "utr" -> normalizedText.verifying(validUtr())
+    )(x => TrustClient.apply(Utr(x)))(x => Some(x.utr.value))
+  )
+
+}

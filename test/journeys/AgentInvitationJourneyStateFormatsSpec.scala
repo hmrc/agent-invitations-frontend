@@ -22,7 +22,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyState
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -117,6 +118,16 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "ConfirmClientTrust" in {
+        val state =
+          ConfirmClientTrust(AuthorisationRequest("Sylvia Plath", TrustInvitation(Utr("4937455253")), itemId = "ABC"))
+        val json = Json.parse(
+          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"business","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "ReviewAuthorisationsPersonal" in {
         Json.toJson(ReviewAuthorisationsPersonal(Set.empty)) shouldBe Json.obj(
           "state"      -> "ReviewAuthorisationsPersonal",

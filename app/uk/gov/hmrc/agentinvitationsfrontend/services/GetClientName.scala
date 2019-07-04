@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -28,9 +28,10 @@ trait GetClientName {
 
   def agentServicesAccountConnector: AgentServicesAccountConnector
   def citizenDetailsConnector: CitizenDetailsConnector
+  def invitationsConnector: InvitationsConnector
 
   def getClientNameByService(
-    invitation: ServiceAndClient)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     getClientNameByService(invitation.clientId, invitation.service)
 
   def getClientNameByService(clientId: String, service: String)(
@@ -40,10 +41,11 @@ trait GetClientName {
       case Services.HMRCMTDIT if Nino.isValid(clientId) => getItsaTradingName(Nino(clientId))
       case Services.HMRCPIR if Nino.isValid(clientId)   => getCitizenName(Nino(clientId))
       case Services.HMRCMTDVAT if Vrn.isValid(clientId) => getVatName(Vrn(clientId))
+      case Services.TRUST if Utr.isValid(clientId)      => getTrustName(Utr(clientId))
       case _                                            => Future successful None
     }
 
-  def getItsaTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     agentServicesAccountConnector
       .getTradingName(nino)
       .flatMap {
@@ -51,17 +53,20 @@ trait GetClientName {
         case None                   => getCitizenName(nino)
       }
 
-  def getCitizenName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getCitizenName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     getCitizenRecord(nino).map(_.name)
 
   def getCitizenRecord(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Citizen] =
     citizenDetailsConnector.getCitizenDetails(nino)
 
-  def getVatName(vrn: Vrn)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getVatName(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>
       customerDetails.tradingName
         .orElse(customerDetails.organisationName)
         .orElse(customerDetails.individual.map(_.name))
     }
+
+  def getTrustName(utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    invitationsConnector.getTrustDetails(utr).map(t => t.map(_.trustName))
 
 }

@@ -42,6 +42,7 @@ class RelationshipsService @Inject()(
       case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
       case HMRCPIR    => checkPirRelationship(arn, Nino(clientId))
+      case TRUST      => Future.successful(false)
     }
 
   def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(

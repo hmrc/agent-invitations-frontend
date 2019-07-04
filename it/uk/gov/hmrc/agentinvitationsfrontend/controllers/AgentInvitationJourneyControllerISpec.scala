@@ -3,15 +3,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
+import play.api.libs.json.Json
 import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -142,6 +143,18 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](SelectBusinessService, List(SelectClientType(emptyBasket)))
     }
 
+    "redirect to /agents/select-service after selecting trust client type" in {
+      journeyState.set(SelectClientType(emptyBasket), Nil)
+
+      val result =
+        controller.submitClientType(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "trust"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      journeyState.get should have[State](SelectTrustService, List(SelectClientType(emptyBasket)))
+    }
+
     "redisplay the page with errors if nothing is selected" in {
       journeyState.set(SelectClientType(emptyBasket), Nil)
 
@@ -186,17 +199,26 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage(
-          "generic.title",
-          htmlEscapedMessage("business-select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
         htmlEscapedMessage("business-select-service.no"),
         htmlEscapedMessage("business-select-service.yes"),
         htmlEscapedMessage("select-service.alternative"),
         htmlEscapedMessage("select-service.alt-suggestion.vat-only")
       )
-      journeyState.get shouldBe Some(
-        (SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket))))
+      journeyState.get shouldBe Some((SelectBusinessService, List(SelectClientType(emptyBasket))))
+    }
+
+    "show the correct service page content for trust clients" in {
+      journeyState.set(SelectTrustService, List(SelectClientType(emptyBasket)))
+      val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("trust-select-service.header"),
+        htmlEscapedMessage("trust-select-service.yes"),
+        htmlEscapedMessage("trust-select-service.no")
+      )
+      journeyState.get shouldBe Some((SelectTrustService, List(SelectClientType(emptyBasket))))
     }
 
     "go back to the select service page" in {
@@ -273,30 +295,45 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
+  "POST /agents/select-trust-service" should {
+    val request = FakeRequest("POST", "/agents/select-trust-service")
+
+    "redirect to identify-client when yes is selected" in {
+      journeyState.set(SelectTrustService, List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitTrustSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyTrustClient().url)
+
+      journeyState.get should have[State](IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+    }
+
+    "redirect to select-client-type when no is selected" in {
+      journeyState.set(SelectTrustService, List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitTrustSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+
+      journeyState.get should have[State](
+        SelectClientType(emptyBasket),
+        List(SelectTrustService, SelectClientType(emptyBasket)))
+    }
+  }
+
   "GET /agents/identify-client" should {
     val request = FakeRequest("GET", "/agents/identify-client")
 
-    "show identify client page for ITSA service" in {
+    "show identify client page" in {
       journeyState.set(
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "identify-client.header",
-        "identify-client.itsa.p1",
-        "identify-client.nino.label",
-        "identify-client.nino.hint",
-        "identify-client.postcode.label",
-        "identify-client.postcode.hint"
-      )
-
-      journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
     "show identify client page for IRV service" in {
@@ -527,12 +564,65 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showCannotCreateRequest().url)
 
+    }
+  }
+
+  "POST /agents/identify-trust-client" should {
+
+    val trustDetailsResponse =
+      TrustDetailsResponse(
+        TrustDetails(
+          validUtr.value,
+          "Nelson James Trust",
+          TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
+          "TERS"))
+
+    val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
+
+    val errorJson =
+      """{"code": "INVALID_UTR","reason": "Submission has not passed validation. Invalid parameter UTR."}"""
+
+    val request = FakeRequest("POST", "/agents/identify-trust-client")
+
+    "redirect to /agents/confirm-client" in {
+      givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+
+      journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get should havePattern[State](
+        {
+          case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(_, _, _, _), _, _)) =>
+        },
+        List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
+      )
+    }
+
+    "redirect to /agents/not-found when utr passed in don't contain any trust known facts" in {
+      givenTrustClientReturns(validUtr, 200, errorJson)
+
+      journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+
       journeyState.get should have[State](
-        CannotCreateRequest(emptyBasket),
-        List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
-          SelectPersonalService(availableServices, emptyBasket),
-          SelectClientType(emptyBasket))
+        TrustNotFound,
+        List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
       )
     }
   }
@@ -700,7 +790,44 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
               AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10"), _, _), _, _),
               _) =>
         },
-        List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
+        List(
+          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+    }
+
+    "show the confirm client page for Trust service" in {
+
+      val trustDetailsResponse =
+        TrustDetailsResponse(
+          TrustDetails(
+            validUtr.value,
+            "Nelson James Trust",
+            TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
+            "TERS"))
+
+      val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
+
+      givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+
+      journeyState.set(
+        ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(validUtr))),
+        List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
+      )
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "Nelson James Trust")
+      checkHtmlResultWithBodyText(result, s"Unique Taxpayer Reference: ${validUtr.value}")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
+
+      journeyState.get should havePattern[State](
+        {
+          case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(_, _, _, _), _, _)) =>
+        },
+        List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
       )
     }
 
