@@ -28,3 +28,11 @@ object ClientTypeForm {
     ).transform(ClientType.toEnum, ClientType.fromEnum)
   )
 }
+
+object ClientTypeWithTrustsForm {
+  val form = Form(
+    single(
+      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business", "trust").contains _)
+    )
+  )
+}

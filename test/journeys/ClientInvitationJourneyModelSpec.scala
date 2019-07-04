@@ -186,7 +186,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             )
           )) when
           submitConsents(authorisedIndividualClient)(
-            ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true)) should
+            ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true)) should
           thenGo(
             CheckAnswers(
               personal,
@@ -214,8 +214,11 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(itsaConsent = true, afiConsent = false, vatConsent = false)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
+          itsaConsent = true,
+          afiConsent = false,
+          vatConsent = false,
+          trustConsent = true)) should thenGo(
           CheckAnswers(
             personal,
             uid,

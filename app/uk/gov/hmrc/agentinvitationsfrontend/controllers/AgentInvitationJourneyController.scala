@@ -55,12 +55,12 @@ class AgentInvitationJourneyController @Inject()(
     extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationJourneyController._
+  import asaConnector._
   import authActions._
   import invitationsService._
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
-  import asaConnector._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -79,11 +79,11 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(Transitions.selectedClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeWithTrustsForm.form)(Transitions.selectedClientType)
   }
 
   val showSelectService = actionShowStateWhenAuthorised(AsAgent) {
-    case _: SelectPersonalService | SelectBusinessService =>
+    case _: SelectPersonalService | SelectBusinessService | SelectTrustService =>
   }
 
   val submitPersonalSelectService = action { implicit request =>
@@ -99,10 +99,19 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
+  val submitTrustSelectService = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceTrustForm)(
+      Transitions.selectedTrustService(featureFlags.showHmrcTrust))
+  }
+
   val identifyClientRedirect = Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
   val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
-    case _: IdentifyPersonalClient | IdentifyBusinessClient =>
+    case _: IdentifyPersonalClient | IdentifyBusinessClient | IdentifyTrustClient =>
+  }
+
+  val showIdentifyTrustClient = actionShowStateWhenAuthorised(AsAgent) {
+    case IdentifyTrustClient =>
   }
 
   val submitIdentifyItsaClient = action { implicit request =>
@@ -129,11 +138,18 @@ class AgentInvitationJourneyController @Inject()(
     )
   }
 
+  val submitIdentifyTrustClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
+      Transitions.identifiedTrustClient(trustClient => invitationsConnector.getTrustDetails(trustClient.utr))
+    )
+  }
+
   val showConfirmClient = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientIrv         =>
+    case _: ConfirmClientTrust       =>
   }
 
   val submitConfirmClient = action { implicit request =>
@@ -180,18 +196,22 @@ class AgentInvitationJourneyController @Inject()(
     case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
     case _: SelectPersonalService        => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectTrustService              => routes.AgentInvitationJourneyController.showSelectService()
     case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyTrustClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientIrv             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
+    case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
@@ -212,9 +232,12 @@ class AgentInvitationJourneyController @Inject()(
           getCallFor(_).url)
 
       Ok(
-        client_type(
-          formWithErrors.or(ClientTypeForm.form),
-          ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType())
+        client_type_trusts(
+          formWithErrors.or(ClientTypeWithTrustsForm.form),
+          ClientTypeWithTrustsPageConfig(
+            backLinkForClientType,
+            routes.AgentInvitationJourneyController.submitClientType(),
+            featureFlags.showHmrcTrust)
         ))
     }
 
@@ -243,6 +266,27 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showReviewAuthorisations()
           )
         ))
+
+    case SelectTrustService =>
+      Ok(
+        trust_select_service(
+          formWithErrors.or(CommonConfirmationForms.serviceTrustForm),
+          TrustSelectServicePageConfig(
+            basketFlag = false,
+            routes.AgentInvitationJourneyController.submitTrustSelectService(),
+            backLinkFor(breadcrumbs).url,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations()
+          )
+        ))
+
+    case IdentifyTrustClient =>
+      Ok(
+        identify_client_trust(
+          formWithErrors.or(TrustClientForm.form),
+          routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
 
     case IdentifyPersonalClient(Services.HMRCMTDIT, _) =>
       Ok(
@@ -279,6 +323,16 @@ class AgentInvitationJourneyController @Inject()(
           backLinkFor(breadcrumbs).url
         )
       )
+
+    case ConfirmClientTrust(authorisationRequest) =>
+      Ok(
+        confirm_client(
+          authorisationRequest.clientName,
+          formWithErrors.or(ConfirmClientForm),
+          backLinkFor(breadcrumbs).url,
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          Some(authorisationRequest.invitation.clientId)
+        ))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
       Ok(

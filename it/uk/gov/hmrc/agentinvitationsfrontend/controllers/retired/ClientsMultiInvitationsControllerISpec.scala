@@ -221,7 +221,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(
         authorisedAsAnyIndividualClient(FakeRequest()).withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*))
@@ -244,7 +244,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
         .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
@@ -278,7 +278,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
           )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
         .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
@@ -311,7 +311,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyIndividualClient(FakeRequest())
         .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)
@@ -344,7 +344,7 @@ class ClientsMultiInvitationsControllerISpec extends BaseISpec {
         )))
 
       val confirmTermsForm = ClientsMultiInvitationController.confirmTermsMultiForm.fill(
-        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
 
       val result = controller.submitMultiConfirmTerms("personal", uid)(authorisedAsAnyOrganisationClient(FakeRequest())
         .withFormUrlEncodedBody(confirmTermsForm.data.toSeq: _*)

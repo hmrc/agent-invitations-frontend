@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TrackService @Inject()(
-  invitationsConnector: InvitationsConnector,
+  val invitationsConnector: InvitationsConnector,
   relationshipsConnector: RelationshipsConnector,
   pirRelationshipConnector: PirRelationshipConnector,
   val agentServicesAccountConnector: AgentServicesAccountConnector,

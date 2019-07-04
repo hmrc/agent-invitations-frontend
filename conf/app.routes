@@ -11,6 +11,8 @@ POST        /agents/client-type                                            @uk.g
 GET         /agents/select-service                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSelectService
 POST        /agents/select-personal-service                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectService
 POST        /agents/select-business-service                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
+POST        /agents/select-trust-service                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectService
+
 GET         /agents/identify-client                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
 #GET endpoints provided for POST endpoints as they are different from the GET
 GET         /agents/identify-itsa-client                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
@@ -19,6 +21,10 @@ GET         /agents/identify-vat-client                                    @uk.g
 POST        /agents/identify-vat-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyVatClient
 GET         /agents/identify-irv-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
 POST        /agents/identify-irv-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyIrvClient
+GET         /agents/identify-trust-client                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyTrustClient
+POST        /agents/identify-trust-client                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyTrustClient
+
+
 GET         /agents/confirm-client                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showConfirmClient
 POST        /agents/confirm-client                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitConfirmClient
 GET         /agents/review-authorisations                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showReviewAuthorisations

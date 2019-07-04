@@ -168,7 +168,8 @@ class AgentLedDeAuthControllerISpec extends BaseISpec with AuthBehaviours {
 
     "display correct identify client page based on selected service" in {
 
-      Services.supportedServices.foreach { service =>
+      List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT).foreach { service =>
+
         await(sessionStore.save(AgentSession(Some(personal), Some(service))))
 
         val result = showIdentifyClient(authorisedAsValidAgent(request, arn.value))

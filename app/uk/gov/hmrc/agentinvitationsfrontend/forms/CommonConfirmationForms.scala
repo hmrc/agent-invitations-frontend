@@ -32,5 +32,7 @@ object CommonConfirmationForms {
 
   val serviceBusinessForm: Form[Confirmation] = confirmationForm("error.business-service.required")
 
+  val serviceTrustForm: Form[Confirmation] = confirmationForm("error.trust-service.required")
+
   val confirmCancelForm: Form[Confirmation] = confirmationForm("cancel-authorisation.error.confirm-cancel.required")
 }

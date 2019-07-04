@@ -21,7 +21,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdentifier: Option[String] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@clientIdentifierText = @{clientIdentifier.fold("")(id => s"Unique Taxpayer Reference: $id")}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -30,15 +32,13 @@
 @if(choiceForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 }
-@form(
-action = submitCall,
-'class -> "form js-form"
-) {
+
+@form(action = submitCall, 'class -> "form js-form") {
 @input_radio_group(
 choiceForm("accepted"),
 Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
 '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("confirm-client.header") +
-    s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span></div>"""),
+    s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span>$clientIdentifierText</div>"""),
 '_groupDivClass -> "form-group soft--ends",
 '_fieldsetAttributes -> Html("""id='choice'""")
 )

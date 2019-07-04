@@ -25,22 +25,28 @@ class ConfirmedTermsMultiSpec extends UnitSpec {
 
     "return no errors when filling the form" in {
       val unboundForm =
-        confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true))
+        confirmTermsMultiForm.fill(
+          ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
       unboundForm("confirmedTerms.itsa").value shouldBe Some("true")
       unboundForm("confirmedTerms.afi").value.get shouldBe "true"
       unboundForm("confirmedTerms.vat").value.get shouldBe "true"
+      unboundForm("confirmedTerms.trust").value.get shouldBe "true"
 
       val unboundForm2 =
-        confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = true, afiConsent = false, vatConsent = true))
+        confirmTermsMultiForm.fill(
+          ConfirmedTerms(itsaConsent = true, afiConsent = false, vatConsent = true, trustConsent = true))
       unboundForm2("confirmedTerms.itsa").value.get shouldBe "true"
       unboundForm2("confirmedTerms.afi").value.get shouldBe "false"
       unboundForm2("confirmedTerms.vat").value.get shouldBe "true"
+      unboundForm2("confirmedTerms.trust").value.get shouldBe "true"
 
       val unboundForm3 =
-        confirmTermsMultiForm.fill(ConfirmedTerms(itsaConsent = false, afiConsent = false, vatConsent = false))
+        confirmTermsMultiForm.fill(
+          ConfirmedTerms(itsaConsent = false, afiConsent = false, vatConsent = false, trustConsent = false))
       unboundForm3("confirmedTerms.itsa").value.get shouldBe "false"
       unboundForm3("confirmedTerms.afi").value.get shouldBe "false"
       unboundForm3("confirmedTerms.vat").value.get shouldBe "false"
+      unboundForm3("confirmedTerms.trust").value.get shouldBe "false"
     }
   }
 
