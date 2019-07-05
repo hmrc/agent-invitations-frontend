@@ -91,7 +91,7 @@ object Validators {
   }
 
   def confirmationChoice(errorMessage: String): Constraint[String] = Constraint[String] { fieldValue: String =>
-    if (fieldValue.trim.nonEmpty)
+    if (Seq("true", "false").contains(fieldValue.trim))
       Valid
     else
       Invalid(ValidationError(errorMessage))

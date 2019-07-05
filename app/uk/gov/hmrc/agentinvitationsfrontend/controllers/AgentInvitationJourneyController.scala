@@ -25,6 +25,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.TrustNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -179,7 +180,12 @@ class AgentInvitationJourneyController @Inject()(
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                    => }
+
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
+    case _: KnownFactNotMatched =>
+    case TrustNotFound          =>
+  }
+
   val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
   val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed => }
   val submitSomeAuthorisationsFailed = action { implicit request =>
@@ -413,6 +419,13 @@ class AgentInvitationJourneyController @Inject()(
       Ok(
         not_matched(
           basket.nonEmpty,
+          routes.AgentInvitationJourneyController.showIdentifyClient(),
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
+
+    case TrustNotFound =>
+      Ok(
+        not_matched(
+          false,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
