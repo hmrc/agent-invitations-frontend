@@ -187,21 +187,79 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsNoPostcode" in {
         val state =
           CheckDetailsNoPostcode(
-            AgentFastTrackRequest(Some(business), HMRCMTDVAT, "OriginalClientIdType", "OriginalClientId", None),
-            AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ClientIdType", "ClientId", None),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", None),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", None),
             Some("continue/url")
           )
         val json = Json.parse("""{
                                 |  "state":"CheckDetailsNoPostcode",
                                 |  "properties":{
                                 |    "originalFastTrackRequest":{
-                                |      "clientType": "business",
+                                |      "clientType": "personal",
+                                |      "service": "HMRC-MTD-IT",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "personal",
+                                |      "service": "HMRC-MTD-IT",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "CheckDetailsNoDob" in {
+        val state =
+          CheckDetailsNoDob(
+            AgentFastTrackRequest(Some(personal), HMRCPIR, "OriginalClientIdType", "OriginalClientId", None),
+            AgentFastTrackRequest(Some(personal), HMRCPIR, "ClientIdType", "ClientId", None),
+            Some("continue/url")
+          )
+        val json = Json.parse("""{
+                                |  "state":"CheckDetailsNoDob",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "personal",
+                                |      "service": "PERSONAL-INCOME-RECORD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "personal",
+                                |      "service": "PERSONAL-INCOME-RECORD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "CheckDetailsNoVatRegDate" in {
+        val state =
+          CheckDetailsNoVatRegDate(
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "OriginalClientIdType", "OriginalClientId", None),
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ClientIdType", "ClientId", None),
+            Some("continue/url")
+          )
+        val json = Json.parse("""{
+                                |  "state":"CheckDetailsNoVatRegDate",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "personal",
                                 |      "service": "HMRC-MTD-VAT",
                                 |      "clientIdentifierType": "OriginalClientIdType",
                                 |      "clientIdentifier": "OriginalClientId"
                                 |    },
                                 |    "fastTrackRequest":{
-                                |      "clientType": "business",
+                                |      "clientType": "personal",
                                 |      "service": "HMRC-MTD-VAT",
                                 |      "clientIdentifierType": "ClientIdType",
                                 |      "clientIdentifier": "ClientId"

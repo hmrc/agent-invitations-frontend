@@ -49,7 +49,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class CannotCreateRequest(basket: Basket) extends State
     case object TrustNotFound extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientIrv(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ConfirmClientTrust(request: AuthorisationRequest) extends State
@@ -82,7 +81,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
     type CreateMultipleInvitations =
-      (Arn, Option[ClientType], Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
+      (Arn, Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
     type GetTrustDetails = TrustClient => Future[Option[TrustDetails]]
@@ -243,16 +242,20 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
           endState <- dobMatches match {
                        case Some(true) =>
-                         getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap { clientName =>
-                           val newState = ConfirmClientIrv(
+                         getClientName(irvClient.clientIdentifier, HMRCPIR)
+                           .map { clientName =>
                              AuthorisationRequest(
                                clientName.getOrElse(""),
-                               PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob))),
-                             basket)
-                           clientConfirmed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-                             hasPendingInvitationsFor)(hasActiveRelationshipFor)(agent)(Confirmation(true))
-                             .apply(newState)
-                         }
+                               PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob)))
+                           }
+                           .flatMap { request =>
+                             checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+                               personal,
+                               agent.arn,
+                               request.invitation.clientId,
+                               HMRCPIR,
+                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+                           }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
                      }
@@ -266,7 +269,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       createMultipleInvitations: CreateMultipleInvitations,
       arn: Arn) =
       for {
-        processedRequests <- createMultipleInvitations(arn, Some(personal), basket)
+        processedRequests <- createMultipleInvitations(arn, basket)
         result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
                  else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                    goto(AllAuthorisationsFailed(processedRequests))
@@ -310,15 +313,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
               HMRCMTDIT,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
-        case ConfirmClientIrv(request, basket) =>
-          if (confirmation.choice) {
-            checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
-              personal,
-              authorisedAgent.arn,
-              request.invitation.clientId,
-              HMRCPIR,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
-          } else goto(IdentifyPersonalClient(HMRCPIR, basket))
         case ConfirmClientPersonalVat(request, basket) =>
           if (confirmation.choice) {
             checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(

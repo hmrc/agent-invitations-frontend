@@ -73,7 +73,7 @@ class InvitationsService @Inject()(
       }
   }
 
-  def createMultipleInvitations(arn: Arn, clientType: Option[ClientType], requests: Set[AuthorisationRequest])(
+  def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest])(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     request: Request[_]): Future[Set[AuthorisationRequest]] =

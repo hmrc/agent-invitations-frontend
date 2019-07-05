@@ -148,7 +148,6 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
-    case _: ConfirmClientIrv         =>
     case _: ConfirmClientTrust       =>
   }
 
@@ -201,7 +200,6 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyTrustClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientIrv             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
@@ -335,15 +333,6 @@ class AgentInvitationJourneyController @Inject()(
         ))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
-      Ok(
-        confirm_client(
-          authorisationRequest.clientName,
-          formWithErrors.or(ConfirmClientForm),
-          backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
-        ))
-
-    case ConfirmClientIrv(authorisationRequest, _) =>
       Ok(
         confirm_client(
           authorisationRequest.clientName,

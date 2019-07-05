@@ -9,10 +9,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -359,9 +359,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
-    "show identify client page for VAT service" in {
+    "show identify client page for personal VAT service" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCPIR, emptyBasket),
+        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
@@ -370,16 +370,53 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result,
         "identify-client.header",
-        "identify-client.itsa.p1",
-        "identify-client.nino.label",
-        "identify-client.nino.hint",
-        "identify-client.irv-date-of-birth.label",
-        "identify-client.irv-date-of-birth.hint"
+        "identify-client.vat.p1",
+        "identify-client.vrn.label",
+        "identify-client.vrn.hint",
+        "identify-client.vat-registration-date.label",
+        "identify-client.vat-registration-date.hint"
       )
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCPIR, emptyBasket),
+        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
+
+    "show the identify client page for business VAT service" in {
+      journeyState.set(IdentifyBusinessClient, List(SelectBusinessService, SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-client.header",
+        "identify-client.vat.p1",
+        "identify-client.vrn.label",
+        "identify-client.vrn.hint",
+        "identify-client.vat-registration-date.label",
+        "identify-client.vat-registration-date.hint"
+      )
+
+      journeyState.get should have[State](
+        IdentifyBusinessClient,
+        List(SelectBusinessService, SelectClientType(emptyBasket)))
+    }
+
+    "show the identify client page for TRUST service" in {
+      journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-trust-client.header",
+        "identify-trust-client.p1",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
     }
   }
 
@@ -473,12 +510,26 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket))
       )
     }
+
+    "redirect to client not signed up when the client is not signed up for the service" in {
+      givenNotEnrolledClientITSA(Nino(nino), "BN114AW")
+
+      journeyState.set(IdentifyPersonalClient(HMRCMTDIT, emptyBasket), List())
+
+      val result = controller.submitIdentifyItsaClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientIdentifier" -> nino, "postcode" -> "BN114AW"),
+          arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientNotSignedUp().url)
+    }
   }
 
   "POST /agents/identify-vat-client" should {
     val request = FakeRequest("POST", "/agents/identify-vat-client")
 
-    "redirect to /agents/confirm-client" in {
+    "redirect to /agents/confirm-client for personal vat" in {
       givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
       givenClientDetails(Vrn("202949960"))
 
@@ -513,6 +564,38 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
+      )
+    }
+
+    "redirect to /agents/confirm-client for business vat" in {
+      givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
+      givenClientDetails(Vrn("202949960"))
+
+      journeyState.set(IdentifyBusinessClient, List())
+
+      val result = controller.submitIdentifyVatClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientIdentifier"       -> "202949960",
+            "registrationDate.year"  -> "2010",
+            "registrationDate.month" -> "10",
+            "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get should havePattern[State](
+        {
+          case ConfirmClientBusinessVat(
+              AuthorisationRequest(
+                "GDT",
+                VatInvitation(Some(`business`), Vrn("202949960"), VatRegDate("2010-10-10"), _, _),
+                _,
+                _)) =>
+        },
+        List(IdentifyBusinessClient)
       )
     }
 
@@ -735,37 +818,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
     }
 
-    "show the confirm client page for IRV service" in {
-      givenCitizenDetailsAreKnownFor(validNino.value, "Virginia", "Woolf")
-      journeyState.set(
-        ConfirmClientIrv(
-          AuthorisationRequest("Virginia Woolf", PirInvitation(Nino(nino), DOB("1990-10-10"))),
-          emptyBasket),
-        List(
-          IdentifyPersonalClient(HMRCPIR, emptyBasket),
-          SelectPersonalService(availableServices, emptyBasket),
-          SelectClientType(emptyBasket))
-      )
-
-      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Virginia Woolf")
-      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
-
-      journeyState.get should havePattern[State](
-        {
-          case ConfirmClientIrv(
-              AuthorisationRequest("Virginia Woolf", PirInvitation(Nino(nino), DOB("1990-10-10"), _, _, _), _, _),
-              `emptyBasket`) =>
-        },
-        List(
-          IdentifyPersonalClient(HMRCPIR, emptyBasket),
-          SelectPersonalService(availableServices, emptyBasket),
-          SelectClientType(emptyBasket))
-      )
-    }
-
     "show the confirm client page for personal VAT service" in {
       givenClientDetails(Vrn("202949960"))
       journeyState.set(
@@ -881,7 +933,30 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+    }
 
+    "redirect to invitation sent for business" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+      givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+      givenInvitationCreationSucceeds(arn, Some(business), vrn, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn, nino, business)
+      givenGetAgencyEmailAgentStub
+      journeyState.set(
+        ConfirmClientBusinessVat(
+          AuthorisationRequest("GDT", VatInvitation(Some(business), Vrn(vrn), VatRegDate("10/10/10")))),
+        List(
+          IdentifyBusinessClient,
+          SelectBusinessService,
+          SelectClientType(emptyBasket)
+        )
+      )
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
     }
 
     "redirect to the identify-client page when no is selected" in {
@@ -902,6 +977,41 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
+    }
+
+    "redirect to pending invitation exists when a pending invitation already exists for this service" in {
+      givenGetAllPendingInvitationsReturnsSome(arn, vrn, HMRCMTDVAT)
+      givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+      journeyState.set(
+        ConfirmClientPersonalVat(
+          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10"))),
+          `emptyBasket`),
+        List()
+      )
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationJourneyController.showPendingAuthorisationExists().url)
+    }
+
+    "redirect to active authorisation exists when there is already an active authorisation for this service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+      givenCheckRelationshipVatWithStatus(arn, vrn, 200)
+      journeyState.set(
+        ConfirmClientPersonalVat(
+          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10"))),
+          `emptyBasket`),
+        List())
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
   }
 
@@ -946,7 +1056,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   "POST /agents/review-authorisations" should {
     val request = FakeRequest("POST", "/agents/review-authorisations")
 
-    "redirect to invitation-sent page when no is selected" in {
+    "redirect to invitation-sent page for a personal service when no is selected" in {
       givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
       givenAgentReference(arn, nino, personal)
@@ -994,12 +1104,54 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](SelectPersonalService(availableServices, emptyBasket))
     }
+
+    "redirect to some authorisations failed when some of the invitation creations fail" in {
+      givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
+      givenInvitationCreationFailsForService(arn, Some(personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn, nino, personal)
+      givenGetAgencyEmailAgentStub
+      journeyState.set(
+        ReviewAuthorisationsPersonal(
+          Set(
+            AuthorisationRequest("client name", Invitation(Some(personal), HMRCMTDIT, nino, validPostcode)),
+            AuthorisationRequest("client name", Invitation(Some(personal), HMRCPIR, nino, dateOfBirth))
+          )),
+        List()
+      )
+
+      val result = controller.submitReviewAuthorisations(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed().url)
+    }
+
+    "redirect to all authorisation failed when all of the invitation creations fail" in {
+      givenInvitationCreationFailsForService(arn, Some(personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn, nino, personal)
+      givenGetAgencyEmailAgentStub
+      journeyState.set(
+        ReviewAuthorisationsPersonal(
+          Set(
+            AuthorisationRequest("client name", Invitation(Some(personal), HMRCPIR, nino, dateOfBirth))
+          )),
+        List()
+      )
+
+      val result = controller.submitReviewAuthorisations(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsFailed().url)
+    }
   }
 
   "GET /invitation-sent" should {
     val request = FakeRequest("GET", "/agents/invitation-sent")
 
-    "show the invitation sent page" in {
+    "show the invitation sent page for a personal service" in {
       journeyState.set(
         InvitationSentPersonal("invitation/link", None, "abc@xyz.com"),
         List(
@@ -1027,6 +1179,34 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+    }
+
+    "show the invitation sent page for a business service" in {
+      journeyState.set(
+        InvitationSentBusiness("invitation/link", None, "abc@xyz.com"),
+        List(
+          ConfirmClientBusinessVat(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino), Postcode("BN114AW")))),
+          IdentifyBusinessClient,
+          SelectBusinessService,
+          SelectClientType(emptyBasket)
+        )
+      )
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage(
+          "generic.title",
+          htmlEscapedMessage("invitation-sent.header"),
+          htmlEscapedMessage("title.suffix.agents"),
+          htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
+        )
+      )
+
+      journeyState.get should have[State](InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
     }
   }
 
@@ -1171,6 +1351,175 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+    }
+  }
+
+  "GET /not-matched" should {
+    val request = FakeRequest("GET", "/agents/not-matched")
+
+    "display the known facts not matched page" in {
+      journeyState.set(
+        KnownFactNotMatched(emptyBasket),
+        List()
+      )
+      val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "not-matched.header",
+        "not-matched.description",
+        "not-matched.advice",
+        "not-matched.button"
+      )
+    }
+  }
+
+  "GET /cannot-create-request" should {
+    val request = FakeRequest("GET", "/agents/cannot-create-request")
+
+    "display the cannot create request page" in {
+      journeyState.set(
+        CannotCreateRequest(emptyBasket),
+        List()
+      )
+      val result = controller.showCannotCreateRequest(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "cannot-create-request.header",
+        "cannot-create-request.p1",
+        "cannot-create-request.p2",
+        "cannot-create-request.p3"
+      )
+    }
+  }
+
+  "GET /some-create-authorisation-failed" should {
+    val request = FakeRequest("GET", "/agents/some-create-authorisation-failed")
+
+    "display the some create authorisations failed" in {
+      journeyState.set(
+        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", emptyBasket),
+        List()
+      )
+      val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "create-auth-failed.header",
+        "create-auth-failed.button.continue"
+      )
+    }
+  }
+
+  "GET /all-create-authorisation-failed" should {
+    val request = FakeRequest("GET", "/agents/all-create-authorisation-failed")
+
+    "display the all create authorisations failed page" in {
+      journeyState.set(
+        AllAuthorisationsFailed(emptyBasket),
+        List()
+      )
+      val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "create-auth-failed.header",
+        "create-auth-failed.button.try"
+      )
+    }
+  }
+
+  "GET /already-authorisation-present" should {
+    val request = FakeRequest("GET", "/agents/already-authorisation-present")
+
+    "display the already authorisation present page" in {
+      journeyState.set(
+        ActiveAuthorisationExists(personal, HMRCMTDIT, emptyBasket),
+        List()
+      )
+      val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "active-authorisation-exists.header",
+        "active-authorisation-exists.p1.HMRC-MTD-IT",
+        "active-authorisation-exists.p2"
+      )
+    }
+  }
+
+  "GET /already-authorisation-pending" should {
+    val request = FakeRequest("GET", "/agents/already-authorisation-pending")
+
+    "display the already authorisation pending page" in {
+      journeyState.set(
+        PendingInvitationExists(personal, emptyBasket),
+        List()
+      )
+      val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "problem.header",
+        "pending-authorisation-exists.no-requests.p",
+        "pending-authorisation-exists.track.button",
+        "pending-authorisation-exists.new-request.link"
+      )
+    }
+  }
+
+  "GET /not-signed-up" should {
+    val request = FakeRequest("GET", "/agents/not-signed-up")
+
+    "display the not signed up page" in {
+      journeyState.set(
+        ClientNotSignedUp(HMRCMTDIT, emptyBasket),
+        List()
+      )
+      val result = controller.showClientNotSignedUp(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "problem.header",
+        "not-enrolled.p1.HMRC-MTD-IT",
+        "not-enrolled.p2"
+      )
+    }
+  }
+
+  "GET /all-authorisations-removed" should {
+    val request = FakeRequest("GET", "/agents/all-authorisations-removed")
+
+    "display the all authorisations removed page" in {
+      journeyState.set(
+        AllAuthorisationsRemoved,
+        List()
+      )
+      val result = controller.showAllAuthorisationsRemoved(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "all-authorisations-removed.header",
+        "all-authorisations-removed.p",
+        "new-request.button"
+      )
     }
   }
 }
