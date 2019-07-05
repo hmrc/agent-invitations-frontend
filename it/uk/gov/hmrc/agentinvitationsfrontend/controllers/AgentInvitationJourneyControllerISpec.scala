@@ -311,6 +311,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket),
           List(SelectTrustService, SelectClientType(emptyBasket)))
       }
+
+      "do not blow up if user enters invalid value in the form for confirmation" in {
+        journeyState.set(SelectTrustService, List(SelectClientType(emptyBasket)))
+
+        val result = controller.submitTrustSelectService(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      }
     }
 
     "GET /agents/identify-client" should {
@@ -581,7 +591,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       }
 
-      "redirect to /agents/not-found when utr passed in don't contain any trust known facts" in {
+      "redirect to /agents/not-matched when utr passed in is not related to any trust" in {
         givenTrustClientReturns(validUtr,200, errorJson)
 
         journeyState.set(
