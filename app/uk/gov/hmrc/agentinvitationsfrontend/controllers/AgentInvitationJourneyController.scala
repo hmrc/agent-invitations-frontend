@@ -111,10 +111,6 @@ class AgentInvitationJourneyController @Inject()(
     case _: IdentifyPersonalClient | IdentifyBusinessClient | IdentifyTrustClient =>
   }
 
-  val showIdentifyTrustClient = actionShowStateWhenAuthorised(AsAgent) {
-    case IdentifyTrustClient =>
-  }
-
   val submitIdentifyItsaClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
@@ -205,7 +201,7 @@ class AgentInvitationJourneyController @Inject()(
     case SelectTrustService              => routes.AgentInvitationJourneyController.showSelectService()
     case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyTrustClient()
+    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientIrv             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()

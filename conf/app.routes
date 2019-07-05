@@ -21,7 +21,6 @@ GET         /agents/identify-vat-client                                    @uk.g
 POST        /agents/identify-vat-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyVatClient
 GET         /agents/identify-irv-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
 POST        /agents/identify-irv-client                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyIrvClient
-GET         /agents/identify-trust-client                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyTrustClient
 POST        /agents/identify-trust-client                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyTrustClient
 
 

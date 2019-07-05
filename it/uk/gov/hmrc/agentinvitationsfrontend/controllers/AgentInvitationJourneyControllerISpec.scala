@@ -291,7 +291,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyTrustClient().url)
+        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
         journeyState.get should have[State](
           IdentifyTrustClient,

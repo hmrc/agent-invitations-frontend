@@ -102,7 +102,7 @@ trust-select-service.no=No
 error.trust-service.required=Select yes if you want to maintain a trust for this client
 
 ## Identify Trust Client
-identify-trust-client.title=Enter your client''s details
+identify-trust-client.title=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.header=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.p1=This will help us match their details against information we hold.
 identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called 'reference', 'UTR' or 'official use'. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
@@ -549,7 +549,7 @@ common.sign-out=Sign out
 
 #Track invitation requests
 recent-invitations.header=Track your recent authorisation requests
-recent-invitations.description=Use this service to check the status of your authorisation requests to clients in the last {0} days.
+recent-invitations.description=Check the status of your authorisation requests to clients in the last {0} days, or cancel requests and authorisations you no longer need.
 recent-invitations.empty=You do not have any recent authorisation requests.
 recent-invitations.empty.continue=Start a new authorisation request
 recent-invitations.table-row-header.clientName=Client''s details
