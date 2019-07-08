@@ -61,6 +61,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdItsa = InvitationId("A1BEOZEO7MNO6")
   val invitationIdIrv = InvitationId("B1BEOZEO7MNO6")
   val invitationIdVat = InvitationId("C1BEOZEO7MNO6")
+  val invitationIdTrust = InvitationId("D1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
 
   val normalisedAgentName = "agent-name"
@@ -182,7 +183,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
             )
           )) when
           submitConsents(authorisedIndividualClient)(
@@ -195,14 +197,30 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               Seq(
                 ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
                 ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-                ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+                ClientConsent(invitationIdVat, expiryDate, "vat", consent = true),
+                ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)
               )
             )
           )
       }
+      "throw an exception when the message key is not supposrted in the request" in {
+        intercept[IllegalStateException] {
+          given(
+            MultiConsent(
+              personal,
+              "uid",
+              "agent name",
+              Seq(
+                ClientConsent(invitationIdItsa, expiryDate, "foo", consent = false)
+              )
+            )) when
+            submitConsents(authorisedIndividualClient)(
+              ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
+        }.getMessage shouldBe "the service key was not supported"
+      }
     }
     "at SingleConsent" should {
-      "transition to CheckAnswers with changed consent" in {
+      "transition to CheckAnswers with changed itsa consent" in {
         given(
           SingleConsent(
             personal,
@@ -229,6 +247,66 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
           )
+        )
+      }
+      "transition to CheckAnswers with changed irv consent" in {
+        given(
+          SingleConsent(
+            personal,
+            uid,
+            "agent name",
+            ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
+            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false))
+          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
+          itsaConsent = false,
+          afiConsent = true,
+          vatConsent = false,
+          trustConsent = false)) should thenGo(
+          CheckAnswers(
+            personal,
+            uid,
+            "agent name",
+            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true)))
+        )
+      }
+      "transition to CheckAnswers with changed vat consent" in {
+        given(
+          SingleConsent(
+            personal,
+            uid,
+            "agent name",
+            ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
+            Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = false))
+          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
+          itsaConsent = false,
+          afiConsent = false,
+          vatConsent = true,
+          trustConsent = false)) should thenGo(
+          CheckAnswers(
+            personal,
+            uid,
+            "agent name",
+            Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)))
+        )
+      }
+      "transition to CheckAnswers with changed trust consent" in {
+        given(
+          SingleConsent(
+            personal,
+            uid,
+            "agent name",
+            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))
+          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
+          itsaConsent = false,
+          afiConsent = false,
+          vatConsent = false,
+          trustConsent = true)) should thenGo(
+          CheckAnswers(
+            personal,
+            uid,
+            "agent name",
+            Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
         )
       }
     }
@@ -324,6 +402,36 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           AllResponsesFailed)
+      }
+    }
+
+    "at state CheckAnswers" should {
+      "transition to SingleConsent " in {
+        given(
+          CheckAnswers(
+            personal,
+            "uid",
+            "agent name",
+            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
+          submitCheckAnswersChange("itsa")(authorisedIndividualClient) should thenGo(
+          SingleConsent(
+            personal,
+            "uid",
+            "agent name",
+            ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
+            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true))
+          ))
+      }
+      "throw an exception when the key for the consent is not found" in {
+        intercept[IllegalStateException] {
+          given(
+            CheckAnswers(
+              personal,
+              "uid",
+              "agent name",
+              Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
+            submitCheckAnswersChange("foo")(authorisedIndividualClient)
+        }.getMessage shouldBe "the key for this consent was not found"
       }
     }
     "at state ConfirmDecline" should {

@@ -28,7 +28,6 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val SelectPersonalServiceFormat = Json.format[SelectPersonalService]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val ConfirmClientItsaFormat = Json.format[ConfirmClientItsa]
-  val ConfirmClientIrvFormat = Json.format[ConfirmClientIrv]
   val ConfirmClientTrustFormat = Json.format[ConfirmClientTrust]
   val ConfirmClientPersonalVatFormat = Json.format[ConfirmClientPersonalVat]
   val ConfirmClientBusinessVatFormat = Json.format[ConfirmClientBusinessVat]
@@ -51,7 +50,6 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: SelectPersonalService              => SelectPersonalServiceFormat.writes(s)
     case s: IdentifyPersonalClient             => IdentifyPersonalClientFormat.writes(s)
     case s: ConfirmClientItsa                  => ConfirmClientItsaFormat.writes(s)
-    case s: ConfirmClientIrv                   => ConfirmClientIrvFormat.writes(s)
     case s: ConfirmClientPersonalVat           => ConfirmClientPersonalVatFormat.writes(s)
     case s: ConfirmClientBusinessVat           => ConfirmClientBusinessVatFormat.writes(s)
     case s: ConfirmClientTrust                 => ConfirmClientTrustFormat.writes(s)
@@ -78,7 +76,6 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "IdentifyTrustClient"                => JsSuccess(IdentifyTrustClient)
     case "ConfirmClientTrust"                 => ConfirmClientTrustFormat.reads(properties)
     case "ConfirmClientItsa"                  => ConfirmClientItsaFormat.reads(properties)
-    case "ConfirmClientIrv"                   => ConfirmClientIrvFormat.reads(properties)
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)
     case "ConfirmClientBusinessVat"           => ConfirmClientBusinessVatFormat.reads(properties)
     case "ReviewAuthorisationsPersonal"       => ReviewAuthorisationsPersonalFormat.reads(properties)

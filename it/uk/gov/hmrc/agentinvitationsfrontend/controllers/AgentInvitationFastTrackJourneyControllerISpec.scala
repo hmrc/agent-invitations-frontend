@@ -6,7 +6,7 @@ import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -127,6 +127,120 @@ class AgentInvitationFastTrackJourneyControllerISpec
           List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))))
     }
 
+    "redirect to check details when service is IRV" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "PERSONAL-INCOME-RECORD",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> nino,
+            "knownFact"            -> dateOfBirth),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is personal VAT" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "HMRC-MTD-VAT",
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> vrn,
+            "knownFact"            -> validRegistrationDate),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is business VAT" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-MTD-VAT",
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> vrn,
+            "knownFact"            -> validRegistrationDate),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is ITSA with no postcode" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "HMRC-MTD-IT",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> nino),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is IRV with no date of birth" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "PERSONAL-INCOME-RECORD",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> nino),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is VAT with no vat reg date" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "HMRC-MTD-VAT",
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> vrn),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is VAT with no vat reg date or client type" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "service"              -> "HMRC-MTD-VAT",
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> vrn),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
       givenWhitelistedDomains
       val request = FakeRequest(
@@ -226,7 +340,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "GET /agents/check-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/check-details")
-    "show the check-details page" in {
+    "show the check-details page for ITSA service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN32TN"))
       journeyState.set(
         CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
@@ -241,10 +355,107 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.p.HMRC-MTD-IT",
         "check-details.client-type.personal")
     }
+    "show the check-details page for IRV service" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some(dateOfBirth))
+      journeyState.set(CheckDetailsCompleteIrv(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.PERSONAL-INCOME-RECORD",
+        "check-details.client-type.personal")
+    }
+    "show the check-details page for personal VAT service" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
+      journeyState
+        .set(CheckDetailsCompletePersonalVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-VAT",
+        "check-details.client-type.personal")
+    }
+    "show the check-details page for business VAT service" in {
+      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
+      journeyState
+        .set(CheckDetailsCompleteBusinessVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-VAT",
+        "check-details.client-type.business")
+    }
+    "show the check-details page for ITSA client with no postcode" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None)
+      journeyState.set(CheckDetailsNoPostcode(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-IT",
+        "check-details.client-type.personal",
+        "check-details.change.p1")
+    }
+    "show the check-details page for IRV client with no date of birth" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", None)
+      journeyState.set(CheckDetailsNoDob(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.PERSONAL-INCOME-RECORD",
+        "check-details.client-type.personal",
+        "check-details.change.p1")
+    }
+    "show the check-details page for VAT client with no vat registration date" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
+      journeyState.set(CheckDetailsNoVatRegDate(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-VAT",
+        "check-details.client-type.personal",
+        "check-details.change.p1")
+    }
+    "show the check-details page for VAT client with no client type" in {
+      val ftr = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+      journeyState
+        .set(CheckDetailsNoClientTypeVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-MTD-VAT",
+        "check-details.change.p1")
+    }
   }
 
   "POST /agents/check-details" should {
-    val request = FakeRequest("POST", "/agents/fast-track/check-details")
+    val request = FakeRequest("POST", "/agents/check-details")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       givenGetAgencyEmailAgentStub
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
@@ -259,7 +470,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
     }
 
-    "redirect to client-identify" in {
+    "redirect to client-identify for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW"))
       journeyState.set(
         CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
@@ -271,11 +482,64 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
     }
+
+    "redirect to client-identify for a business service" in {
+      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
+      journeyState.set(
+        CheckDetailsCompleteBusinessVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
+        List(Prologue(None, None)))
+
+      val result = controller.submitCheckDetails(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
+    }
   }
 
-  "GET agents/client-identify" should {
+  "POST /agents/to-known-fact" should {
+    val request = FakeRequest("POST", "/agents/to-known-fact")
+
+    "redirect to known fact when the postcode is missing for ITSA service" in {
+      givenGetAgencyEmailAgentStub
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, None)
+      journeyState.set(CheckDetailsNoPostcode(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.progressToKnownFact(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact().url)
+    }
+
+    "redirect to known fact when the dob is missing for PIR service" in {
+      givenGetAgencyEmailAgentStub
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, None)
+      journeyState.set(CheckDetailsNoDob(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.progressToKnownFact(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact().url)
+    }
+
+    "redirect to known fact when the vat reg date is missing for VAT service" in {
+      givenGetAgencyEmailAgentStub
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
+      journeyState.set(CheckDetailsNoVatRegDate(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.progressToKnownFact(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact().url)
+    }
+  }
+
+  "GET agents/client-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/identify-client")
-    "show the identify-client page" in {
+    "show the client-details page for ITSA" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         IdentifyPersonalClient(ftr, ftr, None),
@@ -289,6 +553,45 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.postcode.label")
+    }
+
+    "show the client-details page for IRV" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some("1990-09-09"))
+      journeyState.set(
+        IdentifyPersonalClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.irv-date-of-birth.label")
+    }
+
+    "show the client-details page for personal VAT" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2009-09-09"))
+      journeyState.set(
+        IdentifyPersonalClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.vat-registration-date.label")
+    }
+
+    "show the client-details page for business VAT" in {
+      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some("2009-09-09"))
+      journeyState.set(
+        IdentifyBusinessClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.vat-registration-date.label")
     }
   }
 
@@ -383,7 +686,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "POST /agents/client-identify-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
-    "redirect to invitation-sent" in new VatHappyScenario {
+    "redirect to invitation-sent" in new VatHappyScenarioPersonal {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       journeyState.set(
         IdentifyPersonalClient(ftr, ftr, None),
@@ -406,11 +709,29 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
     }
+
+    "redirect to invitation-sent for business VAT" in new VatHappyScenarioBusiness {
+      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      journeyState.set(IdentifyBusinessClient(ftr, ftr, None), List())
+
+      val result = controller.submitIdentifyVatClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientIdentifier"       -> "101747696",
+            "registrationDate.year"  -> "2010",
+            "registrationDate.month" -> "10",
+            "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+    }
   }
 
   "GET /agents/more-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/more-details")
-    "show the more-details page" in {
+    "show the more-details page for ITSA service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         NoPostcode(ftr, ftr, None),
@@ -424,6 +745,29 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "known-fact.HMRC-MTD-IT.heading", "known-fact.HMRC-MTD-IT.helper")
+    }
+
+    "show the more-details page for IRV service" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", "AB123456A", Some(dateOfBirth))
+      journeyState.set(NoDob(ftr, ftr, None), List())
+
+      val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "known-fact.PERSONAL-INCOME-RECORD.heading",
+        "known-fact.PERSONAL-INCOME-RECORD.helper")
+    }
+
+    "show the more-details page for VAT service" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "VRN", vrn, Some(validRegistrationDate))
+      journeyState.set(NoVatRegDate(ftr, ftr, None), List())
+
+      val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "known-fact.HMRC-MTD-VAT.heading", "known-fact.HMRC-MTD-VAT.helper")
     }
   }
 
@@ -474,6 +818,23 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
+    }
+
+    "redirect to not-signed-up when the client is not signed up for the service" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
+      givenCheckRelationshipItsaWithStatus(arn, nino, 404)
+      givenNotEnrolledClientITSA(Nino(nino), "BN32TN")
+
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None)
+      journeyState.set(NoPostcode(ftr, ftr, None), List())
+
+      val result = controller.submitKnownFactItsa(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp().url)
+
     }
   }
 
@@ -526,7 +887,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "POST /agents/more-details-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-vat")
-    "redirect to invitation-sent" in new VatHappyScenario {
+    "redirect to invitation-sent" in new VatHappyScenarioPersonal {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       journeyState.set(
         NoVatRegDate(ftr, ftr, None),
@@ -589,8 +950,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
   }
 
   "GET /agents/sent-invitation" should {
-    val request = FakeRequest("GET", "/agents/fast-track/invitation-sent")
-    "show the client-type page" in {
+    val request = FakeRequest("GET", "/agents/fast-track/sent-invitation")
+    "show the invitation sent page for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com"),
@@ -603,7 +964,26 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.header"))
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "invitation-sent.header",
+        "invitation-sent.l1",
+        "invitation-sent.l1.p.personal")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
+    }
+
+    "show the invitation sent page for a business service" in {
+      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
+      journeyState.set(InvitationSentBusiness("invitation/sent/url", None, "abc@xyz.com"), List())
+
+      val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "invitation-sent.header",
+        "invitation-sent.l1",
+        "invitation-sent.l1.p.business")
     }
   }
 
@@ -720,7 +1100,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenNonMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
   }
 
-  class VatHappyScenario {
+  class VatHappyScenarioPersonal {
     givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
     givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 204)
     givenClientDetails(Vrn(vrn))
@@ -728,6 +1108,17 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
+    givenGetAgencyEmailAgentStub
+  }
+
+  class VatHappyScenarioBusiness {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+    givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 204)
+    givenClientDetails(Vrn(vrn))
+    givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+    givenInvitationCreationSucceeds(arn, Some(business), nino, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
+    givenAgentReferenceRecordExistsForArn(arn, "FOO")
+    givenAgentReference(arn, "uid", business)
     givenGetAgencyEmailAgentStub
   }
 
