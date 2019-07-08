@@ -24,7 +24,7 @@ import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -121,6 +121,21 @@ class RelationshipsConnector @Inject()(
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No relationships were found for this agent and client for VAT")
+            false
+        }
+    }
+
+  def checkTrustRelationship(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor("ConsumedApi-Get-CheckTrustRelationship-GET") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}").toString
+      http
+        .GET[HttpResponse](url)
+        .map(_ => true)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for Trust")
             false
         }
     }

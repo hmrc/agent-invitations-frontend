@@ -9,7 +9,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
@@ -1014,6 +1014,25 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ConfirmClientPersonalVat(
           AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10"))),
           `emptyBasket`),
+        List())
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
+    }
+
+    "redirect to active authorisation exists when there is already an active authorisation for Trusts" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TRUST)
+      givenCheckRelationshipTrustWithStatus(arn, validUtr.value, 200)
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn, nino, business)
+      givenGetAgencyEmailAgentStub
+
+      journeyState.set(
+        ConfirmClientTrust(AuthorisationRequest("GDT", TrustInvitation(validUtr, Some(business)))),
         List())
 
       val result = controller.submitConfirmClient(
