@@ -25,6 +25,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.TrustNotFound
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -110,10 +111,6 @@ class AgentInvitationJourneyController @Inject()(
     case _: IdentifyPersonalClient | IdentifyBusinessClient | IdentifyTrustClient =>
   }
 
-  val showIdentifyTrustClient = actionShowStateWhenAuthorised(AsAgent) {
-    case IdentifyTrustClient =>
-  }
-
   val submitIdentifyItsaClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
@@ -178,7 +175,12 @@ class AgentInvitationJourneyController @Inject()(
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched                    => }
+
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
+    case _: KnownFactNotMatched =>
+    case TrustNotFound          =>
+  }
+
   val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
   val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed => }
   val submitSomeAuthorisationsFailed = action { implicit request =>
@@ -198,7 +200,7 @@ class AgentInvitationJourneyController @Inject()(
     case SelectTrustService              => routes.AgentInvitationJourneyController.showSelectService()
     case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyTrustClient()
+    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
@@ -402,6 +404,13 @@ class AgentInvitationJourneyController @Inject()(
       Ok(
         not_matched(
           basket.nonEmpty,
+          routes.AgentInvitationJourneyController.showIdentifyClient(),
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
+
+    case TrustNotFound =>
+      Ok(
+        not_matched(
+          false,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 

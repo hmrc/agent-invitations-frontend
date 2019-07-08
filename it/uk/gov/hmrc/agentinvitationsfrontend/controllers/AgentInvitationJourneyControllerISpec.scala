@@ -305,7 +305,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyTrustClient().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
     }
@@ -322,6 +322,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
         List(SelectTrustService, SelectClientType(emptyBasket)))
+    }
+
+    "do not blow up if user enters invalid value in the form for confirmation" in {
+      journeyState.set(SelectTrustService, List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitTrustSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
     }
   }
 
