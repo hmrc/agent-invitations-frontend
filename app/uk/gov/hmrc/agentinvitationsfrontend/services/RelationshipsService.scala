@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
-
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -30,31 +29,14 @@ class RelationshipsService @Inject()(
   relationshipsConnector: RelationshipsConnector,
   pirRelationshipConnector: PirRelationshipConnector) {
 
-  def checkPirRelationship(arn: Arn, clientId: Nino)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
-    pirRelationshipConnector.getPirRelationshipForAgent(arn, clientId).map(_.nonEmpty)
-
   def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     service match {
       case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
-      case HMRCPIR    => checkPirRelationship(arn, Nino(clientId))
-      case TRUST      => Future.successful(false)
-    }
-
-  def checkRelationshipExistsForService(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
-    service match {
-      case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
-      case HMRCPIR    => checkPirRelationship(arn, Nino(clientId))
-      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
-      case e => {
-        throw new Error(s"Unsupported service for checking relationship: $e")
-      }
+      case HMRCPIR    => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
+      case TRUST      => relationshipsConnector.checkTrustRelationship(arn, Utr(clientId))
     }
 
   def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(

@@ -105,4 +105,13 @@ trait ACRStubs {
             .withStatus(status)
         )
     )
+
+  def givenCheckRelationshipTrustWithStatus(arn: Arn, utr: String, status: Int) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/$utr"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
 }
