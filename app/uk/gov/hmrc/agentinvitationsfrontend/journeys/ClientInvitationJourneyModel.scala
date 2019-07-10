@@ -143,7 +143,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
           case "itsa"  => oldConsent.copy(consent = formTerms.itsaConsent)
           case "afi"   => oldConsent.copy(consent = formTerms.afiConsent)
           case "vat"   => oldConsent.copy(consent = formTerms.vatConsent)
-          case "trust" => oldConsent.copy(consent = formTerms.vatConsent)
+          case "trust" => oldConsent.copy(consent = formTerms.trustConsent)
           case _       => throw new IllegalStateException("the service key was not supported")
         }
       }
