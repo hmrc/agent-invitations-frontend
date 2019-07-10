@@ -1471,20 +1471,24 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("GET", "/agents/already-authorisation-present")
 
     "display the already authorisation present page" in {
-      journeyState.set(
-        ActiveAuthorisationExists(personal, HMRCMTDIT, emptyBasket),
-        List()
-      )
-      val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
-      status(result) shouldBe 200
+      supportedServices.foreach { service =>
+        journeyState.set(
+          ActiveAuthorisationExists(personal, service, emptyBasket),
+          List()
+        )
+        val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "active-authorisation-exists.header",
-        "active-authorisation-exists.p1.HMRC-MTD-IT",
-        "active-authorisation-exists.p2"
-      )
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyMsgs(
+          result,
+          "active-authorisation-exists.header",
+          s"active-authorisation-exists.p1.$service",
+          "active-authorisation-exists.p2"
+        )
+
+      }
     }
   }
 

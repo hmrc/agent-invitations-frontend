@@ -389,6 +389,11 @@ confirm-terms-multi.vat.list.item1=my VAT registration details, such as business
 confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 15 months
 confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated
 
+confirm-terms-multi.trust.heading=Maintain a trust
+confirm-terms-multi.trust.p1=I consent to HMRC sharing this information with {0}, so this agent can report changes and declare the trust is up to date:
+confirm-terms-multi.trust.list.item1=details relating to trustees, settlors, beneficiaries and protectors in the trust, such as names and addresses
+confirm-terms-multi.trust.list.item2=the trust''s last declaration
+
 confirm-terms.itsa.bullet1=your Income Tax updates information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
 confirm-terms.itsa.p1=This tax agent needs access to this information to send your Income Tax updates through software.
@@ -410,6 +415,7 @@ check-answers.p1 = Here are the details of your response to {0}.
 check-answers.service.afi = View your PAYE income record
 check-answers.service.itsa = Send your Income Tax updates through software
 check-answers.service.vat = Submit your VAT returns through software
+check-answers.service.trust=Maintain a trust
 check-answers.consent.true = Yes
 check-answers.consent.false = No
 check-answers.change-link=Change
@@ -426,6 +432,7 @@ client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for sending your Income Tax updates through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for submitting your VAT returns through software.
+client-complete.trust.p1={0} is now confirmed is now confirmed as your authorised tax agent for:
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -637,5 +644,6 @@ active-authorisation-exists.header=You are already authorised
 active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to send their Income Tax updates through software.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
 active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to submit their VAT returns through software.
+active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
