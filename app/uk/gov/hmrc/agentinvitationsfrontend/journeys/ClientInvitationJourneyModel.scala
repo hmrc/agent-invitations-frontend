@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
+import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -184,25 +185,25 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          .map(acceptSuccess => chosenConsent.copy(processed = acceptSuccess))
                      } else {
                        rejectInvitation(invitationId)
-                         .map(_ => chosenConsent.copy(processed = true))
+                         .map(processed => chosenConsent.copy(processed = processed))
                      }
                  }
       } yield result
 
     def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
       client: AuthorisedClient) = Transition {
-      case CheckAnswers(clientType, uid, agentName, consents) =>
+      case CheckAnswers(_, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)
-          result <- if (ClientConsent.allDeclinedProcessed(newConsents))
-                     goto(InvitationsDeclined(agentName, consents))
-                   else if (ClientConsent.allAcceptanceFailed(newConsents)) goto(AllResponsesFailed)
-                   else if (ClientConsent.someAcceptanceFailed(newConsents))
+          result <- if (ClientConsent.allFailed(newConsents)) goto(AllResponsesFailed)
+                   else if (ClientConsent.someFailed(newConsents))
                      goto(
                        SomeResponsesFailed(
                          agentName,
                          newConsents.filter(_.processed == false),
                          newConsents.filter(_.processed == true)))
+                   else if (ClientConsent.allDeclinedProcessed(newConsents))
+                     goto(InvitationsDeclined(agentName, consents))
                    else goto(InvitationsAccepted(agentName, consents))
         } yield result
     }

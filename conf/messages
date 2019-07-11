@@ -322,6 +322,7 @@ invitation-declined.p3=If you meant to accept this request, contact the person w
 invitation-declined.multi.itsa.p1=You have not given permission to {0} to send your Income Tax updates through software.
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to submit your VAT returns through software.
+invitation-declined.multi.trust.p1=You have not given permission to {0} to submit your Tax returns through software.
 
 invitation-declined-vat.p1=	You have not authorised {0} to submit your VAT returns through software.
 invitation-declined-vat.button=Continue to your tax account
@@ -337,6 +338,7 @@ confirm-decline.heading=Are you sure you want to decline this request?
 confirm-decline.itsa.sub-header={0} will not be able to send your Income Tax updates through software.
 confirm-decline.afi.sub-header={0} will not be able to view your income record.
 confirm-decline.vat.sub-header={0} will not be able to submit your VAT returns through software.
+confirm-decline.trust.sub-header={0} will not be able to submit your Tax returns through software.
 confirm-decline.sub-header={0} will not be able to:
 confirm-decline.itsa.service-name=send your Income Tax updates through software
 confirm-decline.afi.service-name=report your employer PAYE updates through software
