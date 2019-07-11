@@ -30,12 +30,17 @@ case class ClientConsent(
 object ClientConsent {
   implicit val format = Json.format[ClientConsent]
 
-  def allDeclinedProcessed(consents: Seq[ClientConsent]) = {
+  def allAcceptedProcessed(consents: Seq[ClientConsent]): Boolean = {
+    val acceptedConsents = consents.filter(_.consent)
+    acceptedConsents.nonEmpty && acceptedConsents.forall(_.processed == true)
+  }
+
+  def allDeclinedProcessed(consents: Seq[ClientConsent]): Boolean = {
     val declinedConsents = consents.filter(_.consent == false)
     declinedConsents.nonEmpty && declinedConsents.forall(_.processed == true)
   }
 
-  def allFailed(consents: Seq[ClientConsent]) = consents.forall(_.processed == false)
+  def allFailed(consents: Seq[ClientConsent]): Boolean = consents.forall(_.processed == false)
 
-  def someFailed(consents: Seq[ClientConsent]) = consents.exists(_.processed == false)
+  def someFailed(consents: Seq[ClientConsent]): Boolean = consents.exists(_.processed == false)
 }

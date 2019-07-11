@@ -447,6 +447,7 @@ client-complete.multi.p1.head={0} is now confirmed as your authorised tax agent 
 client-complete.multi.p1.itsa=sending your Income Tax updates through software
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=submitting your VAT returns through software
+client-complete.multi.p1.trust=submitting your Tax returns through software
 client-complete.multi.mistake=Made a mistake?
 client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
 

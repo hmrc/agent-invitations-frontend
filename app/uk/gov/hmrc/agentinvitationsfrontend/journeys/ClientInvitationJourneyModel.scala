@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
-import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -202,6 +201,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          agentName,
                          newConsents.filter(_.processed == false),
                          newConsents.filter(_.processed == true)))
+                   else if (ClientConsent.allAcceptedProcessed(newConsents))
+                     goto(InvitationsAccepted(agentName, consents))
                    else if (ClientConsent.allDeclinedProcessed(newConsents))
                      goto(InvitationsDeclined(agentName, consents))
                    else goto(InvitationsAccepted(agentName, consents))
