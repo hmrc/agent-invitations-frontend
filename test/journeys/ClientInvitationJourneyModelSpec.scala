@@ -203,7 +203,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             )
           )
       }
-      "throw an exception when the message key is not supposrted in the request" in {
+      "throw an exception when the message key is not supported in the request" in {
         intercept[IllegalStateException] {
           given(
             MultiConsent(
@@ -347,7 +347,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsDeclined(
@@ -355,7 +356,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Seq(
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
             )
           ))
       }
