@@ -214,7 +214,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
-    case _: TrustNotFound       =>
+    case _: TrustNotMatched     =>
   }
 
   val redirectTryAgainNotMatchedKnownFact = action { implicit request =>
@@ -261,8 +261,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
     case _: ActiveAuthorisationExists =>
       routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
-    case _: TrustNotFound => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
-    case _                => throw new Exception(s"Link not found for $state")
+    case _: TrustNotMatched => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _                  => throw new Exception(s"Link not found for $state")
   }
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
     implicit request: Request[_]): Result = {
@@ -451,7 +451,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
         ))
 
-    case TrustNotFound(_, _, _) =>
+    case TrustNotMatched(_, _, _) =>
       Ok(
         not_matched(
           hasJourneyCache = false,

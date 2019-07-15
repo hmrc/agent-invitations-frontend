@@ -50,7 +50,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
-  val TrustNotFoundFormat = Json.format[TrustNotFound]
+  val TrustNotMatchedFormat = Json.format[TrustNotMatched]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: Prologue                        => PrologueFormat.writes(s)
@@ -77,7 +77,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: ClientNotSignedUp               => ClientNotSignedUpFormat.writes(s)
     case s: PendingInvitationExists         => PendingInvitationExistsFormat.writes(s)
     case s: ActiveAuthorisationExists       => ActiveAuthorisationExistsFormat.writes(s)
-    case s: TrustNotFound                   => TrustNotFoundFormat.writes(s)
+    case s: TrustNotMatched                 => TrustNotMatchedFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -106,7 +106,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "ClientNotSignedUp"               => ClientNotSignedUpFormat.reads(properties)
     case "PendingInvitationExists"         => PendingInvitationExistsFormat.reads(properties)
     case "ActiveAuthorisationExists"       => ActiveAuthorisationExistsFormat.reads(properties)
-    case "TrustNotFound"                   => TrustNotFoundFormat.reads(properties)
+    case "TrustNotMatched"                 => TrustNotMatchedFormat.reads(properties)
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 

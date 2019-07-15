@@ -156,7 +156,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         extends State
     case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
-    case class TrustNotFound(
+    case class TrustNotMatched(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
@@ -460,7 +460,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           getTrustDetails(trustClient).flatMap {
             case Some(details) =>
               goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, details.trustName))
-            case None => goto(TrustNotFound(originalFtr, ftr, continueUrl))
+            case None => goto(TrustNotMatched(originalFtr, ftr, continueUrl))
           }
       }
 
@@ -552,7 +552,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           goto(tryAgainState)
 
-        case TrustNotFound(originalFtr, fastTrackRequest, continueUrl) =>
+        case TrustNotMatched(originalFtr, fastTrackRequest, continueUrl) =>
           goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
       }
 

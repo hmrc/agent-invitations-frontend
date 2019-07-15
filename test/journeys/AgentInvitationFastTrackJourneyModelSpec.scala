@@ -810,13 +810,13 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         )
 
         "trust not found for a given utr, should transition to IdentifyTrustClient " in {
-          val trustNotFoundState = TrustNotFound(
+          val TrustNotMatchedState = TrustNotMatched(
             originalFastTrackRequest = completedTrustFastTrack,
             fastTrackRequest = completedTrustFastTrack,
             continueUrl = None
           )
 
-          given(trustNotFoundState) when
+          given(TrustNotMatchedState) when
             tryAgainNotMatchedKnownFact(authorisedAgent) should
             thenGo(IdentifyTrustClient(completedTrustFastTrack, completedTrustFastTrack, None))
         }

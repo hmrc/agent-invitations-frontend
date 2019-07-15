@@ -25,7 +25,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.TrustNotFound
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State.TrustNotMatched
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -178,7 +178,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
-    case TrustNotFound          =>
+    case TrustNotMatched        =>
   }
 
   val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
@@ -211,7 +211,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
-    case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
+    case TrustNotMatched              => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
@@ -407,7 +407,7 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
-    case TrustNotFound =>
+    case TrustNotMatched =>
       Ok(
         not_matched(
           false,
