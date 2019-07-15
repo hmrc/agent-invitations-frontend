@@ -29,6 +29,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val CheckDetailsCompleteIrvFormat = Json.format[CheckDetailsCompleteIrv]
   val CheckDetailsCompletePersonalVatFormat = Json.format[CheckDetailsCompletePersonalVat]
   val CheckDetailsCompleteBusinessVatFormat = Json.format[CheckDetailsCompleteBusinessVat]
+  val CheckDetailsCompleteTrustFormat = Json.format[CheckDetailsCompleteTrust]
   val CheckDetailsNoPostcodeFormat = Json.format[CheckDetailsNoPostcode]
   val CheckDetailsNoDobFormat = Json.format[CheckDetailsNoDob]
   val CheckDetailsNoVatRegDateFormat = Json.format[CheckDetailsNoVatRegDate]
@@ -39,6 +40,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val SelectClientTypeVatFormat = Json.format[SelectClientTypeVat]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val IdentifyBusinessClientFormat = Json.format[IdentifyBusinessClient]
+  val IdentifyTrustClientFormat = Json.format[IdentifyTrustClient]
+  val ConfirmClientTrustFormat = Json.format[ConfirmClientTrust]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
   val PendingInvitationExistsFormat = Json.format[PendingInvitationExists]
@@ -47,6 +50,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
+  val TrustNotFoundFormat = Json.format[TrustNotFound]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: Prologue                        => PrologueFormat.writes(s)
@@ -54,6 +58,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: CheckDetailsCompleteIrv         => CheckDetailsCompleteIrvFormat.writes(s)
     case s: CheckDetailsCompletePersonalVat => CheckDetailsCompletePersonalVatFormat.writes(s)
     case s: CheckDetailsCompleteBusinessVat => CheckDetailsCompleteBusinessVatFormat.writes(s)
+    case s: CheckDetailsCompleteTrust       => CheckDetailsCompleteTrustFormat.writes(s)
     case s: CheckDetailsNoPostcode          => CheckDetailsNoPostcodeFormat.writes(s)
     case s: CheckDetailsNoDob               => CheckDetailsNoDobFormat.writes(s)
     case s: CheckDetailsNoVatRegDate        => CheckDetailsNoVatRegDateFormat.writes(s)
@@ -64,12 +69,15 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: SelectClientTypeVat             => SelectClientTypeVatFormat.writes(s)
     case s: IdentifyPersonalClient          => IdentifyPersonalClientFormat.writes(s)
     case s: IdentifyBusinessClient          => IdentifyBusinessClientFormat.writes(s)
+    case s: IdentifyTrustClient             => IdentifyTrustClientFormat.writes(s)
+    case s: ConfirmClientTrust              => ConfirmClientTrustFormat.writes(s)
     case s: InvitationSentPersonal          => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness          => InvitationSentBusinessFormat.writes(s)
     case s: KnownFactNotMatched             => KnownFactNotMatchedFormat.writes(s)
     case s: ClientNotSignedUp               => ClientNotSignedUpFormat.writes(s)
     case s: PendingInvitationExists         => PendingInvitationExistsFormat.writes(s)
     case s: ActiveAuthorisationExists       => ActiveAuthorisationExistsFormat.writes(s)
+    case s: TrustNotFound                   => TrustNotFoundFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -78,6 +86,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "CheckDetailsCompleteIrv"         => CheckDetailsCompleteIrvFormat.reads(properties)
     case "CheckDetailsCompletePersonalVat" => CheckDetailsCompletePersonalVatFormat.reads(properties)
     case "CheckDetailsCompleteBusinessVat" => CheckDetailsCompleteBusinessVatFormat.reads(properties)
+    case "CheckDetailsCompleteTrust"       => CheckDetailsCompleteTrustFormat.reads(properties)
     case "CheckDetailsNoPostcode"          => CheckDetailsNoPostcodeFormat.reads(properties)
     case "CheckDetailsNoDob"               => CheckDetailsNoDobFormat.reads(properties)
     case "CheckDetailsNoVatRegDate"        => CheckDetailsNoVatRegDateFormat.reads(properties)
@@ -88,13 +97,16 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "SelectClientTypeVat"             => SelectClientTypeVatFormat.reads(properties)
     case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
+    case "IdentifyTrustClient"             => IdentifyTrustClientFormat.reads(properties)
     case "InvitationSentPersonal"          => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"          => InvitationSentBusinessFormat.reads(properties)
+    case "ConfirmClientTrust"              => ConfirmClientTrustFormat.reads(properties)
     case "KnownFactNotMatched"             => KnownFactNotMatchedFormat.reads(properties)
     case "TryAgainWithoutFastTrack"        => JsSuccess(TryAgainWithoutFastTrack)
     case "ClientNotSignedUp"               => ClientNotSignedUpFormat.reads(properties)
     case "PendingInvitationExists"         => PendingInvitationExistsFormat.reads(properties)
     case "ActiveAuthorisationExists"       => ActiveAuthorisationExistsFormat.reads(properties)
+    case "TrustNotFound"                   => TrustNotFoundFormat.reads(properties)
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 

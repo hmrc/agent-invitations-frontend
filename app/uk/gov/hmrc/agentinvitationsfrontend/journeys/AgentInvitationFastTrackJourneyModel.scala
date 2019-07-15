@@ -18,12 +18,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.mvc.Request
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetTrustDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -88,6 +87,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
 
+    case class CheckDetailsCompleteTrust(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
     case class NoPostcode(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -115,10 +120,24 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
         extends State
+
     case class IdentifyBusinessClient(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
+        extends State
+
+    case class IdentifyTrustClient(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
+    case class ConfirmClientTrust(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String],
+      trustName: String)
         extends State
 
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
@@ -136,6 +155,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
     case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+
+    case class TrustNotFound(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
     case object TryAgainWithoutFastTrack extends State
   }
 
@@ -188,6 +213,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
             goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
+
+          case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
+            goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
         }
     }
 
@@ -269,6 +297,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
         case CheckDetailsCompleteBusinessVat(originalFtr, ftr, continueUrl) =>
           goto(IdentifyBusinessClient(originalFtr, ftr, continueUrl))
+
+        case CheckDetailsCompleteTrust(originalFtr, ftr, continueUrl) =>
+          goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoPostcode(originalFtr, ftr, continueUrl) =>
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))
@@ -360,6 +391,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               case None    => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
             }
         } else goto(IdentifyBusinessClient(originalFtr, fastTrackRequest, continueUrl))
+
+      case CheckDetailsCompleteTrust(originalFtr, fastTrackRequest, continueUrl) =>
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            TrustInvitation(Utr(fastTrackRequest.clientIdentifier)),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
+        } else goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
     }
 
     def identifiedClientItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
@@ -413,6 +454,33 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           .apply(newState)
     }
 
+    def showConfirmTrustClient(getTrustDetails: GetTrustDetails)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+      Transition {
+        case IdentifyTrustClient(originalFtr, ftr, continueUrl) =>
+          getTrustDetails(trustClient).flatMap {
+            case Some(details) =>
+              goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, details.trustName))
+            case None => goto(TrustNotFound(originalFtr, ftr, continueUrl))
+          }
+      }
+
+    def submitConfirmTrustClient(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
+      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(confirmation: Confirmation) =
+      Transition {
+        case ConfirmClientTrust(originalFtr, ftr, continueUrl, trustName) =>
+          if (confirmation.choice) {
+            checkIfPendingOrActiveAndGoto(
+              ftr,
+              agent.arn,
+              TrustInvitation(Utr(ftr.clientIdentifier)),
+              continueUrl
+            )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
+          } else {
+            goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
+          }
+      }
+
     def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
@@ -465,17 +533,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           def stateForMissingKnownFact(forService: String) =
             forService match {
-              case Services.HMRCMTDVAT => NoVatRegDate(originalFtr, ftrWithoutKF, continueUrl)
-              case Services.HMRCMTDIT  => NoPostcode(originalFtr, ftrWithoutKF, continueUrl)
-              case Services.HMRCPIR    => NoDob(originalFtr, ftrWithoutKF, continueUrl)
+              case HMRCMTDVAT => NoVatRegDate(originalFtr, ftrWithoutKF, continueUrl)
+              case HMRCMTDIT  => NoPostcode(originalFtr, ftrWithoutKF, continueUrl)
+              case HMRCPIR    => NoDob(originalFtr, ftrWithoutKF, continueUrl)
             }
 
           val tryAgainState = originalFtr match {
-            case AgentFastTrackRequest(None, Services.HMRCMTDVAT, _, _, _) =>
+            case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
               val ftrWithoutKFOrClientType = ftrWithoutKF.copy(clientType = None)
               SelectClientTypeVat(originalFtr, ftrWithoutKFOrClientType, continueUrl)
-            case AgentFastTrackRequest(Some(_), Services.HMRCMTDVAT, _, _, None) =>
-              stateForMissingKnownFact(Services.HMRCMTDVAT)
+            case AgentFastTrackRequest(Some(_), HMRCMTDVAT, _, _, None) =>
+              stateForMissingKnownFact(HMRCMTDVAT)
             case AgentFastTrackRequest(_, _, _, _, Some(_)) =>
               TryAgainWithoutFastTrack
             case AgentFastTrackRequest(_, service, _, _, None) =>
@@ -483,6 +551,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           }
 
           goto(tryAgainState)
+
+        case TrustNotFound(originalFtr, fastTrackRequest, continueUrl) =>
+          goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
       }
 
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(

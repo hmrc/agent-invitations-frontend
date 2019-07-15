@@ -1,13 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.codahale.metrics.SharedMetricRegistries
 import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
@@ -172,6 +172,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> vrn,
             "knownFact"            -> validRegistrationDate),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is Trust" in {
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-TERS-ORG",
+            "clientIdentifierType" -> "utr",
+            "clientIdentifier"     -> validUtr.value),
           arn.value
         ))
       status(result) shouldBe 303
@@ -396,6 +412,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.p.HMRC-MTD-VAT",
         "check-details.client-type.business")
     }
+
+    "show the check-details page for Trust service" in {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState
+        .set(CheckDetailsCompleteTrust(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "check-details.heading",
+        "check-details.p.HMRC-TERS-ORG",
+        "check-details.client-type.business")
+    }
+
     "show the check-details page for ITSA client with no postcode" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None)
       journeyState.set(CheckDetailsNoPostcode(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
@@ -487,6 +519,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
       journeyState.set(
         CheckDetailsCompleteBusinessVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
+        List(Prologue(None, None)))
+
+      val result = controller.submitCheckDetails(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
+    }
+
+    "redirect to /identify-client for a trust service" in {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState.set(
+        CheckDetailsCompleteTrust(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -592,6 +637,20 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.vat-registration-date.label")
+    }
+
+    "show the client-details page for trust" in {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState.set(
+        IdentifyTrustClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "identify-trust-client.header", "identify-trust-client.p1")
+      checkHtmlResultWithBodyText(result,"A Unique Taxpayer Reference is 10 numbers like 12345 67890")
     }
   }
 
@@ -721,6 +780,79 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
             "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+    }
+  }
+
+  "POST /agents/client-identify-trust" should {
+    val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
+    "redirect to /agents/confirm-trust-client" in new TrustHappyScenario {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState.set(
+        IdentifyTrustClient(ftr, ftr, None),
+        List(
+          CheckDetailsCompleteTrust(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "utr"       -> validUtr.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient().url)
+    }
+  }
+
+  "GET /agent/confirm-trust-client" should {
+    val request = FakeRequest("POST", "/agents/confirm-trust-client")
+    "show the confirm client page as expected" in new TrustHappyScenario {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState.set(
+        ConfirmClientTrust(ftr, ftr, None, "trustName"),
+        List(
+          CheckDetailsCompleteTrust(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.showConfirmTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "utr"       -> validUtr.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header", "confirm-client.yes", "confirm-client.no")
+      checkIncludesText(result, validUtr.value)
+    }
+  }
+
+  "POST /agent/confirm-trust-client" should {
+    val request = FakeRequest("POST", "/agents/confirm-trust-client")
+    "create an invitation as expected if there are no pending invitation exist" in new TrustHappyScenario {
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      journeyState.set(
+        ConfirmClientTrust(ftr, ftr, None, "trustName"),
+        List(
+          CheckDetailsCompleteTrust(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitConfirmTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "accepted"       -> "true"),
           arn.value
         ))
 
@@ -1117,6 +1249,28 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenClientDetails(Vrn(vrn))
     givenCheckRelationshipVatWithStatus(arn, vrn, 404)
     givenInvitationCreationSucceeds(arn, Some(business), nino, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
+    givenAgentReferenceRecordExistsForArn(arn, "FOO")
+    givenAgentReference(arn, "uid", business)
+    givenGetAgencyEmailAgentStub
+  }
+
+
+  class TrustHappyScenario {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TRUST)
+
+    val trustDetailsResponse =
+      TrustDetailsResponse(
+        TrustDetails(
+          validUtr.value,
+          "Nelson James Trust",
+          TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
+          "TERS"))
+
+    val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
+
+    givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+    givenCheckRelationshipVatWithStatus(arn, validUtr.value, 404)
+    givenInvitationCreationSucceeds(arn, Some(business), validUtr.value, invitationIdTrust, validUtr.value, "utr", TRUST, "UTR")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", business)
     givenGetAgencyEmailAgentStub

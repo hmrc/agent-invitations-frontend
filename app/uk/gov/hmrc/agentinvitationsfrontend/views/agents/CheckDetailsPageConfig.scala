@@ -34,12 +34,15 @@ case class CheckDetailsPageConfig(
       case "HMRC-MTD-IT"            => "itsa"
       case "PERSONAL-INCOME-RECORD" => "afi"
       case "HMRC-MTD-VAT"           => "vat"
+      case "HMRC-TERS-ORG"          => "trust"
     }
   }
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
-  val needKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").isEmpty
+  val needKnownFact: Boolean = fastTrackRequest.service != Services.TRUST && fastTrackRequest.knownFact
+    .getOrElse("")
+    .isEmpty
 
   val showKnownFact: Boolean = fastTrackRequest.knownFact.getOrElse("").nonEmpty
 

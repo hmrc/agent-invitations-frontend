@@ -26,6 +26,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.ConfirmClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.forms.TrustClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -34,13 +36,13 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -66,9 +68,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   import invitationsService._
   import journeyService.model.State._
   import journeyService.model.{State, Transitions}
+  import redirectUrlActions._
   import relationshipsService.hasActiveRelationshipFor
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
-  import redirectUrlActions._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -98,6 +100,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: CheckDetailsCompleteIrv         =>
     case _: CheckDetailsCompletePersonalVat =>
     case _: CheckDetailsCompleteBusinessVat =>
+    case _: CheckDetailsCompleteTrust       =>
     case _: CheckDetailsNoPostcode          =>
     case _: CheckDetailsNoDob               =>
     case _: CheckDetailsNoVatRegDate        =>
@@ -120,6 +123,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient =>
     case _: IdentifyBusinessClient =>
+    case _: IdentifyTrustClient    =>
   }
 
   val submitIdentifyItsaClient =
@@ -137,6 +141,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           checkVatRegistrationDateMatches)(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
           hasActiveRelationshipFor))
     }
+
   val submitIdentifyVatClient =
     action { implicit request =>
       whenAuthorisedWithForm(AsAgent)(IdentifyVatClientForm)(
@@ -145,8 +150,23 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           hasActiveRelationshipFor))
     }
 
+  val submitIdentifyTrustClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(trustClient =>
+      invitationsConnector.getTrustDetails(trustClient.utr)))
+  }
+
   val progressToKnownFact = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.checkedDetailsNoKnownFact)(redirect)
+  }
+
+  val showConfirmTrustClient = actionShowStateWhenAuthorised(AsAgent) {
+    case _ =>
+  }
+
+  val submitConfirmTrustClient = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
+      Transitions.submitConfirmTrustClient(createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+        hasActiveRelationshipFor))
   }
 
   val knownFactRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
@@ -192,7 +212,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) { case _: KnownFactNotMatched => }
+  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
+    case _: KnownFactNotMatched =>
+    case _: TrustNotFound       =>
+  }
 
   val redirectTryAgainNotMatchedKnownFact = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.tryAgainNotMatchedKnownFact)(redirect)
@@ -220,12 +243,15 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: CheckDetailsCompleteIrv         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsCompletePersonalVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsCompleteBusinessVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsCompleteTrust       => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoPostcode          => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoDob               => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoVatRegDate        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoClientTypeVat     => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: IdentifyPersonalClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyBusinessClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyTrustClient             => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: ConfirmClientTrust              => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: KnownFactNotMatched             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
@@ -235,9 +261,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
     case _: ActiveAuthorisationExists =>
       routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
-    case _ => throw new Exception(s"Link not found for $state")
+    case _: TrustNotFound => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _                => throw new Exception(s"Link not found for $state")
   }
-
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
     implicit request: Request[_]): Result = {
     val backLinkOpt: Option[String] =
@@ -245,6 +271,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
         case _                                                     => None
       }
+
     Ok(
       check_details(
         checkDetailsForm,
@@ -276,6 +303,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
     case CheckDetailsCompleteBusinessVat(_, ftr, _) =>
+      gotoCheckDetailsWithRequest(ftr, breadcrumbs)
+
+    case CheckDetailsCompleteTrust(_, ftr, _) =>
       gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
     case CheckDetailsNoPostcode(_, ftr, _) =>
@@ -336,6 +366,16 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         ))
 
+    case ConfirmClientTrust(_, ftr, _, trustName) =>
+      Ok(
+        confirm_client(
+          trustName,
+          formWithErrors.or(ConfirmClientForm),
+          backLinkFor(breadcrumbs).url,
+          routes.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient(),
+          Some(ftr.clientIdentifier)
+        ))
+
     case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDIT =>
       Ok(
         identify_client_itsa(
@@ -372,6 +412,15 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         )
       )
 
+    case IdentifyTrustClient(_, _, _) =>
+      Ok(
+        identify_client_trust(
+          formWithErrors.or(IdentifyTrustClientForm),
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
     case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
       Ok(
         invitation_sent(
@@ -395,6 +444,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             agencyEmail)))
 
     case KnownFactNotMatched(_, _, _) =>
+      Ok(
+        not_matched(
+          hasJourneyCache = false,
+          tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
+          reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+        ))
+
+    case TrustNotFound(_, _, _) =>
       Ok(
         not_matched(
           hasJourneyCache = false,
@@ -440,6 +497,7 @@ object AgentInvitationFastTrackJourneyController {
             if Nino.isValid(clientId) =>
           Valid
         case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId) => Valid
+        case AgentFastTrackRequest(_, TRUST, "utr", clientId, _) if Utr.isValid(clientId)      => Valid
         case _                                                                                 => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
@@ -498,6 +556,12 @@ object AgentInvitationFastTrackJourneyController {
     )(VatClient.apply)(VatClient.unapply)
   )
 
+  def IdentifyTrustClientForm: Form[TrustClient] = Form(
+    mapping(
+      "utr" -> normalizedText.verifying(validUtr())
+    )(x => TrustClient.apply(Utr(x)))(x => Some(x.utr.value))
+  )
+
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(
       "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
@@ -523,13 +587,6 @@ object AgentInvitationFastTrackJourneyController {
       case HMRCPIR    => agentFastTrackDateOfBirthForm
       case HMRCMTDVAT => agentFastTrackVatRegDateForm
       case p          => throw new Exception(s"invalid service in the cache during fast track journey: $p")
-    }
-
-  def getSubmitIdentifyClientFor(service: String) =
-    service match {
-      case HMRCMTDIT  => routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient()
-      case HMRCPIR    => routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient()
-      case HMRCMTDVAT => routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient()
     }
 
   def getSubmitKFFor(service: String) =
