@@ -47,7 +47,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
-    case object TrustNotFound extends State
+    case object TrustNotMatched extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
@@ -149,7 +149,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 ConfirmClientTrust(AuthorisationRequest(details.trustName, TrustInvitation(trustClient.utr)))
               )
 
-            case None => goto(TrustNotFound)
+            case None => goto(TrustNotMatched)
           }
       }
 
