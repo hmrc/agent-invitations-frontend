@@ -579,11 +579,12 @@ trait ACAStubs {
   def givenRejectInvitationSucceeds(clientId: String, invitationId: InvitationId, serviceIdentifier: String): Unit =
     rejectInvitationStub(clientId, invitationId, responseStatus = 204, serviceIdentifier)
 
-  def givenRejectInvitationReturnsNotFound(
+  def givenRejectInvitationReturnsWithStatus(
     clientId: String,
     invitationId: InvitationId,
-    serviceIdentifier: String): Unit =
-    rejectInvitationStub(clientId, invitationId, responseStatus = 404, serviceIdentifier)
+    serviceIdentifier: String,
+    status: Int = 404): Unit =
+    rejectInvitationStub(clientId, invitationId, responseStatus = status, serviceIdentifier)
 
   private def rejectInvitationStub(
     clientId: String,

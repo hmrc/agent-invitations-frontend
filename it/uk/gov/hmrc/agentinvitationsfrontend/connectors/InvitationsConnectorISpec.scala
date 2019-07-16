@@ -414,7 +414,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if invitation not found" in {
-        givenRejectInvitationReturnsNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
+        givenRejectInvitationReturnsWithStatus(mtdItId.value, invitationIdITSA, identifierITSA)
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
@@ -437,7 +437,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if PIR invitation not found" in {
-        givenRejectInvitationReturnsNotFound(validNino.value, invitationIdPIR, identifierPIR)
+        givenRejectInvitationReturnsWithStatus(validNino.value, invitationIdPIR, identifierPIR)
         val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
         result shouldBe false
         verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
@@ -460,7 +460,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if VAT invitation not found" in {
-        givenRejectInvitationReturnsNotFound(validVrn.value, invitationIdVAT, identifierVAT)
+        givenRejectInvitationReturnsWithStatus(validVrn.value, invitationIdVAT, identifierVAT)
         val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
         result shouldBe false
         verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
@@ -483,7 +483,7 @@ class InvitationsConnectorISpec extends BaseISpec with TestDataCommonSupport {
       }
 
       "return an error if Trust invitation not found" in {
-        givenRejectInvitationReturnsNotFound(validUtr.value, invitationIdTrust, identifierTrust)
+        givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust)
         val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
         result shouldBe false
         verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)

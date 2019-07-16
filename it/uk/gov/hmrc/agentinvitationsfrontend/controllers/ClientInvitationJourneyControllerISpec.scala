@@ -460,6 +460,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
 
     "redirect to invitation declined when yes is selected" in {
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -474,7 +476,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
     }
 
-    "redirect to confirm terms when yes is selected" in {
+    "redirect to confirm terms when no is selected" in {
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -487,6 +489,45 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+    }
+
+    "redirect to /all-responses-failed in-case the ACA is down to accept/reject" in {
+      givenInvitationByIdSuccess(invitationIdTrust, validUtr.value)
+      givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust, 404)
+
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))),
+        Nil)
+
+      val result = controller.submitConfirmDecline(
+        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
+    }
+
+    "redirect to /some-responses-failed in-case there is an issue in processing some consents only" in {
+      givenInvitationByIdSuccess(invitationIdVAT, "101747696")
+      givenInvitationByIdSuccess(invitationIdTrust, validUtr.value)
+      givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust, 404)
+      givenRejectInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
+
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))),
+        Nil)
+
+      val result = controller.submitConfirmDecline(
+        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
     }
   }
 

@@ -132,8 +132,16 @@ object ClientInvitationJourneyModel extends JourneyModel {
       Transition {
         case ConfirmDecline(clientType, uid, agentName, consents) =>
           if (confirmation.choice) {
-            consents.map(consent => rejectInvitation(consent.invitationId))
-            goto(InvitationsDeclined(agentName, consents))
+            val newConsentsF =
+              Future.sequence {
+                consents.map(consent =>
+                  rejectInvitation(consent.invitationId).map(processed => consent.copy(processed = processed)))
+              }
+            for {
+              newConsents <- newConsentsF
+              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+
+            } yield result
           } else goto(MultiConsent(clientType, uid, agentName, consents))
       }
 
@@ -194,20 +202,27 @@ object ClientInvitationJourneyModel extends JourneyModel {
       case CheckAnswers(_, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)
-          result <- if (ClientConsent.allFailed(newConsents)) goto(AllResponsesFailed)
-                   else if (ClientConsent.someFailed(newConsents))
-                     goto(
-                       SomeResponsesFailed(
-                         agentName,
-                         newConsents.filter(_.processed == false),
-                         newConsents.filter(_.processed == true)))
-                   else if (ClientConsent.allAcceptedProcessed(newConsents))
-                     goto(InvitationsAccepted(agentName, consents))
-                   else if (ClientConsent.allDeclinedProcessed(newConsents))
-                     goto(InvitationsDeclined(agentName, consents))
-                   else goto(InvitationsAccepted(agentName, consents))
+          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
         } yield result
     }
+
+    private def getRedirectLinkAfterProcessConsents(
+      consents: Seq[ClientConsent],
+      newConsents: Seq[ClientConsent],
+      agentName: String) =
+      if (ClientConsent.allFailed(newConsents))
+        goto(AllResponsesFailed)
+      else if (ClientConsent.someFailed(newConsents))
+        goto(
+          SomeResponsesFailed(
+            agentName,
+            newConsents.filter(_.processed == false),
+            newConsents.filter(_.processed == true)))
+      else if (ClientConsent.allAcceptedProcessed(newConsents))
+        goto(InvitationsAccepted(agentName, consents))
+      else if (ClientConsent.allDeclinedProcessed(newConsents))
+        goto(InvitationsDeclined(agentName, consents))
+      else goto(InvitationsAccepted(agentName, consents))
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
       case SomeResponsesFailed(agentName, _, successfulConsents) =>
