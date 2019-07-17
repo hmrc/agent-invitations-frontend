@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
+import play.api.Logger
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -57,6 +59,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         extends State
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
+    case object TrustNotClaimed extends State
   }
 
   object Transitions {
@@ -103,7 +106,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
             ClientConsent(
               invitation.invitationId,
               invitation.expiryDate,
-              Services.determineServiceMessageKey(invitation.invitationId),
+              determineServiceMessageKey(invitation.invitationId),
               consent = false))
       } yield consents
 
@@ -122,9 +125,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
           if (!clientTypeMatchesGroup(client.affinityGroup, clientType))
             goto(IncorrectClientType(clientType))
           else
-            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-              case consents if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
-              case _                             => goto(NotFoundInvitation)
+            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
+              val containsTrust = consents.exists(_.serviceKey == messageKeyForTrust)
+              val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+              if (containsTrust && butNoTrustEnrolment) {
+                Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                goto(TrustNotClaimed)
+              } else {
+                consents match {
+                  case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
+                  case _                      => goto(NotFoundInvitation)
+                }
+              }
             }
       }
 

@@ -89,6 +89,44 @@ trait ACAStubs {
         )
     )
 
+  def givenAllInvitationIdsWithTrustByStatus(uid: String, status: String): Unit =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |[
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "AG1UGUKTPNJ7W"
+                         |    },
+                         |    "expiryDate": "9999-11-01"
+                         |  },
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "B9SCS2T4NZBAX"
+                         |    },
+                         |     "expiryDate": "9999-03-05"
+                         |  },
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "CZTW1KY6RTAAT"
+                         |    },
+                         |    "expiryDate": "9999-12-25"
+                         |  },
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "DF99K6PXSBHTF"
+                         |    },
+                         |    "expiryDate": "9999-12-25"
+                         |  }
+                         |]
+                         |""".stripMargin)
+        )
+    )
+
+
   def givenAllInvitationIdsByStatusReturnsSomeDuplicated(uid: String, status: String): Unit =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
