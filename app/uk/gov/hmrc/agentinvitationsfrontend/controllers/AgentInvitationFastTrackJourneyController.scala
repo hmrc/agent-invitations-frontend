@@ -364,7 +364,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationFastTrackJourneyController.submitClientType(),
             featureFlags.showHmrcTrust,
-            clientTypeForVat = true
+            isForVat = true
           )
         ))
 
