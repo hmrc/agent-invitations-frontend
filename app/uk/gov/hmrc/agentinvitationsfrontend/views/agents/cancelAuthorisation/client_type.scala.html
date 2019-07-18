@@ -23,7 +23,7 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-@(agentForm: Form[ClientType], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 

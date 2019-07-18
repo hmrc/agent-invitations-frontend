@@ -56,15 +56,15 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
       "transition to SelectServicePersonal when personal is selected" in {
-        given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.personal) should thenGo(
+        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.personal) should thenGo(
           SelectServicePersonal(availableServices))
       }
       "transition to SelectServiceBusiness when business is selected" in {
-        given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.business) should thenGo(
+        given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.business) should thenGo(
           SelectServiceBusiness)
       }
       "transition to SelectServicePersonal with only whitelisted services" in {
-        given(SelectClientType) when chosenClientType(nonWhitelistedAgent)(ClientType.personal) should thenGo(
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)(ClientType.personal) should thenGo(
           SelectServicePersonal(whitelistedServices))
       }
     }

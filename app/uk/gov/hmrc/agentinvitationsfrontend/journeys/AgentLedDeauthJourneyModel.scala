@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -37,6 +36,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object SelectClientType extends State
     case class SelectServicePersonal(enabledServices: Set[String]) extends State
     case object SelectServiceBusiness extends State
+    case object SelectServiceTrust extends State
     case class IdentifyClientPersonal(service: String) extends State
     case object IdentifyClientBusiness extends State
     case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends State
@@ -55,7 +55,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
 
   object Transitions {
 
-    import ClientType._
     import State._
 
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
@@ -66,16 +65,19 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
 
-    def chosenClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType if clientType == personal =>
-        val enabledPersonalServices =
-          if (agent.isWhitelisted)
-            Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-          else
-            Set(HMRCMTDIT, HMRCMTDVAT)
-        goto(SelectServicePersonal(enabledPersonalServices))
-
-      case SelectClientType if clientType == business => goto(SelectServiceBusiness)
+    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+      case SelectClientType =>
+        clientType match {
+          case "personal" =>
+            val enabledPersonalServices =
+              if (agent.isWhitelisted)
+                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+              else
+                Set(HMRCMTDIT, HMRCMTDVAT)
+            goto(SelectServicePersonal(enabledPersonalServices))
+          case "business" => goto(SelectServiceBusiness)
+          case "trust"    => goto(SelectServiceTrust)
+        }
     }
 
     def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean)(

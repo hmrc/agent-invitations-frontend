@@ -17,7 +17,7 @@
 package forms
 import play.api.data.FormError
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ClientTypeWithTrustsForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, ClientTypeForm}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentSelectClientTypeFormSpec extends UnitSpec {
@@ -49,25 +49,25 @@ class AgentSelectClientTypeFormSpec extends UnitSpec {
   "ClientTypeWithTrusts Form" should {
     "return no error message for valid clientType personal" in {
       val data = Json.obj("clientType" -> "personal")
-      val clientTypeWithTrustsForm = ClientTypeWithTrustsForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType business" in {
       val data = Json.obj("clientType" -> "business")
-      val clientTypeWithTrustsForm = ClientTypeWithTrustsForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType trust" in {
       val data = Json.obj("clientType" -> "trust")
-      val clientTypeWithTrustsForm = ClientTypeWithTrustsForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
     "return an error message for form with empty clientType" in {
       val data = Json.obj("clientType" -> "")
-      val clientTypeWithTrustsForm = ClientTypeWithTrustsForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
       clientTypeWithTrustsForm.errors.contains(clientTypeEmptyFormError) shouldBe true
       clientTypeWithTrustsForm.errors.length shouldBe 1
     }

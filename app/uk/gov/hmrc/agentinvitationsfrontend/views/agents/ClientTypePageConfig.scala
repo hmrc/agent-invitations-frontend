@@ -19,9 +19,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.i18n.Messages
 import play.api.mvc.Call
 
-case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call)(implicit messages: Messages) {
+case class ClientTypePageConfig(
+  backLinkUrl: String,
+  submitCall: Call,
+  showTrustFlag: Boolean,
+  clientTypeForVat: Boolean = false)(implicit messages: Messages) {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))
-  val clientTypes = personalOption ++ businessOption
+  val trustOption = Seq("trust"       -> Messages("client-type.trust"))
+  val clientTypes =
+    if (showTrustFlag && !clientTypeForVat) personalOption ++ businessOption ++ trustOption
+    else personalOption ++ businessOption
 }

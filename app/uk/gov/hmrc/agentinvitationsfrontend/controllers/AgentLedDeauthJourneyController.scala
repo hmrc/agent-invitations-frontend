@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
@@ -27,8 +27,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfig}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{CannotCreateRequestConfig, ClientTypePageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -73,7 +73,7 @@ class AgentLedDeauthJourneyController @Inject()(
     }
 
   val submitClientType: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(chosenClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(selectedClientType)
   }
 
   val showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -186,7 +186,11 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         client_type(
           formWithErrors.or(ClientTypeForm.form),
-          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType())))
+          ClientTypePageConfig(
+            backLinkForClientType,
+            routes.AgentLedDeauthJourneyController.submitClientType(),
+            featureFlags.showHmrcTrust)
+        ))
     }
 
     case SelectServicePersonal(enabledServices) =>
