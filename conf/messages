@@ -471,8 +471,8 @@ not-authorised-vat.description=To use this service, you need to sign in with a G
 
 # Trust Not claimed
 trust-not-claimed.header=There is a problem
-trust-not-claimed.client.p1=You have not claimed a trust yet.
-trust-not-claimed.client.p2=Contact the tax agent who sent you this request if you still want to authorise them to maintain a trust.
+trust-not-claimed.client.p1=You need to claim a trust before you can continue.
+trust-not-claimed.client.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust.
 
 # Incorrect Invitation
 incorrect-invitation.header=There is a problem
