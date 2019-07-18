@@ -79,6 +79,7 @@ class AgentLedDeauthJourneyController @Inject()(
   val showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: SelectServicePersonal =>
     case SelectServiceBusiness    =>
+    case SelectServiceTrust       =>
   }
 
   val submitPersonalService: Action[AnyContent] = action { implicit request =>
@@ -91,11 +92,17 @@ class AgentLedDeauthJourneyController @Inject()(
       chosenBusinessService(featureFlags.showHmrcMtdVat))
   }
 
+  val submitTrustService = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.confirmCancelForm)(
+      chosenTrustService(featureFlags.showHmrcTrust))
+  }
+
   val identifyClientRedirect = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 
   val showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyClientPersonal =>
     case IdentifyClientBusiness    =>
+    case IdentifyClientTrust       =>
   }
 
   val submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
@@ -113,11 +120,17 @@ class AgentLedDeauthJourneyController @Inject()(
       submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
+  val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(trustClient =>
+      invitationsConnector.getTrustDetails(trustClient.utr)))
+  }
+
   val showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientIrv         =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusiness    =>
+    case _: ConfirmClientTrust       =>
   }
 
   val submitConfirmClient: Action[AnyContent] = action { implicit request =>
@@ -158,12 +171,15 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectClientType            => routes.AgentLedDeauthJourneyController.showClientType()
     case _: SelectServicePersonal    => routes.AgentLedDeauthJourneyController.showSelectService()
     case SelectServiceBusiness       => routes.AgentLedDeauthJourneyController.showSelectService()
+    case SelectServiceTrust          => routes.AgentLedDeauthJourneyController.showSelectService()
     case _: IdentifyClientPersonal   => routes.AgentLedDeauthJourneyController.showIdentifyClient()
     case IdentifyClientBusiness      => routes.AgentLedDeauthJourneyController.showIdentifyClient()
+    case IdentifyClientTrust         => routes.AgentLedDeauthJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa        => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientIrv         => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientBusiness    => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientTrust       => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
     case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
@@ -214,6 +230,15 @@ class AgentLedDeauthJourneyController @Inject()(
         )
       )
 
+    case SelectServiceTrust =>
+      Ok(
+        trust_select_service(
+          formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
+          routes.AgentLedDeauthJourneyController.submitTrustService(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
     case IdentifyClientPersonal(service) =>
       service match {
         case Services.HMRCMTDIT =>
@@ -245,6 +270,14 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_vat(
           formWithErrors.or(VatClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
+          backLinkFor(breadcrumbs).url
+        ))
+
+    case IdentifyClientTrust =>
+      Ok(
+        identify_client_trust(
+          formWithErrors.or(TrustClientForm.form),
+          routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url
         ))
 
@@ -282,6 +315,16 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
           backLinkFor(breadcrumbs).url
+        ))
+
+    case ConfirmClientTrust(trustName, utr) =>
+      Ok(
+        confirm_client(
+          trustName,
+          formWithErrors.or(CommonConfirmationForms.confirmCancelForm),
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url,
+          Some(utr.value)
         ))
 
     case ConfirmCancel(service, clientName, _) =>
