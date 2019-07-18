@@ -59,6 +59,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "SomeResponsesFailed"   => SomeResponsesFailedFormat.reads(properties)
     case "AllResponsesFailed"    => JsSuccess(AllResponsesFailed)
     case "ConfirmDecline"        => ConfirmDeclineFormat.reads(properties)
+    case "TrustNotClaimed"       => JsSuccess(TrustNotClaimed)
   }
 
 }

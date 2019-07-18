@@ -24,7 +24,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -209,6 +209,10 @@ class ClientInvitationJourneyController @Inject()(
         Services.messageKeyForAfi))
   }
 
+  def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
+    case TrustNotClaimed =>
+  }
+
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
@@ -224,6 +228,7 @@ class ClientInvitationJourneyController @Inject()(
     case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined()
     case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
     case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
+    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
     case _                      => throw new Exception(s"Link not found for $state")
   }
 
@@ -326,6 +331,12 @@ class ClientInvitationJourneyController @Inject()(
             failedConsents,
             agentName,
             routes.ClientInvitationJourneyController.submitSomeResponsesFailed())))
+
+    case TrustNotClaimed =>
+      val backLink =
+        if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+        else Call("GET", externalUrls.agentClientManagementUrl)
+      Ok(trust_not_claimed(backLink))
   }
 }
 

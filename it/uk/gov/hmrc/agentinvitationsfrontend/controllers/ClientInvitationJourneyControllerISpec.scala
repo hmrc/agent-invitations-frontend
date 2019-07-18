@@ -7,7 +7,7 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -129,6 +129,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
+
+      "redirect to /trust-not-claimed if client doesn't have the trust enrolment but invitation contains trust" in {
+        givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
+        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyOrganisationClient(request()))
+        status(result) shouldBe 303
+
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
+      }
     }
   }
 
@@ -164,6 +174,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
+
+      "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
+        givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
+        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyOrganisationClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
       }
     }
   }
@@ -641,6 +660,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showMissingJourneyHistory(FakeRequest("GET", "/session-timeout"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+    }
+  }
+
+  "GET /trust-not-claimed" should {
+    def request = requestWithJourneyIdInCookie("GET", "/trust-not-claimed")
+    "display the page as expected" in {
+      journeyState.set(TrustNotClaimed, Nil)
+
+      val result = controller.showTrustNotClaimed(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
     }
   }
 

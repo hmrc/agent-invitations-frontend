@@ -20,15 +20,15 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
@@ -82,15 +82,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     ).retrieve(affinityGroup and confidenceLevel and allEnrolments) {
         case Some(affinity) ~ confidence ~ enrols =>
           val affinityG: String = extractAffinityGroup(affinity)
-          val clientIdTypePlusIds: Seq[(String, String)] = enrols.enrolments.map { enrolment =>
-            (enrolment.identifiers.head.key, enrolment.identifiers.head.value.replaceAll(" ", ""))
-          }.toSeq
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
               withConfidenceLevelUplift(cl, ConfidenceLevel.L200) {
-                body(AuthorisedClient(affinityG, clientIdTypePlusIds))
+                body(AuthorisedClient(affinityG, enrols))
               }
-            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, clientIdTypePlusIds))
+            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, enrols))
             case _                               => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
           }
         case _ => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
@@ -113,35 +110,6 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         val id = getEnrolmentValue(enrolments, "HMRC-AS-AGENT", "AgentReferenceNumber")
         body(id)
       }
-
-  private val authLoginCredentials
-    : Retrieval[Option[AffinityGroup] ~ Enrolments ~ ConfidenceLevel] = affinityGroup and authorisedEnrolments and confidenceLevel
-
-  private def extractEnrolmentsValue(enrolments: Enrolments, serviceName: String, identifierKey: String) =
-    for {
-      enrolment  <- enrolments.getEnrolment(serviceName)
-      identifier <- enrolment.getIdentifier(identifierKey)
-    } yield identifier.value
-
-  def withEnrolledAsClient[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
-    authorised(
-      Enrolment(serviceName)
-        and AuthProviders(GovernmentGateway)
-    ).retrieve(authLoginCredentials) {
-      case affinity ~ enrols ~ confidence =>
-        val id = extractEnrolmentsValue(enrols, serviceName, identifierKey)
-        (affinity, confidence) match {
-          case (Some(AffinityGroup.Organisation), _) => body(id)
-          case (Some(AffinityGroup.Individual), cl)  => withConfidenceLevelUplift(cl, ConfidenceLevel.L200)(body(id))
-          case (Some(AffinityGroup.Agent), _)        => body(None)
-        }
-      case _ =>
-        Logger(getClass).warn("Invalid Login")
-        body(None)
-    }
 
   private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, requiredLevel: ConfidenceLevel)(
     body: => Future[Result])(implicit request: Request[A]) =

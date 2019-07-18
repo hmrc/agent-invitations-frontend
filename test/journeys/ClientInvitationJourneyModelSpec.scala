@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -46,8 +47,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       await(super.apply(transition))
   }
 
-  val authorisedIndividualClient = AuthorisedClient("Individual", Seq(("personal", "clientId")))
-  val authorisedBusinessClient = AuthorisedClient("Organisation", Seq(("business", "clientId")))
+  val authorisedIndividualClient = AuthorisedClient("Individual", Enrolments(Set(Enrolment("some-key"))))
+  val authorisedBusinessClient = AuthorisedClient("Organisation", Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val featureFlags = FeatureFlags()
 
@@ -138,6 +139,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
             thenGo(IncorrectClientType(personal))
+        }
+        "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
+          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
+            Future(Seq(InvitationIdAndExpiryDate(invitationIdTrust, expiryDate)))
+
+          given(WarmUp(business, uid, agentName, normalisedAgentName)) when
+            submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
+            thenGo(TrustNotClaimed)
         }
       }
       "submitting intent to decline" should {
