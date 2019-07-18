@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetTrustDetails
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -45,16 +45,16 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends State
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
-    case class ConfirmClientTrust(clientName: String, saUtr: Utr) extends State
+    case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
-    case object TrustNotMatched extends State
 
     //error states
     case object KnownFactNotMatched extends State
     case class NotSignedUp(service: String) extends State
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
+    case object TrustNotMatched extends State
   }
 
   object Transitions {
@@ -115,7 +115,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     def chosenTrustService(showTrustFlag: Boolean)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
       case SelectServiceTrust if confirmation.choice =>
         if (showTrustFlag) goto(IdentifyClientTrust)
-        else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
+        else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
 
       case SelectServiceTrust => goto(root)
     }
@@ -247,7 +247,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
-        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, Services.TRUST, Some(name))
+        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TRUST, Some(name))
       }
     }
 

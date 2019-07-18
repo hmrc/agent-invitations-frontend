@@ -153,6 +153,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val showKnownFactNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case KnownFactNotMatched =>
+    case TrustNotMatched     =>
   }
 
   val showNotSignedUp: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -183,6 +184,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
     case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
+    case TrustNotMatched             => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
     case _: NotSignedUp              => routes.AgentLedDeauthJourneyController.showNotSignedUp()
     case _: NotAuthorised            => routes.AgentLedDeauthJourneyController.showNotAuthorised()
     case _: ResponseFailed           => routes.AgentLedDeauthJourneyController.showResponseFailed()

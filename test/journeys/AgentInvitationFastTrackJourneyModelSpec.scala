@@ -559,7 +559,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
-            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(personal) should
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)("personal") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to MoreDetails for vat service when there is no known fact" in {
@@ -568,7 +568,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
-            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(personal) should
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)("personal") should
           thenGo(NoVatRegDate(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
       }
     }
