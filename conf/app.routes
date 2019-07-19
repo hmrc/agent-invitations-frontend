@@ -125,10 +125,10 @@ GET         /warm-up                                                        @uk.
 GET         /warm-up/to-decline                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET         /consent                                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
-GET         /consent/individual                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentIndividual
 GET         /wrong-account-type                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showIncorrectClientType
 POST        /consent                                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
-POST        /consent-change                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitChangeConsents
+GET         /change-consent                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange
+POST        /change-consent                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitChangeConsents
 GET         /check-answers                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCheckAnswers
 POST        /check-answers                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswers
 POST        /check-answers-change/:serviceMessageKey                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey: String)

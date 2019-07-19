@@ -23,7 +23,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.custom_check_box
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
-@(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig, changingConsent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @displayDate(date: LocalDate) = @{
     if(date.getDayOfMonth < 10) date.toString("d MMMM yyyy", messages.lang.locale)
@@ -76,7 +77,11 @@
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title =  error_prefix(confirmTermsForm) +  Messages("generic.title", Messages("confirm-terms.heading"), Messages("title.suffix.client")),
+@title = @{
+   if(changingConsent) Messages("change.consent.heading") else Messages("confirm-terms.multi.heading")
+}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title =  error_prefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
     @back_link(pageConfig.backLink.url)
