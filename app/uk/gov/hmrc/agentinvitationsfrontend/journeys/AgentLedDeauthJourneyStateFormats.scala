@@ -28,6 +28,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientIrvFormats: OFormat[ConfirmClientIrv] = Json.format
   val ConfirmClientPersonalVatFormats: OFormat[ConfirmClientPersonalVat] = Json.format
   val ConfirmClientBusinessFormats: OFormat[ConfirmClientBusiness] = Json.format
+  val ConfirmClientTrustFormats: OFormat[ConfirmClientTrust] = Json.format
   val NotSignedUpFormats: OFormat[NotSignedUp] = Json.format
   val ConfirmCancelFormats: OFormat[ConfirmCancel] = Json.format
   val NotAuthorisedFormats: OFormat[NotAuthorised] = Json.format
@@ -41,6 +42,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientIrv         => ConfirmClientIrvFormats.writes(s)
     case s: ConfirmClientPersonalVat => ConfirmClientPersonalVatFormats.writes(s)
     case s: ConfirmClientBusiness    => ConfirmClientBusinessFormats.writes(s)
+    case s: ConfirmClientTrust       => ConfirmClientTrustFormats.writes(s)
     case s: NotSignedUp              => NotSignedUpFormats.writes(s)
     case s: ConfirmCancel            => ConfirmCancelFormats.writes(s)
     case s: NotAuthorised            => NotAuthorisedFormats.writes(s)
@@ -53,14 +55,18 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "SelectClientType"         => JsSuccess(SelectClientType)
     case "SelectServicePersonal"    => SelectServicePersonalFormats.reads(properties)
     case "SelectServiceBusiness"    => JsSuccess(SelectServiceBusiness)
+    case "SelectServiceTrust"       => JsSuccess(SelectServiceTrust)
     case "IdentifyClientPersonal"   => IdentifyClientPersonalFormats.reads(properties)
     case "IdentifyClientBusiness"   => JsSuccess(IdentifyClientBusiness)
+    case "IdentifyClientTrust"      => JsSuccess(IdentifyClientTrust)
     case "ConfirmClientItsa"        => ConfirmClientsItsaFormats.reads(properties)
     case "ConfirmClientIrv"         => ConfirmClientIrvFormats.reads(properties)
     case "ConfirmClientPersonalVat" => ConfirmClientPersonalVatFormats.reads(properties)
     case "ConfirmClientBusiness"    => ConfirmClientBusinessFormats.reads(properties)
+    case "ConfirmClientTrust"       => ConfirmClientTrustFormats.reads(properties)
     case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
     case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)
+    case "TrustNotMatched"          => JsSuccess(TrustNotMatched)
     case "ConfirmCancel"            => ConfirmCancelFormats.reads(properties)
     case "NotAuthorised"            => NotAuthorisedFormats.reads(properties)
     case "AuthorisationCancelled"   => AuthorisationCancelledFormats.reads(properties)

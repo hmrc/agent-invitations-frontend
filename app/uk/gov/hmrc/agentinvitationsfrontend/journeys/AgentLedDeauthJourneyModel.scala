@@ -17,10 +17,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetTrustDetails
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -37,12 +37,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object SelectClientType extends State
     case class SelectServicePersonal(enabledServices: Set[String]) extends State
     case object SelectServiceBusiness extends State
+    case object SelectServiceTrust extends State
     case class IdentifyClientPersonal(service: String) extends State
     case object IdentifyClientBusiness extends State
+    case object IdentifyClientTrust extends State
     case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends State
     case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends State
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
+    case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
@@ -51,11 +54,11 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class NotSignedUp(service: String) extends State
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
+    case object TrustNotMatched extends State
   }
 
   object Transitions {
 
-    import ClientType._
     import State._
 
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
@@ -66,16 +69,19 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
 
-    def chosenClientType(agent: AuthorisedAgent)(clientType: ClientType) = Transition {
-      case SelectClientType if clientType == personal =>
-        val enabledPersonalServices =
-          if (agent.isWhitelisted)
-            Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-          else
-            Set(HMRCMTDIT, HMRCMTDVAT)
-        goto(SelectServicePersonal(enabledPersonalServices))
-
-      case SelectClientType if clientType == business => goto(SelectServiceBusiness)
+    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+      case SelectClientType =>
+        clientType match {
+          case "personal" =>
+            val enabledPersonalServices =
+              if (agent.isWhitelisted)
+                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+              else
+                Set(HMRCMTDIT, HMRCMTDVAT)
+            goto(SelectServicePersonal(enabledPersonalServices))
+          case "business" => goto(SelectServiceBusiness)
+          case "trust"    => goto(SelectServiceTrust)
+        }
     }
 
     def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean)(
@@ -104,6 +110,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
 
       case SelectServiceBusiness => goto(root)
+    }
+
+    def chosenTrustService(showTrustFlag: Boolean)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
+      case SelectServiceTrust if confirmation.choice =>
+        if (showTrustFlag) goto(IdentifyClientTrust)
+        else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
+
+      case SelectServiceTrust => goto(root)
     }
 
     def submitIdentifyClientItsa(
@@ -164,6 +178,17 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       }
     }
 
+    def submitIdentifyClientTrust(getTrustDetails: GetTrustDetails)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+      Transition {
+        case IdentifyClientTrust =>
+          getTrustDetails(trustClient).flatMap {
+            case Some(details) =>
+              goto(ConfirmClientTrust(details.trustName, trustClient.utr))
+
+            case None => goto(TrustNotMatched)
+          }
+      }
+
     def submitIdentifyClientVat(
       vatRegDateMatches: VatRegDateMatches,
       getClientName: GetClientName,
@@ -222,6 +247,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
+        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TRUST, Some(name))
       }
     }
 

@@ -362,7 +362,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           formWithErrors.or(SelectClientTypeForm),
           ClientTypePageConfig(
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationFastTrackJourneyController.submitClientType()
+            routes.AgentInvitationFastTrackJourneyController.submitClientType(),
+            featureFlags.showHmrcTrust,
+            isForVat = true
           )
         ))
 
@@ -526,10 +528,10 @@ object AgentInvitationFastTrackJourneyController {
             request.knownFact))
       }).verifying(validateFastTrackForm))
 
-  val SelectClientTypeForm: Form[ClientType] = Form(
+  val SelectClientTypeForm: Form[String] = Form(
     single(
       "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    ).transform(ClientType.toEnum, ClientType.fromEnum)
+    )
   )
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =

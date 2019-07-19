@@ -559,7 +559,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(suppliedClientType: ClientType) =
+      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(suppliedClientType: String) =
       Transition {
         case SelectClientTypeVat(originalFtr, ftr, continueUrl) =>
           val isKnownFactRequired = ftr.knownFact.isDefined
@@ -568,13 +568,19 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               if (ftr.clientType.contains(personal)) CheckDetailsCompletePersonalVat
               else CheckDetailsCompleteBusinessVat
             val newState =
-              completeState(originalFtr, ftr.copy(clientType = Some(suppliedClientType)), continueUrl)
+              completeState(
+                originalFtr,
+                ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
+                continueUrl)
             checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
               getAgentLink)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(agent)(Confirmation(true))
               .apply(newState)
           } else {
             val newState =
-              CheckDetailsNoVatRegDate(originalFtr, ftr.copy(clientType = Some(suppliedClientType)), continueUrl)
+              CheckDetailsNoVatRegDate(
+                originalFtr,
+                ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
+                continueUrl)
 
             checkedDetailsNoKnownFact(agent)
               .apply(newState)

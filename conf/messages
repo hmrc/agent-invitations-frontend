@@ -191,6 +191,7 @@ cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this 
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel this request, you will not be able to submit Tax returns through software for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
@@ -201,9 +202,13 @@ cancel-authorisation.cancelled.return-to-account-services.button=Return to agent
 cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to sending their Income Tax updates through software.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
+cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised by {1} to submit their Tax returns through software.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+
+cancel-authorisation.trust-select-service.header=Do you want to cancel your authorisation for maintaining a trust for this client?
+cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client''s tax returns through software
 
 cancel-authorisation.not-matched.header=There is a problem
 cancel-authorisation.not-matched.description=We could not find any clients matching these details.
@@ -220,6 +225,7 @@ cancel-authorisation.response-failed.tryAgain=Try again
 not-authorised.HMRC-MTD-IT.p=This person has not authorised you to send their Income Tax updates through software.
 not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
 not-authorised.HMRC-MTD-VAT.p=This person or business has not authorised you to submit their VAT returns through software.
+not-authorised.HMRC-TERS-ORG.p=This business has not authorised you to maintain a trust.
 not-authorised.button=Start over
 
 #Delete

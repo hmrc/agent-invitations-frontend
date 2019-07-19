@@ -1,12 +1,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ACRStubs {
@@ -82,6 +81,15 @@ trait ACRStubs {
   def givenCancelledAuthorisationVat(arn: Arn, vrn: Vrn, status: Int) =
     stubFor(
       delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
+  def givenCancelledAuthorisationTrust(arn: Arn, utr: Utr, status: Int) =
+    stubFor(
+      delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)

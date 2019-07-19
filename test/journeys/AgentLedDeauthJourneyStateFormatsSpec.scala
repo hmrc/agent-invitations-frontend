@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.{DOB, Postcode, Services, VatRegDate}
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -54,6 +54,15 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "SelectServiceTrust" in {
+        val state = SelectServiceTrust
+        val json = Json.parse("""{"state":"SelectServiceTrust"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "IdentifyClientPersonal" in {
         val state = IdentifyClientPersonal(Services.HMRCMTDIT)
         val json = Json.parse("""{"state":"IdentifyClientPersonal", "properties": {"service": "HMRC-MTD-IT"}}""")
@@ -68,6 +77,15 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "IdentifyClientTrust" in {
+        val state = IdentifyClientTrust
+        val json = Json.parse("""{"state":"IdentifyClientTrust"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "ConfirmClientItsa" in {
         val state = ConfirmClientItsa(Some("Cersei not KEEPing well"), Nino("AB123456A"))
         val json = Json.parse(
@@ -100,6 +118,16 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "ConfirmClientTrust" in {
+        val state = ConfirmClientTrust("some-trust", Utr("1977030537"))
+        val json = Json.parse(
+          s"""{"state":"ConfirmClientTrust","properties": {"clientName":"some-trust","utr": "1977030537"}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "ConfirmCancel" in {
         val state = ConfirmCancel("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "AB123456A")
         val json = Json.parse(
@@ -123,6 +151,15 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "TrustNotMatched" in {
+        val state = TrustNotMatched
+        val json = Json.parse("""{"state":"TrustNotMatched"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "NotSignedUp" in {
         val state = NotSignedUp("HMRC-MTD-IT")
         val json = Json.parse("""{"state":"NotSignedUp", "properties": {"service":"HMRC-MTD-IT"}}""")

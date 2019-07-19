@@ -87,6 +87,7 @@ POST        /agents/cancel-authorisation/client-type                    @uk.gov.
 GET         /agents/cancel-authorisation/select-service                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showSelectService
 POST        /agents/cancel-authorisation/select-personal-service        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitPersonalService
 POST        /agents/cancel-authorisation/select-business-service        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitBusinessService
+POST        /agents/cancel-authorisation/select-trust-service           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitTrustService
 GET         /agents/cancel-authorisation/identify-client                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showIdentifyClient
 GET         /agents/cancel-authorisation/identify-itsa-client           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.identifyClientRedirect
 POST        /agents/cancel-authorisation/identify-itsa-client           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyItsaClient
@@ -94,6 +95,7 @@ GET         /agents/cancel-authorisation/identify-irv-client            @uk.gov.
 POST        /agents/cancel-authorisation/identify-irv-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyIrvClient
 GET         /agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.identifyClientRedirect
 POST        /agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyVatClient
+POST        /agents/cancel-authorisation/identify-trust-client          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyTrustClient
 GET         /agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmClient
 POST        /agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmClient
 GET         /agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmCancel
