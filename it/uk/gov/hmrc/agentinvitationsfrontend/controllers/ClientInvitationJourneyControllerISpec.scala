@@ -260,10 +260,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /consent/individual" should {
+  "GET /consent-change" should {
     def request = requestWithJourneyIdInCookie("GET", "/consent/individual")
 
-    behave like anActionHandlingSessionExpiry(controller.showConsentIndividual)
+    behave like anActionHandlingSessionExpiry(controller.showConsentChange)
 
     "display the individual consent page" in {
       journeyState.set(
@@ -281,7 +281,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
@@ -314,7 +314,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         )
       )
 
-      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))

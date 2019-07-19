@@ -127,10 +127,6 @@ class ClientInvitationJourneyController @Inject()(
     case _: MultiConsent =>
   }
 
-  def showConsentIndividual = actionShowStateWhenAuthorised(AsClient) {
-    case _: SingleConsent =>
-  }
-
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
   }
@@ -141,6 +137,10 @@ class ClientInvitationJourneyController @Inject()(
 
   def submitConsent = action { implicit request =>
     whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
+  }
+
+  def showConsentChange = actionShowStateWhenAuthorised(AsClient) {
+    case _: SingleConsent =>
   }
 
   def submitChangeConsents = action { implicit request =>
@@ -221,7 +221,7 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentIndividual()
+    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
     case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline()
     case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted()
@@ -284,7 +284,8 @@ class ClientInvitationJourneyController @Inject()(
             submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
             checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
             backLink = backLinkFor(breadcrumbs)
-          )
+          ),
+          changingConsent = true
         ))
 
     case CheckAnswers(clientType, uid, agentName, consents) =>
