@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetTrustDetails
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetTrustName
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
@@ -55,6 +55,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
     case object TrustNotMatched extends State
+    case object InvalidTrustState extends State
   }
 
   object Transitions {
@@ -178,14 +179,16 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       }
     }
 
-    def submitIdentifyClientTrust(getTrustDetails: GetTrustDetails)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClientTrust =>
-          getTrustDetails(trustClient).flatMap {
-            case Some(details) =>
-              goto(ConfirmClientTrust(details.trustName, trustClient.utr))
-
-            case None => goto(TrustNotMatched)
+          getTrustName(trustClient.utr).flatMap { trustResponse =>
+            trustResponse.response match {
+              case Right(TrustName(name)) =>
+                goto(ConfirmClientTrust(name, trustClient.utr))
+              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched)
+              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+            }
           }
       }
 

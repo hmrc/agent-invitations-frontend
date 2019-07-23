@@ -151,8 +151,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     }
 
   val submitIdentifyTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(trustClient =>
-      invitationsConnector.getTrustDetails(trustClient.utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr =>
+      invitationsConnector.getTrustName(utr)))
   }
 
   val progressToKnownFact = action { implicit request =>

@@ -662,23 +662,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   "POST /agents/identify-trust-client" should {
 
-    val trustDetailsResponse =
-      TrustDetailsResponse(
-        TrustDetails(
-          validUtr.value,
-          "Nelson James Trust",
-          TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
-          "TERS"))
+    val trustResponse = TrustResponse(Right(TrustName("Nelson James Trust")))
 
-    val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
-
-    val errorJson =
-      """{"code": "INVALID_UTR","reason": "Submission has not passed validation. Invalid parameter UTR."}"""
+    val notFoundJson =
+      """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
 
     val request = FakeRequest("POST", "/agents/identify-trust-client")
 
     "redirect to /agents/confirm-client" in {
-      givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
 
@@ -700,7 +692,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to /agents/not-found when utr passed in don't contain any trust known facts" in {
-      givenTrustClientReturns(validUtr, 200, errorJson)
+      givenTrustClientReturns(validUtr, 200, notFoundJson)
 
       journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
 
@@ -861,17 +853,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the confirm client page for Trust service" in {
 
-      val trustDetailsResponse =
-        TrustDetailsResponse(
-          TrustDetails(
-            validUtr.value,
-            "Nelson James Trust",
-            TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
-            "TERS"))
-
-      val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
-
-      givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+      val trustResponse = TrustResponse(Right(TrustName("some-trust")))
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
         ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(validUtr))),

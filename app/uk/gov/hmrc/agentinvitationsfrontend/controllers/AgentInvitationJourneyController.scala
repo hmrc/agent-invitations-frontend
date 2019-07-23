@@ -136,7 +136,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitIdentifyTrustClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(trustClient => invitationsConnector.getTrustDetails(trustClient.utr))
+      Transitions.identifiedTrustClient(utr => invitationsConnector.getTrustName(utr))
     )
   }
 

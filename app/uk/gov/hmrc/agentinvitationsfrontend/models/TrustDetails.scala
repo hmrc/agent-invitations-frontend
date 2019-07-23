@@ -16,29 +16,38 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
 
-case class TrustAddress(
-  line1: String,
-  line2: String,
-  line3: Option[String] = None,
-  line4: Option[String] = None,
-  postcode: Option[String] = None,
-  country: String)
+case class TrustName(name: String)
 
-object TrustAddress {
-  implicit val format: Format[TrustAddress] = Json.format[TrustAddress]
+object TrustName {
+  implicit val format: Format[TrustName] = Json.format[TrustName]
 }
 
-//#API-1495
-case class TrustDetails(utr: String, trustName: String, address: TrustAddress, serviceName: String)
+case class InvalidTrust(code: String, reason: String) {
 
-object TrustDetails {
-  implicit val format: Format[TrustDetails] = Json.format[TrustDetails]
+  def notFound(): Boolean = code == "RESOURCE_NOT_FOUND"
+  def invalidState: Boolean = code == "INVALID_TRUST_STATE" || code == "INVALID_REGIME" || code == "INVALID_REGIME"
+
 }
 
-case class TrustDetailsResponse(trustDetails: TrustDetails)
+object InvalidTrust {
+  implicit val format: Format[InvalidTrust] = Json.format[InvalidTrust]
+}
 
-object TrustDetailsResponse {
-  implicit val format: Format[TrustDetailsResponse] = Json.format[TrustDetailsResponse]
+case class TrustResponse(response: Either[InvalidTrust, TrustName])
+
+object TrustResponse {
+  implicit val format: Format[TrustResponse] = new Format[TrustResponse] {
+    override def reads(json: JsValue): JsResult[TrustResponse] =
+      json.asOpt[TrustName] match {
+        case Some(name) => JsSuccess(TrustResponse(Right(name)))
+        case None       => JsSuccess(TrustResponse(Left(json.as[InvalidTrust])))
+      }
+
+    override def writes(trustResponse: TrustResponse): JsValue = trustResponse.response match {
+      case Right(trustName)   => Json.toJson(trustName)
+      case Left(invalidTrust) => Json.toJson(invalidTrust)
+    }
+  }
 }

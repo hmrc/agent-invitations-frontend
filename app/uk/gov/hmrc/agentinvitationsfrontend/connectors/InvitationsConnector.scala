@@ -341,13 +341,13 @@ class InvitationsConnector @Inject()(
         .GET[Seq[InvitationIdAndExpiryDate]](url.toString)
     }
 
-  def getTrustDetails(utr: Utr)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[TrustDetails]] = {
+  def getTrustName(utr: Utr)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[TrustResponse] = {
     val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/organisations/trust/${utr.value}").toString
 
     monitor(s"ConsumedAPI-Get-Trust-KnownFacts-GET") {
       http.GET[HttpResponse](url).map { response =>
         response.status match {
-          case 200 => Option(response.json).flatMap(_.asOpt[TrustDetailsResponse].map(_.trustDetails))
+          case 200 => response.json.as[TrustResponse]
         }
       }
     }

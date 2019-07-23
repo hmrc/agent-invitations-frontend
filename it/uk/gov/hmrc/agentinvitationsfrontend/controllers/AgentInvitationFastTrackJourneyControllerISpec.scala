@@ -1258,17 +1258,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
   class TrustHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TRUST)
 
-    val trustDetailsResponse =
-      TrustDetailsResponse(
-        TrustDetails(
-          validUtr.value,
-          "Nelson James Trust",
-          TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
-          "TERS"))
+    val trustResponse = TrustResponse(Right(TrustName("some-trust")))
+    val trustNotMatchedResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
 
-    val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
-
-    givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+    givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
     givenCheckRelationshipVatWithStatus(arn, validUtr.value, 404)
     givenInvitationCreationSucceeds(arn, Some(business), validUtr.value, invitationIdTrust, validUtr.value, "utr", TRUST, "UTR")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")

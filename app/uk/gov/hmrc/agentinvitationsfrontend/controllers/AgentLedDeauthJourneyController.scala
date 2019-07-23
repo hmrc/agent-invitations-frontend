@@ -121,8 +121,8 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(trustClient =>
-      invitationsConnector.getTrustDetails(trustClient.utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr =>
+      invitationsConnector.getTrustName(utr)))
   }
 
   val showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {

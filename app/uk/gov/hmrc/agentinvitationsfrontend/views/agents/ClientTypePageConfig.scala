@@ -20,10 +20,10 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 
 case class ClientTypePageConfig(
-                                 backLinkUrl: String,
-                                 submitCall: Call,
-                                 showTrustFlag: Boolean,
-                                 isForVat: Boolean = false)(implicit messages: Messages) {
+  backLinkUrl: String,
+  submitCall: Call,
+  showTrustFlag: Boolean,
+  isForVat: Boolean = false)(implicit messages: Messages) {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))

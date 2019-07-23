@@ -19,7 +19,7 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -48,6 +48,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
     case object TrustNotMatched extends State
+    case object InvalidTrustState extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
@@ -84,7 +85,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       (Arn, Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
-    type GetTrustDetails = TrustClient => Future[Option[TrustDetails]]
+    type GetTrustName = Utr => Future[TrustResponse]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -140,16 +141,16 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    def identifiedTrustClient(getTrustDetails: GetTrustDetails)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyTrustClient =>
-          getTrustDetails(trustClient).flatMap {
-            case Some(details) =>
-              goto(
-                ConfirmClientTrust(AuthorisationRequest(details.trustName, TrustInvitation(trustClient.utr)))
-              )
-
-            case None => goto(TrustNotMatched)
+          getTrustName(trustClient.utr).flatMap { trustResponse =>
+            trustResponse.response match {
+              case Right(TrustName(name)) =>
+                goto(ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr))))
+              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched)
+              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+            }
           }
       }
 

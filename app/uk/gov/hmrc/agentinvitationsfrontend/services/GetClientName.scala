@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
+import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
@@ -67,6 +68,11 @@ trait GetClientName {
     }
 
   def getTrustName(utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    invitationsConnector.getTrustDetails(utr).map(t => t.map(_.trustName))
+    invitationsConnector.getTrustName(utr).map(_.response).map {
+      case Right(trustName) => Some(trustName.name)
+      case Left(invalidTrust) =>
+        Logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
+        None
+    }
 
 }

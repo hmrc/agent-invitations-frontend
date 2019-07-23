@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.mvc.Request
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetTrustDetails}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -162,6 +162,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
     case object TryAgainWithoutFastTrack extends State
+    case object InvalidTrustState extends State
   }
 
   object Transitions {
@@ -176,6 +177,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
+
+    type GetTrustName = Utr => Future[TrustResponse]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
@@ -454,13 +457,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           .apply(newState)
     }
 
-    def showConfirmTrustClient(getTrustDetails: GetTrustDetails)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def showConfirmTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyTrustClient(originalFtr, ftr, continueUrl) =>
-          getTrustDetails(trustClient).flatMap {
-            case Some(details) =>
-              goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, details.trustName))
-            case None => goto(TrustNotMatched(originalFtr, ftr, continueUrl))
+          getTrustName(trustClient.utr).flatMap { trustResponse =>
+            trustResponse.response match {
+              case Right(TrustName(name)) =>
+                goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, name))
+              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched(originalFtr, ftr, continueUrl))
+              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+            }
           }
       }
 

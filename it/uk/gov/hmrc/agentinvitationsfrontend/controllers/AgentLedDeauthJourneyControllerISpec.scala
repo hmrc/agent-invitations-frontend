@@ -7,7 +7,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{Services, TrustAddress, TrustDetails, TrustDetailsResponse}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{TrustName, TrustResponse}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -386,21 +386,13 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/identify-trust-client" should {
 
-    val trustDetailsResponse =
-      TrustDetailsResponse(
-        TrustDetails(
-          validUtr.value,
-          "Nelson James Trust",
-          TrustAddress("10 Enderson Road", "Cheapside", Some("Riverside"), Some("Boston"), Some("SN8 4DD"), "GB"),
-          "TERS"))
+    val trustResponse = TrustResponse(Right(TrustName("some-trust")))
 
-    val trustDetailsSuccessResponseJson = Json.toJson(trustDetailsResponse).toString()
-
-    val errorJson =
-      """{"code": "INVALID_UTR","reason": "Submission has not passed validation. Invalid parameter UTR."}"""
+    val notFoundJson =
+      """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
 
     "redirect to confirm client for trust" in {
-      givenTrustClientReturns(validUtr, 200, trustDetailsSuccessResponseJson)
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
       journeyState.set(IdentifyClientTrust, Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
@@ -417,7 +409,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to /not-found for trust if trust details are not found for given utr" in {
-      givenTrustClientReturns(validUtr, 200, errorJson)
+      givenTrustClientReturns(validUtr, 200, notFoundJson)
       journeyState.set(IdentifyClientTrust, Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
