@@ -51,7 +51,7 @@ abstract class BaseISpec
   lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
 
-  val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
+  val problemHeader = "There is a problem - Agent services account - GOV.UK"
 
   protected def appBuilder(featureFlags: FeatureFlags): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
