@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.i18n.I18nSupport
@@ -248,14 +249,16 @@ class AgentLedDeauthJourneyController @Inject()(
             identify_client_itsa(
               ItsaClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
-              backLinkFor(breadcrumbs).url
+              backLinkFor(breadcrumbs).url,
+              true
             ))
         case Services.HMRCPIR =>
           Ok(
             identify_client_irv(
               IrvClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
-              backLinkFor(breadcrumbs).url
+              backLinkFor(breadcrumbs).url,
+              true
             )
           )
         case Services.HMRCMTDVAT =>
@@ -263,7 +266,8 @@ class AgentLedDeauthJourneyController @Inject()(
             identify_client_vat(
               formWithErrors.or(VatClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
-              backLinkFor(breadcrumbs).url
+              backLinkFor(breadcrumbs).url,
+              true
             ))
       }
 
@@ -272,7 +276,8 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_vat(
           formWithErrors.or(VatClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
-          backLinkFor(breadcrumbs).url
+          backLinkFor(breadcrumbs).url,
+          true
         ))
 
     case IdentifyClientTrust =>
@@ -280,7 +285,8 @@ class AgentLedDeauthJourneyController @Inject()(
         identify_client_trust(
           formWithErrors.or(TrustClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
-          backLinkFor(breadcrumbs).url
+          backLinkFor(breadcrumbs).url,
+          true
         ))
 
     case ConfirmClientItsa(clientName, _) =>
@@ -350,6 +356,9 @@ class AgentLedDeauthJourneyController @Inject()(
           s"${externalUrls.agentServicesAccountUrl}/agent-services-account"))
 
     case KnownFactNotMatched =>
+      Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
+
+    case TrustNotFound =>
       Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>

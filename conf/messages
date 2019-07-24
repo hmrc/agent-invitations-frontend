@@ -2,6 +2,7 @@ app.name=Ask a client to authorise you
 app.name.clients=Appoint someone to deal with HMRC for you
 
 title.suffix.agents=Ask a client to authorise you
+title.suffix.agents.cancel-auth=Agent services account
 title.suffix.client=Appoint someone to deal with HMRC for you
 generic.title={0} - {1} - GOV.UK
 
@@ -105,7 +106,7 @@ error.trust-service.required=Select yes if you want to maintain a trust for this
 identify-trust-client.title=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.header=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called 'reference', 'UTR' or 'official use'. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called ''reference'', ''UTR'' or ''official use''. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 continue.button=Continue
 button.back=Back
@@ -202,7 +203,7 @@ cancel-authorisation.cancelled.return-to-account-services.button=Return to agent
 cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to sending their Income Tax updates through software.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
-cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised by {1} to submit their Tax returns through software.
+cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to act on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
