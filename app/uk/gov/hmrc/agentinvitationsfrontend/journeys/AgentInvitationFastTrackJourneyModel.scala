@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.InvalidTrustState
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -156,13 +157,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         extends State
     case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
-    case class TrustNotMatched(
+    case class TrustNotFound(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
         extends State
     case object TryAgainWithoutFastTrack extends State
-    case object InvalidTrustState extends State
   }
 
   object Transitions {
@@ -464,8 +464,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             trustResponse.response match {
               case Right(TrustName(name)) =>
                 goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, name))
-              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched(originalFtr, ftr, continueUrl))
-              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotFound(originalFtr, ftr, continueUrl))
+              case Left(invalidTrust) if invalidTrust.notFoundOrInvalidState() =>
+                goto(TrustNotFound(originalFtr, ftr, continueUrl))
             }
           }
       }
@@ -558,7 +559,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           goto(tryAgainState)
 
-        case TrustNotMatched(originalFtr, fastTrackRequest, continueUrl) =>
+        case TrustNotFound(originalFtr, fastTrackRequest, continueUrl) =>
           goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
       }
 

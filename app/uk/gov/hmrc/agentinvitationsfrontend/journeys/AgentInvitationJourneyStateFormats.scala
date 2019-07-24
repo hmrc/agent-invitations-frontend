@@ -83,7 +83,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "InvitationSentPersonal"             => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"             => InvitationSentBusinessFormat.reads(properties)
     case "KnownFactNotMatched"                => KnownFactNotMatchedFormat.reads(properties)
-    case "TrustNotMatched"                    => JsSuccess(TrustNotMatched)
+    case "TrustNotFound"                      => JsSuccess(TrustNotFound)
     case "CannotCreateRequest"                => CannotCreateRequestFormat.reads(properties)
     case "SomeAuthorisationsFailed"           => SomeAuthorisationsFailedFormat.reads(properties)
     case "AllAuthorisationsFailed"            => AllAuthorisationsFailedFormat.reads(properties)

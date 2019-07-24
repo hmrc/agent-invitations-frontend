@@ -662,11 +662,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   "POST /agents/identify-trust-client" should {
 
-    val trustResponse = TrustResponse(Right(TrustName("Nelson James Trust")))
-
-    val notFoundJson =
-      """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
-
     val request = FakeRequest("POST", "/agents/identify-trust-client")
 
     "redirect to /agents/confirm-client" in {
@@ -685,14 +680,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should havePattern[State](
         {
-          case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(_, _, _, _), _, _)) =>
+          case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustInvitation(_, _, _, _), _, _)) =>
         },
         List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
       )
     }
 
-    "redirect to /agents/not-found when utr passed in don't contain any trust known facts" in {
-      givenTrustClientReturns(validUtr, 200, notFoundJson)
+    "redirect to /agents/not-found when utr passed in does not match to any trust" in {
+      givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
 
       journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
 
@@ -706,7 +701,27 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
-        TrustNotMatched,
+        TrustNotFound,
+        List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
+      )
+    }
+
+    "redirect to /agents/not-found when trust is in invalid state" in {
+      givenTrustClientReturns(validUtr, 200, invalidTrustJson)
+
+      journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+
+      journeyState.get should have[State](
+        TrustNotFound,
         List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
       )
     }
@@ -853,7 +868,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the confirm client page for Trust service" in {
 
-      val trustResponse = TrustResponse(Right(TrustName("some-trust")))
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(

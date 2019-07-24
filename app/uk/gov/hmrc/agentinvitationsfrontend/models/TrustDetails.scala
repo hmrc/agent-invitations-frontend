@@ -27,8 +27,8 @@ object TrustName {
 case class InvalidTrust(code: String, reason: String) {
 
   def notFound(): Boolean = code == "RESOURCE_NOT_FOUND"
-  def invalidState: Boolean = code == "INVALID_TRUST_STATE" || code == "INVALID_REGIME" || code == "INVALID_REGIME"
-
+  def invalidState(): Boolean = code == "INVALID_TRUST_STATE" || code == "INVALID_REGIME"
+  def notFoundOrInvalidState(): Boolean = notFound() || invalidState()
 }
 
 object InvalidTrust {

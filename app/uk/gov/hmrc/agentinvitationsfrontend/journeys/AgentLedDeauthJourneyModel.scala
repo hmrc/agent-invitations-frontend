@@ -54,7 +54,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class NotSignedUp(service: String) extends State
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
-    case object TrustNotMatched extends State
+    case object TrustNotFound extends State
     case object InvalidTrustState extends State
   }
 
@@ -186,8 +186,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
             trustResponse.response match {
               case Right(TrustName(name)) =>
                 goto(ConfirmClientTrust(name, trustClient.utr))
-              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched)
-              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+              case Left(invalidTrust) if invalidTrust.notFound()               => goto(TrustNotFound)
+              case Left(invalidTrust) if invalidTrust.notFoundOrInvalidState() => goto(TrustNotFound)
             }
           }
       }

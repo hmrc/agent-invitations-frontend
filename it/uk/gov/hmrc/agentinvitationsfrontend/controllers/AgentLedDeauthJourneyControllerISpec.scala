@@ -7,7 +7,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{TrustName, TrustResponse}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -386,11 +385,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/identify-trust-client" should {
 
-    val trustResponse = TrustResponse(Right(TrustName("some-trust")))
-
-    val notFoundJson =
-      """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
-
     "redirect to confirm client for trust" in {
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
       journeyState.set(IdentifyClientTrust, Nil)
@@ -409,7 +403,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to /not-found for trust if trust details are not found for given utr" in {
-      givenTrustClientReturns(validUtr, 200, notFoundJson)
+      givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
       journeyState.set(IdentifyClientTrust, Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")

@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.models.{InvalidTrust, TrustName, TrustResponse}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
@@ -48,4 +49,10 @@ trait TestDataCommonSupport {
   val invitationIdTrust = InvitationId("DF99K6PXSBHTF")
   val serviceTrust = "HMRC-TERS-ORG"
   val identifierTrust = "UTR"
+
+  val trustResponse = TrustResponse(Right(TrustName("some-trust")))
+  val trustNotFoundJson =
+    """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
+  val invalidTrustJson =
+    """{"code": "INVALID_TRUST_STATE","reason": "The remote endpoint has indicated that the Trust/Estate is Closed and playback is not possible"}"""
 }

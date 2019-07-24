@@ -55,7 +55,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   val utr = Utr("1977030537")
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
-  val trustNotMatchedResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
+  val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
@@ -325,10 +325,10 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustName)(authorisedAgent)(trustClient) should thenGo(
           ConfirmClientTrust("some-trust", utr))
       }
-      "transition to TrustNotMatched when a trust is not found for a given utr" in {
-        def getTrustName(utr: Utr): Future[TrustResponse] = Future(trustNotMatchedResponse)
+      "transition to TrustNotFound when a trust is not found for a given utr" in {
+        def getTrustName(utr: Utr): Future[TrustResponse] = Future(TrustNotFoundResponse)
         given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustName)(authorisedAgent)(trustClient) should thenGo(
-          TrustNotMatched)
+          TrustNotFound)
       }
     }
 

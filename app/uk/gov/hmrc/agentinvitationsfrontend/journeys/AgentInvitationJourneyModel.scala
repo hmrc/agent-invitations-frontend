@@ -47,8 +47,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
-    case object TrustNotMatched extends State
-    case object InvalidTrustState extends State
+    case object TrustNotFound extends State
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
@@ -148,8 +147,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             trustResponse.response match {
               case Right(TrustName(name)) =>
                 goto(ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr))))
-              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotMatched)
-              case Left(invalidTrust)                            => goto(InvalidTrustState) //TODO implement InvalidTrustState view
+              case Left(invalidTrust) if invalidTrust.notFoundOrInvalidState() => goto(TrustNotFound)
             }
           }
       }

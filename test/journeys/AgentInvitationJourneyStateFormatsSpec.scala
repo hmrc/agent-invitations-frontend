@@ -171,12 +171,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse("""{"state":"KnownFactNotMatched", "properties": {"basket": []}}""")
           .as[State] shouldBe KnownFactNotMatched(Set.empty)
       }
-      "TrustNotMatched" in {
-        Json.toJson(TrustNotMatched) shouldBe Json
-          .obj("state" -> "TrustNotMatched")
+      "TrustNotFound" in {
+        Json.toJson(TrustNotFound) shouldBe Json
+          .obj("state" -> "TrustNotFound")
         Json
-          .parse("""{"state":"TrustNotMatched"}""")
-          .as[State] shouldBe TrustNotMatched
+          .parse("""{"state":"TrustNotFound"}""")
+          .as[State] shouldBe TrustNotFound
       }
       "CannotCreateRequest" in {
         Json.toJson(CannotCreateRequest(Set.empty)) shouldBe Json.obj(
