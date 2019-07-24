@@ -60,7 +60,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("cancel-authorisation.client-type.header"),
-            htmlEscapedMessage("title.suffix.agents")),
+            htmlEscapedMessage("title.suffix.agents.cancel-auth")),
           htmlEscapedMessage("cancel-authorisation.client-type.header"),
           hasMessage("cancel-authorisation.client-type.p1")
         )
@@ -117,7 +117,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("title.suffix.agents.cancel-auth")),
         htmlEscapedMessage("cancel-authorisation.select-service.header"),
         hasMessage("cancel-authorisation.select-service.hint")
       )
@@ -133,7 +133,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("title.suffix.agents.cancel-auth")),
         htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
         hasMessage("business-select-service.yes"),
         hasMessage("business-select-service.no")
@@ -151,7 +151,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("title.suffix.agents.cancel-auth")),
         htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
         hasMessage("trust-select-service.yes"),
         hasMessage("trust-select-service.no")
