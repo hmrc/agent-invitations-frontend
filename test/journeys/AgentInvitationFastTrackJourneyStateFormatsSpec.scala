@@ -669,14 +669,14 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
-      "TrustNotMatched" in {
-        val state = TrustNotMatched(
+      "TrustNotFound" in {
+        val state = TrustNotFound(
           AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
           AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
           Some("continue/url")
         )
         val json = Json.parse("""{
-                                |  "state":"TrustNotMatched",
+                                |  "state":"TrustNotFound",
                                 |  "properties":{
                                 |    "originalFastTrackRequest":{
                                 |      "clientType": "business",

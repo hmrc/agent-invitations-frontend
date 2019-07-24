@@ -152,9 +152,9 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
-      "TrustNotMatched" in {
-        val state = TrustNotMatched
-        val json = Json.parse("""{"state":"TrustNotMatched"}""")
+      "TrustNotFound" in {
+        val state = TrustNotFound
+        val json = Json.parse("""{"state":"TrustNotFound"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

@@ -121,8 +121,8 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(trustClient =>
-      invitationsConnector.getTrustDetails(trustClient.utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr =>
+      invitationsConnector.getTrustName(utr)))
   }
 
   val showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -153,7 +153,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val showKnownFactNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case KnownFactNotMatched =>
-    case TrustNotMatched     =>
+    case TrustNotFound       =>
   }
 
   val showNotSignedUp: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -184,7 +184,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
     case KnownFactNotMatched         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
-    case TrustNotMatched             => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
+    case TrustNotFound               => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
     case _: NotSignedUp              => routes.AgentLedDeauthJourneyController.showNotSignedUp()
     case _: NotAuthorised            => routes.AgentLedDeauthJourneyController.showNotAuthorised()
     case _: ResponseFailed           => routes.AgentLedDeauthJourneyController.showResponseFailed()

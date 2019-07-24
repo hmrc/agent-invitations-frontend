@@ -136,7 +136,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitIdentifyTrustClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(trustClient => invitationsConnector.getTrustDetails(trustClient.utr))
+      Transitions.identifiedTrustClient(utr => invitationsConnector.getTrustName(utr))
     )
   }
 
@@ -177,7 +177,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
-    case TrustNotMatched        =>
+    case TrustNotFound          =>
   }
 
   val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
@@ -210,7 +210,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
-    case TrustNotMatched              => routes.AgentInvitationJourneyController.showNotMatched()
+    case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
@@ -406,7 +406,7 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
-    case TrustNotMatched =>
+    case TrustNotFound =>
       Ok(
         not_matched(
           false,
