@@ -288,6 +288,15 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "TrustNotClaimed" in {
+        val state = TrustNotClaimed
+        val json = Json.parse("""{"state":"TrustNotClaimed"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
     }
   }
 }

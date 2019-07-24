@@ -25,7 +25,7 @@
 
 @(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "vat"))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
 
     @back_link(backLinkUrl)
 

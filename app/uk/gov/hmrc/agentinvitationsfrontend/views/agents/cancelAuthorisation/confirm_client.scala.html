@@ -22,7 +22,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
-@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdentifier: Option[String] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@clientIdentifierText = @{clientIdentifier.fold("")(id => s"Unique Taxpayer Reference: $id")}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
@@ -37,7 +39,7 @@
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-client.header") +
-      s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span></div>"""),
+      s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span>$clientIdentifierText</div>"""),
   '_groupDivClass -> "form-group soft--ends",
   '_fieldsetAttributes -> Html("""id='choice'""")
   )

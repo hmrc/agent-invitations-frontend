@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
+import play.api.Logger
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -57,6 +59,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         extends State
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
+    case object TrustNotClaimed extends State
   }
 
   object Transitions {
@@ -103,7 +106,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
             ClientConsent(
               invitation.invitationId,
               invitation.expiryDate,
-              Services.determineServiceMessageKey(invitation.invitationId),
+              determineServiceMessageKey(invitation.invitationId),
               consent = false))
       } yield consents
 
@@ -122,9 +125,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
           if (!clientTypeMatchesGroup(client.affinityGroup, clientType))
             goto(IncorrectClientType(clientType))
           else
-            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap {
-              case consents if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
-              case _                             => goto(NotFoundInvitation)
+            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
+              val containsTrust = consents.exists(_.serviceKey == messageKeyForTrust)
+              val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+              if (containsTrust && butNoTrustEnrolment) {
+                Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                goto(TrustNotClaimed)
+              } else {
+                consents match {
+                  case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
+                  case _                      => goto(NotFoundInvitation)
+                }
+              }
             }
       }
 
@@ -132,8 +144,16 @@ object ClientInvitationJourneyModel extends JourneyModel {
       Transition {
         case ConfirmDecline(clientType, uid, agentName, consents) =>
           if (confirmation.choice) {
-            consents.map(consent => rejectInvitation(consent.invitationId))
-            goto(InvitationsDeclined(agentName, consents))
+            val newConsentsF =
+              Future.sequence {
+                consents.map(consent =>
+                  rejectInvitation(consent.invitationId).map(processed => consent.copy(processed = processed)))
+              }
+            for {
+              newConsents <- newConsentsF
+              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+
+            } yield result
           } else goto(MultiConsent(clientType, uid, agentName, consents))
       }
 
@@ -194,20 +214,27 @@ object ClientInvitationJourneyModel extends JourneyModel {
       case CheckAnswers(_, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)
-          result <- if (ClientConsent.allFailed(newConsents)) goto(AllResponsesFailed)
-                   else if (ClientConsent.someFailed(newConsents))
-                     goto(
-                       SomeResponsesFailed(
-                         agentName,
-                         newConsents.filter(_.processed == false),
-                         newConsents.filter(_.processed == true)))
-                   else if (ClientConsent.allAcceptedProcessed(newConsents))
-                     goto(InvitationsAccepted(agentName, consents))
-                   else if (ClientConsent.allDeclinedProcessed(newConsents))
-                     goto(InvitationsDeclined(agentName, consents))
-                   else goto(InvitationsAccepted(agentName, consents))
+          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
         } yield result
     }
+
+    private def getRedirectLinkAfterProcessConsents(
+      consents: Seq[ClientConsent],
+      newConsents: Seq[ClientConsent],
+      agentName: String) =
+      if (ClientConsent.allFailed(newConsents))
+        goto(AllResponsesFailed)
+      else if (ClientConsent.someFailed(newConsents))
+        goto(
+          SomeResponsesFailed(
+            agentName,
+            newConsents.filter(_.processed == false),
+            newConsents.filter(_.processed == true)))
+      else if (ClientConsent.allAcceptedProcessed(newConsents))
+        goto(InvitationsAccepted(agentName, consents))
+      else if (ClientConsent.allDeclinedProcessed(newConsents))
+        goto(InvitationsDeclined(agentName, consents))
+      else goto(InvitationsAccepted(agentName, consents))
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
       case SomeResponsesFailed(agentName, _, successfulConsents) =>

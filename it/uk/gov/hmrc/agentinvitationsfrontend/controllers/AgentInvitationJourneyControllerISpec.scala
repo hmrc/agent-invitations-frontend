@@ -714,7 +714,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
-        TrustNotFound,
+        TrustNotMatched,
         List(IdentifyTrustClient, SelectTrustService, SelectClientType(emptyBasket))
       )
     }

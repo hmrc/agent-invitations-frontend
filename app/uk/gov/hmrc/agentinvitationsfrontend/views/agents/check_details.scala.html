@@ -80,7 +80,8 @@
                 @{config.fastTrackRequest.clientIdentifierType match {
                     case "ni" => Messages("check-details.nino")
                     case "vrn" => Messages("check-details.vrn")
-                    case _ => throw new IllegalArgumentException("client identifier type not supported")
+                    case "utr" => Messages("check-details.utr")
+                    case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
@@ -99,6 +100,7 @@
                         case "HMRC-MTD-IT" => Messages("check-details.postcode")
                         case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
                         case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
+                        case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
                     }
                 }
                 </dt>

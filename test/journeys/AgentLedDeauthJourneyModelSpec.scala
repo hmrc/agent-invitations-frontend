@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -53,19 +53,26 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val vatRegDate = "2010-10-10"
   val dob = "1990-10-10"
 
+  val utr = Utr("1977030537")
+  val trustDetails = TrustDetails(utr.value, "some-trust", TrustAddress("lin1", "line2", country = "GB"), "TERS")
+
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
       "transition to SelectServicePersonal when personal is selected" in {
-        given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.personal) should thenGo(
+        given(SelectClientType) when selectedClientType(authorisedAgent)("personal") should thenGo(
           SelectServicePersonal(availableServices))
       }
       "transition to SelectServiceBusiness when business is selected" in {
-        given(SelectClientType) when chosenClientType(authorisedAgent)(ClientType.business) should thenGo(
+        given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(
           SelectServiceBusiness)
       }
       "transition to SelectServicePersonal with only whitelisted services" in {
-        given(SelectClientType) when chosenClientType(nonWhitelistedAgent)(ClientType.personal) should thenGo(
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("personal") should thenGo(
           SelectServicePersonal(whitelistedServices))
+      }
+
+      "transition to SelectServiceTrust with only whitelisted services" in {
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(SelectServiceTrust)
       }
     }
     "at state SelectServicePersonal" should {
@@ -143,6 +150,23 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           given(SelectServiceBusiness) when chosenBusinessService(showVatFlag = false)(authorisedAgent)(
             Confirmation(true))
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
+      }
+    }
+
+    "at state SelectServiceTrust" should {
+      "transition to IdentifyClientTrust when YES is selected and feature flag is on" in {
+        given(SelectServiceTrust) when chosenTrustService(showTrustFlag = true)(authorisedAgent)(Confirmation(true)) should thenGo(
+          IdentifyClientTrust)
+      }
+      "transition to ClientType when NO is selected and feature flag is on" in {
+        given(SelectServiceTrust) when chosenTrustService(showTrustFlag = true)(authorisedAgent)(Confirmation(false)) should thenGo(
+          SelectClientType
+        )
+      }
+      "throw an exception when YES is selected but the show vat flag is switched off" in {
+        intercept[Exception] {
+          given(SelectServiceTrust) when chosenTrustService(showTrustFlag = false)(authorisedAgent)(Confirmation(true))
+        }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
       }
     }
 
@@ -291,6 +315,22 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
     }
+
+    "at state IdentifyClientTrust" should {
+      val trustClient = TrustClient(utr)
+      "transition to ConfirmClientTrust when a trust is found for a given utr" in {
+        def getTrustDetails(trustClient: TrustClient): Future[Some[TrustDetails]] = Future(Some(trustDetails))
+
+        given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustDetails)(authorisedAgent)(trustClient) should thenGo(
+          ConfirmClientTrust("some-trust", utr))
+      }
+      "transition to TrustNotMatched when a trust is not found for a given utr" in {
+        def getTrustDetails(trustClient: TrustClient): Future[Option[TrustDetails]] = Future(None)
+        given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustDetails)(authorisedAgent)(trustClient) should thenGo(
+          TrustNotMatched)
+      }
+    }
+
     "at state ConfirmClientItsa" should {
       "transition to ConfirmCancel when YES is selected" in {
         def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
@@ -395,6 +435,34 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         )
       }
     }
+
+    "at state ConfirmClientTrust" should {
+      "transition to ConfirmCancel when YES is selected" in {
+        def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
+
+        given(ConfirmClientTrust("some-trust", utr)) when
+          clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
+          ConfirmCancel(TRUST, Some("some-trust"), utr.value)
+        )
+      }
+      "transition to root when NO is selected" in {
+        def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
+
+        given(ConfirmClientTrust("some-trust", utr)) when
+          clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(false)) should thenGo(
+          SelectClientType
+        )
+      }
+      "transition to NotAuthorised when there are no active relationships" in {
+        def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(false)
+
+        given(ConfirmClientTrust("some-trust", utr)) when
+          clientConfirmed(hasActiveRelationships)(authorisedAgent)(Confirmation(true)) should thenGo(
+          NotAuthorised(TRUST)
+        )
+      }
+    }
+
     "at state ConfirmCancel" should {
       "transition to AuthorisationCancelled when YES is selected" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
@@ -406,7 +474,19 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           AuthorisationCancelled(HMRCMTDIT, Some("Holly Herndon"), "Popeye")
         )
       }
-      "transiiton to select client type when NO is selected" in {
+
+      "transition to AuthorisationCancelled when YES is selected and service is Trust" in {
+        def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
+        def getAgencyName(arn: Arn) = Future("Popeye")
+
+        given(ConfirmCancel(TRUST, Some("some-trust"), utr.value)) when cancelConfirmed(
+          deleteRelationship,
+          getAgencyName)(authorisedAgent)(Confirmation(true)) should thenGo(
+          AuthorisationCancelled(TRUST, Some("some-trust"), "Popeye")
+        )
+      }
+
+      "transition to select client type when NO is selected" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
         def getAgencyName(arn: Arn) = Future("Popeye")
 

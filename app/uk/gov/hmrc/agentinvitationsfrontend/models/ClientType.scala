@@ -43,6 +43,7 @@ object ClientType {
     clientType.orElse(service match {
       case "HMRC-MTD-IT"            => Some(ClientType.personal)
       case "PERSONAL-INCOME-RECORD" => Some(ClientType.personal)
+      case "HMRC-TERS-ORG"          => Some(ClientType.business)
       case _                        => None
     })
 }

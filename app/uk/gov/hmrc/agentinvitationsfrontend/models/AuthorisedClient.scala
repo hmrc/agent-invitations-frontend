@@ -16,4 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class AuthorisedClient(affinityGroup: String, clientIdTypePlusIds: Seq[(String, String)])
+import uk.gov.hmrc.auth.core.Enrolments
+
+case class AuthorisedClient(affinityGroup: String, enrolments: Enrolments)

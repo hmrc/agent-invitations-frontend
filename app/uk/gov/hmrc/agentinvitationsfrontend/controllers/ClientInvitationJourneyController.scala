@@ -24,7 +24,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -127,10 +127,6 @@ class ClientInvitationJourneyController @Inject()(
     case _: MultiConsent =>
   }
 
-  def showConsentIndividual = actionShowStateWhenAuthorised(AsClient) {
-    case _: SingleConsent =>
-  }
-
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
   }
@@ -141,6 +137,10 @@ class ClientInvitationJourneyController @Inject()(
 
   def submitConsent = action { implicit request =>
     whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
+  }
+
+  def showConsentChange = actionShowStateWhenAuthorised(AsClient) {
+    case _: SingleConsent =>
   }
 
   def submitChangeConsents = action { implicit request =>
@@ -209,6 +209,10 @@ class ClientInvitationJourneyController @Inject()(
         Services.messageKeyForAfi))
   }
 
+  def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
+    case TrustNotClaimed =>
+  }
+
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
@@ -217,13 +221,14 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentIndividual()
+    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
     case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline()
     case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted()
     case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined()
     case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
     case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
+    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
     case _                      => throw new Exception(s"Link not found for $state")
   }
 
@@ -279,7 +284,8 @@ class ClientInvitationJourneyController @Inject()(
             submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
             checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
             backLink = backLinkFor(breadcrumbs)
-          )
+          ),
+          changingConsent = true
         ))
 
     case CheckAnswers(clientType, uid, agentName, consents) =>
@@ -326,6 +332,12 @@ class ClientInvitationJourneyController @Inject()(
             failedConsents,
             agentName,
             routes.ClientInvitationJourneyController.submitSomeResponsesFailed())))
+
+    case TrustNotClaimed =>
+      val backLink =
+        if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+        else Call("GET", externalUrls.agentClientManagementUrl)
+      Ok(trust_not_claimed(backLink))
   }
 }
 

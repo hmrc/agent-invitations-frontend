@@ -7,7 +7,7 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -129,6 +129,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
+
+      "redirect to /trust-not-claimed if client doesn't have the trust enrolment but invitation contains trust" in {
+        givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
+        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyOrganisationClient(request()))
+        status(result) shouldBe 303
+
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
+      }
     }
   }
 
@@ -164,6 +174,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
+
+      "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
+        givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
+        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyOrganisationClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
       }
     }
   }
@@ -241,10 +260,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /consent/individual" should {
+  "GET /consent-change" should {
     def request = requestWithJourneyIdInCookie("GET", "/consent/individual")
 
-    behave like anActionHandlingSessionExpiry(controller.showConsentIndividual)
+    behave like anActionHandlingSessionExpiry(controller.showConsentChange)
 
     "display the individual consent page" in {
       journeyState.set(
@@ -262,7 +281,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
@@ -295,7 +314,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         )
       )
 
-      val result = controller.showConsentIndividual(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
@@ -460,6 +479,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
 
     "redirect to invitation declined when yes is selected" in {
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -474,7 +495,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
     }
 
-    "redirect to confirm terms when yes is selected" in {
+    "redirect to confirm terms when no is selected" in {
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -487,6 +508,45 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+    }
+
+    "redirect to /all-responses-failed in-case the ACA is down to accept/reject" in {
+      givenInvitationByIdSuccess(invitationIdTrust, validUtr.value)
+      givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust, 404)
+
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))),
+        Nil)
+
+      val result = controller.submitConfirmDecline(
+        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
+    }
+
+    "redirect to /some-responses-failed in-case there is an issue in processing some consents only" in {
+      givenInvitationByIdSuccess(invitationIdVAT, "101747696")
+      givenInvitationByIdSuccess(invitationIdTrust, validUtr.value)
+      givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust, 404)
+      givenRejectInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
+
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))),
+        Nil)
+
+      val result = controller.submitConfirmDecline(
+        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
     }
   }
 
@@ -600,6 +660,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showMissingJourneyHistory(FakeRequest("GET", "/session-timeout"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+    }
+  }
+
+  "GET /trust-not-claimed" should {
+    def request = requestWithJourneyIdInCookie("GET", "/trust-not-claimed")
+    "display the page as expected" in {
+      journeyState.set(TrustNotClaimed, Nil)
+
+      val result = controller.showTrustNotClaimed(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
     }
   }
 

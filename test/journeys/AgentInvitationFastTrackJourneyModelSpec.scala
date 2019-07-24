@@ -23,9 +23,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -52,6 +52,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   val vrn = "123456"
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
+  val utr = Utr("1977030537")
 
   "AgentInvitationFastTrackJourneyService" when {
     "at state Prologue" should {
@@ -154,6 +155,18 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
               None
             ))
       }
+
+      "transition to CheckDetailsCompleteTrust when there are all the required fields are present for a Trust service" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), TRUST, "utr", utr.value, None)
+
+        given(Prologue(None, None)) when start(None)(authorisedAgent)(fastTrackRequest)(FakeRequest(), HeaderCarrier()) should
+          thenGo(
+            CheckDetailsCompleteTrust(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
+      }
     }
 
     "at state CheckDetails" should {
@@ -219,6 +232,14 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ni", nino, vatRegDate)
 
         given(CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
+          checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+          hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+      }
+      "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for Trust" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(business), TRUST, "utr", utr.value, None)
+
+        given(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
@@ -538,7 +559,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
-            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(personal) should
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)("personal") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
       }
       "transition to MoreDetails for vat service when there is no known fact" in {
@@ -547,7 +568,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(
-            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(personal) should
+            getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)("personal") should
           thenGo(NoVatRegDate(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
       }
     }
@@ -776,6 +797,28 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           given(knownFactNotMatchedState) when
             tryAgainNotMatchedKnownFact(authorisedAgent) should
             thenGo(TryAgainWithoutFastTrack)
+        }
+      }
+
+      "original request was for a Trust service" when {
+        val completedTrustFastTrack = AgentFastTrackRequest(
+          clientType = Some(ClientType.business),
+          service = TRUST,
+          "utr",
+          utr.value,
+          knownFact = None
+        )
+
+        "trust not found for a given utr, should transition to IdentifyTrustClient " in {
+          val TrustNotMatchedState = TrustNotMatched(
+            originalFastTrackRequest = completedTrustFastTrack,
+            fastTrackRequest = completedTrustFastTrack,
+            continueUrl = None
+          )
+
+          given(TrustNotMatchedState) when
+            tryAgainNotMatchedKnownFact(authorisedAgent) should
+            thenGo(IdentifyTrustClient(completedTrustFastTrack, completedTrustFastTrack, None))
         }
       }
     }

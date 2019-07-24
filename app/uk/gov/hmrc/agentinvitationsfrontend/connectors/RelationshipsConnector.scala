@@ -95,6 +95,19 @@ class RelationshipsConnector @Inject()(
       case _                    => None
     }
 
+  def deleteRelationshipTrust(arn: Arn, utr: Utr)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedAPI-DELETE-TrustRelationship-DELETE") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}").toString
+      http.DELETE(url).map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException => Some(false)
+      case _                    => None
+    }
+
   def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
       val url = new URL(
