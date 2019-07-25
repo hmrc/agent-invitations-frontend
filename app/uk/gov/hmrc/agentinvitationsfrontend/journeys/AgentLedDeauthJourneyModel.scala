@@ -56,7 +56,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
     case object TrustNotFound extends State
-    case object InvalidTrustState extends State
   }
 
   object Transitions {

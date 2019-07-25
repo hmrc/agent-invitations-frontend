@@ -45,6 +45,9 @@ class RelationshipsConnector @Inject()(
   val getInactiveVatRelationshipUrl: URL =
     new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT")
 
+  val getInactiveTrustRelationshipUrl: URL =
+    new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-TERS-ORG")
+
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
@@ -65,6 +68,19 @@ class RelationshipsConnector @Inject()(
         .recover {
           case _: NotFoundException =>
             Logger(getClass).warn("No inactive relationships were found for VAT")
+            Seq.empty
+        }
+    }
+
+  def getInactiveTrustRelationships(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Seq[TrustTrackRelationship]] =
+    monitor("ConsumedApi-Get-InactiveTrustRelationships-GET") {
+      http
+        .GET[Seq[TrustTrackRelationship]](getInactiveTrustRelationshipUrl.toString)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No inactive relationships were found for Trust")
             Seq.empty
         }
     }
