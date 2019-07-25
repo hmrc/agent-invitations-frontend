@@ -17,7 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
+import play.api.Logger
 import play.api.mvc.Request
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions.CreateInvitation
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.InvalidTrustState
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
@@ -464,8 +466,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             trustResponse.response match {
               case Right(TrustName(name)) =>
                 goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, name))
-              case Left(invalidTrust) if invalidTrust.notFound() => goto(TrustNotFound(originalFtr, ftr, continueUrl))
-              case Left(invalidTrust) if invalidTrust.notFoundOrInvalidState() =>
+              case Left(invalidTrust) =>
+                Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
                 goto(TrustNotFound(originalFtr, ftr, continueUrl))
             }
           }
