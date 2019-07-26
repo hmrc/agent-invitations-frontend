@@ -25,9 +25,10 @@
 
 @(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.cancel-auth" else "title.suffix.agents"}
+@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
+@banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
 
     @back_link(backLinkUrl)
 

@@ -81,7 +81,7 @@
    if(changingConsent) Messages("change.consent.heading") else Messages("confirm-terms.multi.heading")
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title =  error_prefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title =  error_prefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
     @back_link(pageConfig.backLink.url)

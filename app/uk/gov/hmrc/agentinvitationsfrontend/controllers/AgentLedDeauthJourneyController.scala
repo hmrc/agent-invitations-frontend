@@ -362,9 +362,10 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>
-      Ok(not_signed_up(service, hasRequests = false))
+      Ok(not_signed_up(service, hasRequests = false, true))
 
-    case NotAuthorised(service) => Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType()))
+    case NotAuthorised(service) =>
+      Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType(), true))
 
     case _: ResponseFailed => Ok(response_failed(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
 
