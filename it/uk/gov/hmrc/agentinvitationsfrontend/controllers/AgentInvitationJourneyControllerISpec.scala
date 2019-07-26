@@ -686,6 +686,20 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
     }
 
+    "handle invalid Utr passed in by the user and redirect back to previous /identify-client page " in {
+
+      journeyState.set(IdentifyTrustClient, List(SelectTrustService, SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("utr" -> "493745"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+    }
+
     "redirect to /agents/not-found when utr passed in does not match to any trust" in {
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
 
