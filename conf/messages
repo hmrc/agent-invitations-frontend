@@ -1,9 +1,11 @@
-app.name=Agent services account
-app.name.clients=Appoint someone to deal with HMRC for you
+banner.agents.auth=Ask a client to authorise you
+banner.agents.de-auth=Cancel a client''s authorisation
+banner.clients=Appoint someone to deal with HMRC for you
 
 title.suffix.agents=Ask a client to authorise you
-title.suffix.agents.cancel-auth=Agent services account
+title.suffix.agents.de-auth=Cancel a client''s authorisation
 title.suffix.client=Appoint someone to deal with HMRC for you
+
 generic.title={0} - {1} - GOV.UK
 
 # Agent Pages

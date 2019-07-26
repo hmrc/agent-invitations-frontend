@@ -20,7 +20,7 @@
 
 @(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title = Messages(s"generic.title", Messages("client-request-cancelled.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-request-cancelled.header"), serviceMessageKey))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("client-request-cancelled.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-request-cancelled.header"), serviceMessageKey))) {
 
     <h1 class="heading-xlarge">@Messages("client-request-cancelled.header")</h1>
 

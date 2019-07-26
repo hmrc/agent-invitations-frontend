@@ -42,7 +42,7 @@
     }
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
 
     @back_link(config.backLink.url)
 

@@ -64,6 +64,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         checkHtmlResultWithBodyText(
           result,
+          htmlEscapedMessage("title.suffix.client"),
           htmlEscapedMessage("warm-up.header", "My Agency"),
           htmlEscapedMessage("warm-up.inset", "My Agency"))
         checkIncludesText(result, "<p>So we can confirm who you are")

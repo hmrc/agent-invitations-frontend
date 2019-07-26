@@ -22,7 +22,7 @@
 
 @(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "app.name.clients", title = Messages("generic.title", Messages(s"wrong-client-type.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(s"wrong-client-type.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
  <h1 class="heading-xlarge margin-bottom-30">@Messages("wrong-client-type.header")</h1>
 

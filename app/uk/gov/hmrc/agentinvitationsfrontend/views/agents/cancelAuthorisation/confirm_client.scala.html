@@ -26,7 +26,7 @@
 
 @clientIdentifierText = @{clientIdentifier.fold("")(id => s"Unique Taxpayer Reference: $id")}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents.cancel-auth")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
 @back_link(backLinkUrl)
 
