@@ -63,6 +63,24 @@ trait ACRStubs {
         )
     )
 
+  def givenInactiveTrustRelationships(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-TERS-ORG"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[{
+                 |   "arn":"${arn.value}",
+                 |   "dateTo":"2015-09-21",
+                 |   "dateFrom":"2015-09-10",
+                 |   "referenceNumber":"4937455253"
+                 |}]""".stripMargin
+            )
+        )
+    )
+
   def givenInactiveVATRelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT"))

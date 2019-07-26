@@ -21,6 +21,7 @@ import java.util.UUID
 import org.joda.time.{DateTimeZone, LocalDate}
 import org.jsoup.Jsoup
 import play.api.Application
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
@@ -48,6 +49,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenInactiveITSARelationships(arn)
       givenInactiveVATRelationships(arn)
       givenInactiveAfiRelationship(arn)
+      givenInactiveTrustRelationships(arn)
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
@@ -56,6 +58,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
       givenClientDetails(Vrn("101747696"))
       givenClientDetails(Vrn("101747641"))
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
       val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -89,6 +92,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.table-row-header.actions",
         "recent-invitations.invitation.service.HMRC-MTD-IT",
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
+        "recent-invitations.invitation.service.HMRC-TERS-ORG",
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
 

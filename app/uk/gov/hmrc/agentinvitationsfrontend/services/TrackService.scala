@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -57,10 +57,13 @@ class TrackService @Inject()(
     val itsaRelationships: Future[Seq[ItsaInactiveTrackRelationship]] =
       relationshipsConnector.getInactiveItsaRelationships
     val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
+    val trustRelationships: Future[Seq[TrustTrackRelationship]] = relationshipsConnector.getInactiveTrustRelationships
     val irvRelationships: Future[Seq[IrvTrackRelationship]] = pirRelationshipConnector.getInactiveIrvRelationships
 
     for {
-      relationships <- Future.sequence(Seq(itsaRelationships, vatRelationships, irvRelationships)).map(_.flatten)
+      relationships <- Future
+                        .sequence(Seq(itsaRelationships, vatRelationships, irvRelationships, trustRelationships))
+                        .map(_.flatten)
 
       inactiveClients <- Future.traverse(relationships) {
                           case ItsaInactiveTrackRelationship(_, dateTo, clientId) =>
@@ -75,11 +78,25 @@ class TrackService @Inject()(
                                 nino.map(ni => ni.value).getOrElse(""),
                                 "ni",
                                 dateTo)
+
                           case VatTrackRelationship(_, clientType, dateTo, clientId) =>
                             for {
                               vatName <- getVatName(Some(Vrn(clientId)))
                             } yield
                               InactiveClient(clientType, "HMRC-MTD-VAT", vatName.getOrElse(""), clientId, "vrn", dateTo)
+
+                          case TrustTrackRelationship(_, dateTo, clientId) =>
+                            for {
+                              trustName <- getTrustName(Utr(clientId))
+                            } yield
+                              InactiveClient(
+                                Some("business"),
+                                "HMRC-TERS-ORG",
+                                trustName.getOrElse(""),
+                                clientId,
+                                "utr",
+                                dateTo)
+
                           case IrvTrackRelationship(_, dateTo, clientId) =>
                             for {
                               citizenName <- getCitizenName(Some(Nino(clientId)))
@@ -91,6 +108,7 @@ class TrackService @Inject()(
                                 clientId,
                                 "ni",
                                 dateTo)
+
                           case _ => Future successful InactiveClient(None, "", "", "", "", None)
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
@@ -108,21 +126,21 @@ class TrackService @Inject()(
   }
 
   def getTradingName(
-    clientIdentifier: Option[Nino])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
       case Some(s) => agentServicesAccountConnector.getTradingName(s)
       case None    => Future successful None
     }
 
   def getCitizenName(
-    clientIdentifier: Option[Nino])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
       case Some(s) => citizenDetailsConnector.getCitizenDetails(s).map(citizen => citizen.name)
       case None    => Future successful None
     }
 
   def getVatName(
-    clientIdentifier: Option[Vrn])(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    clientIdentifier: Option[Vrn])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier
       .map { vrn =>
         agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>
