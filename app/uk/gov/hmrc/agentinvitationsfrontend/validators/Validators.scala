@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.validators
 import play.api.data.Forms.of
 import play.api.data.Mapping
 import play.api.data.format.Formats._
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import play.api.data.validation.{Constraint, Constraints, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
@@ -42,6 +42,8 @@ object Validators {
   val vrnRegex = "[0-9]{9}"
 
   val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
+
+  private val utrPattern = "^\\d{10}$"
 
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String) =
     Constraint[String] { input: String =>
@@ -68,8 +70,18 @@ object Validators {
 
   def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
 
-  def validUtr(nonEmptyFailure: String = "error.utr.required", invalidFailure: String = "enter-utr.invalid-format") =
-    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(utr => Utr.isValid(utr))
+  def validUtr() = utrConstraint("error.utr.required", "enter-utr.invalid-format")
+
+  private def utrConstraint(nonEmptyFailure: String, invalidFailure: String): Constraint[String] = Constraint[String] {
+    fieldValue: String =>
+      val formattedField = fieldValue.replace(" ", "").trim
+      Constraints.nonEmpty(formattedField) match {
+        case _: Invalid => Invalid(ValidationError(nonEmptyFailure))
+        case _ if formattedField.matches(utrPattern) =>
+          Valid
+        case _ => Invalid(invalidFailure)
+      }
+  }
 
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     fieldValue match {
