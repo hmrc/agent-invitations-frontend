@@ -463,7 +463,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           getTrustName(trustClient.utr).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(originalFtr, ftr, continueUrl, name))
+                goto(
+                  ConfirmClientTrust(
+                    originalFtr,
+                    ftr.copy(clientIdentifier = trustClient.utr.value),
+                    continueUrl,
+                    name))
               case Left(invalidTrust) =>
                 Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
                 goto(TrustNotFound(originalFtr, ftr, continueUrl))
