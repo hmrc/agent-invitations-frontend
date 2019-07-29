@@ -43,7 +43,7 @@ object Validators {
 
   val ninoRegex = "[[A-Z]&&[^DFIQUV]][[A-Z]&&[^DFIQUVO]] ?\\d{2} ?\\d{2} ?\\d{2} ?[A-D]{1}"
 
-  private val utrPattern = "^\\d{10}$"
+  val utrPattern = "^\\d{10}$"
 
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String) =
     Constraint[String] { input: String =>
@@ -89,7 +89,7 @@ object Validators {
         if (Nino.isValid(clientId)) Valid
         else Invalid(ValidationError("INVALID_NINO"))
       case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) && Vrn.isValid(clientId) => Valid
-      case clientId if clientId.nonEmpty && Utr.isValid(clientId)                               => Valid
+      case clientId if clientId.nonEmpty && clientId.matches(utrPattern)                        => Valid
       case _ =>
         Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
 

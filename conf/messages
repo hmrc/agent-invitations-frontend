@@ -638,6 +638,7 @@ confirm-authorisation-cancelled.header=Are you sure you want to cancel this clie
 confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to send their Income Tax updates through software.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
+confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust.
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No

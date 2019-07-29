@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -498,9 +499,9 @@ object AgentInvitationFastTrackJourneyController {
         case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _)
             if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId) => Valid
-        case AgentFastTrackRequest(_, TRUST, "utr", clientId, _) if Utr.isValid(clientId)      => Valid
-        case _                                                                                 => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)   => Valid
+        case AgentFastTrackRequest(_, TRUST, "utr", clientId, _) if clientId.matches(utrPattern) => Valid
+        case _                                                                                   => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 

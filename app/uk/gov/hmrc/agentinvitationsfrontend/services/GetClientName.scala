@@ -39,11 +39,11 @@ trait GetClientName {
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     service match {
-      case Services.HMRCMTDIT if Nino.isValid(clientId) => getItsaTradingName(Nino(clientId))
-      case Services.HMRCPIR if Nino.isValid(clientId)   => getCitizenName(Nino(clientId))
-      case Services.HMRCMTDVAT if Vrn.isValid(clientId) => getVatName(Vrn(clientId))
-      case Services.TRUST if Utr.isValid(clientId)      => getTrustName(Utr(clientId))
-      case _                                            => Future successful None
+      case Services.HMRCMTDIT  => getItsaTradingName(Nino(clientId))
+      case Services.HMRCPIR    => getCitizenName(Nino(clientId))
+      case Services.HMRCMTDVAT => getVatName(Vrn(clientId))
+      case Services.TRUST      => getTrustName(Utr(clientId))
+      case _                   => Future successful None
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
