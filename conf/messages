@@ -108,7 +108,7 @@ error.trust-service.required=Select yes if you want to maintain a trust or an es
 identify-trust-client.title=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.header=What is the trust''s Unique Taxpayer Reference?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers like 12345 67890. It will be on the trust''s Self Assessment notice to file (SA316). It may be called ''reference'', ''UTR'' or ''official use''. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ''reference'', ''UTR'' or ''official use''. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 continue.button=Continue
 button.back=Back
@@ -195,7 +195,7 @@ cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this 
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for {0}.
-cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel this request, you will not be able to submit Tax returns through software for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
@@ -206,12 +206,12 @@ cancel-authorisation.cancelled.return-to-account-services.button=Return to agent
 cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to sending their Income Tax updates through software.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
-cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to act on behalf of The Trust of {1}.
+cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
 
-cancel-authorisation.trust-select-service.header=Do you want to cancel your authorisation for maintaining a trust for this client?
+cancel-authorisation.trust-select-service.header=Do you want to cancel your authorisation for maintaining a trust or an estate for this client?
 cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client''s tax returns through software
 
 cancel-authorisation.not-matched.header=There is a problem
