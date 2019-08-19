@@ -464,7 +464,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to InvitationSentBusiness" in {
         given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
           getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+          InvitationSentBusiness("invitation/link", None, "abc@xyz.com", "HMRC-TERS-ORG"))
       }
       "transition to PendingInvitationExists when a pending invitation exists for the service" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =

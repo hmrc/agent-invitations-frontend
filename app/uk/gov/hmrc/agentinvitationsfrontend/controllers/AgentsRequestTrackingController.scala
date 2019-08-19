@@ -26,6 +26,7 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
@@ -93,12 +94,14 @@ class AgentsRequestTrackingController @Inject()(
               agentLink <- invitationsService.createAgentLink(agent.arn, data.clientType)
             } yield
               Ok(
-                resend_link(
-                  ResendLinkPageConfig(
-                    externalUrl,
-                    agentLink,
-                    data.clientType.map(ClientType.fromEnum).getOrElse(""),
-                    data.expiryDate)))
+                resend_link(ResendLinkPageConfig(
+                  externalUrl,
+                  agentLink,
+                  data.clientType.map(ClientType.fromEnum).getOrElse(""),
+                  data.expiryDate,
+                  if (data.clientType.contains(personal)) "personal"
+                  else data.service
+                )))
           }
         )
     }

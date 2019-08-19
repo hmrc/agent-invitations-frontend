@@ -143,7 +143,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
         extends State
-    case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
+
+    case class InvitationSentBusiness(
+      invitationLink: String,
+      continueUrl: Option[String],
+      agencyEmail: String,
+      service: String = HMRCMTDVAT)
         extends State
 
     case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
@@ -250,7 +255,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                                       case Some(ClientType.personal) =>
                                         goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail))
                                       case Some(ClientType.business) =>
-                                        goto(InvitationSentBusiness(invitationLink, continueUrl, agencyEmail))
+                                        goto(
+                                          InvitationSentBusiness(
+                                            invitationLink,
+                                            continueUrl,
+                                            agencyEmail,
+                                            fastTrackRequest.service))
                                     }
                          } yield result
                      }

@@ -242,7 +242,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(
           checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
-          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", TRUST))
       }
       "transition to IdentifyBusinessClient for Business VAT when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, vatRegDate)

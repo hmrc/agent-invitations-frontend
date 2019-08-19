@@ -626,7 +626,11 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.obj(
           "state" -> "InvitationSentBusiness",
           "properties" -> Json
-            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com")
+            .obj(
+              "invitationLink" -> "invitation/link",
+              "continueUrl"    -> "continue/url",
+              "agencyEmail"    -> "abc@xyz.com",
+              "service"        -> "HMRC-MTD-VAT")
         )
 
         Json.toJson(state) shouldBe json

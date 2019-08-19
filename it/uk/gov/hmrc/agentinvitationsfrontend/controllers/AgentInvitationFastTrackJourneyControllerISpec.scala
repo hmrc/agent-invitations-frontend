@@ -410,7 +410,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result,
         "check-details.heading",
         "check-details.p.HMRC-MTD-VAT",
-        "check-details.client-type.business")
+        "check-details.client-type.business.HMRC-MTD-VAT")
     }
 
     "show the check-details page for Trust service" in {
@@ -425,7 +425,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result,
         "check-details.heading",
         "check-details.p.HMRC-TERS-ORG",
-        "check-details.client-type.business")
+        "check-details.client-type.business.HMRC-TERS-ORG")
     }
 
     "show the check-details page for ITSA client with no postcode" in {
@@ -1100,7 +1100,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result,
         "invitation-sent.header",
         "invitation-sent.l1",
-        "invitation-sent.l1.p.personal")
+        "invitation-sent.l1.p.personal.personal")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
     }
 
@@ -1115,7 +1115,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result,
         "invitation-sent.header",
         "invitation-sent.l1",
-        "invitation-sent.l1.p.business")
+        "invitation-sent.l1.p.business.HMRC-MTD-VAT")
     }
   }
 
