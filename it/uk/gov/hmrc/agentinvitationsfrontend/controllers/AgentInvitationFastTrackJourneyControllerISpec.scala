@@ -650,7 +650,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "identify-trust-client.header", "identify-trust-client.p1")
-      checkHtmlResultWithBodyText(result,"A Unique Taxpayer Reference is 10 numbers like 12345 67890")
+      checkHtmlResultWithBodyText(result,"A Unique Taxpayer Reference is 10 numbers, for example 1234567890")
     }
   }
 
