@@ -388,7 +388,7 @@ class AgentInvitationJourneyController @Inject()(
             inferredExpiryDate,
             agencyEmail)))
 
-    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, service) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -397,7 +397,8 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             ClientType.fromEnum(business),
             inferredExpiryDate,
-            agencyEmail)))
+            agencyEmail,
+            service)))
 
     case KnownFactNotMatched(basket) =>
       Ok(
