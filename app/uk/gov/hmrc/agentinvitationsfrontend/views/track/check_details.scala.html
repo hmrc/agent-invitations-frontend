@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import scala.util.Try
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
@@ -69,7 +70,7 @@
             <dd class="cya-answer" id="client-type">
                 @{config.fastTrackRequest.clientType match {
                     case Some(ClientType.personal) => Messages("check-details.client-type.personal")
-                    case Some(ClientType.business) => Messages("check-details.client-type.business")
+                    case Some(ClientType.business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
                     case _ => throw new IllegalArgumentException("client type not found")
                 }}
             </dd>

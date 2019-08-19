@@ -37,6 +37,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -265,6 +266,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: TrustNotFound => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
     case _                => throw new Exception(s"Link not found for $state")
   }
+
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(
     implicit request: Request[_]): Result = {
     val backLinkOpt: Option[String] =
@@ -435,7 +437,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             inferredExpiryDate,
             agencyEmail)))
 
-    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail) =>
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, service) =>
       Ok(
         invitation_sent(
           InvitationSentPageConfig(
@@ -444,7 +446,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             continueUrl.isDefined,
             ClientType.fromEnum(business),
             inferredExpiryDate,
-            agencyEmail)))
+            agencyEmail,
+            service)))
 
     case KnownFactNotMatched(_, _, _) =>
       Ok(

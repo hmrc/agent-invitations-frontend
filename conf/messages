@@ -148,7 +148,8 @@ check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation
 check-details.table.heading=Client''s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
-check-details.client-type.business=Company or partnership
+check-details.client-type.business.HMRC-MTD-VAT=Company or partnership
+check-details.client-type.business.HMRC-TERS-ORG=Trust or an estate
 check-details.nino=National Insurance number
 check-details.vrn=VAT registration number
 check-details.postcode=Postcode
@@ -406,9 +407,9 @@ confirm-terms-multi.vat.list.item2=my VAT returns submitted online for the last 
 confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated
 
 confirm-terms-multi.trust.heading=Maintain a trust or an estate
-confirm-terms-multi.trust.p1=I consent to HMRC sharing this information with {0}, so this agent can report changes and declare the trust is up to date:
-confirm-terms-multi.trust.list.item1=details relating to trustees, settlors, beneficiaries and protectors in the trust, such as names and addresses
-confirm-terms-multi.trust.list.item2=the trust''s last declaration
+confirm-terms-multi.trust.p1=I consent to HMRC sharing this information with {0}, so this agent can either:
+confirm-terms-multi.trust.list.item1=report changes relating to trustees, settlers, beneficiaries and protectors, such as names and addresses, and declare the trust is up to date
+confirm-terms-multi.trust.list.item2=report changes relating to the estate’s personal representative, such as name and address, and declare the estate is up to date
 
 confirm-terms.itsa.bullet1=your Income Tax updates information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
@@ -448,7 +449,7 @@ client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for sending your Income Tax updates through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for submitting your VAT returns through software.
-client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintain a trust or an estate
+client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -461,7 +462,7 @@ client-complete.multi.p1.head={0} is now confirmed as your authorised tax agent 
 client-complete.multi.p1.itsa=sending your Income Tax updates through software
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=submitting your VAT returns through software
-client-complete.multi.p1.trust=maintain a trust or an estate
+client-complete.multi.p1.trust=maintaining a trust or an estate
 client-complete.multi.mistake=Made a mistake?
 client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
 
@@ -627,7 +628,7 @@ request-cancelled.header=Authorisation request cancelled
 request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to send Income Tax updates through software for this client.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to submit VAT returns through software for this client.
-request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to submit tax returns through software for this client.
+request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
 request-cancelled.panel= {0} will not be able to respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 

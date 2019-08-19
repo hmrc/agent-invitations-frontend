@@ -20,7 +20,12 @@ import org.joda.time.{DateTimeZone, Days, LocalDate}
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-case class ResendLinkPageConfig(externalUrl: String, agentLink: String, clientType: String, expiryDate: String) {
+case class ResendLinkPageConfig(
+  externalUrl: String,
+  agentLink: String,
+  clientType: String,
+  expiryDate: String,
+  service: String) {
 
   val expiryDateAsLocalDate = LocalDate.parse(expiryDate)
 

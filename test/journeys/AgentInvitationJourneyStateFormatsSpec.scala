@@ -155,12 +155,20 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(
           "state" -> "InvitationSentBusiness",
           "properties" -> Json
-            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com")
+            .obj(
+              "invitationLink" -> "invitation/link",
+              "continueUrl"    -> "continue/url",
+              "agencyEmail"    -> "abc@xyz.com",
+              "service"        -> "HMRC-MTD-VAT")
         )
         Json
           .parse(
-            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com"}}""")
-          .as[State] shouldBe InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com")
+            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "service": "HMRC-MTD-VAT"}}""")
+          .as[State] shouldBe InvitationSentBusiness(
+          "invitation/link",
+          Some("continue/url"),
+          "abc@xyz.com",
+          "HMRC-MTD-VAT")
       }
       "KnownFactNotMatched" in {
         Json.toJson(KnownFactNotMatched(Set.empty)) shouldBe Json.obj(

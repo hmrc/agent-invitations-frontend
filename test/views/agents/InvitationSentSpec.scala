@@ -83,14 +83,14 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
     "show content for client type" when {
       "client type is personal" in {
         view(pageConf.copy(clientType = "personal")) should containMessages(
-          "invitation-sent.l1.p.personal",
-          "invitation-sent.l4.personal"
+          "invitation-sent.l1.p.personal.personal",
+          "invitation-sent.l4.personal.personal"
         )(expectHtmlEscaped = false)
       }
       "client type is business" in {
-        view(pageConf.copy(clientType = "business")) should containMessages(
-          "invitation-sent.l1.p.business",
-          "invitation-sent.l4.business"
+        view(pageConf.copy(clientType = "business", serviceType = "HMRC-MTD-VAT")) should containMessages(
+          "invitation-sent.l1.p.business.HMRC-MTD-VAT",
+          "invitation-sent.l4.business.HMRC-MTD-VAT"
         )(expectHtmlEscaped = false)
       }
     }
