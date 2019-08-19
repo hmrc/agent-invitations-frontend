@@ -65,7 +65,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
         extends State
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
         extends State
-    case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
+    case class InvitationSentBusiness(
+      invitationLink: String,
+      continueUrl: Option[String],
+      agencyEmail: String,
+      service: String = HMRCMTDVAT)
         extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
     case object AllAuthorisationsRemoved extends State
@@ -368,7 +372,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
-                                     InvitationSentBusiness(agentLink, None, agencyEmail),
+                                     InvitationSentBusiness(agentLink, None, agencyEmail, TRUST),
                                      (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
                                      createMultipleInvitations,
