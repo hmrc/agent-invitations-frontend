@@ -188,7 +188,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/not-found" should {
+  "GET /not-found" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/not-found")
 
     behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
@@ -203,7 +203,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
     }
   }
-  "GET /warm-up/consent" should {
+  "GET /consent" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.showConsent)
@@ -224,8 +224,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/incorrect-client-type" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/incorrect-client-type")
+  "GET /warm-up/wrong-account-type" should {
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/wrong-account-type")
 
     behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
 
@@ -240,7 +240,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "POST /warm-up/consent" should {
+  "POST /consent" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.submitConsent)
@@ -540,9 +540,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
-          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))),
-        Nil)
+          Seq(
+            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))
+        ),
+        Nil
+      )
 
       val result = controller.submitConfirmDecline(
         authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))

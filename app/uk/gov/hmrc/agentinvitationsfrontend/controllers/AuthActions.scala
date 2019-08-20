@@ -43,6 +43,8 @@ class AuthActionsImpl @Inject()(
   val authConnector: AuthConnector
 ) extends AuthActions
 
+case class AffinityGroupMissing(msg: String = "user has affinity group None") extends Exception(msg)
+
 @ImplementedBy(classOf[AuthActionsImpl])
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
@@ -90,13 +92,13 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, enrols))
             case _                               => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
           }
-        case _ => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+        case _ => throw AffinityGroupMissing()
       }
       .recover {
         case _: InsufficientEnrolments =>
           Redirect(routes.ClientInvitationJourneyController.notAuthorised())
         case _: UnsupportedAffinityGroup =>
-          Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+          throw AffinityGroupMissing()
       }
 
   def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(

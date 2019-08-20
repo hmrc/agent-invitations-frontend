@@ -202,11 +202,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   val notAuthorised: Action[AnyContent] = Action { implicit request =>
-    Forbidden(
-      not_authorised(
-        Messages("not-authorised.header"),
-        Messages("not-authorised.description"),
-        Services.messageKeyForAfi))
+    Forbidden(not_authorised(Services.messageKeyForAfi))
   }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
