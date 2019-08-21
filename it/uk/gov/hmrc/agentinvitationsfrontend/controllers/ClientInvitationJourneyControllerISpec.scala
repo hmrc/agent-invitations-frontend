@@ -147,7 +147,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
-      val result = controller.submitWarmUp(authenticatedAnyClientAgentAffinity(request()))
+      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request(), affinityGroup = Some("Agent")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.notAuthorised().url)
     }
@@ -158,7 +158,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
       intercept[Exception] {
-        await(controller.submitWarmUp(authenticatedAnyClientNoAffinity(request())))
+        await(controller.submitWarmUp(authenticatedAnyClientWithAffinity(request())))
       }.getMessage shouldBe "user has affinity group None"
     }
   }

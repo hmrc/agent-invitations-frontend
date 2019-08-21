@@ -161,7 +161,8 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
   }
 
-  def authenticatedAnyClientAgentAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authenticatedAnyClientWithAffinity[A](request: FakeRequest[A], affinityGroup: Option[String] = None)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -178,47 +179,23 @@ trait AuthStubs {
         |  "retrieve": [ "allEnrolments" ]
         |}
       """.stripMargin,
-      s"""
-         |{
-         |  "affinityGroup":"Agent",
-         |  "confidenceLevel": 200,
-         |  "allEnrolments": []
-         |}
+      if (affinityGroup.isDefined) {
+        s"""
+           |{
+           |  "affinityGroup": "${affinityGroup.get}",
+           |  "confidenceLevel": 200,
+           |  "allEnrolments": []
+           |}
           """.stripMargin
-    )
-    request.withSession(
-      SessionKeys.authToken -> "Bearer XYZ",
-      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
-  }
+      } else {
+        s"""
+           |{
+           |  "confidenceLevel": 200,
+           |  "allEnrolments": []
+           |}
+          """.stripMargin
 
-  def authenticatedAnyClientNoAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
-    givenAuthorisedFor(
-      """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
-      """.stripMargin,
-      s"""
-         |{
-         |  "confidenceLevel": 200,
-         |  "allEnrolments": [{
-         |      "key": "HMRC-MTD-IT",
-         |      "identifiers": [
-         |         {"key":"VRN", "value": "101747696"}
-         |      ]
-         |     }]
-         |}
-          """.stripMargin
+      }
     )
     request.withSession(
       SessionKeys.authToken -> "Bearer XYZ",
