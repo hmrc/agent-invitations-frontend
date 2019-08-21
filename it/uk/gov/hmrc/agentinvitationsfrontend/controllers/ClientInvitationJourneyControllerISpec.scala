@@ -147,19 +147,20 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
-      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request(), affinityGroup = Some("Agent")))
+      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.notAuthorised().url)
     }
 
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
+      givenUnauthorisedWith("UnsupportedAffinityGroup")
       journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
       intercept[Exception] {
-        await(controller.submitWarmUp(authenticatedAnyClientWithAffinity(request())))
-      }.getMessage shouldBe "user has affinity group None"
+        await(controller.submitWarmUp(request()))
+      }.getMessage shouldBe "UnsupportedAffinityGroup"
     }
   }
 

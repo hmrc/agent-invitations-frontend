@@ -29,15 +29,8 @@ trait AuthStubs {
         |{
         |"authorise": [ {
         |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
+        |}],
+        |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
         |}
        """.stripMargin,
       s"""
@@ -76,19 +69,12 @@ trait AuthStubs {
   def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
        """.stripMargin,
       s"""
          |{
@@ -111,91 +97,23 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
-  def authorisedAsAnyClientFalse[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authenticatedAnyClientWithAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
-      """.stripMargin,
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
+       """.stripMargin,
       s"""
          |{
-         |  "affinityGroup":"Individual",
+         |  "affinityGroup": "Agent",
          |  "confidenceLevel": 200,
-         |  "allEnrolments":
-         |  [
-         |    {
-         |      "key": "HMRC-MTD-IT",
-         |      "identifiers": [
-         |         {"key":"VRN", "value": "101747696"}
-         |      ]
-         |     },
-         |     {
-         |      "key": "HMRC-NI",
-         |      "identifiers": [
-         |         {"key":"VRN", "value": "ABCDEF123456789"}
-         |      ]
-         |     },
-         |     {
-         |      "key": "HMRC-MTD-VAT",
-         |      "identifiers": [
-         |         {"key":"NINO", "value": "101747696"}
-         |      ]
-         |     }
-         |  ]
+         |  "allEnrolments": []
          |}
           """.stripMargin
-    )
-    request.withSession(
-      SessionKeys.authToken -> "Bearer XYZ",
-      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
-  }
-
-  def authenticatedAnyClientWithAffinity[A](request: FakeRequest[A], affinityGroup: Option[String] = None)(
-    implicit hc: HeaderCarrier): FakeRequest[A] = {
-    givenAuthorisedFor(
-      """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
-      """.stripMargin,
-      if (affinityGroup.isDefined) {
-        s"""
-           |{
-           |  "affinityGroup": "${affinityGroup.get}",
-           |  "confidenceLevel": 200,
-           |  "allEnrolments": []
-           |}
-          """.stripMargin
-      } else {
-        s"""
-           |{
-           |  "confidenceLevel": 200,
-           |  "allEnrolments": []
-           |}
-          """.stripMargin
-
-      }
     )
     request.withSession(
       SessionKeys.authToken -> "Bearer XYZ",
