@@ -141,6 +141,26 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
       }
     }
+
+    "redirect to not authorised when an agent tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      val result = controller.submitWarmUp(authenticatedAnyClientAgentAffinity(request()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.notAuthorised().url)
+    }
+
+    "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      intercept[Exception] {
+        await(controller.submitWarmUp(authenticatedAnyClientNoAffinity(request())))
+      }.getMessage shouldBe "user has affinity group None"
+    }
   }
 
   "GET /warm-up/to-decline" when {
@@ -677,6 +697,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
+    }
+  }
+
+  "GET /not-authorised" should {
+    "display the not authorised page" in {
+      val result = controller.notAuthorised(FakeRequest())
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
     }
   }
 

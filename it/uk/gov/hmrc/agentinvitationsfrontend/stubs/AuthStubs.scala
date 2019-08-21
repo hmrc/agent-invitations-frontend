@@ -68,7 +68,9 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Client Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
   def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
@@ -104,7 +106,9 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
   def authorisedAsAnyClientFalse[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
@@ -152,7 +156,73 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
+  }
+
+  def authenticatedAnyClientAgentAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+        |{
+        |"authorise": [ {
+        |  "authProviders": [ "GovernmentGateway" ]
+        |},
+        |{
+        |  "$or" : [ {
+        |      "affinityGroup" : "Individual"
+        |    }, {
+        |      "affinityGroup" : "Organisation"
+        |    } ]
+        |} ],
+        |  "retrieve": [ "allEnrolments" ]
+        |}
+      """.stripMargin,
+      s"""
+         |{
+         |  "affinityGroup":"Agent",
+         |  "confidenceLevel": 200,
+         |  "allEnrolments": []
+         |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
+  }
+
+  def authenticatedAnyClientNoAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+        |{
+        |"authorise": [ {
+        |  "authProviders": [ "GovernmentGateway" ]
+        |},
+        |{
+        |  "$or" : [ {
+        |      "affinityGroup" : "Individual"
+        |    }, {
+        |      "affinityGroup" : "Organisation"
+        |    } ]
+        |} ],
+        |  "retrieve": [ "allEnrolments" ]
+        |}
+      """.stripMargin,
+      s"""
+         |{
+         |  "confidenceLevel": 200,
+         |  "allEnrolments": [{
+         |      "key": "HMRC-MTD-IT",
+         |      "identifiers": [
+         |         {"key":"VRN", "value": "101747696"}
+         |      ]
+         |     }]
+         |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
   }
 
   def authenticatedClient[A](
@@ -184,7 +254,8 @@ trait AuthStubs {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
-  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -204,7 +275,9 @@ trait AuthStubs {
          |]}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit =
@@ -240,6 +313,14 @@ trait AuthStubs {
           aResponse()
             .withStatus(401)
             .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientConfidenceLevel\"")))
+
+  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit =
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
 
   def verifyAuthoriseAttempt(): Unit =
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
