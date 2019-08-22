@@ -149,7 +149,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.notAuthorised().url)
+      redirectLocation(result) shouldBe Some(
+        routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url)
     }
 
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
@@ -703,7 +704,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /not-authorised" should {
     "display the not authorised page" in {
-      val result = controller.notAuthorised(FakeRequest())
+      val result = controller.incorrectlyAuthorisedAsAgent(authorisedAsValidAgent(FakeRequest(), arn.value))
       status(result) shouldBe 403
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))

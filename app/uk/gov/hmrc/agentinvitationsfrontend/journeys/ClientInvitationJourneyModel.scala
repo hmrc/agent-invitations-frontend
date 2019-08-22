@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -76,9 +76,9 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     private def clientTypeMatchesGroup(affinityGroup: AffinityGroup, clientType: ClientType): Boolean =
       (affinityGroup, clientType) match {
-        case (AffinityGroup.Individual, ClientType.personal) => true
-        case (Organisation, ClientType.business)             => true
-        case _                                               => false
+        case (Individual, ClientType.personal)   => true
+        case (Organisation, ClientType.business) => true
+        case _                                   => false
       }
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(

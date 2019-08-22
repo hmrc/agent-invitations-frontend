@@ -201,8 +201,10 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
   }
 
-  val notAuthorised: Action[AnyContent] = Action { implicit request =>
-    Forbidden(not_authorised(Services.messageKeyForAfi))
+  def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_authorised(Services.messageKeyForAfi))
+    }
   }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {

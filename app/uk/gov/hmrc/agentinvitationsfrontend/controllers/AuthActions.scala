@@ -43,8 +43,6 @@ class AuthActionsImpl @Inject()(
   val authConnector: AuthConnector
 ) extends AuthActions
 
-case class AffinityGroupMissing(msg: String = "user has affinity group None") extends Exception(msg)
-
 @ImplementedBy(classOf[AuthActionsImpl])
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
@@ -87,7 +85,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
             case (AffinityGroup.Agent, _) =>
-              Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+              Future successful Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent())
           }
 
         case _ =>
@@ -119,13 +117,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     } else if (request.method == "GET") {
       redirectToIdentityVerification(requiredLevel)
     } else {
-      Future.successful(Redirect(routes.ClientInvitationJourneyController.notAuthorised().url))
+      Future.successful(Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url))
     }
 
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val failureUrl = toLocalFriendlyUrl(routes.ClientInvitationJourneyController.notAuthorised().url, request.host)
+    val failureUrl =
+      toLocalFriendlyUrl(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url, request.host)
 
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,
