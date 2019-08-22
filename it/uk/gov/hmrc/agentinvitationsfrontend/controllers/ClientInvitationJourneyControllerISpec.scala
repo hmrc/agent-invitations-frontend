@@ -112,7 +112,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "user is authenticated as valid client" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anAuthorisedClientGetEndpoint(request(), controller.submitWarmUp)
+      behave like aClientWithLowConfidenceLevelGetEndpoint(request(), controller.submitWarmUp)
     }
 
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
@@ -288,7 +288,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "user is authenticated as valid client" should {
       val request = () => requestWithJourneyIdInQuery("POST", "/warm-up/consent")
-      behave like anAuthorisedClientPostEndpoint(request(), controller.submitConsent)
+      behave like aClientWithLowConfidenceLevelPostEndpoint(request(), controller.submitConsent)
     }
   }
 

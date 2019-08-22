@@ -42,8 +42,9 @@ trait AuthBehaviours extends AuthStubs {
     }
   }
 
-  def anAuthorisedClientGetEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(
-    implicit defaultAwaitTimeout: akka.util.Timeout) =
+  def aClientWithLowConfidenceLevelGetEndpoint(
+    request: FakeRequest[AnyContentAsEmpty.type],
+    action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout) =
     "redirect to Identity Verification when confidence level is below 200" in {
       implicit val hc: HeaderCarrier = HeaderCarrier()
       val result = await(action(authorisedAsAnyIndividualClient(request, confidenceLevel = 50)))
@@ -57,8 +58,9 @@ trait AuthBehaviours extends AuthStubs {
       redirectLocation(result).get should endWith(s"failureURL=$failureUrl")
     }
 
-  def anAuthorisedClientPostEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(
-    implicit defaultAwaitTimeout: akka.util.Timeout) =
+  def aClientWithLowConfidenceLevelPostEndpoint(
+    request: FakeRequest[AnyContentAsEmpty.type],
+    action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout) =
     "redirect to cannot confirm identity when the confidence level is below 200 on a post request" in {
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
