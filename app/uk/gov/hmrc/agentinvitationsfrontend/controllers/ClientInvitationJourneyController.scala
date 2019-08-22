@@ -207,6 +207,12 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
+  def showCannotConfirmIdentity: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAnyClient { _ =>
+      Future successful Forbidden(cannot_confirm_identity())
+    }
+  }
+
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
     case TrustNotClaimed =>
   }

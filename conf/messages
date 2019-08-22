@@ -503,12 +503,16 @@ invitation-already-responded.header=There is a problem
 invitation-already-responded.description=Someone has already responded to this request. If you think this is wrong, contact the tax agent who sent you the request.
 
 # Wrong Client Type
-
 wrong-client-type.header=There is a problem
 wrong-client-type.p1=You signed in with the wrong type of Government Gateway account.
 wrong-client-type.p2=To use this service, you need to sign in with the Government Gateway account you use for your {0} tax affairs.
 wrong-client-type.p3=You can create an account if you do not have one.
 wrong-client-type.button=Sign out and try again
+
+# Cannot confirm identity
+cannot-confirm-identity.header=We could not confirm your identity
+cannot-confirm-identity.p1=We need to confirm who you are before you can use this service.
+cannot-confirm-identity.p2=Use the ''Get help with this page'' link if you need help with confirming your identity.
 
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
