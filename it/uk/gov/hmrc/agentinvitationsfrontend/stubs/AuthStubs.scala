@@ -23,7 +23,8 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
@@ -36,7 +37,7 @@ trait AuthStubs {
       s"""
          |{
          |  "affinityGroup":"Individual",
-         |  "confidenceLevel":200,
+         |  "confidenceLevel":$confidenceLevel,
          |  "allEnrolments":
          |  [
          |    {
