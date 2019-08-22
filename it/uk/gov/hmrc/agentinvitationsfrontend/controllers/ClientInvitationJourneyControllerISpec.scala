@@ -724,7 +724,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /cannot-confirm-identity" should {
     "display the cannot confirm identity page" in {
-      val result = controller.showCannotConfirmIdentity(authorisedAsAnyIndividualClient(FakeRequest()))
+      val result = controller.showCannotConfirmIdentity(FakeRequest())
       status(result) shouldBe 403
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.header"))
