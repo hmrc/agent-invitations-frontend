@@ -20,7 +20,7 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -70,33 +70,32 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       }
     }
 
-  private def extractAffinityGroup(affinityGroup: AffinityGroup): String =
-    (affinityGroup.toJson \ "affinityGroup").as[String]
-
   def withAuthorisedAsAnyClient[A](body: AuthorisedClient => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(
-      AuthProviders(GovernmentGateway) and (AffinityGroup.Individual or AffinityGroup.Organisation)
+      AuthProviders(GovernmentGateway)
     ).retrieve(affinityGroup and confidenceLevel and allEnrolments) {
         case Some(affinity) ~ confidence ~ enrols =>
-          val affinityG: String = extractAffinityGroup(affinity)
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
               withConfidenceLevelUplift(cl, ConfidenceLevel.L200) {
-                body(AuthorisedClient(affinityG, enrols))
+                body(AuthorisedClient(affinity, enrols))
               }
-            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinityG, enrols))
-            case _                               => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
+            case (AffinityGroup.Agent, _) =>
+              Future successful Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent())
           }
-        case _ => Future successful Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+
+        case _ =>
+          Logger.warn("the user had no affinity group")
+          Future successful Forbidden("user has no affinity group")
       }
       .recover {
-        case _: InsufficientEnrolments =>
-          Redirect(routes.ClientInvitationJourneyController.notAuthorised())
-        case _: UnsupportedAffinityGroup =>
-          Redirect(routes.ClientInvitationJourneyController.notAuthorised())
+        case ex: AuthorisationException =>
+          Logger.error(s"authorisation failed for reason: ${ex.reason}")
+          throw ex
       }
 
   def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
@@ -118,13 +117,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     } else if (request.method == "GET") {
       redirectToIdentityVerification(requiredLevel)
     } else {
-      Future.successful(Redirect(routes.ClientInvitationJourneyController.notAuthorised().url))
+      Future.successful(Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url))
     }
 
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val failureUrl = toLocalFriendlyUrl(routes.ClientInvitationJourneyController.notAuthorised().url, request.host)
+    val failureUrl =
+      toLocalFriendlyUrl(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url, request.host)
 
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,

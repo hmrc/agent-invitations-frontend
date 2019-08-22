@@ -20,10 +20,10 @@ import play.api.libs.json.Json
 
 case class CustomerDetails(
   organisationName: Option[String],
-  individual: Option[Individual],
+  individual: Option[IndividualDetails],
   tradingName: Option[String])
 
-case class Individual(
+case class IndividualDetails(
   title: Option[String],
   firstName: Option[String],
   middleName: Option[String],
@@ -33,8 +33,8 @@ case class Individual(
     Seq(title, firstName, middleName, lastName).flatten.map(_.trim).filter(_.nonEmpty).mkString(" ")
 }
 
-object Individual {
-  implicit val format = Json.format[Individual]
+object IndividualDetails {
+  implicit val format = Json.format[IndividualDetails]
 }
 
 object CustomerDetails {

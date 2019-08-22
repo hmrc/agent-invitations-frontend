@@ -27,7 +27,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
+import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -47,8 +48,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       await(super.apply(transition))
   }
 
-  val authorisedIndividualClient = AuthorisedClient("Individual", Enrolments(Set(Enrolment("some-key"))))
-  val authorisedBusinessClient = AuthorisedClient("Organisation", Enrolments(Set(Enrolment("some-key"))))
+  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
+  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val featureFlags = FeatureFlags()
 

@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.AuthorisationException
+import uk.gov.hmrc.auth.core.{AuthorisationException, NoActiveSession}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -82,7 +82,7 @@ class ClientInvitationJourneyController @Inject()(
     val authorisedAsAnyClient = withAuthorisedAsAnyClient _
 
     authorisedAsAnyClient.andThen(_.recover {
-      case _: AuthorisationException => {
+      case _: NoActiveSession => {
         import CallOps._
         val requestUrlWithJourneyKey = addParamsToUrl(
           url = localFriendlyUrl(env, config)(request.uri, request.host),
@@ -201,12 +201,10 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
   }
 
-  val notAuthorised: Action[AnyContent] = Action { implicit request =>
-    Forbidden(
-      not_authorised(
-        Messages("not-authorised.header"),
-        Messages("not-authorised.description"),
-        Services.messageKeyForAfi))
+  def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      Future successful Forbidden(not_authorised(Services.messageKeyForAfi))
+    }
   }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {

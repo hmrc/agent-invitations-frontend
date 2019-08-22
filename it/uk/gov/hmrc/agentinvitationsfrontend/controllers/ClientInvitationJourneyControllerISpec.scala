@@ -141,6 +141,28 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
       }
     }
+
+    "redirect to not authorised when an agent tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url)
+    }
+
+    "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      givenUnauthorisedWith("UnsupportedAffinityGroup")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      intercept[Exception] {
+        await(controller.submitWarmUp(request()))
+      }.getMessage shouldBe "UnsupportedAffinityGroup"
+    }
   }
 
   "GET /warm-up/to-decline" when {
@@ -188,7 +210,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/not-found" should {
+  "GET /not-found" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/not-found")
 
     behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
@@ -203,7 +225,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
     }
   }
-  "GET /warm-up/consent" should {
+  "GET /consent" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.showConsent)
@@ -224,8 +246,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/incorrect-client-type" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/incorrect-client-type")
+  "GET /warm-up/wrong-account-type" should {
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/wrong-account-type")
 
     behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
 
@@ -240,7 +262,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "POST /warm-up/consent" should {
+  "POST /consent" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.submitConsent)
@@ -540,9 +562,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
-          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))),
-        Nil)
+          Seq(
+            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))
+        ),
+        Nil
+      )
 
       val result = controller.submitConfirmDecline(
         authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
@@ -674,6 +699,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
+    }
+  }
+
+  "GET /not-authorised" should {
+    "display the not authorised page" in {
+      val result = controller.incorrectlyAuthorisedAsAgent(authorisedAsValidAgent(FakeRequest(), arn.value))
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
     }
   }
 

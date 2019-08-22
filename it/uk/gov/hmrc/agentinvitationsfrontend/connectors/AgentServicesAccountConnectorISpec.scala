@@ -90,10 +90,10 @@ class AgentServicesAccountConnectorISpec extends BaseISpec {
     val vrn = Vrn("101747696")
     val customerDetailsAll = CustomerDetails(
       Some("Gadgetron"),
-      Some(Individual(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))),
+      Some(IndividualDetails(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))),
       Some("GDT"))
     val customerDetailsOnlyPersonal =
-      CustomerDetails(None, Some(Individual(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))), None)
+      CustomerDetails(None, Some(IndividualDetails(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))), None)
     val customerDetailsOnlyOrganisation = CustomerDetails(Some("Gadgetron"), None, None)
     val customerDetailsOnlyTrading = CustomerDetails(None, None, Some("GDT"))
     val customerDetailsNone = CustomerDetails(None, None, None)
