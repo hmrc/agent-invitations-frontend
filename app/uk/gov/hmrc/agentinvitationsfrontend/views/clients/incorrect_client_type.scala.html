@@ -22,15 +22,17 @@
 
 @(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(s"wrong-client-type.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(s"incorrect-client-type.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
- <h1 class="heading-xlarge margin-bottom-30">@Messages("wrong-client-type.header")</h1>
+ <h1 class="heading-xlarge margin-bottom-30">@Messages("incorrect-client-type.header")</h1>
 
- <p>@Messages("wrong-client-type.p1")</p>
+ <p>@Messages("incorrect-client-type.p1")</p>
 
- <p>@Messages("wrong-client-type.p2", clientType)</p>
+ <p>@Messages(s"incorrect-client-type.p2.$clientType")</p>
 
- <p>@Messages("wrong-client-type.p3")</p>
+ <p>@Messages("incorrect-client-type.p3", clientType)</p>
 
- <a href=@externalUrls.companyAuthFrontendSignOutUrl class="button">@Messages("wrong-client-type.button")</a>
+ <p>@Messages("incorrect-client-type.p4")</p>
+
+ <a href=@externalUrls.companyAuthFrontendSignOutUrl class="button">@Messages("incorrect-client-type.button")</a>
 }
