@@ -14,7 +14,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
+class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder(featureFlags)
@@ -93,7 +93,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         journeyId.get should not be empty
       }
     }
-
   }
 
   "GET /warm-up" when {
@@ -109,6 +108,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "journey ID is not in the session cookie but is on the query string (e.g. just been redirected from successful login)" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
       behave like warmupSubmitAccept(request)
+    }
+
+    "user is authenticated as valid client" should {
+      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
+      behave like aClientWithLowConfidenceLevelGetEndpoint(request(), controller.submitWarmUp)
     }
 
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
@@ -292,6 +296,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         controller.submitConsent(authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers().url)
+    }
+
+    "user is authenticated as valid client" should {
+      val request = () => requestWithJourneyIdInQuery("POST", "/warm-up/consent")
+      behave like aClientWithLowConfidenceLevelPostEndpoint(request(), controller.submitConsent)
     }
   }
 
@@ -714,7 +723,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /not-authorised" should {
+  "GET /not-authorised-as-client" should {
     "display the not authorised page" in {
       val result = controller.incorrectlyAuthorisedAsAgent(authorisedAsValidAgent(FakeRequest(), arn.value))
       status(result) shouldBe 403
@@ -722,6 +731,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
+    }
+  }
+
+  "GET /cannot-confirm-identity" should {
+    "display the cannot confirm identity page" in {
+      val result = controller.showCannotConfirmIdentity(FakeRequest())
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p2"))
     }
   }
 
