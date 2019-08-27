@@ -90,7 +90,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
         case _ =>
           Logger.warn("the user had no affinity group")
-          Future successful Forbidden("user has no affinity group")
+          Future successful Forbidden
       }
       .recover {
         case ex: AuthorisationException =>
