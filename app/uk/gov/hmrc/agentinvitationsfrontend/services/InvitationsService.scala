@@ -177,37 +177,57 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[Option[Boolean]] =
     invitationsConnector.checkCitizenRecord(nino, dob)
 
-  def acceptInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+  private def determineInvitationResponse(
+    invitationId: InvitationId,
+    si: StoredInvitation,
+    agentName: String,
+    response: String)(implicit request: Request[_], hc: HeaderCarrier, ec: ExecutionContext) =
+    for {
+      result <- Services.determineServiceMessageKey(invitationId) match {
+                 case "itsa" =>
+                   if (response == "Accepted")
+                     invitationsConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)
+                   else invitationsConnector.rejectITSAInvitation(MtdItId(si.clientId), invitationId)
+                 case "afi" =>
+                   if (response == "Accepted") invitationsConnector.acceptAFIInvitation(Nino(si.clientId), invitationId)
+                   else invitationsConnector.rejectAFIInvitation(Nino(si.clientId), invitationId)
+                 case "vat" =>
+                   if (response == "Accepted") invitationsConnector.acceptVATInvitation(Vrn(si.clientId), invitationId)
+                   else invitationsConnector.rejectVATInvitation(Vrn(si.clientId), invitationId)
+                 case "trust" =>
+                   if (response == "Accepted")
+                     invitationsConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
+                   else invitationsConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
+               }
+      _ <- auditService.sendAgentInvitationResponse(
+            invitationId.value,
+            si.arn,
+            response,
+            si.clientIdType,
+            si.clientId,
+            si.service,
+            agentName)
+    } yield result
+
+  def acceptInvitation(invitationId: InvitationId)(
+    agentName: String)(implicit request: Request[_], hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
       invitation <- invitationsConnector.getInvitation(invitationId)
       result: Boolean <- invitation match {
                           case None =>
                             Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
-                          case Some(i) =>
-                            Services.determineServiceMessageKey(invitationId) match {
-                              case "itsa" =>
-                                invitationsConnector.acceptITSAInvitation(MtdItId(i.clientId), invitationId)
-                              case "afi"   => invitationsConnector.acceptAFIInvitation(Nino(i.clientId), invitationId)
-                              case "vat"   => invitationsConnector.acceptVATInvitation(Vrn(i.clientId), invitationId)
-                              case "trust" => invitationsConnector.acceptTrustInvitation(Utr(i.clientId), invitationId)
-                            }
+                          case Some(i) => determineInvitationResponse(invitationId, i, agentName, "Accepted")
                         }
     } yield result
 
-  def rejectInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+  def rejectInvitation(invitationId: InvitationId)(
+    agentName: String)(implicit request: Request[_], hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
       invitation <- invitationsConnector.getInvitation(invitationId)
       result: Boolean <- invitation match {
                           case None =>
                             Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
-                          case Some(i) =>
-                            Services.determineServiceMessageKey(invitationId) match {
-                              case "itsa" =>
-                                invitationsConnector.rejectITSAInvitation(MtdItId(i.clientId), invitationId)
-                              case "afi"   => invitationsConnector.rejectAFIInvitation(Nino(i.clientId), invitationId)
-                              case "vat"   => invitationsConnector.rejectVATInvitation(Vrn(i.clientId), invitationId)
-                              case "trust" => invitationsConnector.rejectTrustInvitation(Utr(i.clientId), invitationId)
-                            }
+                          case Some(i) => determineInvitationResponse(invitationId, i, agentName, "Rejected")
                         }
     } yield result
 

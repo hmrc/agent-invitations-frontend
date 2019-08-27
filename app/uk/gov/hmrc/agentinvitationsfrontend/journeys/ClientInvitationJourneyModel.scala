@@ -71,8 +71,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetAgentReferenceRecord = String => Future[Option[AgentReferenceRecord]]
     type GetAgencyName = Arn => Future[String]
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
-    type AcceptInvitation = InvitationId => Future[Boolean]
-    type RejectInvitation = InvitationId => Future[Boolean]
+    type AcceptInvitation = InvitationId => String => Future[Boolean]
+    type RejectInvitation = InvitationId => String => Future[Boolean]
 
     private def clientTypeMatchesGroup(affinityGroup: AffinityGroup, clientType: ClientType): Boolean =
       (affinityGroup, clientType) match {
@@ -149,7 +149,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
             val newConsentsF =
               Future.sequence {
                 consents.map(consent =>
-                  rejectInvitation(consent.invitationId).map(processed => consent.copy(processed = processed)))
+                  rejectInvitation(consent.invitationId)(agentName).map(processed =>
+                    consent.copy(processed = processed)))
               }
             for {
               newConsents <- newConsentsF
@@ -197,15 +198,15 @@ object ClientInvitationJourneyModel extends JourneyModel {
     }
 
     private def processConsents(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
-      consents: Seq[ClientConsent]): Future[Seq[ClientConsent]] =
+      consents: Seq[ClientConsent])(agentName: String): Future[Seq[ClientConsent]] =
       for {
         result <- Future.traverse(consents) {
                    case chosenConsent @ ClientConsent(invitationId, _, _, consent, _) =>
                      if (consent) {
-                       acceptInvitation(invitationId)
+                       acceptInvitation(invitationId)(agentName)
                          .map(acceptSuccess => chosenConsent.copy(processed = acceptSuccess))
                      } else {
-                       rejectInvitation(invitationId)
+                       rejectInvitation(invitationId)(agentName)
                          .map(processed => chosenConsent.copy(processed = processed))
                      }
                  }
@@ -215,7 +216,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       client: AuthorisedClient) = Transition {
       case CheckAnswers(_, _, agentName, consents) =>
         for {
-          newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)
+          newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)(agentName)
           result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
         } yield result
     }
