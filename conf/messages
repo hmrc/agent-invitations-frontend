@@ -476,8 +476,9 @@ not-signed-up-vat.description=You have not signed up to submit your VAT returns 
 not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
 #Not Authorised
-not-authorised.header=Sorry, you haven''t been authorised to proceed.
-not-authorised.description=Try again with an Individual Government Gateway ID.
+not-authorised.header=You cannot access this page
+not-authorised.description.p1=You do not have permission to access this page. Only your client can access this page.
+not-authorised.description.p2=Ask your client to go to the link that you tried to access, so they can accept your authorisation request.
 
 not-authorised-vat.title=You''re not able to use this service
 not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to submit your VAT returns through software.
@@ -502,12 +503,18 @@ invitation-already-responded.header=There is a problem
 invitation-already-responded.description=Someone has already responded to this request. If you think this is wrong, contact the tax agent who sent you the request.
 
 # Wrong Client Type
+incorrect-client-type.header=There is a problem
+incorrect-client-type.p1=You signed in with the wrong type of Government Gateway user ID.
+incorrect-client-type.p2.personal=If you are not an individual or sole trader, contact your tax agent who sent you this request.
+incorrect-client-type.p2.business=If you are an individual or sole trader, contact your tax agent who sent you this request.
+incorrect-client-type.p3=If you still want to continue, you will need to sign in with the Government Gateway user ID you use for your {0} tax affairs.
+incorrect-client-type.p4=You can create an account if you do not have one.
+incorrect-client-type.button=Sign out and try again
 
-wrong-client-type.header=There is a problem
-wrong-client-type.p1=You signed in with the wrong type of Government Gateway account.
-wrong-client-type.p2=To use this service, you need to sign in with the Government Gateway account you use for your {0} tax affairs.
-wrong-client-type.p3=You can create an account if you do not have one.
-wrong-client-type.button=Sign out and try again
+# Cannot confirm identity
+cannot-confirm-identity.header=We could not confirm your identity
+cannot-confirm-identity.p1=We need to confirm who you are before you can use this service.
+cannot-confirm-identity.p2=Use the ''Get help with this page'' link if you need help with confirming your identity.
 
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
@@ -650,6 +657,7 @@ authorisation-cancelled.subheader=What this means
 authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to send their Income Tax updates through software.
 authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
 authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to submit their VAT returns through software.
+authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to maintain their trust or estate.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page

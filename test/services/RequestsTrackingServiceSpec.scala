@@ -22,7 +22,7 @@ import org.joda.time.{DateTime, LocalDate}
 import org.mockito.Mockito.{mock, when}
 import org.mockito.ArgumentMatchers._
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, Individual, StoredInvitation, TrackedInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, IndividualDetails, StoredInvitation, TrackedInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -63,7 +63,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             Future.successful(
               CustomerDetails(
                 Some("Aaa"),
-                Some(Individual(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))),
+                Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))),
                 Some("Ccc"))))
         await(tested.getVatName(vrn)) shouldBe Some("Ccc")
       }
@@ -72,8 +72,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         when(
           agentServicesAccountConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
-          .thenReturn(Future.successful(
-            CustomerDetails(Some("Aaa"), Some(Individual(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None)))
+          .thenReturn(
+            Future.successful(
+              CustomerDetails(
+                Some("Aaa"),
+                Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))),
+                None)))
         await(tested.getVatName(vrn)) shouldBe Some("Aaa")
       }
 
@@ -82,7 +86,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           agentServicesAccountConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(
-            CustomerDetails(None, Some(Individual(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None)))
+            CustomerDetails(None, Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None)))
         await(tested.getVatName(vrn)) shouldBe Some("Bb1 Bb2 Bb3 Bb4")
       }
 
@@ -90,8 +94,8 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         when(
           agentServicesAccountConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
-          .thenReturn(
-            Future.successful(CustomerDetails(None, Some(Individual(None, Some("Bb2"), None, Some("Bb4"))), None)))
+          .thenReturn(Future.successful(
+            CustomerDetails(None, Some(IndividualDetails(None, Some("Bb2"), None, Some("Bb4"))), None)))
         await(tested.getVatName(vrn)) shouldBe Some("Bb2 Bb4")
       }
 
@@ -177,7 +181,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
             Future.successful(
               CustomerDetails(
                 Some("Aaa Vat Trader"),
-                Some(Individual(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))),
+                Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))),
                 Some("Aaa Ltd."))))
         when(
           citizenDetailsConnector
@@ -235,8 +239,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         when(
           agentServicesAccountConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
-          .thenReturn(Future.successful(
-            CustomerDetails(None, Some(Individual(Some("A"), Some("B"), Some("C"), Some("D"))), Some("Aaa Ltd."))))
+          .thenReturn(
+            Future.successful(
+              CustomerDetails(
+                None,
+                Some(IndividualDetails(Some("A"), Some("B"), Some("C"), Some("D"))),
+                Some("Aaa Ltd."))))
         when(
           citizenDetailsConnector
             .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
@@ -406,7 +414,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         agentServicesAccountConnector
           .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
         .thenReturn(Future.successful(
-          CustomerDetails(None, Some(Individual(Some("A"), Some("B"), Some("C"), Some("D"))), Some("Aaa Ltd."))))
+          CustomerDetails(None, Some(IndividualDetails(Some("A"), Some("B"), Some("C"), Some("D"))), Some("Aaa Ltd."))))
       when(
         citizenDetailsConnector
           .getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))

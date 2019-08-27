@@ -14,7 +14,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers {
+class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder(featureFlags)
@@ -93,7 +93,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         journeyId.get should not be empty
       }
     }
-
   }
 
   "GET /warm-up" when {
@@ -109,6 +108,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "journey ID is not in the session cookie but is on the query string (e.g. just been redirected from successful login)" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
       behave like warmupSubmitAccept(request)
+    }
+
+    "user is authenticated as valid client" should {
+      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
+      behave like aClientWithLowConfidenceLevelGetEndpoint(request(), controller.submitWarmUp)
     }
 
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
@@ -140,6 +144,28 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
       }
+    }
+
+    "redirect to not authorised when an agent tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url)
+    }
+
+    "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      givenUnauthorisedWith("UnsupportedAffinityGroup")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+
+      intercept[Exception] {
+        await(controller.submitWarmUp(request()))
+      }.getMessage shouldBe "UnsupportedAffinityGroup"
     }
   }
 
@@ -188,7 +214,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/not-found" should {
+  "GET /not-found" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/not-found")
 
     behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
@@ -203,7 +229,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
     }
   }
-  "GET /warm-up/consent" should {
+  "GET /consent" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.showConsent)
@@ -224,23 +250,35 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/incorrect-client-type" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/incorrect-client-type")
+  "GET /warm-up/wrong-account-type" should {
+    def request = requestWithJourneyIdInCookie("GET", "/warm-up/wrong-account-type")
 
     behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
 
-    "display the incorrect client type page" in {
+    "display the incorrect client type page when an individual tries to access a business invitation" in {
       journeyState.set(IncorrectClientType(personal), Nil)
 
       val result = controller.showIncorrectClientType(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("wrong-client-type.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("wrong-client-type.p2", "personal"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.personal"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", personal))
+    }
+
+    "display the incorrect client type page when a business tries to access an individual invitation" in {
+      journeyState.set(IncorrectClientType(business), Nil)
+
+      val result = controller.showIncorrectClientType(authorisedAsAnyOrganisationClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.business"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", business))
     }
   }
 
-  "POST /warm-up/consent" should {
+  "POST /consent" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
 
     behave like anActionHandlingSessionExpiry(controller.submitConsent)
@@ -258,6 +296,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         controller.submitConsent(authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers().url)
+    }
+
+    "user is authenticated as valid client" should {
+      val request = () => requestWithJourneyIdInQuery("POST", "/warm-up/consent")
+      behave like aClientWithLowConfidenceLevelPostEndpoint(request(), controller.submitConsent)
     }
   }
 
@@ -540,9 +583,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
-          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))),
-        Nil)
+          Seq(
+            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))
+        ),
+        Nil
+      )
 
       val result = controller.submitConfirmDecline(
         authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
@@ -674,6 +720,28 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
+    }
+  }
+
+  "GET /not-authorised-as-client" should {
+    "display the not authorised page" in {
+      val result = controller.incorrectlyAuthorisedAsAgent(authorisedAsValidAgent(FakeRequest(), arn.value))
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
+    }
+  }
+
+  "GET /cannot-confirm-identity" should {
+    "display the cannot confirm identity page" in {
+      val result = controller.showCannotConfirmIdentity(FakeRequest())
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p2"))
     }
   }
 

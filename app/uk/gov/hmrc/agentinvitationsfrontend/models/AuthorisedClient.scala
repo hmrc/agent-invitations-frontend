@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.auth.core.Enrolments
+import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolments}
 
-case class AuthorisedClient(affinityGroup: String, enrolments: Enrolments)
+case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments)

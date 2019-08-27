@@ -18,11 +18,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(title: String, description: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("not-authorised.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("not-authorised.header"), serviceMessageKey))) {
 
-    <h1 class="heading-xlarge">@title</h1>
+    <h1 class="heading-xlarge">@Messages("not-authorised.header")</h1>
 
-    <p>@description</p>
+            <p>@Messages("not-authorised.description.p1")</p>
+            <p>@Messages("not-authorised.description.p2")</p>
+
+    <a href=@externalUrls.companyAuthFrontendSignOutUrl class="button">@Messages("common.sign-out")</a>
 }

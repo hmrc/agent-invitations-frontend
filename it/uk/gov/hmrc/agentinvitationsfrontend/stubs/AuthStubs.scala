@@ -23,27 +23,21 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
         |{
         |"authorise": [ {
         |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
+        |}],
+        |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
         |}
        """.stripMargin,
       s"""
          |{
          |  "affinityGroup":"Individual",
-         |  "confidenceLevel":200,
+         |  "confidenceLevel":$confidenceLevel,
          |  "allEnrolments":
          |  [
          |    {
@@ -68,25 +62,20 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Client Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
   def authorisedAsAnyOrganisationClient[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
        """.stripMargin,
       s"""
          |{
@@ -104,55 +93,32 @@ trait AuthStubs {
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
-  def authorisedAsAnyClientFalse[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authenticatedAnyClientWithAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
-        |{
-        |"authorise": [ {
-        |  "authProviders": [ "GovernmentGateway" ]
-        |},
-        |{
-        |  "$or" : [ {
-        |      "affinityGroup" : "Individual"
-        |    }, {
-        |      "affinityGroup" : "Organisation"
-        |    } ]
-        |} ],
-        |  "retrieve": [ "allEnrolments" ]
-        |}
-      """.stripMargin,
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
+       """.stripMargin,
       s"""
          |{
-         |  "affinityGroup":"Individual",
+         |  "affinityGroup": "Agent",
          |  "confidenceLevel": 200,
-         |  "allEnrolments":
-         |  [
-         |    {
-         |      "key": "HMRC-MTD-IT",
-         |      "identifiers": [
-         |         {"key":"VRN", "value": "101747696"}
-         |      ]
-         |     },
-         |     {
-         |      "key": "HMRC-NI",
-         |      "identifiers": [
-         |         {"key":"VRN", "value": "ABCDEF123456789"}
-         |      ]
-         |     },
-         |     {
-         |      "key": "HMRC-MTD-VAT",
-         |      "identifiers": [
-         |         {"key":"NINO", "value": "101747696"}
-         |      ]
-         |     }
-         |  ]
+         |  "allEnrolments": []
          |}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession12345"))
   }
 
   def authenticatedClient[A](
@@ -184,7 +150,8 @@ trait AuthStubs {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
-  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -204,7 +171,9 @@ trait AuthStubs {
          |]}
           """.stripMargin
     )
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ", SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit =
@@ -240,6 +209,14 @@ trait AuthStubs {
           aResponse()
             .withStatus(401)
             .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientConfidenceLevel\"")))
+
+  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit =
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
 
   def verifyAuthoriseAttempt(): Unit =
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
