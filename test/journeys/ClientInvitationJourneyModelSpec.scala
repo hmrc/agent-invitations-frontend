@@ -322,8 +322,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     }
     "at CheckAnswers" should {
       "transition to InvitationsAccepted if all invitations are successfully accepted" in {
-        def acceptInvitation(invitationId: InvitationId) = Future(true)
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           CheckAnswers(
@@ -346,8 +346,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to InvitationsDeclined if all invitations are successfully declined" in {
-        def acceptInvitation(invitationId: InvitationId) = Future(true)
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           CheckAnswers(
@@ -372,9 +372,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to SomeResponsesFailed if some of the invitation acceptances fail" in {
-        def acceptInvitation(invitationId: InvitationId) =
+        def acceptInvitation(invitationId: InvitationId)(agencyName: String) =
           if (invitationId == invitationIdItsa) Future(false) else Future(true)
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           CheckAnswers(
@@ -399,8 +399,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to AllResponsesFailed if all of the invitation acceptances fail" in {
-        def acceptInvitation(invitationId: InvitationId) = Future(false)
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(false)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           CheckAnswers(
@@ -449,7 +449,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     "at state ConfirmDecline" should {
 
       "transition to InvitationsDeclined if selected YES" in {
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           ConfirmDecline(
@@ -475,7 +475,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       }
 
       "transition to MultiConsent if selected NO" in {
-        def rejectInvitation(invitationId: InvitationId) = Future(true)
+        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           ConfirmDecline(
