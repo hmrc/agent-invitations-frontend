@@ -35,9 +35,9 @@ trait AuthBehaviours extends AuthStubs {
 
     "return 303 for not logged in user and redirected to Login Page" in {
       givenUnauthorisedWith("MissingBearerToken")
-      an[AuthorisationException] shouldBe thrownBy {
-        await(action(request))
-      }
+      val result =  await(action(request))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2Ftrack%2F&origin=agent-invitations-frontend")
       verifyAuthoriseAttempt()
     }
   }
