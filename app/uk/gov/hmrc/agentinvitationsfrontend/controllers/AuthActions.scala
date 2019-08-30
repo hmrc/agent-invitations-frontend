@@ -20,7 +20,7 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -50,33 +50,45 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def externalUrls: ExternalUrls
 
-  private def getEnrolmentValue(enrolments: Enrolments, serviceName: String, identifierKey: String) =
+  val isDevEnv: Boolean =
+    if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
+
+  private val authenticationRedirect: String = config
+    .getString("authentication.login-callback.url")
+    .getOrElse(
+      throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
+
+  private def getArn(enrolments: Enrolments) =
     for {
-      enrolment  <- enrolments.getEnrolment(serviceName)
-      identifier <- enrolment.getIdentifier(identifierKey)
-    } yield identifier.value
+      enrolment  <- enrolments.getEnrolment("HMRC-AS-AGENT")
+      identifier <- enrolment.getIdentifier("AgentReferenceNumber")
+    } yield Arn(identifier.value)
 
   def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode { isWhitelisted =>
-      withEnrolledAsAgent {
-        case Some(arn) =>
-          body(AuthorisedAgent(Arn(arn), isWhitelisted))
-        case None => Future.failed(InsufficientEnrolments("AgentReferenceNumber identifier not found"))
-      } recoverWith {
-        case _: InsufficientEnrolments => Future successful Redirect(externalUrls.subscriptionURL)
-      }
+      authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
+        .retrieve(authorisedEnrolments) { enrolments =>
+          getArn(enrolments) match {
+            case Some(arn) => body(AuthorisedAgent(arn, isWhitelisted))
+            case None =>
+              Logger.warn("Arn not found for the logged in agent")
+              Future successful Forbidden
+          }
+        }
+        .recover {
+          handleFailure(isAgent = true)
+        }
     }
 
   def withAuthorisedAsAnyClient[A](body: AuthorisedClient => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
-    authorised(
-      AuthProviders(GovernmentGateway)
-    ).retrieve(affinityGroup and confidenceLevel and allEnrolments) {
+    authorised(AuthProviders(GovernmentGateway))
+      .retrieve(affinityGroup and confidenceLevel and allEnrolments) {
         case Some(affinity) ~ confidence ~ enrols =>
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
@@ -89,25 +101,11 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           }
 
         case _ =>
-          Logger.warn("the user had no affinity group")
+          Logger.warn("the logged in client had no affinity group")
           Future successful Forbidden
       }
       .recover {
-        case ex: AuthorisationException =>
-          Logger.error(s"authorisation failed for reason: ${ex.reason}")
-          throw ex
-      }
-
-  def withEnrolledAsAgent[A](body: Option[String] => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
-    authorised(
-      Enrolment("HMRC-AS-AGENT")
-        and AuthProviders(GovernmentGateway))
-      .retrieve(authorisedEnrolments) { enrolments =>
-        val id = getEnrolmentValue(enrolments, "HMRC-AS-AGENT", "AgentReferenceNumber")
-        body(id)
+        handleFailure(false)
       }
 
   private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, requiredLevel: ConfidenceLevel)(
@@ -135,5 +133,18 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     )
 
     Future.successful(Redirect(ivUpliftUrl))
+  }
+
+  def handleFailure(isAgent: Boolean)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+    case _: NoActiveSession ⇒
+      toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
+
+    case _: InsufficientEnrolments ⇒
+      Logger.warn(s"Logged in user does not have required enrolments")
+      if (isAgent) Redirect(externalUrls.subscriptionURL) else Forbidden
+
+    case _: UnsupportedAuthProvider ⇒
+      Logger.warn(s"user logged in with unsupported auth provider")
+      Forbidden
   }
 }

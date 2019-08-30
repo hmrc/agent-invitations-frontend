@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import javax.inject.{Inject, Singleton}
 import com.google.inject.name.Named
+import javax.inject.{Inject, Singleton}
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.http.HttpErrorHandler
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result}
-import play.api.{Configuration, Environment, Logger, Mode}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
-import uk.gov.hmrc.auth.core.{AuthorisationException, InsufficientEnrolments, NoActiveSession, UnsupportedAffinityGroup}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -45,11 +44,6 @@ class ErrorHandler @Inject()(
   ec: ExecutionContext,
   externalUrls: ExternalUrls)
     extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
-
-  lazy val authenticationRedirect: String = config
-    .getString("authentication.login-callback.url")
-    .getOrElse(
-      throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
@@ -71,11 +65,6 @@ class ErrorHandler @Inject()(
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     auditServerError(request, exception)
     val response = exception match {
-
-      case _: AuthorisationException =>
-        val isDevEnv =
-          if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
-        toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
 
       case ex: OtacFailureThrowable =>
         Logger(getClass).warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")

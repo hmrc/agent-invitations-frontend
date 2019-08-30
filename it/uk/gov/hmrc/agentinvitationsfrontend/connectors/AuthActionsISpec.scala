@@ -53,29 +53,21 @@ class AuthActionsISpec extends BaseISpec {
       bodyOf(result) shouldBe "(fooArn,true)"
     }
 
-    "throw AuthorisationException when user not logged in" in {
+    "redirect to GG login when user not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
-      an[AuthorisationException] shouldBe thrownBy {
-        TestController.testWithAuthorisedAsAgent
-      }
+      val result = TestController.testWithAuthorisedAsAgent
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2Fpath-of-request&origin=agent-invitations-frontend")
     }
 
-    "throw InsufficientEnrolments when agent not enrolled for service" in {
-      givenAuthorisedFor(
-        "{}",
-        s"""{
-           |"authorisedEnrolments": [
-           |  { "key":"HMRC-MTD-IT", "identifiers": [
-           |    { "key":"MTDITID", "value": "fooMtdItId" }
-           |  ]}
-           |]}""".stripMargin
-      )
+    "redirect to /subscription when agent not enrolled for service" in {
+      givenUnauthorisedForInsufficientEnrolments()
       val result = await(TestController.testWithAuthorisedAsAgent)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
     }
 
-    "throw InsufficientEnrolments when expected agent's identifier missing" in {
+    "throw Forbidden when expected agent's identifier missing" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -86,8 +78,7 @@ class AuthActionsISpec extends BaseISpec {
            |]}""".stripMargin
       )
       val result = await(TestController.testWithAuthorisedAsAgent)
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
+      status(result) shouldBe 403
     }
   }
 }

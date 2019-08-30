@@ -20,7 +20,6 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.auth.otac.{NoOtacTokenInSession, OtacFailureThrowable}
 import uk.gov.hmrc.http.BadGatewayException
 import uk.gov.hmrc.play.test.UnitSpec
@@ -39,14 +38,6 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
       status(result) shouldBe INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some(HTML)
       checkIncludesMessages(result, "global.error.500.title", "global.error.500.heading", "global.error.500.message")
-    }
-
-    "error occurs due to MissingBearerToken" in {
-      val result = handler.onServerError(FakeRequest(), new MissingBearerToken)
-      val expectedRedirect: String =
-        "/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2F&origin=agent-invitations-frontend"
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe expectedRedirect
     }
 
     "error occurs due to Otac Failure" in {
@@ -76,16 +67,6 @@ class ErrorHandlerSpec extends UnitSpec with OneAppPerSuite {
       contentType(result) shouldBe Some(HTML)
       checkIncludesText(result, "<p>If you typed the web address, check it is correct.</p>")
       checkIncludesMessages(result, "global.error.404.title", "global.error.404.heading")
-    }
-  }
-
-  "ErrorHandler should redirect to GG Login" when {
-    "a user attempts to access a page without authentication" in {
-      val result = handler.onServerError(FakeRequest(), MissingBearerToken(""))
-      val expectedRedirect: String =
-        "/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2F&origin=agent-invitations-frontend"
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result).get shouldBe expectedRedirect
     }
   }
 
