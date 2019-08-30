@@ -62,7 +62,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     for {
       enrolment  <- enrolments.getEnrolment("HMRC-AS-AGENT")
       identifier <- enrolment.getIdentifier("AgentReferenceNumber")
-    } yield identifier.value
+    } yield Arn(identifier.value)
 
   def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
     implicit request: Request[A],
@@ -72,7 +72,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
         .retrieve(authorisedEnrolments) { enrolments =>
           getArn(enrolments) match {
-            case Some(arn) => body(AuthorisedAgent(Arn(arn), isWhitelisted))
+            case Some(arn) => body(AuthorisedAgent(arn, isWhitelisted))
             case None =>
               Logger.warn("Arn not found for the logged in agent")
               Future successful Forbidden
