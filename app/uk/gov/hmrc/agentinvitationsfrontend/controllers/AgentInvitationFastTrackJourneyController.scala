@@ -534,9 +534,12 @@ object AgentInvitationFastTrackJourneyController {
 
   val SelectClientTypeForm: Form[String] = Form(
     single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    )
-  )
+      "clientType" -> optional(lowerCaseText)
+        .verifying(
+          "error.fast-track.client-type.empty",
+          clientTypeOpt => Set("personal", "business").contains(clientTypeOpt.getOrElse("")))
+        .transform(_.getOrElse(""), (Some(_)): String => Option[String])
+    ))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
