@@ -17,13 +17,17 @@
 package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
-import play.api.data._
+import play.api.data.Form
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 
 object ServiceTypeForm {
-  val form = Form(
-    single(
-      "serviceType" -> text.verifying("service.type.invalid", supportedServices.contains _)
+
+  val form: Form[String] =
+    Form[String](
+      single(
+        "serviceType" -> optional(text)
+          .verifying("service.type.invalid", serviceOpt => supportedServices.contains(serviceOpt.getOrElse("")))
+          .transform(_.getOrElse(""), (Some(_)): String => Option[String])
+      )
     )
-  )
 }

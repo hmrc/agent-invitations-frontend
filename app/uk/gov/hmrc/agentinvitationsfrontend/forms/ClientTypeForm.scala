@@ -23,11 +23,14 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 object ClientTypeForm {
   def form(emptyErrorMsg: String): Form[String] =
     Form[String](
-      mapping(
+      single(
         "clientType" -> optional(lowerCaseText)
-          .verifying(emptyErrorMsg, ct => ct.contains("personal") || ct.contains("business") || ct.contains("trust"))
-      )(ct => ct.get)(c => Some(Some(c)))
+          .verifying(emptyErrorMsg, ct => supportedClientTypes.contains(ct.getOrElse("")))
+          .transform(_.getOrElse(""), (Some(_)): String => Option[String])
+      )
     )
+
+  val supportedClientTypes: Set[String] = Set("personal", "business", "trust")
 
   lazy val authorisationForm: Form[String] = form("error.client-type.empty")
 
