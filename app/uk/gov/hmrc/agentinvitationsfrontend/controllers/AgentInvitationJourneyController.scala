@@ -79,7 +79,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(Transitions.selectedClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.authorisationForm)(Transitions.selectedClientType)
   }
 
   val showSelectService = actionShowStateWhenAuthorised(AsAgent) {
@@ -232,7 +232,7 @@ class AgentInvitationJourneyController @Inject()(
 
       Ok(
         client_type(
-          formWithErrors.or(ClientTypeForm.form),
+          formWithErrors.or(ClientTypeForm.authorisationForm),
           ClientTypePageConfig(
             backLinkForClientType,
             routes.AgentInvitationJourneyController.submitClientType(),

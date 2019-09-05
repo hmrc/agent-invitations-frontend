@@ -18,13 +18,18 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 
 object ClientTypeForm {
-  val form: Form[String] = Form(
-    single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business", "trust").contains _)
+  def form(emptyErrorMsg: String): Form[String] =
+    Form[String](
+      mapping(
+        "clientType" -> optional(lowerCaseText)
+          .verifying(emptyErrorMsg, ct => ct.contains("personal") || ct.contains("business") || ct.contains("trust"))
+      )(ct => ct.get)(c => Some(Some(c)))
     )
-  )
+
+  lazy val authorisationForm: Form[String] = form("error.client-type.empty")
+
+  lazy val deAuthorisationForm: Form[String] = form("error.cancel-authorisation.client-type.empty")
 }
