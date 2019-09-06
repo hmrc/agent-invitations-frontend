@@ -27,7 +27,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.ConfirmClientForm
-import uk.gov.hmrc.agentinvitationsfrontend.forms.TrustClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, TrustClientForm}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -205,7 +205,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(SelectClientTypeForm)(
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.fastTrackForm)(
       Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
         createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor))
   }
@@ -362,7 +362,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case SelectClientTypeVat(_, _, _) =>
       Ok(
         client_type(
-          formWithErrors.or(SelectClientTypeForm),
+          formWithErrors.or(ClientTypeForm.fastTrackForm),
           ClientTypePageConfig(
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationFastTrackJourneyController.submitClientType(),
@@ -531,12 +531,6 @@ object AgentInvitationFastTrackJourneyController {
             request.clientIdentifier,
             request.knownFact))
       }).verifying(validateFastTrackForm))
-
-  val SelectClientTypeForm: Form[String] = Form(
-    single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business").contains _)
-    )
-  )
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =
     Form(

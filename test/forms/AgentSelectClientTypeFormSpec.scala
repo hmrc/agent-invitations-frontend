@@ -22,32 +22,40 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentSelectClientTypeFormSpec extends UnitSpec {
 
-  val clientTypeEmptyMessage: String = "client.type.invalid"
-  val clientTypeEmptyFormError: FormError = FormError("clientType", List(clientTypeEmptyMessage))
+  val authorisationClientTypeEmptyMessage: String = "error.client-type.empty"
+  val deauthorisationClientTypeEmptyMessage: String = "error.cancel-authorisation.client-type.empty"
+  def clientTypeEmptyFormError(emptyError: String): FormError = FormError("clientType", List(emptyError))
 
   "ClientType Form" should {
     "return no error message for valid clientType personal" in {
       val data = Json.obj("clientType" -> "personal")
-      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.authorisationForm.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType business" in {
       val data = Json.obj("clientType" -> "business")
-      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.authorisationForm.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
     "return no error message for valid clientType trust" in {
       val data = Json.obj("clientType" -> "trust")
-      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
+      val clientTypeWithTrustsForm = ClientTypeForm.authorisationForm.bind(data)
       clientTypeWithTrustsForm.errors.isEmpty shouldBe true
     }
 
-    "return an error message for form with empty clientType" in {
+    "return an error message for an authorisation form with empty clientType" in {
       val data = Json.obj("clientType" -> "")
-      val clientTypeWithTrustsForm = ClientTypeForm.form.bind(data)
-      clientTypeWithTrustsForm.errors.contains(clientTypeEmptyFormError) shouldBe true
+      val clientTypeWithTrustsForm = ClientTypeForm.authorisationForm.bind(data)
+      clientTypeWithTrustsForm.errors.contains(clientTypeEmptyFormError(authorisationClientTypeEmptyMessage)) shouldBe true
+      clientTypeWithTrustsForm.errors.length shouldBe 1
+    }
+
+    "return an error message for a deauthorisation form with empty clientType" in {
+      val data = Json.obj("clientType" -> "")
+      val clientTypeWithTrustsForm = ClientTypeForm.deAuthorisationForm.bind(data)
+      clientTypeWithTrustsForm.errors.contains(clientTypeEmptyFormError(deauthorisationClientTypeEmptyMessage)) shouldBe true
       clientTypeWithTrustsForm.errors.length shouldBe 1
     }
   }

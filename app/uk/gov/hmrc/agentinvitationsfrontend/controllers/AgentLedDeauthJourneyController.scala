@@ -74,7 +74,7 @@ class AgentLedDeauthJourneyController @Inject()(
     }
 
   val submitClientType: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.form)(selectedClientType)
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.deAuthorisationForm)(selectedClientType)
   }
 
   val showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -204,7 +204,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
       Ok(
         client_type(
-          formWithErrors.or(ClientTypeForm.form),
+          formWithErrors.or(ClientTypeForm.deAuthorisationForm),
           ClientTypePageConfig(
             backLinkForClientType,
             routes.AgentLedDeauthJourneyController.submitClientType(),

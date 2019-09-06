@@ -18,13 +18,26 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 
 object ClientTypeForm {
-  val form: Form[String] = Form(
-    single(
-      "clientType" -> lowerCaseText.verifying("client.type.invalid", Set("personal", "business", "trust").contains _)
+  def form(emptyErrorMsg: String, clientTypes: Set[String]): Form[String] =
+    Form[String](
+      single(
+        "clientType" -> optional(lowerCaseText)
+          .verifying(emptyErrorMsg, ct => clientTypes.contains(ct.getOrElse("")))
+          .transform(_.getOrElse(""), (Some(_)): String => Option[String])
+      )
     )
-  )
+
+  val supportedClientTypes: Set[String] = Set("personal", "business", "trust")
+
+  val supportedClientTypesFastTrack: Set[String] = Set("personal", "business")
+
+  lazy val authorisationForm: Form[String] = form("error.client-type.empty", supportedClientTypes)
+
+  lazy val deAuthorisationForm: Form[String] =
+    form("error.cancel-authorisation.client-type.empty", supportedClientTypes)
+
+  lazy val fastTrackForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesFastTrack)
 }

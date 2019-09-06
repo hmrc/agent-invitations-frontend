@@ -16,7 +16,7 @@ client-type.p1=If you need authorisation to deal with both your client''s busine
 client-type.personal=An individual or sole trader
 client-type.business=A company or partnership
 client-type.trust=A trust or an estate
-error.client-type.required=Select the type of client you need authorisation from
+error.client-type.empty=Select if the type of client you need authorisation from is an individual or sole trader, a limited company or partnership, or a trust or an estate
 
 # Identify Client
 identify-client.header=Enter your client''s details
@@ -181,6 +181,9 @@ error.review-authorisation.required=Select yes if you want to add another author
 # Agent led de-auth
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
 cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
+error.cancel-authorisation.client-type.empty=Select if the type of client you need to cancel your authorisation for is an individual or sole trader, a limited company or partnership, or a trust or an estate
+error.fast-track.client-type.empty=Select if the type of client you need to cancel your authorisation for is an individual or sole trader or a limited company or partnership
+
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.select-service.itsa=Sending their Income Tax updates through software
 cancel-authorisation.select-service.vat=Submitting their VAT returns through software
