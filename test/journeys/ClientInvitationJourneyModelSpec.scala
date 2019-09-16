@@ -133,14 +133,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(NotFoundInvitation)
         }
 
-        "transition to IncorrectClientType when the affinity group does not match the client type" in {
-          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-            Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
-
-          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
-            submitWarmUp(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
-            thenGo(IncorrectClientType(personal))
-        }
         "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdTrust, expiryDate)))
@@ -171,15 +163,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedIndividualClient) should
             thenGo(NotFoundInvitation)
-        }
-
-        "transition to IncorrectClientType when the affinity group does not match the client type" in {
-          def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
-            Future.failed[Seq[InvitationIdAndExpiryDate]](new Throwable("should not be called"))
-
-          given(WarmUp(personal, uid, agentName, normalisedAgentName)) when
-            submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates)(authorisedBusinessClient) should
-            thenGo(IncorrectClientType(personal))
         }
       }
     }

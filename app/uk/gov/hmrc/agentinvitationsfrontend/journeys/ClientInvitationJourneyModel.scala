@@ -20,8 +20,6 @@ import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,10 +35,14 @@ object ClientInvitationJourneyModel extends JourneyModel {
   /* State should contain only minimal set of data required to proceed */
   object State {
     case object MissingJourneyHistory extends State
+
     case class WarmUp(clientType: ClientType, uid: String, agentName: String, normalisedAgentName: String) extends State
+
     case object NotFoundInvitation extends State with IsError
+
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
+
     case class SingleConsent(
       clientType: ClientType,
       uid: String,
@@ -48,19 +50,25 @@ object ClientInvitationJourneyModel extends JourneyModel {
       consent: ClientConsent,
       consents: Seq[ClientConsent])
         extends State
-    case class IncorrectClientType(clientType: ClientType) extends State with IsError
+
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
+
     case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State
+
     case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
+
     case object AllResponsesFailed extends State
+
     case class SomeResponsesFailed(
       agentName: String,
       failedConsents: Seq[ClientConsent],
       successfulConsents: Seq[ClientConsent])
         extends State
+
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
+
     case object TrustNotClaimed extends State
   }
 
@@ -73,13 +81,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
     type AcceptInvitation = InvitationId => String => Future[Boolean]
     type RejectInvitation = InvitationId => String => Future[Boolean]
-
-    private def clientTypeMatchesGroup(affinityGroup: AffinityGroup, clientType: ClientType): Boolean =
-      (affinityGroup, clientType) match {
-        case (Individual, ClientType.personal)   => true
-        case (Organisation, ClientType.business) => true
-        case _                                   => false
-      }
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -124,22 +125,19 @@ object ClientInvitationJourneyModel extends JourneyModel {
       getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
       Transition {
         case WarmUp(clientType, uid, agentName, _) =>
-          if (!clientTypeMatchesGroup(client.affinityGroup, clientType))
-            goto(IncorrectClientType(clientType))
-          else
-            getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
-              val containsTrust = consents.exists(_.serviceKey == messageKeyForTrust)
-              val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
-              if (containsTrust && butNoTrustEnrolment) {
-                Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
-                goto(TrustNotClaimed)
-              } else {
-                consents match {
-                  case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
-                  case _                      => goto(NotFoundInvitation)
-                }
+          getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
+            val containsTrust = consents.exists(_.serviceKey == messageKeyForTrust)
+            val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+            if (containsTrust && butNoTrustEnrolment) {
+              Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+              goto(TrustNotClaimed)
+            } else {
+              consents match {
+                case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
+                case _                      => goto(NotFoundInvitation)
               }
             }
+          }
       }
 
     def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =

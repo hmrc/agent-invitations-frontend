@@ -128,13 +128,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-      "IncorrectClientType" in {
-        val state = IncorrectClientType(personal)
-        val json = Json.parse("""{"state":"IncorrectClientType","properties":{"clientType": "personal"}}""")
 
-        Json.toJson(state) shouldBe json
-        json.as[State] shouldBe state
-      }
       "CheckAnswers" in {
         val state = CheckAnswers(
           personal,
