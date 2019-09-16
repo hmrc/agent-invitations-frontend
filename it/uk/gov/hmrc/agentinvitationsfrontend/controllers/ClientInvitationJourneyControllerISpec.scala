@@ -250,34 +250,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/wrong-account-type" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/wrong-account-type")
-
-    behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
-
-    "display the incorrect client type page when an individual tries to access a business invitation" in {
-      journeyState.set(IncorrectClientType(personal), Nil)
-
-      val result = controller.showIncorrectClientType(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.personal"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", personal))
-    }
-
-    "display the incorrect client type page when a business tries to access an individual invitation" in {
-      journeyState.set(IncorrectClientType(business), Nil)
-
-      val result = controller.showIncorrectClientType(authorisedAsAnyOrganisationClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.business"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", business))
-    }
-  }
-
   "POST /consent" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
 

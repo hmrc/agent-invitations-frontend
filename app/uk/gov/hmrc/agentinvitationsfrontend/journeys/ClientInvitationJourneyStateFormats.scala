@@ -25,7 +25,6 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   //Happy states
   val WarmUpFormat = Json.format[WarmUp]
-  val IncorrectClientTypeFormat = Json.format[IncorrectClientType]
   val MultiConsentFormat = Json.format[MultiConsent]
   val SingleConsentFormat = Json.format[SingleConsent]
   val CheckAnswersFormat = Json.format[CheckAnswers]
@@ -37,7 +36,6 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp              => WarmUpFormat.writes(s)
     case s: MultiConsent        => MultiConsentFormat.writes(s)
-    case s: IncorrectClientType => IncorrectClientTypeFormat.writes(s)
     case s: SingleConsent       => SingleConsentFormat.writes(s)
     case s: CheckAnswers        => CheckAnswersFormat.writes(s)
     case s: InvitationsAccepted => InvitationsAcceptedFormat.writes(s)
@@ -50,7 +48,6 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "MissingJourneyHistory" => JsSuccess(MissingJourneyHistory)
     case "WarmUp"                => WarmUpFormat.reads(properties)
     case "NotFoundInvitation"    => JsSuccess(NotFoundInvitation)
-    case "IncorrectClientType"   => IncorrectClientTypeFormat.reads(properties)
     case "MultiConsent"          => MultiConsentFormat.reads(properties)
     case "SingleConsent"         => SingleConsentFormat.reads(properties)
     case "CheckAnswers"          => CheckAnswersFormat.reads(properties)

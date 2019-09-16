@@ -131,10 +131,6 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation =>
   }
 
-  def showIncorrectClientType = actionShowStateWhenAuthorised(AsClient) {
-    case _: IncorrectClientType =>
-  }
-
   def submitConsent = action { implicit request =>
     whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
   }
@@ -221,7 +217,6 @@ class ClientInvitationJourneyController @Inject()(
     case WarmUp(clientType, uid, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
@@ -303,8 +298,6 @@ class ClientInvitationJourneyController @Inject()(
               routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
             backLink = backLinkFor(breadcrumbs)
           )))
-
-    case IncorrectClientType(clientType) => Ok(incorrect_client_type(ClientType.fromEnum(clientType)))
 
     case ConfirmDecline(clientType, uid, agentName, consents) =>
       Ok(
