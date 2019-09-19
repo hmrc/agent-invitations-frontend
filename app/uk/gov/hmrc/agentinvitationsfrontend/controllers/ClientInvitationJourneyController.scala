@@ -220,7 +220,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   private def getErrorPage(reason: Option[String])(implicit request: Request[_]) = reason match {
-    case Some("Success") => Redirect(routes.ClientInvitationJourneyController.submitWarmUp())
+    case Some("Success") => Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
     case Some("technicalIssue") =>
       Forbidden(
         cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
