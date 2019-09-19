@@ -23,6 +23,7 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.models.IVResult
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,14 +40,14 @@ class IdentityVerificationConnector @Inject()(
   private[connectors] def getIVResultUrl(journeyId: String): URL =
     new URL(baseUrl, s"/mdtp/journey/journeyId/$journeyId")
 
-  def getIVResult(journeyId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getIVResult(journeyId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[IVResult]] =
     monitor("ConsumedAPI-Client-Get-IVResult-GET") {
       http
         .GET[HttpResponse](getIVResultUrl(journeyId).toString)
         .map { response =>
           response.status match {
             case 200 => {
-              val result = (response.json \ "result").as[String]
+              val result = (response.json \ "result").as[IVResult]
               Logger.info(s"identity verification returned result $result for journeyId $journeyId")
               Some(result)
             }

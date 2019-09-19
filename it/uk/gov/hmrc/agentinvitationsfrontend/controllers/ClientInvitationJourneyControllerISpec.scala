@@ -736,7 +736,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /cannot-confirm-identity" should {
     "display the cannot confirm identity page with technical issue content when the failure reason is technicalIssue" in {
-      givenIVFailureReasonResponse("technicalIssue")
+      givenIVFailureReasonResponse(TechnicalIssue)
       val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
       status(result) shouldBe 403
 

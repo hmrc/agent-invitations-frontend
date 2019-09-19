@@ -219,9 +219,12 @@ class ClientInvitationJourneyController @Inject()(
             .map(reason => getErrorPage(reason)))
   }
 
-  private def getErrorPage(reason: Option[String])(implicit request: Request[_]) = reason match {
-    case Some("Success") => Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
-    case Some("technicalIssue") =>
+  import uk.gov.hmrc.agentinvitationsfrontend.models.Success
+
+  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) = reason match {
+    case Some(Success) =>
+      Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
+    case Some(TechnicalIssue) =>
       Forbidden(
         cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
     case _ => Forbidden(cannot_confirm_identity())
