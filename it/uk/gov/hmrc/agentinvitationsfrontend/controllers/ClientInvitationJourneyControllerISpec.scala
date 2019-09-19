@@ -735,13 +735,22 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /cannot-confirm-identity" should {
-    "display the cannot confirm identity page" in {
-      val result = controller.showCannotConfirmIdentity(FakeRequest())
+    "display the cannot confirm identity page with technical issue content when the failure reason is technicalIssue" in {
+      givenIVFailureReasonResponse("technicalIssue")
+      val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
       status(result) shouldBe 403
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p2"))
+      checkHtmlResultWithBodyText(result,
+        "Call the VAT online services helpline",
+        "if you need help with Making Tax Digital for VAT.",
+      "Call the HMRC Self Assessment online services helpline",
+      "if you need help with Making Tax Digital for Income Tax.")
+
+      checkResultContainsLink(result,"https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk", "Call the VAT online services helpline")
+      checkResultContainsLink(result, "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk", "Call the HMRC Self Assessment online services helpline")
     }
   }
 

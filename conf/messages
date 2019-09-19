@@ -533,6 +533,13 @@ some-responses-failed.trust=We could not save your response for maintain a trust
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
 
+
+technical-issues.header=Sorry, there is a problem with the service
+technical-issues.p1=Try again later.
+technical-issues.p2=We have not saved your answers. When the service is available, you will have to start again.
+technical-issues.vat=<a href = "{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
+technical-issues.it=<a href = "{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
+
 #All responses failed
 all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p1=Try again later.

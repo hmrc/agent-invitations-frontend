@@ -140,7 +140,7 @@ GET         /all-responses-failed                                       @uk.gov.
 GET         /some-responses-failed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
 POST        /some-responses-failed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised-as-client                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent
-GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity
+GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity(journeyId: Option[String] ?= None)
 GET         /session-timeout                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 
 GET         /trust-not-claimed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
