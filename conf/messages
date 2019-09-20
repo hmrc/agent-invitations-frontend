@@ -516,8 +516,9 @@ incorrect-client-type.button=Sign out and try again
 
 # Cannot confirm identity
 cannot-confirm-identity.header=We could not confirm your identity
-cannot-confirm-identity.p1=We need to confirm who you are before you can use this service.
+cannot-confirm-identity.p1=The information you have entered does not match our records.
 cannot-confirm-identity.p2=Use the ''Get help with this page'' link if you need help with confirming your identity.
+cannot-confirm-identity.button=Try again
 
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
