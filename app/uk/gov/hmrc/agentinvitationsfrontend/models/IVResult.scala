@@ -32,6 +32,7 @@ case object TechnicalIssue extends IVResult { override val value = "TechnicalIss
 case object UserAborted extends IVResult { override val value = "UserAborted" }
 case object TimedOut extends IVResult { override val value = "TimedOut" }
 case object FailedIV extends IVResult { override val value = "FailedIV" }
+case object FailedDirectorCheck extends IVResult { override val value = "FailedDirectorCheck" }
 
 object IVResult {
   def apply(str: String): IVResult = str match {
@@ -44,6 +45,7 @@ object IVResult {
     case UserAborted.value          => UserAborted
     case TimedOut.value             => TimedOut
     case FailedIV.value             => FailedIV
+    case FailedDirectorCheck.value  => FailedDirectorCheck
     case _                          => throw new BadRequestException("strange value for IVReason")
   }
 
@@ -57,6 +59,7 @@ object IVResult {
     case UserAborted          => Some("UserAborted")
     case TimedOut             => Some("TimedOut")
     case FailedIV             => Some("FailedIV")
+    case FailedDirectorCheck  => Some("FailedDirectorCheck")
   }
 
   implicit val reads: Reads[IVResult] = new Reads[IVResult] {
@@ -71,6 +74,7 @@ object IVResult {
         case JsString(UserAborted.value)          => JsSuccess(UserAborted)
         case JsString(TimedOut.value)             => JsSuccess(TimedOut)
         case JsString(FailedIV.value)             => JsSuccess(FailedIV)
+        case JsString(FailedDirectorCheck.value)  => JsSuccess(FailedDirectorCheck)
         case invalid                              => JsError(s"invalid IVResult value found: $invalid")
       }
   }
