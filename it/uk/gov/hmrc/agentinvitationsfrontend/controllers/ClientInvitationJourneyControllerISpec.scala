@@ -734,6 +734,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             status(result) shouldBe 403
             checkHtmlResultWithBodyMsgs(result,"cannot-confirm-identity.header",
               "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
+            checkResultContainsLink(result,"/invitations/warm-up", "Try again", Some("button"))
           }
       }
     }

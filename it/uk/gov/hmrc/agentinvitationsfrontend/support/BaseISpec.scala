@@ -163,8 +163,12 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, continueUrl)
   }
 
-  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String) = {
-    val element = s"""<a href = "$linkUrl">$linkText</a>"""
+  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String, clazz: Option[String] = None) = {
+    val element = if(clazz.isDefined) {
+      s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
+    } else {
+      s"""<a href = "$linkUrl">$linkText</a>"""
+  }
     checkHtmlResultWithBodyText(result, element)
   }
 
