@@ -733,7 +733,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
             status(result) shouldBe 403
             checkHtmlResultWithBodyMsgs(result,"cannot-confirm-identity.header",
-              "cannot-confirm-identity.p1", "cannot-confirm-identity.p2", "cannot-confirm-identity.button")
+              "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
           }
       }
     }
