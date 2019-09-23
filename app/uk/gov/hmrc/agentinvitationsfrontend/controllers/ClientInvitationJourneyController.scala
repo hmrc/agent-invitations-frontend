@@ -70,8 +70,8 @@ class ClientInvitationJourneyController @Inject()(
   override def journeyId(implicit rh: RequestHeader): Option[String] = {
     val journeyIdFromSession = rh.session.get(journeyService.journeyKey)
     lazy val journeyIdFromQuery = rh.getQueryString(journeyService.journeyKey)
-    Logger.info(s"journey key from session: $journeyIdFromSession")
-    Logger.info(s"journey key from query: $journeyIdFromQuery")
+    Logger.warn(s"journey key from session: $journeyIdFromSession")
+    Logger.warn(s"journey key from query: $journeyIdFromQuery")
 
     journeyIdFromSession.orElse(journeyIdFromQuery)
   }
@@ -91,7 +91,7 @@ class ClientInvitationJourneyController @Inject()(
           params = journeyService.journeyKey -> journeyId
         )
 
-        Logger.info(s"continueUrl before GG login is: $requestUrlWithJourneyKey")
+        Logger.warn(s"continueUrl before GG login is: $requestUrlWithJourneyKey")
         toGGLogin(continueUrl = requestUrlWithJourneyKey)
       }
     })
@@ -122,7 +122,7 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitWarmUp = {
     action { implicit request =>
-      Logger.info("submitting warm up....")
+      Logger.warn("submitting warm up....")
       whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
     }
   }
