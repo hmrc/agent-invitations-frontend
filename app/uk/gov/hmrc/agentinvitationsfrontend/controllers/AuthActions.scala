@@ -138,16 +138,10 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
     implicit request: Request[_]): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession if isAgent ⇒
-      toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
-
-    case _: NoActiveSession =>
-      val requestUrlWithJourneyKey = addParamsToUrl(
-        url = localFriendlyUrl(env, config)(request.uri, request.host),
-        params = "clientInvitationJourney" -> journeyId
-      )
-
-      toGGLogin(continueUrl = requestUrlWithJourneyKey)
+    case _: NoActiveSession ⇒
+      val url = localFriendlyUrl(env, config)(request.uri, request.host)
+      val ggContinueUrl = journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
+      toGGLogin(ggContinueUrl)
 
     case _: InsufficientEnrolments ⇒
       Logger.warn(s"Logged in user does not have required enrolments")
