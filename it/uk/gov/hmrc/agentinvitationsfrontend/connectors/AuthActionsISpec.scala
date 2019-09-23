@@ -53,13 +53,6 @@ class AuthActionsISpec extends BaseISpec {
       bodyOf(result) shouldBe "(fooArn,true)"
     }
 
-    "redirect to GG login when user not logged in" in {
-      givenUnauthorisedWith("MissingBearerToken")
-      val result = TestController.testWithAuthorisedAsAgent
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/gg/sign-in?continue=http%3A%2F%2Flocalhost%3A9448%2Fpath-of-request&origin=agent-invitations-frontend")
-    }
-
     "redirect to /subscription when agent not enrolled for service" in {
       givenUnauthorisedForInsufficientEnrolments()
       val result = await(TestController.testWithAuthorisedAsAgent)

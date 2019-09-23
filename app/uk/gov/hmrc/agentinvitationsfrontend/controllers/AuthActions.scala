@@ -31,6 +31,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
+import CallOps._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -83,7 +84,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         }
     }
 
-  def withAuthorisedAsAnyClient[A](body: AuthorisedClient => Future[Result])(
+  def withAuthorisedAsAnyClient[A](journeyId: Option[String])(body: AuthorisedClient => Future[Result])(
     implicit request: Request[A],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -105,7 +106,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           Future successful Forbidden
       }
       .recover {
-        handleFailure(false)
+        handleFailure(isAgent = false, journeyId)
       }
 
   private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, requiredLevel: ConfidenceLevel)(
@@ -135,9 +136,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     Future.successful(Redirect(ivUpliftUrl))
   }
 
-  def handleFailure(isAgent: Boolean)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+  def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
+    implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession ⇒
-      toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
+      val url = localFriendlyUrl(env, config)(request.uri, request.host)
+      val ggContinueUrl = journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
+      toGGLogin(ggContinueUrl)
 
     case _: InsufficientEnrolments ⇒
       Logger.warn(s"Logged in user does not have required enrolments")
