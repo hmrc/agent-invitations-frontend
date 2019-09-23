@@ -17,11 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
-import play.api.i18n.{I18nSupport, Messages}
+import play.api.i18n.I18nSupport
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.{AuthorisationException, NoActiveSession}
+import uk.gov.hmrc.auth.core.NoActiveSession
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -70,8 +70,6 @@ class ClientInvitationJourneyController @Inject()(
   override def journeyId(implicit rh: RequestHeader): Option[String] = {
     val journeyIdFromSession = rh.session.get(journeyService.journeyKey)
     lazy val journeyIdFromQuery = rh.getQueryString(journeyService.journeyKey)
-    Logger.warn(s"journey key from session: $journeyIdFromSession")
-    Logger.warn(s"journey key from query: $journeyIdFromQuery")
 
     journeyIdFromSession.orElse(journeyIdFromQuery)
   }
@@ -84,16 +82,14 @@ class ClientInvitationJourneyController @Inject()(
     val authorisedAsAnyClient = withAuthorisedAsAnyClient _
 
     authorisedAsAnyClient.andThen(_.recover {
-      case _: NoActiveSession => {
+      case _: NoActiveSession =>
         import CallOps._
         val requestUrlWithJourneyKey = addParamsToUrl(
           url = localFriendlyUrl(env, config)(request.uri, request.host),
           params = journeyService.journeyKey -> journeyId
         )
 
-        Logger.warn(s"continueUrl before GG login is: $requestUrlWithJourneyKey")
         toGGLogin(continueUrl = requestUrlWithJourneyKey)
-      }
     })
   }
 
@@ -122,7 +118,6 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitWarmUp = {
     action { implicit request =>
-      Logger.warn("submitting warm up....")
       whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
     }
   }

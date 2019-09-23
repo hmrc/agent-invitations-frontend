@@ -136,9 +136,6 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   }
 
   def handleFailure(isAgent: Boolean)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession ⇒
-      toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"$authenticationRedirect${request.uri}")
-
     case _: InsufficientEnrolments ⇒
       Logger.warn(s"Logged in user does not have required enrolments")
       if (isAgent) Redirect(externalUrls.subscriptionURL) else Forbidden
