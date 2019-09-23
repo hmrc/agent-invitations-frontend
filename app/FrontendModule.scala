@@ -64,6 +64,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("sso")
     bindBaseUrl("citizen-details")
     bindBaseUrl("agent-client-relationships")
+    bindBaseUrl("identity-verification-frontend")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -78,6 +79,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("cachable.session-cache.domain")
     bindServiceProperty("agent-client-management-frontend.external-url")
     bindServiceProperty("privacy-policy.external-url")
+    bindServiceProperty("vat-online-service-helpline.external-url")
+    bindServiceProperty("sa-online-service-helpline.external-url")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")

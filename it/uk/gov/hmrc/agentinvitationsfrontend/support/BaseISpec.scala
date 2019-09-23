@@ -27,7 +27,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport {
+    with TestDataCommonSupport with MongoSupport with IVStubs {
 
   val featureFlags: FeatureFlags = new FeatureFlags()
 
@@ -77,6 +77,8 @@ abstract class BaseISpec
         "microservice.services.citizen-details.port"                          -> wireMockPort,
         "microservice.services.sso.host"                                      -> wireMockHost,
         "microservice.services.sso.port"                                      -> wireMockPort,
+        "microservice.services.identity-verification-frontend.host"           -> wireMockHost,
+        "microservice.services.identity-verification-frontend.port"           -> wireMockPort,
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,
@@ -159,6 +161,15 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, continueUrl)
+  }
+
+  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String, clazz: Option[String] = None) = {
+    val element = if(clazz.isDefined) {
+      s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
+    } else {
+      s"""<a href = "$linkUrl">$linkText</a>"""
+  }
+    checkHtmlResultWithBodyText(result, element)
   }
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {

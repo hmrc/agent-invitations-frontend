@@ -20,13 +20,19 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(title: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("cannot-confirm-identity.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", title.getOrElse(Messages("cannot-confirm-identity.header")), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("cannot-confirm-identity.header")</h1>
+ @if(html.isDefined) {
+     @html.get
+ } else {
+  <h1 class="heading-xlarge margin-bottom-30">@Messages("cannot-confirm-identity.header")</h1>
 
-    <p>@Messages("cannot-confirm-identity.p1")</p>
+  <p>@Messages("cannot-confirm-identity.p1")</p>
 
-    <p>@Messages("cannot-confirm-identity.p2")</p>
+  <p>@Messages("cannot-confirm-identity.p2")</p>
+
+ <a href="@routes.ClientInvitationJourneyController.submitWarmUp()" class="button">@Messages("cannot-confirm-identity.button")</a>
+ }
 }

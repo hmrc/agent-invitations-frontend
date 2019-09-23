@@ -23,7 +23,7 @@ import play.api.data.Forms.{mapping, _}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.InvitationsConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
+import uk.gov.hmrc.auth.core.NoActiveSession
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -42,6 +43,7 @@ import scala.util.Success
 class ClientInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
+  identityVerificationConnector: IdentityVerificationConnector,
   authActions: AuthActions,
   override val journeyService: ClientInvitationJourneyService)(
   implicit configuration: Configuration,
@@ -117,10 +119,6 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation =>
   }
 
-  def showIncorrectClientType = actionShowStateWhenAuthorised(AsClient) {
-    case _: IncorrectClientType =>
-  }
-
   def submitConsent = action { implicit request =>
     whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
   }
@@ -193,9 +191,30 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def showCannotConfirmIdentity: Action[AnyContent] = Action { implicit request =>
-    Forbidden(cannot_confirm_identity())
+  def showCannotConfirmIdentity(journeyId: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    journeyId
+      .fold(
+        Future.successful(Forbidden(cannot_confirm_identity()))
+      )(
+        id =>
+          identityVerificationConnector
+            .getIVResult(id)
+            .map(reason => getErrorPage(reason)))
   }
+
+  import uk.gov.hmrc.agentinvitationsfrontend.models.Success
+
+  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
+    reason.fold(Forbidden(cannot_confirm_identity())) {
+      case Success =>
+        Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
+      case TechnicalIssue =>
+        Forbidden(
+          cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
+      case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
+        Forbidden(cannot_confirm_identity())
+      case _ => Forbidden(cannot_confirm_identity())
+    }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
     case TrustNotClaimed =>
@@ -207,7 +226,6 @@ class ClientInvitationJourneyController @Inject()(
     case WarmUp(clientType, uid, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case _: IncorrectClientType => routes.ClientInvitationJourneyController.showIncorrectClientType()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
@@ -289,8 +307,6 @@ class ClientInvitationJourneyController @Inject()(
               routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
             backLink = backLinkFor(breadcrumbs)
           )))
-
-    case IncorrectClientType(clientType) => Ok(incorrect_client_type(ClientType.fromEnum(clientType)))
 
     case ConfirmDecline(clientType, uid, agentName, consents) =>
       Ok(

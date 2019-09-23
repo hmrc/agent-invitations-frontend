@@ -125,7 +125,6 @@ GET         /warm-up                                                    @uk.gov.
 GET         /warm-up/to-decline                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET         /consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
-GET         /wrong-account-type                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showIncorrectClientType
 POST        /consent                                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
 GET         /change-consent                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange
 POST        /change-consent                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitChangeConsents
@@ -140,7 +139,7 @@ GET         /all-responses-failed                                       @uk.gov.
 GET         /some-responses-failed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSomeResponsesFailed
 POST        /some-responses-failed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised-as-client                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent
-GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity
+GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity(journeyId: Option[String] ?= None)
 GET         /session-timeout                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 
 GET         /trust-not-claimed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed

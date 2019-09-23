@@ -267,34 +267,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/wrong-account-type" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/wrong-account-type")
-
-    behave like anActionHandlingSessionExpiry(controller.showIncorrectClientType)
-
-    "display the incorrect client type page when an individual tries to access a business invitation" in {
-      journeyState.set(IncorrectClientType(personal), Nil)
-
-      val result = controller.showIncorrectClientType(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.personal"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", personal))
-    }
-
-    "display the incorrect client type page when a business tries to access an individual invitation" in {
-      journeyState.set(IncorrectClientType(business), Nil)
-
-      val result = controller.showIncorrectClientType(authorisedAsAnyOrganisationClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p2.business"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("incorrect-client-type.p3", business))
-    }
-  }
-
   "POST /consent" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/consent")
 
@@ -752,15 +724,37 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "GET /cannot-confirm-identity" should {
-    "display the cannot confirm identity page" in {
-      val result = controller.showCannotConfirmIdentity(FakeRequest())
+    "display the cannot confirm identity page with technical issue content when the failure reason is technicalIssue" in {
+      givenIVFailureReasonResponse(TechnicalIssue)
+      val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
       status(result) shouldBe 403
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-confirm-identity.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p2"))
+      checkHtmlResultWithBodyText(result,
+        "Call the VAT online services helpline",
+        "if you need help with Making Tax Digital for VAT.",
+        "Call the HMRC Self Assessment online services helpline",
+        "if you need help with Making Tax Digital for Income Tax.")
+
+      checkResultContainsLink(result, "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk", "Call the VAT online services helpline")
+      checkResultContainsLink(result, "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk", "Call the HMRC Self Assessment online services helpline")
     }
   }
+
+      Set(FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence).foreach { reason =>
+        s"IV returns failed reason $reason " when {
+          "display the default page" in {
+            givenIVFailureReasonResponse(reason)
+            val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+            status(result) shouldBe 403
+            checkHtmlResultWithBodyMsgs(result,"cannot-confirm-identity.header",
+              "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
+            checkResultContainsLink(result,"/invitations/warm-up", "Try again", Some("button"))
+          }
+      }
+    }
 
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
