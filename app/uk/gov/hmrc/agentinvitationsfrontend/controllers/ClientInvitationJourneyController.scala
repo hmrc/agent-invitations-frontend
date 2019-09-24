@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
@@ -203,7 +203,8 @@ class ClientInvitationJourneyController @Inject()(
 
   import uk.gov.hmrc.agentinvitationsfrontend.models.Success
 
-  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
+  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) = {
+    Logger.warn(s"identity verification returned failed result: ${reason.getOrElse("no reason provided")}")
     reason.fold(Forbidden(cannot_confirm_identity())) {
       case Success =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
@@ -214,6 +215,7 @@ class ClientInvitationJourneyController @Inject()(
         Forbidden(cannot_confirm_identity())
       case _ => Forbidden(cannot_confirm_identity())
     }
+  }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
     case TrustNotClaimed =>
