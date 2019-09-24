@@ -97,6 +97,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-agent-led-de-auth")
 
     bindIntegerProperty("mongodb.session.expireAfterSeconds")
+
+    ()
   }
 
   private def bindBaseUrl(serviceName: String) =

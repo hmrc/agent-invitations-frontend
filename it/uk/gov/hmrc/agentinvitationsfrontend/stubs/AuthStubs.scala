@@ -176,7 +176,7 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
   }
 
-  def givenUnauthorisedWith(mdtpDetail: String): Unit =
+  def givenUnauthorisedWith(mdtpDetail: String) =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
@@ -184,7 +184,7 @@ trait AuthStubs {
             .withStatus(401)
             .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
 
-  def givenAuthorisedFor(payload: String, responseBody: String): Unit =
+  def givenAuthorisedFor(payload: String, responseBody: String) =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .withRequestBody(equalToJson(payload, true, true))
@@ -194,7 +194,7 @@ trait AuthStubs {
             .withHeader("Content-Type", "application/json")
             .withBody(responseBody)))
 
-  def givenUnauthorisedForInsufficientEnrolments(): Unit =
+  def givenUnauthorisedForInsufficientEnrolments() =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
@@ -202,7 +202,7 @@ trait AuthStubs {
             .withStatus(401)
             .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
 
-  def givenUnauthorisedForInsufficientConfidenceLevel(): Unit =
+  def givenUnauthorisedForInsufficientConfidenceLevel() =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
@@ -210,7 +210,7 @@ trait AuthStubs {
             .withStatus(401)
             .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientConfidenceLevel\"")))
 
-  def givenUnauthorisedForUnsupportedAffinityGroup(): Unit =
+  def givenUnauthorisedForUnsupportedAffinityGroup() =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
@@ -218,13 +218,13 @@ trait AuthStubs {
             .withStatus(401)
             .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
 
-  def verifyAuthoriseAttempt(): Unit =
+  def verifyAuthoriseAttempt() =
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
 
-  def verify2AuthoriseAttempt(): Unit =
+  def verify2AuthoriseAttempt() =
     verify(2, postRequestedFor(urlEqualTo("/auth/authorise")))
 
-  def verifyNoAuthoriseAttempt(): Unit =
+  def verifyNoAuthoriseAttempt() =
     verify(0, postRequestedFor(urlEqualTo("/auth/authorise")))
 
 }

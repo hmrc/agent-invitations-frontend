@@ -16,15 +16,45 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.wiring
 
+import akka.stream.Materializer
 import javax.inject.{Inject, Singleton}
+import org.joda.time.{DateTime, DateTimeZone}
+import play.api.Configuration
 import play.api.http.HttpFilters
-import play.api.mvc.EssentialFilter
+import play.api.http.HttpVerbs.POST
+import play.api.mvc.{EssentialFilter, Filter, RequestHeader, Result}
 import uk.gov.hmrc.play.bootstrap.filters.FrontendFilters
-import uk.gov.hmrc.play.bootstrap.filters.frontend.CSRFExceptionsFilter
+
+import scala.concurrent.Future
 
 @Singleton
-class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, cSRFExceptionsFilter: CSRFExceptionsFilter)
+class ExtendedFrontendFilters @Inject()(
+  defaultFilters: FrontendFilters,
+  configuration: Configuration,
+  materializer: Materializer)
     extends HttpFilters {
 
-  override def filters: Seq[EssentialFilter] = cSRFExceptionsFilter +: defaultFilters.filters
+  override def filters: Seq[EssentialFilter] = CSRFExceptionsFilter +: defaultFilters.filters
+
+  object CSRFExceptionsFilter extends Filter {
+
+    lazy val whitelist: Set[String] = configuration
+      .getStringSeq("csrfexceptions.whitelist")
+      .getOrElse(Seq.empty)
+      .toSet
+
+    override implicit def mat: Materializer = materializer
+
+    def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
+
+      def filteredHeaders(rh: RequestHeader): RequestHeader =
+        if (rh.method == POST && whitelist.contains(rh.path))
+          rh.copy(headers = rh.headers.add("Csrf-Token" -> "nocheck"))
+        else rh
+
+      f(filteredHeaders(rh))
+    }
+
+  }
+
 }

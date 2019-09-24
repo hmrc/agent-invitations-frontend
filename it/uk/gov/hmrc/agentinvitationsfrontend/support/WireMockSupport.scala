@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import uk.gov.hmrc.play.it.Port
 
@@ -37,7 +38,7 @@ object WireMockSupport {
 trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   me: Suite =>
 
-  def commonStubs(): Unit
+  def commonStubs(): Seq[StubMapping]
 
   val wireMockPort: Int = WireMockSupport.wireMockPort
   val wireMockHost = "localhost"
@@ -64,6 +65,7 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
     super.beforeEach()
     WireMock.reset()
     commonStubs()
+    ()
   }
 
 }

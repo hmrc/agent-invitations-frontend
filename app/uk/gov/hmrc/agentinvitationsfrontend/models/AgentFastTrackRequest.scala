@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class AgentFastTrackRequest(
   clientType: Option[ClientType],
@@ -26,7 +26,7 @@ case class AgentFastTrackRequest(
 
 object AgentFastTrackRequest {
 
-  implicit val format = Json.format[AgentFastTrackRequest]
+  implicit val format: OFormat[AgentFastTrackRequest] = Json.format
 
   def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
     AgentFastTrackRequest(clientType, service, "", "", None)

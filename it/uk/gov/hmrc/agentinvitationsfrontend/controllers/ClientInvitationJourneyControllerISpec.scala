@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import java.util.UUID
 
+import org.scalatest.Assertion
 import play.api.Application
 import play.api.mvc._
 import play.api.test.FakeRequest
@@ -84,12 +85,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         checkRedirectedWithJourneyId(result, request, journeyIdKey)
       }
 
-      def checkRedirectedWithJourneyId(result: Result, request: Request[_], journeyIdKey: String): Unit = {
+      def checkRedirectedWithJourneyId(result: Result, request: Request[_], journeyIdKey: String): Assertion = {
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(request.uri)
 
         val journeyId = result.session(request).get(journeyIdKey)
-        journeyId shouldBe a[Some[String]]
+        journeyId shouldBe a[Some[_]]
         journeyId.get should not be empty
       }
     }

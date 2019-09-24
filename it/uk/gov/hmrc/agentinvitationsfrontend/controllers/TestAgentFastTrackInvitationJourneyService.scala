@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
 import javax.inject.Singleton
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.{AgentInvitationFastTrackJourneyModel, AgentInvitationFastTrackJourneyService}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
@@ -17,7 +17,7 @@ class TestAgentInvitationFastTrackJourneyService extends AgentInvitationFastTrac
   def set(state: model.State, breadcrumbs: List[model.State])(
     implicit headerCarrier: HeaderCarrier,
     timeout: Duration,
-    ec: ExecutionContext): Unit =
+    ec: ExecutionContext): (AgentInvitationFastTrackJourneyModel.State, List[AgentInvitationFastTrackJourneyModel.State]) =
     Await.result(save((state, breadcrumbs)), timeout)
 
   def get: Option[StateAndBreadcrumbs] = state
@@ -44,6 +44,8 @@ class TestAgentInvitationFastTrackJourneyService extends AgentInvitationFastTrac
 }
 
 private class TestAgentInvitationFastTrackJourneyModule extends AbstractModule {
-  override def configure(): Unit =
+  override def configure(): Unit = {
     bind(classOf[AgentInvitationFastTrackJourneyService]).to(classOf[TestAgentInvitationFastTrackJourneyService])
+    ()
+  }
 }

@@ -6,7 +6,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 trait CitizenDetailsStub {
   me: WireMockSupport =>
 
-  def givenCitizenDetailsAreKnownFor(nino: String, firstName: String, lastName: String): Unit =
+  def givenCitizenDetailsAreKnownFor(nino: String, firstName: String, lastName: String) =
     stubFor(
       get(urlEqualTo(s"/citizen-details/nino/$nino"))
         .willReturn(
@@ -26,13 +26,13 @@ trait CitizenDetailsStub {
                          |   "dateOfBirth": "11121971"
                          |}""".stripMargin)))
 
-  def givenCitizenDetailsReturns404For(nino: String): Unit =
+  def givenCitizenDetailsReturns404For(nino: String) =
     stubFor(
       get(urlEqualTo(s"/citizen-details/nino/$nino"))
         .willReturn(aResponse()
           .withStatus(404)))
 
-  def givenCitizenDetailsReturns400For(nino: String): Unit =
+  def givenCitizenDetailsReturns400For(nino: String) =
     stubFor(
       get(urlEqualTo(s"/citizen-details/nino/$nino"))
         .willReturn(aResponse()

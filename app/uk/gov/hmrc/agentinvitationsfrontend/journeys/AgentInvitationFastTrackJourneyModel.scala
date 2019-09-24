@@ -261,6 +261,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                                             continueUrl,
                                             agencyEmail,
                                             fastTrackRequest.service))
+                                      case None =>
+                                        throw new RuntimeException(
+                                          s"No client type found for fast track request: $fastTrackRequest")
                                     }
                          } yield result
                      }

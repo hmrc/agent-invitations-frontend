@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.AbstractModule
 import javax.inject.Singleton
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyModel, ClientInvitationJourneyService}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
@@ -17,7 +17,7 @@ class TestClientInvitationJourneyService extends ClientInvitationJourneyService 
   def set(state: model.State, breadcrumbs: List[model.State])(
     implicit headerCarrier: HeaderCarrier,
     timeout: Duration,
-    ec: ExecutionContext): Unit =
+    ec: ExecutionContext): (ClientInvitationJourneyModel.State, List[ClientInvitationJourneyModel.State]) =
     Await.result(save((state, breadcrumbs)), timeout)
 
   def setEmpty() = this.state = None
@@ -40,6 +40,8 @@ class TestClientInvitationJourneyService extends ClientInvitationJourneyService 
 }
 
 private class TestClientInvitationJourneyModule extends AbstractModule {
-  override def configure(): Unit =
+  override def configure(): Unit = {
     bind(classOf[ClientInvitationJourneyService]).to(classOf[TestClientInvitationJourneyService])
+    ()
+  }
 }
