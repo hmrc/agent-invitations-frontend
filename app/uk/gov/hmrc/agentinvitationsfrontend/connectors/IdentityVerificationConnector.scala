@@ -48,7 +48,7 @@ class IdentityVerificationConnector @Inject()(
           response.status match {
             case 200 => {
               val result = (response.json \ "result").as[IVResult]
-              Logger.info(s"identity verification returned result $result for journeyId $journeyId")
+              Logger.warn(s"identity verification returned result $result for journeyId $journeyId")
               Some(result)
             }
           }

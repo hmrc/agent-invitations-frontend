@@ -28,11 +28,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyMode
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
-import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.NoActiveSession
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -82,20 +80,7 @@ class ClientInvitationJourneyController @Inject()(
     super.withValidRequest(body)(rc, request, ec).map(appendJourneyId)
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
-    val authorisedAsAnyClient = withAuthorisedAsAnyClient _
-
-    authorisedAsAnyClient.andThen(_.recover {
-      case _: NoActiveSession => {
-        import CallOps._
-        val requestUrlWithJourneyKey = addParamsToUrl(
-          url = localFriendlyUrl(env, config)(request.uri, request.host),
-          params = journeyService.journeyKey -> journeyId
-        )
-
-        Logger.warn(s"continueUrl before GG login is: $requestUrlWithJourneyKey")
-        toGGLogin(continueUrl = requestUrlWithJourneyKey)
-      }
-    })
+    withAuthorisedAsAnyClient(journeyId)
   }
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
@@ -123,7 +108,6 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitWarmUp = {
     action { implicit request =>
-      Logger.warn("submitting warm up....")
       whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
     }
   }
@@ -221,10 +205,7 @@ class ClientInvitationJourneyController @Inject()(
 
   import uk.gov.hmrc.agentinvitationsfrontend.models.Success
 
-  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) = {
-    println(s"reason is $reason")
-
-
+  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannot_confirm_identity())) {
       case Success =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
@@ -234,9 +215,8 @@ class ClientInvitationJourneyController @Inject()(
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
       case UserAborted | TimedOut => Forbidden(signed_out())
-      case _ => Forbidden(cannot_confirm_identity())
+      case _                      => Forbidden(cannot_confirm_identity())
     }
-  }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
     case TrustNotClaimed =>

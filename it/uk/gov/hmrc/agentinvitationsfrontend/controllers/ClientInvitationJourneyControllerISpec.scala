@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 import play.api.Application
@@ -95,7 +97,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up" when {
+  "POST /warm-up" when {
     "journey ID is not available or session expired" should {
       behave like anActionHandlingSessionExpiry(controller.submitWarmUp)
     }
@@ -166,6 +168,21 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       intercept[Exception] {
         await(controller.submitWarmUp(request()))
       }.getMessage shouldBe "UnsupportedAffinityGroup"
+    }
+
+    "redirect to gg log in with an appended journey ID on the continue url when there is no session" in {
+      givenUnauthorisedWith("MissingBearerToken")
+      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
+
+      val result = controller.submitWarmUp(request())
+      status(result) shouldBe 303
+
+      val continueUrlEncoded =
+        URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
+
+      redirectLocation(result) shouldBe Some(
+        s"/gg/sign-in?continue=$continueUrlEncoded&origin=agent-invitations-frontend")
     }
   }
 
@@ -738,6 +755,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           }
       }
     }
+
+  Set(TimedOut, UserAborted).foreach { reason =>
+    s"IV returns failed reason $reason" when {
+      "display the signed out page" in {
+        givenIVFailureReasonResponse(reason)
+        val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+        status(result) shouldBe 403
+        checkHtmlResultWithBodyMsgs(result, "signed-out.header",
+        "signed-out.p1")
+        checkResultContainsLink(result, "/invitations/warm-up", "Sign in again")
+      }
+    }
+  }
 
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {

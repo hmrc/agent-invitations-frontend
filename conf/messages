@@ -538,8 +538,8 @@ some-responses-failed.advice=If you have any questions, use the ''get help with 
 technical-issues.header=Sorry, there is a problem with the service
 technical-issues.p1=Try again later.
 technical-issues.p2=We have not saved your answers. When the service is available, you will have to start again.
-technical-issues.vat=<a href = "{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
-technical-issues.it=<a href = "{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
+technical-issues.vat=<a href="{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
+technical-issues.it=<a href="{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
 
 #All responses failed
 all-responses-failed.header=Sorry, there is a problem with the service
@@ -697,4 +697,4 @@ active-authorisation-exists.return=Return to your authorisation requests
 #Signed out
 signed-out.header=You have been signed out
 signed-out.p1=You have not done anything for 15 minutes, so we have signed you out to keep your account secure.
-signed-out.p2=<a href="{}">Sign in again</a> to use this service.
+signed-out.p2=<a href="{0}">Sign in again</a> to use this service.
