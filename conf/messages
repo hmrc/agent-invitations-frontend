@@ -692,3 +692,9 @@ active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised y
 active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust or an estate.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
+
+
+#Signed out
+signed-out.header=You have been signed out
+signed-out.p1=You have not done anything for 15 minutes, so we have signed you out to keep your account secure.
+signed-out.p2=<a href="{}">Sign in again</a> to use this service.

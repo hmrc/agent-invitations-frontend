@@ -221,7 +221,10 @@ class ClientInvitationJourneyController @Inject()(
 
   import uk.gov.hmrc.agentinvitationsfrontend.models.Success
 
-  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
+  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) = {
+    println(s"reason is $reason")
+
+
     reason.fold(Forbidden(cannot_confirm_identity())) {
       case Success =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
@@ -230,8 +233,10 @@ class ClientInvitationJourneyController @Inject()(
           cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
+      case UserAborted | TimedOut => Forbidden(signed_out())
       case _ => Forbidden(cannot_confirm_identity())
     }
+  }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
     case TrustNotClaimed =>
