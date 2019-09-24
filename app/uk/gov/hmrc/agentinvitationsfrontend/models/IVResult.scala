@@ -24,6 +24,7 @@ sealed trait IVResult {
 }
 
 case object Success extends IVResult { override val value = "Success" }
+case object Incomplete extends IVResult { override val value = "Incomplete" }
 case object PreconditionFailed extends IVResult { override val value = "PreconditionFailed" }
 case object LockedOut extends IVResult { override val value = "LockedOut" }
 case object InsufficientEvidence extends IVResult { override val value = "InsufficientEvidence" }
@@ -37,6 +38,7 @@ case object FailedDirectorCheck extends IVResult { override val value = "FailedD
 object IVResult {
   def apply(str: String): IVResult = str match {
     case Success.value              => Success
+    case Incomplete.value           => Incomplete
     case PreconditionFailed.value   => PreconditionFailed
     case LockedOut.value            => LockedOut
     case InsufficientEvidence.value => InsufficientEvidence
@@ -51,6 +53,7 @@ object IVResult {
 
   def unapply(reason: IVResult): Option[String] = reason match {
     case Success              => Some("Success")
+    case Incomplete           => Some("Incomplete")
     case PreconditionFailed   => Some("PreconditionFailed")
     case LockedOut            => Some("LockedOut")
     case InsufficientEvidence => Some("InsufficientEvidence")
@@ -66,6 +69,7 @@ object IVResult {
     override def reads(json: JsValue): JsResult[IVResult] =
       json match {
         case JsString(Success.value)              => JsSuccess(Success)
+        case JsString(Incomplete.value)           => JsSuccess(Incomplete)
         case JsString(PreconditionFailed.value)   => JsSuccess(PreconditionFailed)
         case JsString(LockedOut.value)            => JsSuccess(LockedOut)
         case JsString(InsufficientEvidence.value) => JsSuccess(InsufficientEvidence)
