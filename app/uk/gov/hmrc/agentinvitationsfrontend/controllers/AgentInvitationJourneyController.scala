@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -72,21 +72,21 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
-  val agentsRoot = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
+  def agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
 
-  val showClientType = actionShowStateWhenAuthorised(AsAgent) {
+  def showClientType: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: SelectClientType =>
   }
 
-  val submitClientType = action { implicit request =>
+  def submitClientType: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.authorisationForm)(Transitions.selectedClientType)
   }
 
-  val showSelectService = actionShowStateWhenAuthorised(AsAgent) {
+  def showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: SelectPersonalService | SelectBusinessService | SelectTrustService =>
   }
 
-  val submitPersonalSelectService = action { implicit request =>
+  def submitPersonalSelectService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
       Transitions.selectedPersonalService(
         featureFlags.showHmrcMtdIt,
@@ -94,23 +94,24 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdVat))
   }
 
-  val submitBusinessSelectService = action { implicit request =>
+  def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceBusinessForm)(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
-  val submitTrustSelectService = action { implicit request =>
+  def submitTrustSelectService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceTrustForm)(
       Transitions.selectedTrustService(featureFlags.showHmrcTrust))
   }
 
-  val identifyClientRedirect = Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
+  def identifyClientRedirect: Action[AnyContent] =
+    Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
+  def showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyPersonalClient | IdentifyBusinessClient | IdentifyTrustClient =>
   }
 
-  val submitIdentifyItsaClient = action { implicit request =>
+  def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
@@ -118,7 +119,7 @@ class AgentInvitationJourneyController @Inject()(
     )
   }
 
-  val submitIdentifyVatClient = action { implicit request =>
+  def submitIdentifyVatClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(VatClientForm.form)(
       Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
@@ -126,7 +127,7 @@ class AgentInvitationJourneyController @Inject()(
     )
   }
 
-  val submitIdentifyIrvClient = action { implicit request =>
+  def submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
@@ -134,62 +135,82 @@ class AgentInvitationJourneyController @Inject()(
     )
   }
 
-  val submitIdentifyTrustClient = action { implicit request =>
+  def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
       Transitions.identifiedTrustClient(utr => invitationsConnector.getTrustName(utr))
     )
   }
 
-  val showConfirmClient = actionShowStateWhenAuthorised(AsAgent) {
+  def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
   }
 
-  val submitConfirmClient = action { implicit request =>
+  def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
       Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)
     )
   }
 
-  val showReviewAuthorisations = actionShowStateWhenAuthorised(AsAgent) {
+  def showReviewAuthorisations: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ReviewAuthorisationsPersonal =>
   }
 
-  val submitReviewAuthorisations = action { implicit request =>
+  def submitReviewAuthorisations: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
       Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink)(getAgencyEmail))
   }
 
-  def showDeleteAuthorisation(itemId: String) = action { implicit request =>
+  def showDeleteAuthorisation(itemId: String): Action[AnyContent] = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.deleteAuthorisationRequest(itemId))(display)
   }
 
-  def submitDeleteAuthorisation = action { implicit request =>
+  def submitDeleteAuthorisation: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(DeleteAuthorisationForm)(Transitions.confirmDeleteAuthorisationRequest)
   }
 
-  val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
+  def showInvitationSent: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: InvitationSentPersonal | _: InvitationSentBusiness =>
   }
 
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
+  def showNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
     case TrustNotFound          =>
   }
 
-  val showCannotCreateRequest = actionShowStateWhenAuthorised(AsAgent) { case _: CannotCreateRequest           => }
-  val showSomeAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: SomeAuthorisationsFailed => }
-  val submitSomeAuthorisationsFailed = action { implicit request =>
+  def showCannotCreateRequest: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: CannotCreateRequest =>
+  }
+
+  def showSomeAuthorisationsFailed: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: SomeAuthorisationsFailed =>
+  }
+
+  def submitSomeAuthorisationsFailed: Action[AnyContent] = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.continueSomeResponsesFailed)(redirect)
   }
-  val showAllAuthorisationsFailed = actionShowStateWhenAuthorised(AsAgent) { case _: AllAuthorisationsFailed     => }
-  val showClientNotSignedUp = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                 => }
-  val showPendingAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists  => }
-  val showActiveAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: ActiveAuthorisationExists => }
-  val showAllAuthorisationsRemoved = actionShowStateWhenAuthorised(AsAgent) { case AllAuthorisationsRemoved      => }
+
+  def showAllAuthorisationsFailed: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: AllAuthorisationsFailed =>
+  }
+
+  def showClientNotSignedUp: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ClientNotSignedUp =>
+  }
+
+  def showPendingAuthorisationExists: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: PendingInvitationExists =>
+  }
+  def showActiveAuthorisationExists: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ActiveAuthorisationExists =>
+  }
+
+  def showAllAuthorisationsRemoved: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case AllAuthorisationsRemoved =>
+  }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
@@ -225,7 +246,7 @@ class AgentInvitationJourneyController @Inject()(
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
     implicit request: Request[_]): Result = state match {
 
-    case SelectClientType(_) => {
+    case SelectClientType(_) =>
       def backLinkForClientType(implicit request: Request[_]): String =
         breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
           getCallFor(_).url)
@@ -238,7 +259,6 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitClientType(),
             featureFlags.showHmrcTrust)
         ))
-    }
 
     case SelectPersonalService(services, basket) =>
       Ok(
@@ -410,9 +430,10 @@ class AgentInvitationJourneyController @Inject()(
     case TrustNotFound =>
       Ok(
         not_matched(
-          false,
+          hasJourneyCache = false,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
-          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+        ))
 
     case CannotCreateRequest(basket) =>
       Ok(
@@ -430,7 +451,7 @@ class AgentInvitationJourneyController @Inject()(
         active_authorisation_exists(
           basket.nonEmpty,
           service,
-          false,
+          fromFastTrack = false,
           routes.AgentInvitationJourneyController.showReviewAuthorisations(),
           routes.AgentInvitationJourneyController.showClientType()
         ))
@@ -451,6 +472,9 @@ class AgentInvitationJourneyController @Inject()(
 
     case AllAuthorisationsRemoved =>
       Ok(all_authorisations_removed(routes.AgentInvitationJourneyController.showClientType()))
+
+    case _ => throw new Exception(s"Cannot render a page for unexpected state: $state")
+
   }
 }
 
@@ -458,9 +482,9 @@ object AgentInvitationJourneyController {
 
   import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 
-  val ConfirmClientForm = confirmationForm("error.confirm-client.required")
+  val ConfirmClientForm: Form[Confirmation] = confirmationForm("error.confirm-client.required")
 
-  val ReviewAuthorisationsForm = confirmationForm("error.review-authorisation.required")
+  val ReviewAuthorisationsForm: Form[Confirmation] = confirmationForm("error.review-authorisation.required")
 
-  val DeleteAuthorisationForm = confirmationForm("error.delete.radio")
+  val DeleteAuthorisationForm: Form[Confirmation] = confirmationForm("error.delete.radio")
 }

@@ -99,6 +99,9 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
             case (AffinityGroup.Agent, _) =>
               Future successful Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent())
+            case (affinityGroup, _) =>
+              Logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
+              Future successful Forbidden
           }
 
         case _ =>
