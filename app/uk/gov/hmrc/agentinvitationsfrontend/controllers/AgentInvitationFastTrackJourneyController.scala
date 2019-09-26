@@ -285,7 +285,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           featureFlags,
           routes.AgentInvitationFastTrackJourneyController.progressToClientType(),
           routes.AgentInvitationFastTrackJourneyController.progressToKnownFact(),
-          changeDetailsCall = routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
+          routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
           routes.AgentInvitationFastTrackJourneyController.submitCheckDetails(),
           backLinkOpt
         )

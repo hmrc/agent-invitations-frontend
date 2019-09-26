@@ -306,7 +306,6 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         } else if (ftRequest.clientType.contains(business)) {
           goto(IdentifyBusinessClient(originalFtr, ftRequest, continueUrl))
         } else {
-          //if there is no client type provided (eg VAT)
           goto(IdentifyNoClientTypeClient(originalFtr, ftRequest, continueUrl))
         }
 
