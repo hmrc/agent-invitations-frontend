@@ -69,8 +69,6 @@ class ClientInvitationJourneyController @Inject()(
   override def journeyId(implicit rh: RequestHeader): Option[String] = {
     val journeyIdFromSession = rh.session.get(journeyService.journeyKey)
     lazy val journeyIdFromQuery = rh.getQueryString(journeyService.journeyKey)
-    Logger.warn(s"journey key from session: $journeyIdFromSession")
-    Logger.warn(s"journey key from query: $journeyIdFromQuery")
 
     journeyIdFromSession.orElse(journeyIdFromQuery)
   }
