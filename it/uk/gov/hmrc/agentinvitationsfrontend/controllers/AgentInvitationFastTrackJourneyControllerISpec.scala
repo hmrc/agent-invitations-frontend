@@ -582,6 +582,21 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "POST /agents/to-identify-client" should {
+    val request = FakeRequest("POST", "/agents/to-identify-client")
+
+    "redirect to identify client" in {
+      val ftr = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+      journeyState
+        .set(CheckDetailsNoClientTypeVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.progressToIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
+    }
+  }
+
   "GET agents/client-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/identify-client")
     "show the client-details page for ITSA" in {
@@ -650,7 +665,20 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "identify-trust-client.header", "identify-trust-client.p1")
-      checkHtmlResultWithBodyText(result,"A Unique Taxpayer Reference is 10 numbers, for example 1234567890")
+      checkHtmlResultWithBodyText(result, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890")
+    }
+
+    "show the client-details page when there is no client type for VAT" in {
+      val ftr = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, Some("2009-09-09"))
+      journeyState.set(
+        IdentifyNoClientTypeClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "identify-client.header", "identify-client.vat-registration-date.label")
     }
   }
 
@@ -802,13 +830,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "utr"       -> validUtr.value),
+          request.withFormUrlEncodedBody("utr" -> validUtr.value),
           arn.value
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient().url)
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient().url)
     }
   }
 
@@ -826,8 +854,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       val result = controller.showConfirmTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "utr"       -> validUtr.value),
+          request.withFormUrlEncodedBody("utr" -> validUtr.value),
           arn.value
         ))
 
@@ -851,8 +878,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       val result = controller.submitConfirmTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "accepted"       -> "true"),
+          request.withFormUrlEncodedBody("accepted" -> "true"),
           arn.value
         ))
 
@@ -1254,13 +1280,20 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenGetAgencyEmailAgentStub
   }
 
-
   class TrustHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TRUST)
 
     givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
     givenCheckRelationshipVatWithStatus(arn, validUtr.value, 404)
-    givenInvitationCreationSucceeds(arn, Some(business), validUtr.value, invitationIdTrust, validUtr.value, "utr", TRUST, "UTR")
+    givenInvitationCreationSucceeds(
+      arn,
+      Some(business),
+      validUtr.value,
+      invitationIdTrust,
+      validUtr.value,
+      "utr",
+      TRUST,
+      "UTR")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", business)
     givenGetAgencyEmailAgentStub

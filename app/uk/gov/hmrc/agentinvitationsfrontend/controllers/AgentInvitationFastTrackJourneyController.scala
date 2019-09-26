@@ -123,9 +123,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val identifyClientRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()))
 
   val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
-    case _: IdentifyPersonalClient =>
-    case _: IdentifyBusinessClient =>
-    case _: IdentifyTrustClient    =>
+    case _: IdentifyPersonalClient     =>
+    case _: IdentifyBusinessClient     =>
+    case _: IdentifyTrustClient        =>
+    case _: IdentifyNoClientTypeClient =>
   }
 
   val submitIdentifyItsaClient =
@@ -253,6 +254,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: IdentifyPersonalClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyBusinessClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyTrustClient             => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyNoClientTypeClient      => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: ConfirmClientTrust              => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
@@ -422,6 +424,15 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         identify_client_trust(
           formWithErrors.or(IdentifyTrustClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
+    case IdentifyNoClientTypeClient(_, _, _) =>
+      Ok(
+        identify_client_vat(
+          formWithErrors.or(IdentifyVatClientForm),
+          routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
         )
       )
