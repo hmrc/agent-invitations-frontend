@@ -41,6 +41,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val IdentifyBusinessClientFormat = Json.format[IdentifyBusinessClient]
   val IdentifyTrustClientFormat = Json.format[IdentifyTrustClient]
+  val IdentifyNoClientTypeClientFormat = Json.format[IdentifyNoClientTypeClient]
   val ConfirmClientTrustFormat = Json.format[ConfirmClientTrust]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
   val InvitationSentBusinessFormat = Json.format[InvitationSentBusiness]
@@ -70,6 +71,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: IdentifyPersonalClient          => IdentifyPersonalClientFormat.writes(s)
     case s: IdentifyBusinessClient          => IdentifyBusinessClientFormat.writes(s)
     case s: IdentifyTrustClient             => IdentifyTrustClientFormat.writes(s)
+    case s: IdentifyNoClientTypeClient      => IdentifyNoClientTypeClientFormat.writes(s)
     case s: ConfirmClientTrust              => ConfirmClientTrustFormat.writes(s)
     case s: InvitationSentPersonal          => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness          => InvitationSentBusinessFormat.writes(s)
@@ -98,6 +100,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
     case "IdentifyTrustClient"             => IdentifyTrustClientFormat.reads(properties)
+    case "IdentifyNoClientTypeClient"      => IdentifyNoClientTypeClientFormat.reads(properties)
     case "InvitationSentPersonal"          => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"          => InvitationSentBusinessFormat.reads(properties)
     case "ConfirmClientTrust"              => ConfirmClientTrustFormat.reads(properties)

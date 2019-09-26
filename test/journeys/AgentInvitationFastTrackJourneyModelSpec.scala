@@ -431,12 +431,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           authorisedAgent) should
           thenGo(IdentifyPersonalClient(fastTrackRequest, fastTrackRequest, None))
       }
-      "transition to IdentifyPersonalClient for VAT with no client type when changing information" in {
+      "transition to IdentifyNoClientTypeClient for VAT with no client type when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
 
         given(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsChangeInformation(
           authorisedAgent) should
-          thenGo(IdentifyBusinessClient(fastTrackRequest, fastTrackRequest, None))
+          thenGo(IdentifyNoClientTypeClient(fastTrackRequest, fastTrackRequest, None))
       }
       "transition to SelectClientType when there is no client type in the request" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, postCode)
@@ -447,7 +447,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       }
     }
 
-    "at IdentifyPersonalClient" should {
+    "at IdentifyClient" should {
       def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
@@ -494,6 +494,21 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
             VatClient("1234567", "2010-10-10")) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+      }
+      "transition to client type for no client type vat service" in {
+        val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, vatRegDate)
+        val newVrn = "1234567"
+        val newVatRegDate = "2010-10-10"
+
+        given(IdentifyNoClientTypeClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
+            VatClient(newVrn, newVatRegDate)) should
+          thenGo(
+            SelectClientTypeVat(
+              aFastTrackRequestWithDiffParams(fastTrackRequest),
+              fastTrackRequest.copy(clientIdentifier = newVrn, knownFact = Some(newVatRegDate)),
+              None))
       }
     }
     "at MoreDetails" should {
