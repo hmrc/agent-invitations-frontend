@@ -167,7 +167,7 @@ abstract class BaseISpec
     val element = if(clazz.isDefined) {
       s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
     } else {
-      s"""<a href = "$linkUrl">$linkText</a>"""
+      s"""<a href="$linkUrl">$linkText</a>"""
   }
     checkHtmlResultWithBodyText(result, element)
   }

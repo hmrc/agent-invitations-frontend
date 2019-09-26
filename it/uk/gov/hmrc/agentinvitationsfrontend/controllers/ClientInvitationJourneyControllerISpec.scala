@@ -757,6 +757,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
     }
 
+  Set(TimedOut, UserAborted).foreach { reason =>
+    s"IV returns failed reason $reason" when {
+      "display the signed out page" in {
+        givenIVFailureReasonResponse(reason)
+        val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+        status(result) shouldBe 403
+        checkHtmlResultWithBodyMsgs(result, "signed-out.header",
+        "signed-out.p1")
+        checkResultContainsLink(result, "/invitations/warm-up", "Sign in again")
+      }
+    }
+  }
+
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
       "logged in" in {
