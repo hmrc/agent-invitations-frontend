@@ -30,6 +30,7 @@ case class ValidService(
   messageKey: String)
     extends Service
 
+// TODO why are these all strings?  Make this set of services a sealed trait so it can be type safe!
 object Services {
 
   val HMRCMTDIT = "HMRC-MTD-IT"

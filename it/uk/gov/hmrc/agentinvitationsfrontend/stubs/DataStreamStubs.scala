@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.{CountMatchingMode, CountMatchingStrategy}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.libs.json.Json
@@ -49,9 +50,11 @@ trait DataStreamStubs extends Eventually {
       )
     }
 
-  def givenAuditConnector(): Unit = {
-    stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204)))
-    stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
+  def givenAuditConnector(): Seq[StubMapping] = {
+    List(
+      stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204))),
+      stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
+    )
   }
 
   private def auditUrl = "/write/audit"

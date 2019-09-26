@@ -3,6 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
@@ -97,8 +98,7 @@ abstract class BaseISpec
       )
       .overrides(new TestGuiceModule)
 
-  def commonStubs(): Unit =
-    givenAuditConnector()
+  def commonStubs(): Seq[StubMapping] = givenAuditConnector()
 
   protected implicit val materializer = app.materializer
 

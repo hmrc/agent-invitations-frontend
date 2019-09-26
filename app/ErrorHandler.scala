@@ -119,6 +119,7 @@ trait ErrorAuditing extends HttpAuditEvent {
     auditConnector.sendEvent(
       dataEvent(eventType, transactionName, request, Map(TransactionFailureReason -> ex.getMessage))(
         HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+    ()
   }
 
   def auditClientError(request: RequestHeader, statusCode: Int, message: String)(
@@ -135,5 +136,6 @@ trait ErrorAuditing extends HttpAuditEvent {
             HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
       case _ =>
     }
+    ()
   }
 }
