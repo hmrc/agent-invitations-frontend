@@ -592,7 +592,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
       "original request was for MTD-VAT" when {
         val completedPersonalVatFastTrack = AgentFastTrackRequest(
-          clientType = Some(ClientType.personal),
+          clientType = None,
           service = HMRCMTDVAT,
           "vrn",
           vrn,
