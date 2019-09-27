@@ -580,8 +580,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           val tryAgainState = fastTrackRequest match {
             case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
-              val ftrWithoutKFOrClientType = ftrWithoutKF.copy(clientType = None)
-              SelectClientTypeVat(originalFtr, ftrWithoutKFOrClientType, continueUrl)
+              SelectClientTypeVat(originalFtr, fastTrackRequest, continueUrl)
             case AgentFastTrackRequest(_, service, _, _, _) =>
               stateForMissingKnownFact(service)
           }
