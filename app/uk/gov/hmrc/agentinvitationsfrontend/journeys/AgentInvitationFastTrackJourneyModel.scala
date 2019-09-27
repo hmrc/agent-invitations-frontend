@@ -578,15 +578,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               case HMRCPIR    => NoDob(originalFtr, ftrWithoutKF, continueUrl)
             }
 
-          val tryAgainState = originalFtr match {
+          val tryAgainState = fastTrackRequest match {
             case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
-              val ftrWithoutKFOrClientType = ftrWithoutKF.copy(clientType = None)
-              SelectClientTypeVat(originalFtr, ftrWithoutKFOrClientType, continueUrl)
-            case AgentFastTrackRequest(Some(_), HMRCMTDVAT, _, _, None) =>
-              stateForMissingKnownFact(HMRCMTDVAT)
-            case AgentFastTrackRequest(_, _, _, _, Some(_)) =>
-              TryAgainWithoutFastTrack
-            case AgentFastTrackRequest(_, service, _, _, None) =>
+              SelectClientTypeVat(originalFtr, fastTrackRequest, continueUrl)
+            case AgentFastTrackRequest(_, service, _, _, _) =>
               stateForMissingKnownFact(service)
           }
 
