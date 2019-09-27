@@ -653,7 +653,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             ))
       }
 
-      "fat track request is for MTD-IT service (and clientType was personal)" in {
+      "fast track request is for MTD-IT service (and clientType was personal)" in {
         val originalFtr = AgentFastTrackRequest(
           clientType = Some(personal),
           service = HMRCMTDIT,
