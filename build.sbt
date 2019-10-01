@@ -30,26 +30,26 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "3.8.0",
   "uk.gov.hmrc" %% "play-partials" % "6.5.0",
   "de.threedimensions" %% "metrics-play" % "2.5.13",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.4.0-play-25"
+  "uk.gov.hmrc" %% "mongo-caching" % "6.5.0-play-25"
 )
 
 def testDeps(scope: String) = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.8.0-play-25" % scope,
   "com.github.tomakehurst" % "wiremock" % "2.23.2" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.7" % scope,
+  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "org.jsoup" % "jsoup" % "1.12.1" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.13.0-play-25" % scope
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.15.0-play-25" % scope
 )
 
 lazy val root = (project in file("."))
   .settings(
     name := "agent-invitations-frontend",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.11.11",
+    scalaVersion := "2.11.12",
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
     resolvers := Seq(

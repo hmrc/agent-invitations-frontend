@@ -3,8 +3,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.google.inject.AbstractModule
+import org.scalatest.Assertion
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -100,7 +102,7 @@ abstract class BaseISpec
 
   def commonStubs(): Seq[StubMapping] = givenAuditConnector()
 
-  protected implicit val materializer = app.materializer
+  protected implicit val materializer: Materializer = app.materializer
 
   protected def checkHtmlResultWithBodyText(result: Result, expectedSubstrings: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
@@ -154,16 +156,17 @@ abstract class BaseISpec
 
   protected def hasMessage(key: String, args: Any*): String = Messages(key, args: _*).toString
 
-  implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
+  implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = {
     HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
+  }
 
-  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]) = {
+  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, continueUrl)
   }
 
-  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String, clazz: Option[String] = None) = {
+  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String, clazz: Option[String] = None): Unit = {
     val element = if(clazz.isDefined) {
       s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
     } else {
@@ -172,17 +175,17 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, element)
   }
 
-  def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String) = {
+  def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String): Unit = {
     val element = s"""<a id="backLink" href="$backLinkUrl" class="link-back">Back</a>"""
     checkHtmlResultWithBodyText(result, element)
   }
 
-  def checkResultBodyContainsTitle(result: Future[Result], title: String) = {
+  def checkResultBodyContainsTitle(result: Future[Result], title: String): Unit = {
     val element = s"""<title>$title</title>"""
     checkHtmlResultWithBodyText(result, element)
   }
 
-  def checkHasAgentSignOutLink(result: Future[Result]) = {
+  def checkHasAgentSignOutLink(result: Future[Result]): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString
     val continueUrl =
@@ -216,13 +219,13 @@ abstract class BaseISpec
       )
     )
 
-  def checkHasClientSignOutUrl(result: Future[Result]) = {
+  def checkHasClientSignOutUrl(result: Future[Result]): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
-  def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]) = {
+  def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(clientFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, continueUrl)
@@ -279,7 +282,7 @@ abstract class BaseISpec
   protected def checkRedirectedToIVUplift(
     result: Future[Result],
     expectedCompletionUrl: String,
-    expectedFailureUrl: String) = {
+    expectedFailureUrl: String): Assertion = {
     val expectedRedirectUrl = CallOps.addParamsToUrl(
       url = "/mdtp/uplift?origin=aif",
       "confidenceLevel" -> Some("200"),

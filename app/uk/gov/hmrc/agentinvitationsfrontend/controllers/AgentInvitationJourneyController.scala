@@ -265,7 +265,7 @@ class AgentInvitationJourneyController @Inject()(
         select_service(
           formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfig(
-            basket.nonEmpty,
+            basket,
             featureFlags,
             services,
             routes.AgentInvitationJourneyController.submitPersonalSelectService(),

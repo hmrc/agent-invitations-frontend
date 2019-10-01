@@ -25,15 +25,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     .overrides(new TestAgentInvitationJourneyModule)
     .build()
 
-  lazy val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
-  lazy val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
-  lazy val externalUrls = app.injector.instanceOf[ExternalUrls]
+  lazy private val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
+  lazy private val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
+  lazy private val externalUrls = app.injector.instanceOf[ExternalUrls]
 
   import journeyState.model.State
   import journeyState.model.State._
 
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-  val emptyBasket = Set.empty[AuthorisationRequest]
+  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+  private val emptyBasket = Set.empty[AuthorisationRequest]
 
   before {
     journeyState.clear(hc, ec)
@@ -96,7 +96,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       }
 
-      def itShowsClientTypePage(withBackLinkUrl: String) = {
+      def itShowsClientTypePage(withBackLinkUrl: String): Unit = {
         val result = controller.showClientType()(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 200
 
@@ -343,7 +343,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
-      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+      controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
     }
 
     "show identify client page for IRV service" in {
@@ -481,7 +481,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             case ConfirmClientItsa(
                 AuthorisationRequest(
                   "Sylvia Plath",
-                  ItsaInvitation(nino, Postcode("BN114AW"), _, _, _),
+                  ItsaInvitation(_, Postcode("BN114AW"), _, _, _),
                   _,
                   _
                 ),
@@ -870,7 +870,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should havePattern[State](
         {
           case ConfirmClientPersonalVat(
-              AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10"), _, _), _, _),
+              AuthorisationRequest("GDT", VatInvitation(Some(_), Vrn(_), VatRegDate("10/10/10"), _, _), _, _),
               _) =>
         },
         List(
@@ -923,7 +923,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientBusinessVat(
               AuthorisationRequest(
                 "GDT",
-                VatInvitation(Some(business), Vrn(vrn), VatRegDate("10/10/10"), _, _),
+                VatInvitation(Some(_), Vrn(_), VatRegDate("10/10/10"), _, _),
                 _,
                 _)) =>
         },

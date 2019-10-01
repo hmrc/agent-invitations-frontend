@@ -19,32 +19,46 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
 case class SelectServicePageConfig(
-  basketFlag: Boolean,
+  basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String],
   submitCall: Call,
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages) {
 
-  val enabledPersonalServices: Seq[(String, String)] = {
-    val map = collection.mutable.Map[String, String]()
+  /** The set of personal services available that an agent has not yet chosen for authorisation
+    *  The order of displayed services is important, so we add them in the correct position
+    */
+  val availablePersonalServices: Seq[(String, String)] = {
 
-    if (featureFlags.showPersonalIncome && services.contains(HMRCPIR))
-      map.update(HMRCPIR, Messages("personal-select-service.personal-income-viewer"))
+    val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
-    if (featureFlags.showHmrcMtdIt && services.contains(HMRCMTDIT))
-      map.update(HMRCMTDIT, Messages("personal-select-service.itsa"))
+    if (showServiceHmrcMtdIt)
+      seq.append(HMRCMTDIT -> Messages("personal-select-service.itsa"))
 
-    if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
-      map.update(HMRCMTDVAT, Messages("select-service.vat"))
+    if (showServicePersonalIncome)
+      seq.append(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
 
-    map.toSeq match {
-      case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
-      case Seq(vat, itsa)      => Seq(itsa, vat)
-    }
+    if (showServiceMtdVat)
+      seq.append(HMRCMTDVAT -> Messages("select-service.vat"))
+
+    seq
   }
+
+  private def showServiceMtdVat: Boolean =
+    featureFlags.showHmrcMtdVat && serviceAvailableForSelection(HMRCMTDVAT)
+
+  private def showServicePersonalIncome: Boolean =
+    featureFlags.showPersonalIncome && serviceAvailableForSelection(HMRCPIR)
+
+  private def showServiceHmrcMtdIt: Boolean =
+    featureFlags.showHmrcMtdIt && serviceAvailableForSelection(HMRCMTDIT)
+
+  private def serviceAvailableForSelection(service: String): Boolean =
+    services.contains(service) && !basket.exists(_.invitation.service == service)
 
 }
