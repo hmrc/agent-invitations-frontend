@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -380,12 +380,13 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.submitConfirmClient()
         ))
 
-    case ReviewAuthorisationsPersonal(basket) =>
+    case ReviewAuthorisationsPersonal(services, basket) =>
       Ok(
         review_authorisations(
           ReviewAuthorisationsPageConfig(
             basket,
             featureFlags,
+            services,
             routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
           formWithErrors.or(ReviewAuthorisationsForm),
           backLinkFor(breadcrumbs).url

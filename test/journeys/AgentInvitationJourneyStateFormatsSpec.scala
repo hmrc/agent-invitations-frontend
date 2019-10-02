@@ -132,13 +132,15 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ReviewAuthorisationsPersonal" in {
-        Json.toJson(ReviewAuthorisationsPersonal(Set.empty)) shouldBe Json.obj(
-          "state"      -> "ReviewAuthorisationsPersonal",
-          "properties" -> Json.obj("basket" -> JsArray())
+        Json.toJson(ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)) shouldBe Json.obj(
+          "state" -> "ReviewAuthorisationsPersonal",
+          "properties" -> Json
+            .obj("basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
         )
         Json
-          .parse("""{"state":"ReviewAuthorisationsPersonal", "properties": {"basket": []}}""")
-          .as[State] shouldBe ReviewAuthorisationsPersonal(Set.empty)
+          .parse(
+            """{"state":"ReviewAuthorisationsPersonal", "properties": {"basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
+          .as[State] shouldBe ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
       }
       "InvitationSentPersonal" in {
         Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(

@@ -20,7 +20,7 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.InvitationsBasket
 
 case class SelectServicePageConfig(
   basket: Basket,
@@ -30,35 +30,7 @@ case class SelectServicePageConfig(
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages) {
 
-  /** The set of personal services available that an agent has not yet chosen for authorisation
-    *  The order of displayed services is important, so we add them in the correct position
-    */
-  val availablePersonalServices: Seq[(String, String)] = {
-
-    val seq = collection.mutable.ArrayBuffer[(String, String)]()
-
-    if (showServiceHmrcMtdIt)
-      seq.append(HMRCMTDIT -> Messages("personal-select-service.itsa"))
-
-    if (showServicePersonalIncome)
-      seq.append(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
-
-    if (showServiceMtdVat)
-      seq.append(HMRCMTDVAT -> Messages("select-service.vat"))
-
-    seq
-  }
-
-  private def showServiceMtdVat: Boolean =
-    featureFlags.showHmrcMtdVat && serviceAvailableForSelection(HMRCMTDVAT)
-
-  private def showServicePersonalIncome: Boolean =
-    featureFlags.showPersonalIncome && serviceAvailableForSelection(HMRCPIR)
-
-  private def showServiceHmrcMtdIt: Boolean =
-    featureFlags.showHmrcMtdIt && serviceAvailableForSelection(HMRCMTDIT)
-
-  private def serviceAvailableForSelection(service: String): Boolean =
-    services.contains(service) && !basket.exists(_.invitation.service == service)
+  def availablePersonalServices: Seq[(String, String)] =
+    new InvitationsBasket(services, basket, featureFlags).availablePersonalServices
 
 }

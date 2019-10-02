@@ -15,6 +15,10 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class AuthorisedAgent(arn: Arn, isWhitelisted: Boolean)
+case class AuthorisedAgent(arn: Arn, isWhitelisted: Boolean) {
+  val personalServices: Set[String] =
+    if (isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT)
+}
