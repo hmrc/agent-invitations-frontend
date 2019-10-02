@@ -53,7 +53,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ConfirmClientTrust(request: AuthorisationRequest) extends State
-    case class ReviewAuthorisationsPersonal(basket: Basket) extends State
+    case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
     case class SomeAuthorisationsFailed(
       invitationLink: String,
       continueUrl: Option[String],
@@ -78,7 +78,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   object Transitions {
     import State._
 
-    val start = AgentInvitationJourneyModel.start
+    val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
@@ -94,12 +94,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
         clientType match {
-          case "personal" =>
-            goto(
-              SelectPersonalService(
-                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT),
-                basket
-              ))
+          case "personal" => goto(SelectPersonalService(agent.personalServices, basket))
           case "business" => goto(SelectBusinessService)
           case "trust"    => goto(SelectTrustService)
         }
@@ -255,7 +250,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob)))
                            }
                            .flatMap { request =>
-                             checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+                             checkIfPendingOrActiveAndGoto(
+                               ReviewAuthorisationsPersonal(agent.personalServices, basket + request))(
                                personal,
                                agent.arn,
                                request.invitation.clientId,
@@ -312,7 +308,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
       Transition {
         case ConfirmClientItsa(request, basket) =>
           if (confirmation.choice) {
-            checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+            checkIfPendingOrActiveAndGoto(
+              ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
               personal,
               authorisedAgent.arn,
               request.invitation.clientId,
@@ -321,7 +318,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
           } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
         case ConfirmClientPersonalVat(request, basket) =>
           if (confirmation.choice) {
-            checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(basket + request))(
+            checkIfPendingOrActiveAndGoto(
+              ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
               personal,
               authorisedAgent.arn,
               request.invitation.clientId,
@@ -392,13 +390,10 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
-        case ReviewAuthorisationsPersonal(basket) =>
-          if (confirmation.choice)
-            goto(
-              SelectPersonalService(
-                if (agent.isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT) else Set(HMRCMTDIT, HMRCMTDVAT), //shall we remove existing service from the list?
-                basket))
-          else {
+        case ReviewAuthorisationsPersonal(_, basket) =>
+          if (confirmation.choice) {
+            goto(SelectPersonalService(agent.personalServices, basket))
+          } else {
             for {
               agencyEmail    <- getAgencyEmail()
               invitationLink <- getAgentLink(agent.arn, Some(personal))
@@ -415,11 +410,10 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent) =
       Transition {
-        case ReviewAuthorisationsPersonal(basket) => {
+        case ReviewAuthorisationsPersonal(_, basket) =>
           val deleteItem: AuthorisationRequest =
             basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
           goto(DeleteAuthorisationRequestPersonal(deleteItem, basket))
-        }
       }
 
     def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -427,9 +421,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
         case DeleteAuthorisationRequestPersonal(authorisationRequest, basket) =>
           if (confirmation.choice) {
             if ((basket - authorisationRequest).nonEmpty)
-              goto(ReviewAuthorisationsPersonal(basket - authorisationRequest))
+              goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket - authorisationRequest))
             else goto(AllAuthorisationsRemoved)
-          } else goto(ReviewAuthorisationsPersonal(basket))
+          } else goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket))
       }
   }
 }
