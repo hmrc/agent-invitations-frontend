@@ -212,7 +212,7 @@ class ClientInvitationJourneyController @Inject()(
           cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
-      case UserAborted | TimedOut => Forbidden(signed_out())
+      case UserAborted | TimedOut => Forbidden(signed_out()).withNewSession
       case _                      => Forbidden(cannot_confirm_identity())
     }
 
