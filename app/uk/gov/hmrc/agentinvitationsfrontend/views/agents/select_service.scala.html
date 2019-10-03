@@ -38,7 +38,7 @@ action = config.submitCall,
 <div class="form-group">
     @input_radio_group(
     agentInvitationsForm("serviceType"),
-    config.enabledPersonalServices,
+    config.availablePersonalServices,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
     """<span class="form-hint">""" + Messages("select-service.hint") + """</span>"""),
@@ -63,7 +63,7 @@ action = config.submitCall,
 <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
 }
 
-@if(config.basketFlag) {
+@if(config.basket.nonEmpty) {
 <p class="margin-top-40"><a class="text-link-small" href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a></p>
 }
 

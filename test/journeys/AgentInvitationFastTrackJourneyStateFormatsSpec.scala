@@ -579,6 +579,35 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "IdentifyNoClientTypeClient" in {
+        val state = IdentifyNoClientTypeClient(
+          AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+          Some("continue/url")
+        )
+        val json = Json.parse("""{
+                                |  "state":"IdentifyNoClientTypeClient",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-TERS-ORG",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-TERS-ORG",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "ConfirmClientTrust" in {
         val state = ConfirmClientTrust(
           AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),

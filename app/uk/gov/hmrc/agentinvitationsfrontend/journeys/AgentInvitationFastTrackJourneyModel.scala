@@ -20,7 +20,7 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
@@ -123,6 +123,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         extends State
 
     case class IdentifyBusinessClient(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
+    case class IdentifyNoClientTypeClient(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
@@ -297,8 +303,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         continueUrl: Option[String]) =
         if (ftRequest.clientType.contains(personal)) {
           goto(IdentifyPersonalClient(originalFtr, ftRequest, continueUrl))
-        } else {
+        } else if (ftRequest.clientType.contains(business)) {
           goto(IdentifyBusinessClient(originalFtr, ftRequest, continueUrl))
+        } else {
+          goto(IdentifyNoClientTypeClient(originalFtr, ftRequest, continueUrl))
         }
 
       Transition {
@@ -468,6 +476,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
           getAgentLink)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(agent)(Confirmation(true))
           .apply(newState)
+
+      case IdentifyNoClientTypeClient(originalFtr, ftr, continueUrl) =>
+        val newState = CheckDetailsNoClientTypeVat(
+          originalFtr,
+          ftr.copy(clientIdentifier = vatClient.clientIdentifier, knownFact = Some(vatClient.registrationDate)),
+          continueUrl)
+        checkedDetailsNoClientType(agent).apply(newState)
     }
 
     def showConfirmTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
@@ -563,15 +578,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               case HMRCPIR    => NoDob(originalFtr, ftrWithoutKF, continueUrl)
             }
 
-          val tryAgainState = originalFtr match {
+          val tryAgainState = fastTrackRequest match {
             case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
-              val ftrWithoutKFOrClientType = ftrWithoutKF.copy(clientType = None)
-              SelectClientTypeVat(originalFtr, ftrWithoutKFOrClientType, continueUrl)
-            case AgentFastTrackRequest(Some(_), HMRCMTDVAT, _, _, None) =>
-              stateForMissingKnownFact(HMRCMTDVAT)
-            case AgentFastTrackRequest(_, _, _, _, Some(_)) =>
-              TryAgainWithoutFastTrack
-            case AgentFastTrackRequest(_, service, _, _, None) =>
+              SelectClientTypeVat(originalFtr, fastTrackRequest, continueUrl)
+            case AgentFastTrackRequest(_, service, _, _, _) =>
               stateForMissingKnownFact(service)
           }
 

@@ -16,25 +16,32 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
+import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentSession, AuthorisationRequest}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, InvitationsBasket}
 
 case class ReviewAuthorisationsPageConfig(
-  requests: Set[AuthorisationRequest],
+  basket: Basket,
   featureFlags: FeatureFlags,
-  submitCall: Call) {
+  services: Set[String],
+  submitCall: Call)(implicit messages: Messages) {
 
-  def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String) =
+  def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {
       case "PERSONAL-INCOME-RECORD" => noNameMessage
       case _                        => authorisationRequest.clientName.stripSuffix(".")
     }
 
-  val numberOfItems: Int = requests.size
+  val basketFull: Boolean =
+    new InvitationsBasket(services, basket, featureFlags).availablePersonalServices.isEmpty
 
-  val clientNamesAreDifferent: Boolean = requests.toSeq.map(_.clientName).distinct.length != 1
+  val numberOfItems: Int = basket.size
 
-  def showDeleteCall(itemId: String) = routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
+  val clientNamesAreDifferent: Boolean = basket.toSeq.map(_.clientName).distinct.length != 1
+
+  def showDeleteCall(itemId: String): Call =
+    routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
 
 }

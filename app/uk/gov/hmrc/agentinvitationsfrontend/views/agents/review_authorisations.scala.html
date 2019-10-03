@@ -30,10 +30,10 @@
     <h1 class="heading-xlarge margin-bottom-40">@Messages("review-authorisations.heading")</h1>
 
     <p class="margin-bottom-30">
-    @if(config.requests.size == 1) {
-        @Messages("review-authorisations.p", s"${config.requests.size} authorisation request")
+    @if(config.basket.size == 1) {
+        @Messages("review-authorisations.p", s"${config.basket.size} authorisation request")
     } else {
-        @Messages("review-authorisations.p", s"${config.requests.size} authorisation requests")
+        @Messages("review-authorisations.p", s"${config.basket.size} authorisation requests")
     }
     </p>
 
@@ -42,7 +42,7 @@
   }
 
     <dl class="govuk-check-your-answers cya-questions-long">
-    @for(authorisationRequest <- config.requests) {
+    @for(authorisationRequest <- config.basket) {
         <div>
             <dt class="bold">
             @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))
@@ -62,14 +62,19 @@
 
     @form(config.submitCall){
 
-        @input_radio_group(
-            reviewAuthorisationsForm("accepted"),
-            Seq(("true", Messages("review-authorisations.radio.yes")),("false",Messages("review-authorisations.radio.no"))),
-            '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),
-            '_legendClass -> "form-label",
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='confirmDecline'""")
-        )
+        @if(config.basketFull) {
+            <input type="hidden" name="accepted" value="false" />
+            <br />
+        } else {
+            @input_radio_group(
+                reviewAuthorisationsForm("accepted"),
+                Seq(("true", Messages("review-authorisations.radio.yes")), ("false", Messages("review-authorisations.radio.no"))),
+                '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),
+                '_legendClass -> "form-label",
+                '_groupDivClass -> "form-group soft--ends",
+                '_fieldsetAttributes -> Html("""id='confirmDecline'""")
+            )
+        }
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>

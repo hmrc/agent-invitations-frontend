@@ -19,32 +19,18 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.InvitationsBasket
 
 case class SelectServicePageConfig(
-  basketFlag: Boolean,
+  basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String],
   submitCall: Call,
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages) {
 
-  val enabledPersonalServices: Seq[(String, String)] = {
-    val map = collection.mutable.Map[String, String]()
-
-    if (featureFlags.showPersonalIncome && services.contains(HMRCPIR))
-      map.update(HMRCPIR, Messages("personal-select-service.personal-income-viewer"))
-
-    if (featureFlags.showHmrcMtdIt && services.contains(HMRCMTDIT))
-      map.update(HMRCMTDIT, Messages("personal-select-service.itsa"))
-
-    if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
-      map.update(HMRCMTDVAT, Messages("select-service.vat"))
-
-    map.toSeq match {
-      case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
-      case Seq(vat, itsa)      => Seq(itsa, vat)
-    }
-  }
+  def availablePersonalServices: Seq[(String, String)] =
+    new InvitationsBasket(services, basket, featureFlags).availablePersonalServices
 
 }
