@@ -83,7 +83,9 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: SelectPersonalService | SelectBusinessService | SelectTrustService =>
+    case _: SelectPersonalService =>
+    case SelectBusinessService    =>
+    case _: SelectTrustService    =>
   }
 
   def submitPersonalSelectService: Action[AnyContent] = action { implicit request =>
@@ -91,7 +93,8 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedPersonalService(
         featureFlags.showHmrcMtdIt,
         featureFlags.showPersonalIncome,
-        featureFlags.showHmrcMtdVat))
+        featureFlags.showHmrcMtdVat,
+        featureFlags.showHmrcCgt))
   }
 
   def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
@@ -217,7 +220,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
     case _: SelectPersonalService        => routes.AgentInvitationJourneyController.showSelectService()
     case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectTrustService              => routes.AgentInvitationJourneyController.showSelectService()
+    case _: SelectTrustService           => routes.AgentInvitationJourneyController.showSelectService()
     case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
     case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyClient()
@@ -264,7 +267,7 @@ class AgentInvitationJourneyController @Inject()(
       Ok(
         select_service(
           formWithErrors.or(ServiceTypeForm.form),
-          SelectServicePageConfig(
+          PersonalSelectServicePageConfig(
             basket,
             featureFlags,
             services,
@@ -286,12 +289,14 @@ class AgentInvitationJourneyController @Inject()(
           )
         ))
 
-    case SelectTrustService =>
+    case SelectTrustService(services, basket) =>
       Ok(
         trust_select_service(
           formWithErrors.or(CommonConfirmationForms.serviceTrustForm),
           TrustSelectServicePageConfig(
-            basketFlag = false,
+            basket,
+            featureFlags,
+            services,
             routes.AgentInvitationJourneyController.submitTrustSelectService(),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.showReviewAuthorisations()
@@ -383,7 +388,7 @@ class AgentInvitationJourneyController @Inject()(
     case ReviewAuthorisationsPersonal(services, basket) =>
       Ok(
         review_authorisations(
-          ReviewAuthorisationsPageConfig(
+          ReviewAuthorisationsPersonalPageConfig(
             basket,
             featureFlags,
             services,

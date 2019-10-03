@@ -40,10 +40,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class SelectClientType(basket: Basket) extends State
     case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case object SelectBusinessService extends State
-    case object SelectTrustService extends State
+    case class SelectTrustService(services: Set[String], basket: Basket) extends State
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case object IdentifyBusinessClient extends State
     case object IdentifyTrustClient extends State
+    case object IdentifyCgtClient extends State
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
@@ -53,6 +54,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ConfirmClientTrust(request: AuthorisationRequest) extends State
+    // TODO add confirm client state for cgt
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
     case class SomeAuthorisationsFailed(
       invitationLink: String,
@@ -96,26 +98,28 @@ object AgentInvitationJourneyModel extends JourneyModel {
         clientType match {
           case "personal" => goto(SelectPersonalService(agent.personalServices, basket))
           case "business" => goto(SelectBusinessService)
-          case "trust"    => goto(SelectTrustService)
+          case "trust"    => goto(SelectTrustService(agent.trustServices, basket))
         }
     }
 
-    def selectedPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean)(
-      agent: AuthorisedAgent)(service: String) = Transition {
+    def selectedPersonalService(
+      showItsaFlag: Boolean,
+      showPirFlag: Boolean,
+      showVatFlag: Boolean,
+      showCgtFlag: Boolean)(agent: AuthorisedAgent)(service: String) = Transition {
+
       case SelectPersonalService(services, basket) =>
+        def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
+          if (serviceEnabled)
+            goto(IdentifyPersonalClient(service, basket))
+          else
+            fail(new Exception(s"Service: $service feature flag is switched off"))
         if (services.contains(service)) {
           service match {
-            case HMRCMTDIT =>
-              if (showItsaFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flag is switched off"))
-
-            case HMRCPIR =>
-              if (showPirFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flag is switched off"))
-
-            case HMRCMTDVAT =>
-              if (showVatFlag) goto(IdentifyPersonalClient(service, basket))
-              else fail(new Exception(s"Service: $service feature flag is switched off"))
+            case HMRCMTDIT  => gotoIdentify(showItsaFlag, service)
+            case HMRCPIR    => gotoIdentify(showPirFlag, service)
+            case HMRCMTDVAT => gotoIdentify(showVatFlag, service)
+            case HMRCCGTPD  => gotoIdentify(showCgtFlag, service)
           }
         } else goto(SelectPersonalService(services, basket))
     }
@@ -131,7 +135,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def selectedTrustService(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
-      case SelectTrustService =>
+      case SelectTrustService(_, _) =>
         if (confirmed.choice) {
           if (showTrustsFlag) goto(IdentifyTrustClient)
           else fail(new Exception(s"Service: $TRUST feature flag is switched off"))

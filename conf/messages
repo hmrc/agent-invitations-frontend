@@ -77,6 +77,7 @@ enter-irv-date-of-birth.invalid-format=Enter a valid date
 # Personal Select Service
 personal-select-service.personal-income-viewer=View their PAYE income record
 personal-select-service.itsa=Send their Income Tax updates through software
+personal-select-service.cgt=Manage their Capital Gains Tax on UK property disposals
 
 # Personal and Business
 select-service.p1=You need to create a separate request for each type of authorisation.
@@ -98,11 +99,17 @@ business-select-service.yes=Yes
 business-select-service.no=No
 error.business-service.required=Select yes if you want to submit this client''s VAT returns through software
 
-## Trust select service
-trust-select-service.header=Do you want to maintain a trust or an estate for this client?
+## Trust select service (if single service)
+trust-select-service.single.header=Do you want to maintain a trust or an estate for this client?
 trust-select-service.yes=Yes
 trust-select-service.no=No
 error.trust-service.required=Select yes if you want to maintain a trust or an estate for this client
+
+## Trust select service (if multiple)
+trust-select-service.header=What do you want the lead trustee to authorise you to do?
+trust-select-service.trust=Maintain a trust or an estate
+trust-select-service.cgt=Manage a trust's Capital Gains Tax on UK property disposals
+
 
 ## Identify Trust Client
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
@@ -690,6 +697,7 @@ active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised yo
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
 active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to submit their VAT returns through software.
 active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust or an estate.
+active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised you for Capital Gains Tax.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 

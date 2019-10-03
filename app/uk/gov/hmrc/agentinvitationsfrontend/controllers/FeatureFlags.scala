@@ -25,6 +25,7 @@ case class FeatureFlags @Inject()(
   @Named("features.show-personal-income") showPersonalIncome: Boolean = true,
   @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean = true,
   @Named("features.show-hmrc-trust") showHmrcTrust: Boolean = false,
+  @Named("features.show-hmrc-cgt") showHmrcCgt: Boolean = false,
   @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false,
   @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true) {}
 

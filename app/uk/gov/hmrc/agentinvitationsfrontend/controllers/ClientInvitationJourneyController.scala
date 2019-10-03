@@ -186,7 +186,7 @@ class ClientInvitationJourneyController @Inject()(
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      Future successful Forbidden(not_authorised(Services.messageKeyForAfi))
+      Future successful Forbidden(not_authorised_as_client())
     }
   }
 

@@ -26,6 +26,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   //Happy states
   val SelectClientTypeFormat = Json.format[SelectClientType]
   val SelectPersonalServiceFormat = Json.format[SelectPersonalService]
+  val SelectTrustServiceFormat = Json.format[SelectTrustService]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val ConfirmClientItsaFormat = Json.format[ConfirmClientItsa]
   val ConfirmClientTrustFormat = Json.format[ConfirmClientTrust]
@@ -48,6 +49,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType                   => SelectClientTypeFormat.writes(s)
     case s: SelectPersonalService              => SelectPersonalServiceFormat.writes(s)
+    case s: SelectTrustService                 => SelectTrustServiceFormat.writes(s)
     case s: IdentifyPersonalClient             => IdentifyPersonalClientFormat.writes(s)
     case s: ConfirmClientItsa                  => ConfirmClientItsaFormat.writes(s)
     case s: ConfirmClientPersonalVat           => ConfirmClientPersonalVatFormat.writes(s)
@@ -70,7 +72,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "SelectClientType"                   => SelectClientTypeFormat.reads(properties)
     case "SelectPersonalService"              => SelectPersonalServiceFormat.reads(properties)
     case "SelectBusinessService"              => JsSuccess(SelectBusinessService)
-    case "SelectTrustService"                 => JsSuccess(SelectTrustService)
+    case "SelectTrustService"                 => SelectTrustServiceFormat.reads(properties)
     case "IdentifyPersonalClient"             => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"             => JsSuccess(IdentifyBusinessClient)
     case "IdentifyTrustClient"                => JsSuccess(IdentifyTrustClient)

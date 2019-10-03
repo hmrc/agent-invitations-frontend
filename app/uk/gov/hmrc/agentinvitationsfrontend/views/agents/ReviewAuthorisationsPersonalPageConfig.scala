@@ -20,17 +20,28 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.InvitationsBasket
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, InvitationsBasket, PersonalInvitationsBasket}
 
-case class SelectServicePageConfig(
+case class ReviewAuthorisationsPersonalPageConfig(
   basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String],
-  submitCall: Call,
-  backLink: String,
-  reviewAuthsCall: Call)(implicit messages: Messages) {
+  submitCall: Call)(implicit messages: Messages) {
 
-  def availablePersonalServices: Seq[(String, String)] =
-    new InvitationsBasket(services, basket, featureFlags).availablePersonalServices
+  def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
+    authorisationRequest.invitation.service match {
+      case "PERSONAL-INCOME-RECORD" => noNameMessage
+      case _                        => authorisationRequest.clientName.stripSuffix(".")
+    }
+
+  val basketFull: Boolean =
+    new PersonalInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
+
+  val numberOfItems: Int = basket.size
+
+  val clientNamesAreDifferent: Boolean = basket.toSeq.map(_.clientName).distinct.length != 1
+
+  def showDeleteCall(itemId: String): Call =
+    routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
 
 }

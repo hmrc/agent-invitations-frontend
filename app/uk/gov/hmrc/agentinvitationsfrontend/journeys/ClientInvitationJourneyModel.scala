@@ -126,7 +126,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       Transition {
         case WarmUp(clientType, uid, agentName, _) =>
           getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
-            val containsTrust = consents.exists(_.serviceKey == messageKeyForTrust)
+            val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
             val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
             if (containsTrust && butNoTrustEnrolment) {
               Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
