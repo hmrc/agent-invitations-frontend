@@ -45,6 +45,8 @@ object Validators {
 
   val utrPattern = "^\\d{10}$"
 
+  val cgtRefPattern = "^X[A-Z]CGTP[0-9]{9}$"
+
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String) =
     Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
@@ -70,18 +72,22 @@ object Validators {
 
   def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
 
-  def validUtr() = utrConstraint("error.utr.required", "enter-utr.invalid-format")
+  def validUtr(): Constraint[String] =
+    patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
-  private def utrConstraint(nonEmptyFailure: String, invalidFailure: String): Constraint[String] = Constraint[String] {
-    fieldValue: String =>
+  def validCgtRef(): Constraint[String] =
+    patternConstraint(cgtRefPattern, "error.cgt.required", "enter-cgt.invalid-format")
+
+  private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
+    Constraint[String] { fieldValue: String =>
       val formattedField = fieldValue.replace(" ", "").trim
       Constraints.nonEmpty(formattedField) match {
         case _: Invalid => Invalid(ValidationError(nonEmptyFailure))
-        case _ if formattedField.matches(utrPattern) =>
+        case _ if formattedField.matches(pattern) =>
           Valid
         case _ => Invalid(invalidFailure)
       }
-  }
+    }
 
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     fieldValue match {

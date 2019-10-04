@@ -20,7 +20,7 @@ import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -37,25 +37,33 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
   /* State should contain only minimal set of data required to proceed */
   object State {
+
     case class SelectClientType(basket: Basket) extends State
     case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case object SelectBusinessService extends State
     case class SelectTrustService(services: Set[String], basket: Basket) extends State
+
     case class IdentifyPersonalClient(service: String, basket: Basket) extends State
     case object IdentifyBusinessClient extends State
-    case object IdentifyTrustClient extends State
-    case object IdentifyCgtClient extends State
+    case class IdentifyTrustClient(service: String, basket: Basket) extends State
+
     case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
     case object TrustNotFound extends State
+    case object CgtRefNotFound extends State
+
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
-    case class ConfirmClientTrust(request: AuthorisationRequest) extends State
-    // TODO add confirm client state for cgt
+    case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
+    case class ConfirmClientPersonalCgt(request: AuthorisationRequest, basket: Basket) extends State
+    case class ConfirmClientTrustCgt(request: AuthorisationRequest, basket: Basket) extends State
+
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
+    case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
+
     case class SomeAuthorisationsFailed(
       invitationLink: String,
       continueUrl: Option[String],
@@ -92,6 +100,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = Utr => Future[TrustResponse]
+    type GetCgtRefName = CgtRef => Future[String] // XXX placeholder until known fact check done
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -135,9 +144,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def selectedTrustService(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
-      case SelectTrustService(_, _) =>
+      case SelectTrustService(_, basket) =>
         if (confirmed.choice) {
-          if (showTrustsFlag) goto(IdentifyTrustClient)
+          if (showTrustsFlag) goto(IdentifyTrustClient(TRUST, basket))
           else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
         } else {
           goto(root)
@@ -146,15 +155,33 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyTrustClient =>
+        case IdentifyTrustClient(TRUST, basket) =>
           getTrustName(trustClient.utr).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr))))
+                goto(
+                  ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr)), basket)
+                )
               case Left(invalidTrust) =>
                 Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
                 goto(TrustNotFound)
             }
+          }
+      }
+
+    // TODO build the actual call to DES to confirm Cgt Ref with known fact matching - for now this is stubbed out
+    def identifiedCgtClient(getCgtRefName: GetCgtRefName)(agent: AuthorisedAgent)(cgtClient: CgtClient) =
+      Transition {
+        case IdentifyTrustClient(HMRCCGTPD, basket) =>
+          getCgtRefName(cgtClient.cgtRef).flatMap { name =>
+            goto(ConfirmClientTrustCgt(AuthorisationRequest(name, CgtInvitation(cgtClient.cgtRef)), basket))
+          }
+        case IdentifyPersonalClient(HMRCCGTPD, basket) =>
+          getCgtRefName(cgtClient.cgtRef).flatMap { name =>
+            goto(
+              ConfirmClientPersonalCgt(
+                AuthorisationRequest(name, CgtInvitation(cgtClient.cgtRef, clientType = Some(personal))),
+                basket))
           }
       }
 
@@ -306,6 +333,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
                  }
       } yield result
 
+    /** User confirms that the client identified is the correct person.
+      *  This transition may go to a review page (if there can be more than one item in the basket)
+      *  Otherwise it will just go straight to creation of the invitation and the what's next page
+      *
+      * */
     def clientConfirmed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -320,6 +352,29 @@ object AgentInvitationJourneyModel extends JourneyModel {
               HMRCMTDIT,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
+
+        case ConfirmClientPersonalCgt(request, basket) =>
+          if (confirmation.choice) {
+            checkIfPendingOrActiveAndGoto(
+              ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
+              personal,
+              authorisedAgent.arn,
+              request.invitation.clientId,
+              HMRCCGTPD,
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+          } else goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+
+        case ConfirmClientTrustCgt(request, basket) =>
+          if (confirmation.choice) {
+            checkIfPendingOrActiveAndGoto(
+              ReviewAuthorisationsTrust(authorisedAgent.personalServices, basket + request))(
+              personal,
+              authorisedAgent.arn,
+              request.invitation.clientId,
+              HMRCCGTPD,
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+          } else goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+
         case ConfirmClientPersonalVat(request, basket) =>
           if (confirmation.choice) {
             checkIfPendingOrActiveAndGoto(
@@ -359,7 +414,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             } yield result
           } else goto(IdentifyBusinessClient)
 
-        case ConfirmClientTrust(request) =>
+        case ConfirmClientTrust(request, basket) =>
           if (confirmation.choice) {
             for {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
@@ -383,7 +438,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                            }
                        }
             } yield result
-          } else goto(IdentifyTrustClient)
+          } else goto(IdentifyTrustClient(TRUST, basket))
       }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {

@@ -69,7 +69,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .obj(
             "state" -> "SelectTrustService",
             "properties" -> Json
-              .obj("services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"), "basket" -> JsArray() ))
+              .obj("services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"), "basket" -> JsArray()))
         Json
           .parse(
             """{"state":"SelectTrustService", "properties": {"basket": [], "services": ["HMRC-TERS-ORG", "HMRC-CGT-PD"]}}""")
@@ -94,10 +94,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "IdentifyTrustClient" in {
-        Json.toJson(IdentifyTrustClient) shouldBe Json.obj("state" -> "IdentifyTrustClient")
+        Json.toJson(IdentifyTrustClient(TRUST, Set.empty)) shouldBe Json
+          .obj(
+            "state"      -> "IdentifyTrustClient",
+            "properties" -> Json.obj("service" -> "HMRC-TERS-ORG", "basket" -> JsArray())
+          )
         Json
-          .parse("""{"state":"IdentifyTrustClient"}""")
-          .as[State] shouldBe IdentifyTrustClient
+          .parse("""{"state":"IdentifyTrustClient", "properties": {"basket": [], "service": "HMRC-TERS-ORG"}}""")
+          .as[State] shouldBe IdentifyTrustClient(TRUST, Set.empty)
       }
 
       "ConfirmClientItsa" in {
@@ -137,9 +141,27 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientTrust" in {
         val state =
-          ConfirmClientTrust(AuthorisationRequest("Sylvia Plath", TrustInvitation(Utr("4937455253")), itemId = "ABC"))
+          ConfirmClientTrust(
+            AuthorisationRequest("Sylvia Plath", TrustInvitation(Utr("4937455253")), itemId = "ABC"),
+            Set.empty
+          )
         val json = Json.parse(
-          """{"state":"ConfirmClientTrust","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"TrustInvitation","data":{"clientType":"business","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}},"state":"New","itemId":"ABC"}}}""")
+          """{
+            |"state":"ConfirmClientTrust",
+            |"properties":
+            |  {
+            |   "request":
+            |    {
+            |     "clientName":"Sylvia Plath",
+            |     "invitation":
+            |      {"type":"TrustInvitation",
+            |       "data":
+            |        {"clientType":"business","service":"HMRC-TERS-ORG","clientIdentifier":"4937455253","clientIdentifierType":"utr"}
+            |      },
+            |      "state":"New","itemId":"ABC"
+            |    },
+            |    "basket": []
+            |}}""".stripMargin)
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }

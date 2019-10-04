@@ -176,7 +176,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
       "after selectedTrustService(true)(true) transition to IdentifyTrustClient" in {
         given(SelectTrustService(availableTrustServices, emptyBasket)) when selectedTrustService(showTrustsFlag = true)(
-          authorisedAgent)(Confirmation(true)) should thenGo(IdentifyTrustClient)
+          authorisedAgent)(Confirmation(true)) should thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
       "after selectedTrustService(true)(false) transition to SelectClientType" in {
         given(SelectTrustService(availableTrustServices, emptyBasket)) when selectedTrustService(showTrustsFlag = true)(
@@ -478,30 +478,31 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
 
       "transition to IdentifyTrustClient if NO is selected" in {
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should thenGo(
-          IdentifyTrustClient)
+        given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
+          getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
+          Confirmation(false)) should thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
       "transition to InvitationSentBusiness" in {
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
+        given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
+          getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
+          Confirmation(true)) should thenGo(
           InvitationSentBusiness("invitation/link", None, "abc@xyz.com", "HMRC-TERS-ORG"))
       }
       "transition to PendingInvitationExists when a pending invitation exists for the service" in {
         def hasPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          PendingInvitationExists(business, emptyBasket))
+        given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
+          getAgentLink)(getAgencyEmail)(hasPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
+          Confirmation(true)) should thenGo(PendingInvitationExists(business, emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when a pending invitation exists for the service" in {
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
-        given(ConfirmClientTrust(authorisationRequest)) when clientConfirmed(createMultipleInvitations)(getAgentLink)(
-          getAgencyEmail)(hasNoPendingInvitation)(hasActiveRelationship)(authorisedAgent)(Confirmation(true)) should thenGo(
-          ActiveAuthorisationExists(business, Services.TRUST, emptyBasket))
+        given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when clientConfirmed(createMultipleInvitations)(
+          getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasActiveRelationship)(authorisedAgent)(
+          Confirmation(true)) should thenGo(ActiveAuthorisationExists(business, Services.TRUST, emptyBasket))
       }
     }
 

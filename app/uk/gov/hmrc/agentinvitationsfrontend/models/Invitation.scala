@@ -17,7 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 trait KnownFact {
@@ -48,6 +49,13 @@ object UTR {
   implicit val format: Format[UTR] = Json.format[UTR]
 }
 
+// XXX what is the real "known fact" for CGT???
+case class CGTREF(value: String) extends KnownFact
+
+object CGTREF {
+  implicit val format: Format[CGTREF] = Json.format
+}
+
 sealed trait Invitation {
   val clientType: Option[ClientType]
 
@@ -69,6 +77,7 @@ object Invitation {
       case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier), VatRegDate(knownFact))
       case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier), DOB(knownFact))
       case Services.TRUST      => TrustInvitation(Utr(clientIdentifier))
+      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier))
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -80,6 +89,7 @@ object Invitation {
         case "PirInvitation"   => JsSuccess((json \ "data").as[PirInvitation])
         case "VatInvitation"   => JsSuccess((json \ "data").as[VatInvitation])
         case "TrustInvitation" => JsSuccess((json \ "data").as[TrustInvitation])
+        case "CgtInvitation"   => JsSuccess((json \ "data").as[CgtInvitation])
         case _                 => JsError(s"invalid json type for parsing invitation object, type=$t")
       }
     }
@@ -99,6 +109,7 @@ object Invitation {
           case p: PirInvitation   => "dob" -> Json.toJson(p.dob)
           case p: VatInvitation   => "vatRegDate" -> Json.toJson(p.vatRegDate)
           case p: TrustInvitation => "clientIdentifier" -> Json.toJson(p.clientIdentifier)
+          case p: CgtInvitation   => "clientIdentifier" -> Json.toJson(p.clientIdentifier) // TODO review
           case _                  => throw new RuntimeException(s"unknown invitation type")
         }
 
@@ -163,4 +174,17 @@ case class TrustInvitation(
 
 object TrustInvitation {
   implicit val format: Format[TrustInvitation] = Json.format[TrustInvitation]
+}
+
+case class CgtInvitation(
+  clientIdentifier: CgtRef,
+  clientType: Option[ClientType] = Some(business),
+  service: String = Services.HMRCCGTPD,
+  clientIdentifierType: String = "CGTPDRef")
+    extends Invitation {
+  val knownFact = CGTREF(clientIdentifier.value) // TODO review
+}
+
+object CgtInvitation {
+  implicit val format: Format[CgtInvitation] = Json.format
 }

@@ -20,9 +20,9 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
+import uk.gov.hmrc.agentinvitationsfrontend.models.TrustInvitationsBasket
 
-case class ReviewAuthorisationsPersonalPageConfig(
+case class ReviewAuthorisationsTrustPageConfig(
   override val basket: Basket,
   override val featureFlags: FeatureFlags,
   override val services: Set[String],
@@ -30,6 +30,6 @@ case class ReviewAuthorisationsPersonalPageConfig(
     extends ReviewAuthorisationsPageConfig(basket, featureFlags, services, submitCall) {
 
   val basketFull: Boolean =
-    new PersonalInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
+    new TrustInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
 
 }

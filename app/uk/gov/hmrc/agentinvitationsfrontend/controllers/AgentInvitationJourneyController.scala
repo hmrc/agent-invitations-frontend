@@ -25,17 +25,19 @@ import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetCgtRefName
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -111,7 +113,7 @@ class AgentInvitationJourneyController @Inject()(
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
   def showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: IdentifyPersonalClient | IdentifyBusinessClient | IdentifyTrustClient =>
+    case _: IdentifyPersonalClient | IdentifyBusinessClient | _: IdentifyTrustClient =>
   }
 
   def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
@@ -144,11 +146,22 @@ class AgentInvitationJourneyController @Inject()(
     )
   }
 
+  def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
+    def identify: GetCgtRefName = { (_: CgtRef) =>
+      Future.successful("stubRefName")
+    }
+    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form)(
+      Transitions.identifiedCgtClient(identify)
+    )
+  }
+
   def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
+    case _: ConfirmClientPersonalCgt =>
+    case _: ConfirmClientTrustCgt    =>
   }
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
@@ -217,17 +230,20 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectPersonalService        => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectTrustService           => routes.AgentInvitationJourneyController.showSelectService()
-    case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyTrustClient             => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: SelectClientType       => routes.AgentInvitationJourneyController.showClientType()
+    case _: SelectPersonalService  => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService     => routes.AgentInvitationJourneyController.showSelectService()
+    case _: SelectTrustService     => routes.AgentInvitationJourneyController.showSelectService()
+    case _: IdentifyPersonalClient => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: IdentifyTrustClient    => routes.AgentInvitationJourneyController.showIdentifyClient()
+    //case _: IdentifyCgtClient            => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
@@ -303,11 +319,20 @@ class AgentInvitationJourneyController @Inject()(
           )
         ))
 
-    case IdentifyTrustClient =>
+    case IdentifyTrustClient(Services.TRUST, _) =>
       Ok(
         identify_client_trust(
           formWithErrors.or(TrustClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
+    case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
+      Ok(
+        identify_client_cgt(
+          formWithErrors.or(CgtClientForm.form),
+          routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )
       )
@@ -339,6 +364,15 @@ class AgentInvitationJourneyController @Inject()(
         )
       )
 
+    case IdentifyPersonalClient(Services.HMRCCGTPD, _) =>
+      Ok(
+        identify_client_cgt(
+          formWithErrors.or(CgtClientForm.form),
+          routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
+          backLinkFor(breadcrumbs).url
+        )
+      )
+
     case IdentifyBusinessClient =>
       Ok(
         identify_client_vat(
@@ -348,7 +382,27 @@ class AgentInvitationJourneyController @Inject()(
         )
       )
 
-    case ConfirmClientTrust(authorisationRequest) =>
+    case ConfirmClientTrust(authorisationRequest, _) =>
+      Ok(
+        confirm_client(
+          authorisationRequest.clientName,
+          formWithErrors.or(ConfirmClientForm),
+          backLinkFor(breadcrumbs).url,
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          Some(authorisationRequest.invitation.clientId)
+        ))
+
+    case ConfirmClientPersonalCgt(authorisationRequest, _) =>
+      Ok(
+        confirm_client(
+          authorisationRequest.clientName,
+          formWithErrors.or(ConfirmClientForm),
+          backLinkFor(breadcrumbs).url,
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          Some(authorisationRequest.invitation.clientId)
+        ))
+
+    case ConfirmClientTrustCgt(authorisationRequest, _) =>
       Ok(
         confirm_client(
           authorisationRequest.clientName,
@@ -389,6 +443,18 @@ class AgentInvitationJourneyController @Inject()(
       Ok(
         review_authorisations(
           ReviewAuthorisationsPersonalPageConfig(
+            basket,
+            featureFlags,
+            services,
+            routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
+          formWithErrors.or(ReviewAuthorisationsForm),
+          backLinkFor(breadcrumbs).url
+        ))
+
+    case ReviewAuthorisationsTrust(services, basket) =>
+      Ok(
+        review_authorisations(
+          ReviewAuthorisationsTrustPageConfig(
             basket,
             featureFlags,
             services,

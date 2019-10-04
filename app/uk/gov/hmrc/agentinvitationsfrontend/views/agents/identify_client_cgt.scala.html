@@ -1,0 +1,64 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
+
+@(cgtClientForm : Form[CgtClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
+@banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages("identify-cgt-client.trust.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-cgt-client.trust.header"), "cgt"))) {
+
+    @back_link(backLinkUrl)
+
+    @if(cgtClientForm.hasErrors) {
+        @errorSummary(Messages("error.summary.heading"), cgtClientForm, Seq.empty, Some("identify-cgt-client"))
+    }
+
+    <!-- TODO use client type here (personal or trust) -->
+
+    <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-cgt-client.trust.header")</h1>
+
+    <p>@Html(Messages("identify-cgt-client.p1"))</p>
+
+    <p>@Html(Messages("identify-cgt-client.p2"))</p>
+
+    <span class="form-hint margin-bottom-0">@Html(Messages("identify-cgt-client.hint"))</span>
+
+    @form(action = submitFormCall, 'class -> "form js-form") {
+
+        <div class="form-group margin-top-20">
+        @input(
+            cgtClientForm("cgtRef"),
+            '_inputClass -> "form-control",
+            '_labelClass -> "soft--ends"
+        )
+        </div>
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        </div>
+
+    }
+}

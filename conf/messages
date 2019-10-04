@@ -55,6 +55,9 @@ utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on
 error.utr.required=Enter your client''s UTR
 enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
+error.cgt.required=Enter your client''s CGT account reference
+enter-cgt.invalid-format=Enter a valid CGT reference, like XYCGTP123456789
+
 error.vrn.required=Enter your client''s VAT registration number
 enter-vrn.regex-failure=VAT registration number must be 9 numbers
 
@@ -116,6 +119,12 @@ identify-trust-client.title=What is the Unique Taxpayer Reference of the trust o
 identify-trust-client.header=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.p1=This will help us match their details against information we hold.
 identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ''reference'', ''UTR'' or ''official use''. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+
+## Identify CGT Client
+identify-cgt-client.trust.header=What is the trust's Capital Gains Tax (CGT) account reference?
+identify-cgt-client.p1=This will help us match their details against information we hold.
+identify-cgt-client.p2=Capital Gains Tax (CGT) account reference
+identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
 
 continue.button=Continue
 button.back=Back
