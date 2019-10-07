@@ -182,9 +182,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("select-service.personal.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("personal-select-service.itsa"),
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
@@ -234,9 +233,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.header"),
+          htmlEscapedMessage("select-service.personal.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("select-service.header"),
         htmlEscapedMessage("personal-select-service.itsa"),
         htmlEscapedMessage("personal-select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
@@ -302,7 +300,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to identify-client when yes is selected" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectService(
+      val result = controller.submitTrustSelectServiceSingle(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
@@ -316,7 +314,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to select-client-type when no is selected" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectService(
+      val result = controller.submitTrustSelectServiceSingle(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -330,7 +328,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "do not blow up if user enters invalid value in the form for confirmation" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectService(
+      val result = controller.submitTrustSelectServiceSingle(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
 
       status(result) shouldBe 303

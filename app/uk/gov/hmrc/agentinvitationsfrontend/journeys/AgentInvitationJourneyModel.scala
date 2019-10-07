@@ -39,6 +39,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
   object State {
 
     case class SelectClientType(basket: Basket) extends State
+
     case class SelectPersonalService(services: Set[String], basket: Basket) extends State
     case object SelectBusinessService extends State
     case class SelectTrustService(services: Set[String], basket: Basket) extends State
@@ -143,15 +144,32 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    def selectedTrustService(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
-      case SelectTrustService(_, basket) =>
-        if (confirmed.choice) {
-          if (showTrustsFlag) goto(IdentifyTrustClient(TRUST, basket))
-          else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
-        } else {
-          goto(root)
-        }
+    def selectedTrustServiceMultiple(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
+      service: String) = Transition {
+      case SelectTrustService(services, basket) =>
+        def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
+          if (serviceEnabled)
+            goto(IdentifyTrustClient(service, basket))
+          else
+            fail(new Exception(s"Service: $service feature flag is switched off"))
+        if (services.contains(service)) {
+          service match {
+            case TRUST     => gotoIdentify(showTrustsFlag, service)
+            case HMRCCGTPD => gotoIdentify(showCgtFlag, service)
+          }
+        } else goto(SelectTrustService(services, basket))
     }
+
+    def selectedTrustServiceSingle(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectTrustService(_, basket) =>
+          if (confirmed.choice) {
+            if (showTrustsFlag) goto(IdentifyTrustClient(TRUST, basket))
+            else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
+          } else {
+            goto(root)
+          }
+      }
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
@@ -338,10 +356,11 @@ object AgentInvitationJourneyModel extends JourneyModel {
       *  Otherwise it will just go straight to creation of the invitation and the what's next page
       *
       * */
-    def clientConfirmed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
-      getAgencyEmail: GetAgencyEmail)(hasPendingInvitationsFor: HasPendingInvitations)(
+    def clientConfirmed(showCgtFlag: Boolean)(createMultipleInvitations: CreateMultipleInvitations)(
+      getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(hasPendingInvitationsFor: HasPendingInvitations)(
       hasActiveRelationshipFor: HasActiveRelationship)(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
+
         case ConfirmClientItsa(request, basket) =>
           if (confirmation.choice) {
             checkIfPendingOrActiveAndGoto(
@@ -366,14 +385,13 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
         case ConfirmClientTrustCgt(request, basket) =>
           if (confirmation.choice) {
-            checkIfPendingOrActiveAndGoto(
-              ReviewAuthorisationsTrust(authorisedAgent.personalServices, basket + request))(
-              personal,
+            checkIfPendingOrActiveAndGoto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request))(
+              business,
               authorisedAgent.arn,
               request.invitation.clientId,
               HMRCCGTPD,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
-          } else goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+          } else goto(IdentifyTrustClient(HMRCCGTPD, basket))
 
         case ConfirmClientPersonalVat(request, basket) =>
           if (confirmation.choice) {
@@ -385,6 +403,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               HMRCMTDVAT,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
+
         case ConfirmClientBusinessVat(request) =>
           if (confirmation.choice) {
             for {
@@ -416,28 +435,40 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
         case ConfirmClientTrust(request, basket) =>
           if (confirmation.choice) {
-            for {
-              hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
-              agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
-              result <- if (hasPendingInvitations) {
-                         goto(PendingInvitationExists(business, Set.empty))
-                       } else {
-                         hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
-                           .flatMap {
-                             case true => goto(ActiveAuthorisationExists(business, TRUST, Set.empty))
-                             case false =>
-                               getAgencyEmail().flatMap(
-                                 agencyEmail =>
-                                   createAndProcessInvitations(
-                                     InvitationSentBusiness(agentLink, None, agencyEmail, TRUST),
-                                     (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
-                                     Set(request),
-                                     createMultipleInvitations,
-                                     authorisedAgent.arn
-                                 ))
-                           }
-                       }
-            } yield result
+            if (showCgtFlag)
+              // if CGT is enabled, we need to go to the review page (since we are multi-select)
+              checkIfPendingOrActiveAndGoto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request))(
+                business,
+                authorisedAgent.arn,
+                request.invitation.clientId,
+                TRUST,
+                basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+            else
+              for {
+                hasPendingInvitations <- hasPendingInvitationsFor(
+                                          authorisedAgent.arn,
+                                          request.invitation.clientId,
+                                          TRUST)
+                agentLink <- getAgentLink(authorisedAgent.arn, Some(business))
+                result <- if (hasPendingInvitations) {
+                           goto(PendingInvitationExists(business, Set.empty))
+                         } else {
+                           hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
+                             .flatMap {
+                               case true => goto(ActiveAuthorisationExists(business, TRUST, Set.empty))
+                               case false =>
+                                 getAgencyEmail().flatMap(
+                                   agencyEmail =>
+                                     createAndProcessInvitations(
+                                       InvitationSentBusiness(agentLink, None, agencyEmail, TRUST),
+                                       (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
+                                       Set(request),
+                                       createMultipleInvitations,
+                                       authorisedAgent.arn
+                                   ))
+                             }
+                         }
+              } yield result
           } else goto(IdentifyTrustClient(TRUST, basket))
       }
 
@@ -449,6 +480,23 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
+        case ReviewAuthorisationsTrust(_, basket) =>
+          if (confirmation.choice) {
+            goto(SelectTrustService(agent.trustServices, basket))
+          } else {
+            for {
+              agencyEmail    <- getAgencyEmail()
+              invitationLink <- getAgentLink(agent.arn, Some(business))
+              result <- createAndProcessInvitations(
+                         InvitationSentBusiness(invitationLink, None, agencyEmail),
+                         (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
+                         basket,
+                         createMultipleInvitations,
+                         agent.arn
+                       )
+            } yield result
+          }
+
         case ReviewAuthorisationsPersonal(_, basket) =>
           if (confirmation.choice) {
             goto(SelectPersonalService(agent.personalServices, basket))

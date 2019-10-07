@@ -104,9 +104,14 @@ class AgentInvitationJourneyController @Inject()(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
-  def submitTrustSelectService: Action[AnyContent] = action { implicit request =>
+  def submitTrustSelectServiceSingle: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceTrustForm)(
-      Transitions.selectedTrustService(featureFlags.showHmrcTrust))
+      Transitions.selectedTrustServiceSingle(featureFlags.showHmrcTrust))
+  }
+
+  def submitTrustSelectServiceMultiple: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
+      Transitions.selectedTrustServiceMultiple(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
   }
 
   def identifyClientRedirect: Action[AnyContent] =
@@ -166,13 +171,14 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
-      Transitions.clientConfirmed(createMultipleInvitations)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-        relationshipsService.hasActiveRelationshipFor)
+      Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)(
+        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
     )
   }
 
+  // TODO review whether we only need one state/page here?
   def showReviewAuthorisations: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ReviewAuthorisationsPersonal =>
+    case _: ReviewAuthorisationsPersonal | _: ReviewAuthorisationsTrust =>
   }
 
   def submitReviewAuthorisations: Action[AnyContent] = action { implicit request =>
@@ -245,6 +251,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
@@ -306,18 +313,35 @@ class AgentInvitationJourneyController @Inject()(
         ))
 
     case SelectTrustService(services, basket) =>
-      Ok(
-        trust_select_service(
-          formWithErrors.or(CommonConfirmationForms.serviceTrustForm),
-          TrustSelectServicePageConfig(
-            basket,
-            featureFlags,
-            services,
-            routes.AgentInvitationJourneyController.submitTrustSelectService(),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations()
-          )
-        ))
+      if (featureFlags.showHmrcCgt) {
+        // multi-select service form, same as Personal client type
+        Ok(
+          select_service(
+            formWithErrors.or(ServiceTypeForm.form),
+            TrustSelectServicePageConfig(
+              basket,
+              featureFlags,
+              services,
+              routes.AgentInvitationJourneyController.submitTrustSelectServiceMultiple(),
+              backLinkFor(breadcrumbs).url,
+              routes.AgentInvitationJourneyController.showReviewAuthorisations()
+            )
+          ))
+      } else {
+        // remove once cgt feature flag on in production
+        Ok(
+          trust_select_service(
+            formWithErrors.or(CommonConfirmationForms.serviceTrustForm),
+            TrustSelectServicePageConfig(
+              basket,
+              featureFlags,
+              services,
+              routes.AgentInvitationJourneyController.submitTrustSelectServiceSingle(),
+              backLinkFor(breadcrumbs).url,
+              routes.AgentInvitationJourneyController.showReviewAuthorisations()
+            )
+          ))
+      }
 
     case IdentifyTrustClient(Services.TRUST, _) =>
       Ok(

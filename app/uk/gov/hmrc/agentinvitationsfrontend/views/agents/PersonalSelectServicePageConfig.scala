@@ -28,9 +28,12 @@ case class PersonalSelectServicePageConfig(
   services: Set[String],
   submitCall: Call,
   backLink: String,
-  reviewAuthsCall: Call)(implicit messages: Messages) {
+  reviewAuthsCall: Call)(implicit messages: Messages)
+    extends SelectServicePageConfig {
 
   def availablePersonalServices: Seq[(String, String)] =
     new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
+
+  def selectHeaderMessage: String = Messages("select-service.personal.header")
 
 }

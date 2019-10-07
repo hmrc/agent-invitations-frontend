@@ -21,7 +21,7 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 
-case class SelectServicePageConfig(
+case class SelectServicePageConfigCancel(
   featureFlags: FeatureFlags,
   services: Set[String],
   submitCall: Call,

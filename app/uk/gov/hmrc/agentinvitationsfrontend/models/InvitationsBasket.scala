@@ -58,10 +58,10 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceTrust)
-      seq.append(TRUST -> Messages("trust-select-service.trust"))
+      seq.append(TRUST -> Messages("select-service.trust"))
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("trust-select-service.cgt"))
+      seq.append(HMRCCGTPD -> Messages("select-service.cgt"))
 
     seq
   }
@@ -85,7 +85,7 @@ class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFl
       seq.append(HMRCMTDVAT -> Messages("select-service.vat"))
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("personal-select-service.cgt"))
+      seq.append(HMRCCGTPD -> Messages("select-service.cgt"))
 
     seq
   }

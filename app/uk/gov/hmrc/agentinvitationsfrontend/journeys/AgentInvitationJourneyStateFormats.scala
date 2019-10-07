@@ -38,6 +38,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientTrustGctFormat: OFormat[ConfirmClientTrustCgt] = Json.format
 
   val ReviewAuthorisationsPersonalFormat: OFormat[ReviewAuthorisationsPersonal] = Json.format
+  val ReviewAuthorisationsTrustFormat: OFormat[ReviewAuthorisationsTrust] = Json.format
+
   val DeleteAuthorisationRequestPersonalFormat: OFormat[DeleteAuthorisationRequestPersonal] = Json.format
   val InvitationSentPersonalFormat: OFormat[InvitationSentPersonal] = Json.format
   val InvitationSentBusinessFormat: OFormat[InvitationSentBusiness] = Json.format
@@ -64,6 +66,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientTrustCgt              => ConfirmClientTrustGctFormat.writes(s)
     case s: ConfirmClientPersonalCgt           => ConfirmClientPersonalGctFormat.writes(s)
     case s: ReviewAuthorisationsPersonal       => ReviewAuthorisationsPersonalFormat.writes(s)
+    case s: ReviewAuthorisationsTrust          => ReviewAuthorisationsTrustFormat.writes(s)
     case s: DeleteAuthorisationRequestPersonal => DeleteAuthorisationRequestPersonalFormat.writes(s)
     case s: InvitationSentPersonal             => InvitationSentPersonalFormat.writes(s)
     case s: InvitationSentBusiness             => InvitationSentBusinessFormat.writes(s)
@@ -91,6 +94,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)
     case "ConfirmClientBusinessVat"           => ConfirmClientBusinessVatFormat.reads(properties)
     case "ReviewAuthorisationsPersonal"       => ReviewAuthorisationsPersonalFormat.reads(properties)
+    case "ReviewAuthorisationsTrust"          => ReviewAuthorisationsTrustFormat.reads(properties)
     case "DeleteAuthorisationRequestPersonal" => DeleteAuthorisationRequestPersonalFormat.reads(properties)
     case "InvitationSentPersonal"             => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"             => InvitationSentBusinessFormat.reads(properties)

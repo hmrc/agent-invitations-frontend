@@ -11,7 +11,8 @@ POST        /agents/client-type                                         @uk.gov.
 GET         /agents/select-service                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSelectService
 POST        /agents/select-personal-service                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectService
 POST        /agents/select-business-service                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
-POST        /agents/select-trust-service                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectService
+POST        /agents/select-trust-service-single                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceSingle
+POST        /agents/select-trust-service-multiple                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
 
 GET         /agents/identify-client                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
 
