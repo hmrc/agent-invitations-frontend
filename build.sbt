@@ -64,7 +64,7 @@ lazy val root = (project in file("."))
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     scalafmtOnCompile in Compile := true,
-    scalafmtOnCompile in Test := true
+    scalafmtOnCompile in Test := false
   )
   .configs(IntegrationTest)
   .settings(
@@ -72,7 +72,7 @@ lazy val root = (project in file("."))
     Defaults.itSettings,
     unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
     parallelExecution in IntegrationTest := false,
-    scalafmtOnCompile in IntegrationTest := true
+    scalafmtOnCompile in IntegrationTest := false
   )
   .settings(addCompilerPlugin(scalafixSemanticdb))
   .settings(
