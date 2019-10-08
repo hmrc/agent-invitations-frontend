@@ -141,6 +141,8 @@ POST        /some-responses-failed                                      @uk.gov.
 GET         /not-authorised-as-client                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent
 GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity(journeyId: Option[String] ?= None)
 GET         /session-timeout                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
+GET         /signed-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signedOut
+GET         /locked-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.lockedOut
 
 GET         /trust-not-claimed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /:clientType/:uid/:agentName                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
