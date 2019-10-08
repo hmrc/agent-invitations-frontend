@@ -515,13 +515,15 @@ object AgentInvitationJourneyModel extends JourneyModel {
           }
       }
 
-    def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent) =
+    def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent) = {
+      def findItem(basket: Basket): AuthorisationRequest =
+        basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
       Transition {
         case ReviewAuthorisationsPersonal(_, basket) =>
-          val deleteItem: AuthorisationRequest =
-            basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
-          goto(DeleteAuthorisationRequestPersonal(deleteItem, basket))
+          goto(DeleteAuthorisationRequestPersonal(findItem(basket), basket))
+        case ReviewAuthorisationsTrust(_, basket) => goto(DeleteAuthorisationRequestPersonal(findItem(basket), basket))
       }
+    }
 
     def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
