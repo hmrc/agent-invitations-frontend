@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyState
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -31,7 +31,76 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
   implicit val formats: Format[State] = AgentInvitationJourneyStateFormats.formats
 
   "AgentsInvitationJourneyFormats" should {
+
     "serialize and deserialize state" when {
+
+      "ConfirmClientTrustCgt" in {
+        val state = ConfirmClientTrustCgt(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            CgtInvitation(CgtRef("123456")),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{
+            |"state":"ConfirmClientTrustCgt",
+            |"properties":
+            |   {"request":
+            |     {"clientName":"Sylvia Plath","invitation":
+            |       {"type":"CgtInvitation","data":
+            |         {"clientType":"business",
+            |         "service":"HMRC-CGT-PD",
+            |         "clientIdentifier":"123456",
+            |         "clientIdentifierType":"CGTPDRef"
+            |       }
+            |     },
+            |    "state":"New",
+            |    "itemId":"ABC"
+            |    },
+            |  "basket":[]
+            |  }
+            |}""".stripMargin)
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "ConfirmClientPersonalCgt" in {
+        val state = ConfirmClientPersonalCgt(
+          AuthorisationRequest(
+            "Sylvia Plath",
+            CgtInvitation(CgtRef("123456"), Some(personal)),
+            itemId = "ABC"),
+          Set.empty)
+        val json = Json.parse(
+          """{
+            |"state":"ConfirmClientPersonalCgt",
+            |"properties":
+            |   {"request":
+            |     {"clientName":"Sylvia Plath","invitation":
+            |       {"type":"CgtInvitation","data":
+            |         {"clientType":"personal",
+            |         "service":"HMRC-CGT-PD",
+            |         "clientIdentifier":"123456",
+            |         "clientIdentifierType":"CGTPDRef"
+            |       }
+            |     },
+            |    "state":"New",
+            |    "itemId":"ABC"
+            |    },
+            |  "basket":[]
+            |  }
+            |}""".stripMargin)
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "CgtRefNotFound" in {
+        Json.toJson(CgtRefNotFound) shouldBe Json
+          .obj("state" -> "CgtRefNotFound")
+        Json
+          .parse("""{"state":"CgtRefNotFound"}""")
+          .as[State] shouldBe CgtRefNotFound
+      }
 
       "SelectClientType" in {
         Json.toJson(SelectClientType(Set.empty)) shouldBe Json
@@ -176,6 +245,18 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .parse(
             """{"state":"ReviewAuthorisationsPersonal", "properties": {"basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
           .as[State] shouldBe ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
+      }
+
+      "ReviewAuthorisationsTrust" in {
+        Json.toJson(ReviewAuthorisationsTrust(Set(TRUST, HMRCCGTPD), Set.empty)) shouldBe Json.obj(
+          "state" -> "ReviewAuthorisationsTrust",
+          "properties" -> Json
+            .obj("basket" -> JsArray(), "services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"))
+        )
+        Json
+          .parse(
+            """{"state":"ReviewAuthorisationsTrust", "properties": {"basket": [], "services": ["HMRC-TERS-ORG", "HMRC-CGT-PD"]}}""")
+          .as[State] shouldBe ReviewAuthorisationsTrust(Set(TRUST, HMRCCGTPD), Set.empty)
       }
 
       "InvitationSentPersonal" in {
