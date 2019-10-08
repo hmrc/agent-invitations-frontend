@@ -51,6 +51,4 @@ object ValidateHelper {
     }
   }
 
-  def optionalIf[A](isOn: Boolean, mapping: Mapping[A]): Mapping[Option[A]] = OptionalMappingIf(isOn, mapping)
-
 }
