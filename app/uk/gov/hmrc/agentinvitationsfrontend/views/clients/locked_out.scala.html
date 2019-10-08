@@ -14,16 +14,13 @@
  * limitations under the License.
  *@
 
-@import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@(continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@()(implicit messages: Messages, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("signed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("es-failed.header"), ""))) {
+<h1 class="heading-xlarge margin-bottom-30">@Messages("locked-out.header")</h1>
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("signed-out.header")</h1>
-    <p>@Messages("signed-out.p1")</p>
-    <p>@Html(Messages("signed-out.p2", s"${continueUrl}"))</p>
-}
+<p>@Messages("locked-out.p1")</p>
+<p>@Messages("locked-out.p2")</p>
+<p>@Messages("locked-out.p3")</p>

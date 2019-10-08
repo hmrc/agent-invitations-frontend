@@ -535,6 +535,12 @@ cannot-confirm-identity.p1=The information you have entered does not match our r
 cannot-confirm-identity.p2=Use the ''Get help with this page'' link if you need help with confirming your identity.
 cannot-confirm-identity.button=Try again
 
+# Locked-out
+locked-out.header=We could not confirm your identity
+locked-out.p1=You have entered information that does not match our records too many times.
+locked-out.p2=For security reasons, you must wait 24 hours and then sign in to try again.
+locked-out.p3=Use the ''Get help with this page'' link if you need help with confirming your identity.
+
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
 some-responses-failed.p1=We could not save your response for the following services:

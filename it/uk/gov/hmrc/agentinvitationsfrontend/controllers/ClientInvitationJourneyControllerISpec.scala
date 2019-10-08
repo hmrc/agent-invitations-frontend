@@ -757,15 +757,36 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
     }
 
-  Set(TimedOut, UserAborted).foreach { reason =>
+  Set(Success, TechnicalIssue, FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence, TimedOut, UserAborted, LockedOut)
+    .foreach { reason =>
     s"IV returns failed reason $reason" when {
       "display the signed out page" in {
         givenIVFailureReasonResponse(reason)
         val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
-        status(result) shouldBe 403
-        checkHtmlResultWithBodyMsgs(result, "signed-out.header",
-        "signed-out.p1")
-        checkResultContainsLink(result, "/invitations/warm-up", "Sign in again")
+        val resultCode = status(result)
+        reason match {
+          case Success => resultCode shouldBe 303
+          case TechnicalIssue => {
+            resultCode shouldBe 403
+            checkHtmlResultWithBodyMsgs(result, "technical-issues.header", "technical-issues.p1","technical-issues.p2")
+            checkResultContainsLink(result,
+              "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
+              "Call the VAT online services helpline")
+            checkResultContainsLink(result,
+            "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
+              "Call the HMRC Self Assessment online services helpline")
+          }
+          case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence => {
+            resultCode shouldBe 403
+            checkHtmlResultWithBodyMsgs(result, "cannot-confirm-identity.header",
+            "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
+            checkResultContainsLink(result,"/invitations/warm-up","Try again", Some("button")
+            )
+          }
+          case UserAborted | TimedOut => resultCode shouldBe 303
+          case LockedOut => resultCode shouldBe 303
+          case _ => resultCode shouldBe 403
+        }
       }
     }
   }

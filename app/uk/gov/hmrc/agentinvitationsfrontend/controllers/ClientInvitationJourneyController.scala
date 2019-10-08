@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyMode
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
@@ -190,6 +191,17 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
+  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+    val continueUrl = CallOps
+      .localFriendlyUrl(env, config)(routes.ClientInvitationJourneyController.showConsent().url, request.host)
+    Future successful Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl"))
+  }
+
+  def lockedOut: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(
+      cannot_confirm_identity(title = Some(Messages("locked-out.header")), html = Some(locked_out())))
+  }
+
   def showCannotConfirmIdentity(journeyId: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     journeyId
       .fold(
@@ -206,13 +218,14 @@ class ClientInvitationJourneyController @Inject()(
   private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannot_confirm_identity())) {
       case Success =>
-        Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur since this is only called on failure
+        Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur in prod since this is only called on failure but useful for local testing
       case TechnicalIssue =>
         Forbidden(
           cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
-      case UserAborted | TimedOut => Forbidden(signed_out()).withNewSession
+      case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.signedOut)
+      case LockedOut              => Redirect(routes.ClientInvitationJourneyController.lockedOut)
       case _                      => Forbidden(cannot_confirm_identity())
     }
 
