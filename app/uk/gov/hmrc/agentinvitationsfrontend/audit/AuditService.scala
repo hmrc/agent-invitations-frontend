@@ -17,10 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
-import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentInvitation
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
@@ -41,7 +40,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
   def sendAgentInvitationSubmitted(
     arn: Arn,
     invitationId: String,
-    invitation: Invitation,
+    invitation: AgentInvitation,
     uid: String,
     result: String,
     failure: Option[String] = None)(
@@ -56,7 +55,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "clientType"           -> invitation.clientType.map(_.toString).getOrElse(""),
-        "clientIdType"         -> invitation.clientIdentifierType,
+        "clientIdType"         -> invitation.clientIdType,
         "clientId"             -> invitation.clientId,
         "service"              -> invitation.service,
         "uid"                  -> uid

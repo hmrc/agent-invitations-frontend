@@ -23,9 +23,9 @@ import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
@@ -60,15 +60,15 @@ class InvitationsService @Inject()(
       .map(storedInvitation => {
         val id = storedInvitation.selfUrl.toString.split("/").toStream.last
         invitationsConnector
-          .getAgentReferenceRecord(storedInvitation.arn)
+          .getAgentReferenceRecord(arn)
           .map(agentRefRecord =>
-            auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
+            auditService.sendAgentInvitationSubmitted(arn, id, agentInvitation, agentRefRecord.uid, "Success"))
         InvitationId(id)
       })
       .recoverWith {
         case NonFatal(e) =>
           Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", agentInvitation, "", "Fail", Option(e.getMessage))
           Future.failed(e)
       }
   }
@@ -95,17 +95,17 @@ class InvitationsService @Inject()(
         .map(invitation => {
           val id = invitation.selfUrl.toString.split("/").toStream.last
           invitationsConnector
-            .getAgentReferenceRecord(invitation.arn)
+            .getAgentReferenceRecord(arn)
             .map(agentRefRecord =>
               auditService
-                .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
+                .sendAgentInvitationSubmitted(arn, id, agentInvitation, agentRefRecord.uid, "Success"))
           authRequest.copy(state = AuthorisationRequest.CREATED)
         })
         .recover {
           case NonFatal(e) =>
             Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
             auditService
-              .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage))
+              .sendAgentInvitationSubmitted(arn, "", agentInvitation, "", "Fail", Option(e.getMessage))
             authRequest.copy(state = AuthorisationRequest.FAILED)
         }
     }))
@@ -150,11 +150,6 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     invitationsConnector.rejectVATInvitation(vrn, invitationId)
-
-  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[StoredInvitation] =
-    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     agentServicesAccountConnector.getAgencyName(arn.value).map {
@@ -239,8 +234,5 @@ class InvitationsService @Inject()(
                                 .getAllPendingInvitationsForClient(arn, clientId, service)
                                 .map(s => s.nonEmpty)
     } yield hasPendingInvitations
-
-  private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
-    s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
 
 }
