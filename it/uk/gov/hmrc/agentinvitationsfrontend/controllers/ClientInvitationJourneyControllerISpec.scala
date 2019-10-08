@@ -787,10 +787,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           case LockedOut => resultCode shouldBe 303
           case _ => resultCode shouldBe 403
         }
-//        status(result) shouldBe 403
-//        checkHtmlResultWithBodyMsgs(result, "signed-out.header",
-//        "signed-out.p1")
-//        checkResultContainsLink(result, "/invitations/warm-up", "Sign in again")
       }
     }
   }

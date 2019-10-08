@@ -113,7 +113,6 @@ class ClientInvitationJourneyController @Inject()(
 
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
-    case _               =>
   }
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
