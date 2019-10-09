@@ -16,21 +16,24 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
+import play.api.i18n.Messages
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.{InvitationsBasket, PersonalInvitationsBasket}
 
-trait SelectServicePageConfig {
+case class PersonalSelectServicePageConfig(
+  basket: Basket,
+  featureFlags: FeatureFlags,
+  services: Set[String],
+  submitCall: Call,
+  backLink: String,
+  reviewAuthsCall: Call)(implicit messages: Messages)
+    extends SelectServicePageConfig {
 
-  def basket: Basket
-  def featureFlags: FeatureFlags
-  def services: Set[String]
-  def submitCall: Call
-  def backLink: String
-  def reviewAuthsCall: Call
+  def availablePersonalServices: Seq[(String, String)] =
+    new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
 
-  def availablePersonalServices: Seq[(String, String)]
-
-  def selectHeaderMessage: String
+  def selectHeaderMessage: String = Messages("select-service.personal.header")
 
 }

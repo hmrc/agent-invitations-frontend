@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.agents
+package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 
-trait SelectServicePageConfig {
+case class CgtClient(cgtRef: CgtRef)
 
-  def basket: Basket
-  def featureFlags: FeatureFlags
-  def services: Set[String]
-  def submitCall: Call
-  def backLink: String
-  def reviewAuthsCall: Call
-
-  def availablePersonalServices: Seq[(String, String)]
-
-  def selectHeaderMessage: String
-
+object CgtClient {
+  implicit val format: Format[CgtRef] = Json.format
 }

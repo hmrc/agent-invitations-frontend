@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.agents
+package uk.gov.hmrc.agentinvitationsfrontend.forms
 
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import play.api.data.Form
+import play.api.data.Forms.mapping
+import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validCgtRef}
+import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 
-trait SelectServicePageConfig {
+object CgtClientForm {
 
-  def basket: Basket
-  def featureFlags: FeatureFlags
-  def services: Set[String]
-  def submitCall: Call
-  def backLink: String
-  def reviewAuthsCall: Call
-
-  def availablePersonalServices: Seq[(String, String)]
-
-  def selectHeaderMessage: String
+  def form: Form[CgtClient] = Form(
+    mapping(
+      "cgtRef" -> normalizedText.verifying(validCgtRef())
+    )(x => CgtClient.apply(CgtRef(x)))(x => Some(x.cgtRef.value))
+  )
 
 }

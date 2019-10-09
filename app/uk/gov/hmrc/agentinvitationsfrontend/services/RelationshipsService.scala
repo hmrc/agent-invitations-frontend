@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -37,6 +37,7 @@ class RelationshipsService @Inject()(
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
       case HMRCPIR    => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
       case TRUST      => relationshipsConnector.checkTrustRelationship(arn, Utr(clientId))
+      case HMRCCGTPD  => relationshipsConnector.checkCgtRelationship(arn, CgtRef(clientId))
     }
 
   def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(
@@ -47,6 +48,7 @@ class RelationshipsService @Inject()(
       case HMRCPIR    => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
       case HMRCMTDVAT => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
       case TRUST      => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
+      case HMRCCGTPD  => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
       case e          => throw new Error(s"Unsupported service for deleting relationship: $e")
     }
 }

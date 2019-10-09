@@ -21,9 +21,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
+
 @(agentInvitationsForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("select-service.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(
+    title = error_prefix(agentInvitationsForm) + Messages("generic.title",
+                                                 config.selectHeaderMessage,
+                                                 Messages("title.suffix.agents")),
+    bodyClasses = None,
+    isAgent = true) {
 
 @back_link(config.backLink)
 
@@ -39,7 +45,7 @@ action = config.submitCall,
     @input_radio_group(
     agentInvitationsForm("serviceType"),
     config.availablePersonalServices,
-    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("select-service.header") + """</h1>""" +
+    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ config.selectHeaderMessage + """</h1>""" +
     """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
     """<span class="form-hint">""" + Messages("select-service.hint") + """</span>"""),
     '_groupDivClass -> "form-group soft--ends",

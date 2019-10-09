@@ -93,6 +93,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-personal-income")
     bindBooleanProperty("features.show-hmrc-mtd-vat")
     bindBooleanProperty("features.show-hmrc-trust")
+    bindBooleanProperty("features.show-hmrc-cgt")
+
     bindBooleanProperty("features.enable-track-cancel-auth-action")
     bindBooleanProperty("features.show-agent-led-de-auth")
 

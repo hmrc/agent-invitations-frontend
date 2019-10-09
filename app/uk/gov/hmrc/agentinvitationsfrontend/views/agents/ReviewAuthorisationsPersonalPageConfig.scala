@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
+import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
 
-trait SelectServicePageConfig {
+case class ReviewAuthorisationsPersonalPageConfig(
+  override val basket: Basket,
+  override val featureFlags: FeatureFlags,
+  override val services: Set[String],
+  override val submitCall: Call)(implicit messages: Messages)
+    extends ReviewAuthorisationsPageConfig(basket, featureFlags, services, submitCall) {
 
-  def basket: Basket
-  def featureFlags: FeatureFlags
-  def services: Set[String]
-  def submitCall: Call
-  def backLink: String
-  def reviewAuthsCall: Call
-
-  def availablePersonalServices: Seq[(String, String)]
-
-  def selectHeaderMessage: String
+  val basketFull: Boolean =
+    new PersonalInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
 
 }

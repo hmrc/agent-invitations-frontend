@@ -30,45 +30,37 @@ case class ValidService(
   messageKey: String)
     extends Service
 
-// TODO why are these all strings?  Make this set of services a sealed trait so it can be type safe!
 object Services {
 
+  // TODO make a sealed trait
   val HMRCMTDIT = "HMRC-MTD-IT"
   val MTDITID = "MTDITID"
-  val messageKeyForITSA = "itsa"
-
-  val HMRCNI = "HMRC-NI"
-  val NINO = "NINO"
-  val NI = "NI"
-  val messageKeyForAfi = "afi"
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
-
   val HMRCMTDVAT = "HMRC-MTD-VAT"
-  val VRN = "VRN"
-  val messageKeyForVAT = "vat"
-
   val TRUST = "HMRC-TERS-ORG"
-  val messageKeyForTrust = "trust"
+  val HMRCCGTPD = "HMRC-CGT-PD"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST)
-  val supportedTypes = List("ni", "vrn", "utr")
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
+  val supportedClientIdentifierTypes = List("ni", "vrn", "utr")
 
   val supportedClientTypes = List("personal", "business", "trust")
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {
-      case 'A' => messageKeyForITSA
-      case 'B' => messageKeyForAfi
-      case 'C' => messageKeyForVAT
-      case 'D' => messageKeyForTrust
+      case 'A' => "itsa"
+      case 'B' => "afi"
+      case 'C' => "vat"
+      case 'D' => "trust"
+      case 'E' => "cgt"
       case _   => "Service is missing"
     }
 
   def determineServiceMessageKeyFromService(service: String): String =
     service match {
-      case HMRCMTDIT  => messageKeyForITSA
-      case HMRCPIR    => messageKeyForAfi
-      case HMRCMTDVAT => messageKeyForVAT
-      case TRUST      => messageKeyForTrust
+      case HMRCMTDIT  => "itsa"
+      case HMRCPIR    => "afi"
+      case HMRCMTDVAT => "vat"
+      case TRUST      => "trust"
+      case HMRCCGTPD  => "cgt"
     }
 }

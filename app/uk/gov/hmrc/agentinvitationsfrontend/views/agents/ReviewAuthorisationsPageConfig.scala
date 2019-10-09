@@ -20,13 +20,13 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, InvitationsBasket}
+import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
-case class ReviewAuthorisationsPageConfig(
-  basket: Basket,
-  featureFlags: FeatureFlags,
-  services: Set[String],
-  submitCall: Call)(implicit messages: Messages) {
+abstract class ReviewAuthorisationsPageConfig(
+  val basket: Basket,
+  val featureFlags: FeatureFlags,
+  val services: Set[String],
+  val submitCall: Call)(implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {
@@ -34,8 +34,7 @@ case class ReviewAuthorisationsPageConfig(
       case _                        => authorisationRequest.clientName.stripSuffix(".")
     }
 
-  val basketFull: Boolean =
-    new InvitationsBasket(services, basket, featureFlags).availablePersonalServices.isEmpty
+  val basketFull: Boolean
 
   val numberOfItems: Int = basket.size
 

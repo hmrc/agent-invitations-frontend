@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyServic
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -216,7 +216,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         select_service(
           formWithErrors.or(ServiceTypeForm.form),
-          SelectServicePageConfig(
+          SelectServicePageConfigCancel(
             featureFlags,
             enabledServices,
             routes.AgentLedDeauthJourneyController.submitPersonalService(),

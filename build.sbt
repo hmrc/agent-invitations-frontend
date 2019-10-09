@@ -25,7 +25,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "play-fsm" % "0.46.0-play-25",
   "uk.gov.hmrc" %% "govuk-template" % "5.23.0",
   "uk.gov.hmrc" %% "play-ui" % "7.39.0-play-25",
-  "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.16.0-play-25",
+  "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.17.0-play-25",
   "uk.gov.hmrc" %% "auth-client" % "2.21.0-play-25",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "3.8.0",
   "uk.gov.hmrc" %% "play-partials" % "6.5.0",
@@ -64,7 +64,7 @@ lazy val root = (project in file("."))
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     scalafmtOnCompile in Compile := true,
-    scalafmtOnCompile in Test := true
+    scalafmtOnCompile in Test := false
   )
   .configs(IntegrationTest)
   .settings(
@@ -72,7 +72,7 @@ lazy val root = (project in file("."))
     Defaults.itSettings,
     unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
     parallelExecution in IntegrationTest := false,
-    scalafmtOnCompile in IntegrationTest := true
+    scalafmtOnCompile in IntegrationTest := false
   )
   .settings(addCompilerPlugin(scalafixSemanticdb))
   .settings(

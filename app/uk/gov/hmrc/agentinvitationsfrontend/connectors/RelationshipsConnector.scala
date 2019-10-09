@@ -24,7 +24,7 @@ import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -168,4 +168,23 @@ class RelationshipsConnector @Inject()(
             false
         }
     }
+
+  def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor("ConsumedApi-Get-CheckCgtRelationship-GET") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-CGT-PD/client/CGTPDRef/${ref.value}").toString
+      http
+        .GET[HttpResponse](url)
+        .map(_ => true)
+        .recover {
+          case _: NotFoundException =>
+            Logger(getClass).warn("No relationships were found for this agent and client for CGT")
+            false
+        }
+    }
+
+  // TODO implement
+  def deleteRelationshipCgt(arn: Arn, ref: CgtRef): Future[Option[Boolean]] = Future.successful(Some(true))
+
 }
