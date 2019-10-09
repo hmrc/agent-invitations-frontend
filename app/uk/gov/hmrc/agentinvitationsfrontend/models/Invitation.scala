@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Format, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
@@ -52,7 +53,8 @@ object UTR {
 case class CountryCode(value: String) extends KnownFact
 
 object CountryCode {
-  implicit val format: Format[CountryCode] = Json.format
+  implicit val format: Format[CountryCode] =
+    implicitly[Format[String]].inmap(CountryCode(_), _.value)
 }
 
 sealed trait Invitation {
@@ -76,7 +78,7 @@ object Invitation {
       case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier), VatRegDate(knownFact))
       case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier), DOB(knownFact))
       case Services.TRUST      => TrustInvitation(Utr(clientIdentifier))
-      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier))
+      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier), CountryCode(knownFact))
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -108,7 +110,7 @@ object Invitation {
           case p: PirInvitation   => "dob" -> Json.toJson(p.dob)
           case p: VatInvitation   => "vatRegDate" -> Json.toJson(p.vatRegDate)
           case p: TrustInvitation => "clientIdentifier" -> Json.toJson(p.clientIdentifier)
-          case p: CgtInvitation   => "clientIdentifier" -> Json.toJson(p.clientIdentifier) // TODO review
+          case p: CgtInvitation   => "countryCode" -> Json.toJson(p.countryCode)
           case _                  => throw new RuntimeException(s"unknown invitation type")
         }
 
@@ -177,11 +179,12 @@ object TrustInvitation {
 
 case class CgtInvitation(
   clientIdentifier: CgtRef,
+  countryCode: CountryCode = CountryCode("dummyCode"), // TODO remove once known fact code done
   clientType: Option[ClientType] = Some(business),
   service: String = Services.HMRCCGTPD,
   clientIdentifierType: String = "CGTPDRef")
     extends Invitation {
-  val knownFact = CountryCode(clientIdentifier.value)
+  val knownFact = CountryCode(countryCode.value)
 }
 
 object CgtInvitation {

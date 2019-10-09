@@ -38,7 +38,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state = ConfirmClientTrustCgt(
           AuthorisationRequest(
             "Sylvia Plath",
-            CgtInvitation(CgtRef("123456")),
+            CgtInvitation(CgtRef("123456"), CountryCode("GB")),
             itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
@@ -51,7 +51,8 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
             |         {"clientType":"business",
             |         "service":"HMRC-CGT-PD",
             |         "clientIdentifier":"123456",
-            |         "clientIdentifierType":"CGTPDRef"
+            |         "clientIdentifierType":"CGTPDRef",
+            |         "countryCode":"GB"
             |       }
             |     },
             |    "state":"New",
@@ -68,7 +69,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state = ConfirmClientPersonalCgt(
           AuthorisationRequest(
             "Sylvia Plath",
-            CgtInvitation(CgtRef("123456"), Some(personal)),
+            CgtInvitation(CgtRef("123456"), CountryCode("GB"), Some(personal)),
             itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
@@ -76,18 +77,20 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
             |"state":"ConfirmClientPersonalCgt",
             |"properties":
             |   {"request":
-            |     {"clientName":"Sylvia Plath","invitation":
-            |       {"type":"CgtInvitation","data":
+            |     {"clientName":"Sylvia Plath",
+            |      "invitation":
+            |       {"type":"CgtInvitation",
+            |        "data":
             |         {"clientType":"personal",
             |         "service":"HMRC-CGT-PD",
             |         "clientIdentifier":"123456",
-            |         "clientIdentifierType":"CGTPDRef"
-            |       }
+            |         "clientIdentifierType":"CGTPDRef",
+            |         "countryCode":"GB"}
+            |       },
+            |      "state":"New",
+            |      "itemId":"ABC"
             |     },
-            |    "state":"New",
-            |    "itemId":"ABC"
-            |    },
-            |  "basket":[]
+            |    "basket":[]
             |  }
             |}""".stripMargin)
         Json.toJson(state) shouldBe json

@@ -352,7 +352,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             ConfirmClientPersonalCgt(
             AuthorisationRequest(
             "myCgtRef",
-            CgtInvitation(CgtRef("myCgtRef"), Some(`personal`), HMRCCGTPD, "CGTPDRef"),
+            CgtInvitation(CgtRef("myCgtRef"), _, Some(`personal`), HMRCCGTPD, "CGTPDRef"),
             AuthorisationRequest.NEW,
             _),
             `emptyBasket`),
@@ -507,7 +507,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             ConfirmClientTrustCgt(
             AuthorisationRequest(
             "myCgtRef",
-            CgtInvitation(CgtRef("myCgtRef"), Some(`business`), HMRCCGTPD, "CGTPDRef"),
+            CgtInvitation(CgtRef("myCgtRef"), _, Some(`business`), HMRCCGTPD, "CGTPDRef"),
             AuthorisationRequest.NEW,
             _),
             `emptyBasket`),
@@ -901,7 +901,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyPersonalClient" in {
 
         val authorisationRequest = AuthorisationRequest("Roo",
-          CgtInvitation(CgtRef("myCgtRef"), Some(personal))
+          CgtInvitation(CgtRef("myCgtRef"), CountryCode("GB"), Some(personal))
         )
 
         def createMultipleInvitations(arn: Arn,
@@ -935,7 +935,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyTrustClient" in {
 
         val authorisationRequest = AuthorisationRequest("Roo",
-          CgtInvitation(CgtRef("myCgtRef"), Some(business))
+          CgtInvitation(CgtRef("myCgtRef"), CountryCode("GB"), Some(business))
         )
 
         def createMultipleInvitations(arn: Arn,
