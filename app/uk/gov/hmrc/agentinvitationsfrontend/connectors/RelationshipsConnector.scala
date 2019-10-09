@@ -40,13 +40,13 @@ class RelationshipsConnector @Inject()(
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   val getInactiveItsaRelationshipUrl: URL =
-    new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-IT")
+    new URL(baseUrl, "/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-IT")
 
   val getInactiveVatRelationshipUrl: URL =
-    new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-MTD-VAT")
+    new URL(baseUrl, "/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-VAT")
 
   val getInactiveTrustRelationshipUrl: URL =
-    new URL(baseUrl, "/agent-client-relationships/relationships/inactive/service/HMRC-TERS-ORG")
+    new URL(baseUrl, "/agent-client-relationships/agent/relationships/inactive/service/HMRC-TERS-ORG")
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
