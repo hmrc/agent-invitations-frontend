@@ -236,14 +236,13 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case _: SelectClientType       => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectPersonalService  => routes.AgentInvitationJourneyController.showSelectService()
-    case SelectBusinessService     => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectTrustService     => routes.AgentInvitationJourneyController.showSelectService()
-    case _: IdentifyPersonalClient => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case IdentifyBusinessClient    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case _: IdentifyTrustClient    => routes.AgentInvitationJourneyController.showIdentifyClient()
-    //case _: IdentifyCgtClient            => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
+    case _: SelectPersonalService        => routes.AgentInvitationJourneyController.showSelectService()
+    case SelectBusinessService           => routes.AgentInvitationJourneyController.showSelectService()
+    case _: SelectTrustService           => routes.AgentInvitationJourneyController.showSelectService()
+    case _: IdentifyPersonalClient       => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case IdentifyBusinessClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: IdentifyTrustClient          => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa            => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()

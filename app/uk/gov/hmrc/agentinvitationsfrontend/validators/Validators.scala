@@ -19,10 +19,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.validators
 import play.api.data.Forms.of
 import play.api.data.Mapping
 import play.api.data.format.Formats._
-import play.api.data.validation.{Constraint, Constraints, Invalid, Valid, ValidationError}
+import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
-import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
@@ -45,9 +45,10 @@ object Validators {
 
   val utrPattern = "^\\d{10}$"
 
-  val cgtRefPattern = "^X[A-Z]CGTP[0-9]{9}$"
-
-  def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String) =
+  def validPostcode(
+    invalidFormatFailure: String,
+    emptyFailure: String,
+    invalidCharactersFailure: String): Constraint[String] =
     Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
       else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
@@ -60,14 +61,16 @@ object Validators {
       validPostcode("enter-postcode.invalid-format", "error.postcode.required", "enter-postcode.invalid-characters")
     )
 
-  val validVrn =
+  val validVrn: Constraint[String] =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure")
 
   val validVatDateFormat: Constraint[String] =
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
       vatRegistrationDate => validateDate(vatRegistrationDate))
 
-  def validNino(nonEmptyFailure: String = "error.nino.required", invalidFailure: String = "enter-nino.invalid-format") =
+  def validNino(
+    nonEmptyFailure: String = "error.nino.required",
+    invalidFailure: String = "enter-nino.invalid-format"): Constraint[String] =
     ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
 
   def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
@@ -76,7 +79,7 @@ object Validators {
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
   def validCgtRef(): Constraint[String] =
-    patternConstraint(cgtRefPattern, "error.cgt.required", "enter-cgt.invalid-format")
+    patternConstraint(CgtRef.cgtRegex, "error.cgt.required", "enter-cgt.invalid-format")
 
   private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>

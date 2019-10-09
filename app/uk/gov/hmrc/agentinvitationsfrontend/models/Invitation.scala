@@ -49,11 +49,10 @@ object UTR {
   implicit val format: Format[UTR] = Json.format[UTR]
 }
 
-// XXX what is the real "known fact" for CGT???
-case class CGTREF(value: String) extends KnownFact
+case class CountryCode(value: String) extends KnownFact
 
-object CGTREF {
-  implicit val format: Format[CGTREF] = Json.format
+object CountryCode {
+  implicit val format: Format[CountryCode] = Json.format
 }
 
 sealed trait Invitation {
@@ -182,7 +181,7 @@ case class CgtInvitation(
   service: String = Services.HMRCCGTPD,
   clientIdentifierType: String = "CGTPDRef")
     extends Invitation {
-  val knownFact = CGTREF(clientIdentifier.value) // TODO review
+  val knownFact = CountryCode(clientIdentifier.value)
 }
 
 object CgtInvitation {
