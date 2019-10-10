@@ -93,7 +93,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case Some(affinity) ~ confidence ~ enrols =>
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
-              withConfidenceLevelUplift(cl, ConfidenceLevel.L200) {
+              withConfidenceLevelUplift(cl, ConfidenceLevel.L200, journeyId) {
                 body(AuthorisedClient(affinity, enrols))
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
@@ -112,8 +112,10 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         handleFailure(isAgent = false, journeyId)
       }
 
-  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, requiredLevel: ConfidenceLevel)(
-    body: => Future[Result])(implicit request: Request[A]) =
+  private def withConfidenceLevelUplift[A, BodyArgs](
+    currentLevel: ConfidenceLevel,
+    requiredLevel: ConfidenceLevel,
+    journeyId: Option[String])(body: => Future[Result])(implicit request: Request[A]) =
     if (currentLevel >= requiredLevel) {
       body
     } else if (request.method == "GET") {
@@ -125,8 +127,10 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val failureUrl =
+    val rawFailureUrl =
       toLocalFriendlyUrl(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url, request.host)
+
+    val failureUrl = CallOps.addParamsToUrl(rawFailureUrl, "success" -> Some(successUrl))
 
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,
@@ -135,16 +139,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       "completionURL"   -> Some(successUrl),
       "failureURL"      -> Some(failureUrl)
     )
-
     Future.successful(Redirect(ivUpliftUrl))
   }
 
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
     implicit request: Request[_]): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession ⇒
+    case _: NoActiveSession ⇒ {
       val url = localFriendlyUrl(env, config)(request.uri, request.host)
       val ggContinueUrl = journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
       toGGLogin(ggContinueUrl)
+    }
 
     case _: InsufficientEnrolments ⇒
       Logger.warn(s"Logged in user does not have required enrolments")

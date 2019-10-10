@@ -727,7 +727,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /cannot-confirm-identity" should {
     "display the cannot confirm identity page with technical issue content when the failure reason is technicalIssue" in {
       givenIVFailureReasonResponse(TechnicalIssue)
-      val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+      val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
       status(result) shouldBe 403
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.header"))
@@ -748,7 +748,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         s"IV returns failed reason $reason " when {
           "display the default page" in {
             givenIVFailureReasonResponse(reason)
-            val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+            val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
             status(result) shouldBe 403
             checkHtmlResultWithBodyMsgs(result,"cannot-confirm-identity.header",
               "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
@@ -757,15 +757,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
     }
 
-  Set(Success, TechnicalIssue, FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence, TimedOut, UserAborted, LockedOut)
+  Set(TechnicalIssue, FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence, TimedOut, UserAborted, LockedOut)
     .foreach { reason =>
     s"IV returns failed reason $reason" when {
       "display the signed out page" in {
         givenIVFailureReasonResponse(reason)
-        val result = controller.showCannotConfirmIdentity(Some("valid-uuid"))(FakeRequest())
+        val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
         val resultCode = status(result)
         reason match {
-          case Success => resultCode shouldBe 303
           case TechnicalIssue => {
             resultCode shouldBe 403
             checkHtmlResultWithBodyMsgs(result, "technical-issues.header", "technical-issues.p1","technical-issues.p2")

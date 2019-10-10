@@ -191,9 +191,10 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+  def signedOut(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps
-      .localFriendlyUrl(env, config)(routes.ClientInvitationJourneyController.showConsent().url, request.host)
+      .localFriendlyUrl(env, config)(successUrl, request.host)
     Future successful Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl"))
   }
 
@@ -202,29 +203,26 @@ class ClientInvitationJourneyController @Inject()(
       cannot_confirm_identity(title = Some(Messages("locked-out.header")), html = Some(locked_out())))
   }
 
-  def showCannotConfirmIdentity(journeyId: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    journeyId
-      .fold(
-        Future.successful(Forbidden(cannot_confirm_identity()))
-      )(
-        id =>
-          identityVerificationConnector
-            .getIVResult(id)
-            .map(reason => getErrorPage(reason)))
+  def showCannotConfirmIdentity(journeyId: Option[String], success: Option[String]): Action[AnyContent] = Action.async {
+    implicit request =>
+      journeyId
+        .fold(
+          Future.successful(Forbidden(cannot_confirm_identity()))
+        )(
+          id =>
+            identityVerificationConnector
+              .getIVResult(id)
+              .map(reason => getErrorPage(reason, success)))
   }
 
-  import uk.gov.hmrc.agentinvitationsfrontend.models.Success
-
-  private def getErrorPage(reason: Option[IVResult])(implicit request: Request[_]) =
+  private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannot_confirm_identity())) {
-      case Success =>
-        Redirect(routes.ClientInvitationJourneyController.submitWarmUp()) //should not occur in prod since this is only called on failure but useful for local testing
       case TechnicalIssue =>
         Forbidden(
           cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
-      case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.signedOut)
+      case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.signedOut(success))
       case LockedOut              => Redirect(routes.ClientInvitationJourneyController.lockedOut)
       case _                      => Forbidden(cannot_confirm_identity())
     }
