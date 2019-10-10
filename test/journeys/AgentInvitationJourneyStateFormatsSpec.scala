@@ -36,31 +36,27 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientTrustCgt" in {
         val state = ConfirmClientTrustCgt(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            CgtInvitation(CgtRef("123456"), CountryCode("GB")),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), CountryCode("GB")), itemId = "ABC"),
           Set.empty)
-        val json = Json.parse(
-          """{
-            |"state":"ConfirmClientTrustCgt",
-            |"properties":
-            |   {"request":
-            |     {"clientName":"Sylvia Plath","invitation":
-            |       {"type":"CgtInvitation","data":
-            |         {"clientType":"business",
-            |         "service":"HMRC-CGT-PD",
-            |         "clientIdentifier":"123456",
-            |         "clientIdentifierType":"CGTPDRef",
-            |         "countryCode":"GB"
-            |       }
-            |     },
-            |    "state":"New",
-            |    "itemId":"ABC"
-            |    },
-            |  "basket":[]
-            |  }
-            |}""".stripMargin)
+        val json = Json.parse("""{
+                                |"state":"ConfirmClientTrustCgt",
+                                |"properties":
+                                |   {"request":
+                                |     {"clientName":"Sylvia Plath","invitation":
+                                |       {"type":"CgtInvitation","data":
+                                |         {"clientType":"business",
+                                |         "service":"HMRC-CGT-PD",
+                                |         "clientIdentifier":"123456",
+                                |         "clientIdentifierType":"CGTPDRef",
+                                |         "countryCode":"GB"
+                                |       }
+                                |     },
+                                |    "state":"New",
+                                |    "itemId":"ABC"
+                                |    },
+                                |  "basket":[]
+                                |  }
+                                |}""".stripMargin)
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -72,27 +68,26 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
             CgtInvitation(CgtRef("123456"), CountryCode("GB"), Some(personal)),
             itemId = "ABC"),
           Set.empty)
-        val json = Json.parse(
-          """{
-            |"state":"ConfirmClientPersonalCgt",
-            |"properties":
-            |   {"request":
-            |     {"clientName":"Sylvia Plath",
-            |      "invitation":
-            |       {"type":"CgtInvitation",
-            |        "data":
-            |         {"clientType":"personal",
-            |         "service":"HMRC-CGT-PD",
-            |         "clientIdentifier":"123456",
-            |         "clientIdentifierType":"CGTPDRef",
-            |         "countryCode":"GB"}
-            |       },
-            |      "state":"New",
-            |      "itemId":"ABC"
-            |     },
-            |    "basket":[]
-            |  }
-            |}""".stripMargin)
+        val json = Json.parse("""{
+                                |"state":"ConfirmClientPersonalCgt",
+                                |"properties":
+                                |   {"request":
+                                |     {"clientName":"Sylvia Plath",
+                                |      "invitation":
+                                |       {"type":"CgtInvitation",
+                                |        "data":
+                                |         {"clientType":"personal",
+                                |         "service":"HMRC-CGT-PD",
+                                |         "clientIdentifier":"123456",
+                                |         "clientIdentifierType":"CGTPDRef",
+                                |         "countryCode":"GB"}
+                                |       },
+                                |      "state":"New",
+                                |      "itemId":"ABC"
+                                |     },
+                                |    "basket":[]
+                                |  }
+                                |}""".stripMargin)
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
