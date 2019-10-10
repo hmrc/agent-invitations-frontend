@@ -77,39 +77,42 @@ identify-client.irv-date-of-birth.hint=For example, 31 3 1980
 error.irv-date-of-birth.required=Enter your client’s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
 
-# Personal Select Service
-personal-select-service.personal-income-viewer=View their PAYE income record
-personal-select-service.itsa=Send their Income Tax updates through software
-personal-select-service.cgt=Manage their Capital Gains Tax on UK property disposals
+### Selecting services
 
-# Personal and Business
+select-service.yes=Yes
+select-service.no=No
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
 service.type.invalid=You must select a service
+
+# multi-choice selections
+select-service.personal-income-viewer=View their PAYE income record
+select-service.itsa=Send their Income Tax updates through software
 select-service.vat=Submit their VAT returns through software
 select-service.trust=Maintain a trust or an estate
 select-service.cgt=Manage a trust’s Capital Gains Tax on UK property disposals
+
+# multi-choice header
 select-service.personal.header=What do you want the client to authorise you to do?
 select-service.trust.header=What do you want the lead trustee to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
-select-service.alt-suggestion.vat-only=You can use this service to ask for a client’s authorisation to submit their VAT returns through software.
-select-service.alt-suggestion.trust-only=You can use this service to ask for a client’s authorisation to maintain a trust or an estate.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
-business-select-service.header=Do you want to submit this client’s VAT returns through software?
-business-select-service.yes=Yes
-business-select-service.no=No
+## single choice suggestion text
+select-service.alt-suggestion.HMRC-MTD-VAT=You can use this service to ask for a client’s authorisation to submit their VAT returns through software.
+select-service.alt-suggestion.trust-only=You can use this service to ask for a client’s authorisation to maintain a trust or an estate.
+
+# single choice headers
+select-single-service.HMRC-MTD-VAT.header=Do you want to submit this client’s VAT returns through software?
 error.business-service.required=Select yes if you want to submit this client’s VAT returns through software
 
-## Trust select service (if single service, assuming CGT disabled)
-trust-select-service.single.header=Do you want to maintain a trust or an estate for this client?
-trust-select-service.yes=Yes
-trust-select-service.no=No
+select-single-service.HMRC-TERS-ORG.header=Do you want to maintain a trust or an estate for this client?
 error.trust-service.required=Select yes if you want to maintain a trust or an estate for this client
+
 
 
 ## Identify Trust Client

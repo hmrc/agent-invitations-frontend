@@ -152,7 +152,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
-    def identify: GetCgtRefName = { (_: CgtRef) =>
+    def identify: GetCgtRefName = { _: CgtRef =>
       Future.successful("stubRefName")
     }
     whenAuthorisedWithForm(AsAgent)(CgtClientForm.form)(
@@ -287,7 +287,7 @@ class AgentInvitationJourneyController @Inject()(
 
     case SelectPersonalService(services, basket) =>
       Ok(
-        select_service(
+        select_from_services(
           formWithErrors.or(ServiceTypeForm.form),
           PersonalSelectServicePageConfig(
             basket,
@@ -301,13 +301,12 @@ class AgentInvitationJourneyController @Inject()(
 
     case SelectBusinessService =>
       Ok(
-        business_select_service(
+        select_single_service(
           formWithErrors.or(CommonConfirmationForms.serviceBusinessForm),
           BusinessSelectServicePageConfig(
-            basketFlag = false,
-            routes.AgentInvitationJourneyController.submitBusinessSelectService(),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations()
+            submitCall = routes.AgentInvitationJourneyController.submitBusinessSelectService(),
+            backLink = backLinkFor(breadcrumbs).url,
+            reviewAuthsCall = routes.AgentInvitationJourneyController.showReviewAuthorisations()
           )
         ))
 
@@ -315,7 +314,7 @@ class AgentInvitationJourneyController @Inject()(
       if (featureFlags.showHmrcCgt) {
         // multi-select service form, same as Personal client type
         Ok(
-          select_service(
+          select_from_services(
             formWithErrors.or(ServiceTypeForm.form),
             TrustSelectServicePageConfig(
               basket,
@@ -329,7 +328,7 @@ class AgentInvitationJourneyController @Inject()(
       } else {
         // remove once cgt feature flag on in production
         Ok(
-          trust_select_service(
+          select_single_service(
             formWithErrors.or(CommonConfirmationForms.serviceTrustForm),
             TrustSelectServicePageConfig(
               basket,

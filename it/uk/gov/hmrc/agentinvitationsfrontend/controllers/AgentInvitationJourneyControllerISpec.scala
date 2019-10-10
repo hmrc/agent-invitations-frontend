@@ -184,8 +184,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           "generic.title",
           htmlEscapedMessage("select-service.personal.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("personal-select-service.itsa"),
-        htmlEscapedMessage("personal-select-service.personal-income-viewer"),
+        htmlEscapedMessage("select-service.itsa"),
+        htmlEscapedMessage("select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
       )
       journeyState.get shouldBe Some(
@@ -199,10 +199,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("business-select-service.no"),
-        htmlEscapedMessage("business-select-service.yes"),
+        htmlEscapedMessage("select-service.no"),
+        htmlEscapedMessage("select-service.yes"),
         htmlEscapedMessage("select-service.alternative"),
-        htmlEscapedMessage("select-service.alt-suggestion.vat-only")
+        htmlEscapedMessage("select-service.alt-suggestion.HMRC-MTD-VAT")
       )
       journeyState.get shouldBe Some((SelectBusinessService, List(SelectClientType(emptyBasket))))
     }
@@ -214,9 +214,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("trust-select-service.single.header"),
-        htmlEscapedMessage("trust-select-service.yes"),
-        htmlEscapedMessage("trust-select-service.no")
+        htmlEscapedMessage("select-single-service.HMRC-TERS-ORG.header"),
+        htmlEscapedMessage("select-service.yes"),
+        htmlEscapedMessage("select-service.no")
       )
       journeyState.get shouldBe Some((SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket))))
     }
@@ -235,8 +235,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           "generic.title",
           htmlEscapedMessage("select-service.personal.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("personal-select-service.itsa"),
-        htmlEscapedMessage("personal-select-service.personal-income-viewer"),
+        htmlEscapedMessage("select-service.itsa"),
+        htmlEscapedMessage("select-service.personal-income-viewer"),
         htmlEscapedMessage("select-service.vat")
       )
       journeyState.get should have[State](

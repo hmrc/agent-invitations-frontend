@@ -18,9 +18,23 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
 import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class BusinessSelectServicePageConfig(
-  basketFlag: Boolean,
+  basket: Basket = Set.empty,
+  featureFlags: FeatureFlags = FeatureFlags.apply(),
+  services: Set[String] = Set(HMRCMTDVAT),
   submitCall: Call,
   backLink: String,
-  reviewAuthsCall: Call)(implicit messages: Messages) {}
+  reviewAuthsCall: Call)(implicit messages: Messages)
+    extends SelectServicePageConfig {
+
+  // We only need the service key here
+  override def availableServices: Seq[(String, String)] = Seq(HMRCMTDVAT -> "unused")
+
+  // Not applicable to business clients, since they only have VAT
+  override def selectHeaderMessage: String = ???
+
+}

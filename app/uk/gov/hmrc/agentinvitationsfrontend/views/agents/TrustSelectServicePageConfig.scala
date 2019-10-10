@@ -31,7 +31,7 @@ case class TrustSelectServicePageConfig(
   reviewAuthsCall: Call)(implicit messages: Messages)
     extends SelectServicePageConfig {
 
-  def availablePersonalServices: Seq[(String, String)] =
+  def availableServices: Seq[(String, String)] =
     new TrustInvitationsBasket(services, basket, featureFlags).availableServices
 
   def selectHeaderMessage: String = Messages("select-service.trust.header")

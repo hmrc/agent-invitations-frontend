@@ -31,7 +31,7 @@ case class PersonalSelectServicePageConfig(
   reviewAuthsCall: Call)(implicit messages: Messages)
     extends SelectServicePageConfig {
 
-  def availablePersonalServices: Seq[(String, String)] =
+  def availableServices: Seq[(String, String)] =
     new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
 
   def selectHeaderMessage: String = Messages("select-service.personal.header")

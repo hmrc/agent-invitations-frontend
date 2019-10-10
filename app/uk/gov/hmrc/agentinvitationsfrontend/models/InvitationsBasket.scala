@@ -76,10 +76,10 @@ class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFl
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceHmrcMtdIt)
-      seq.append(HMRCMTDIT -> Messages("personal-select-service.itsa"))
+      seq.append(HMRCMTDIT -> Messages("select-service.itsa"))
 
     if (showServicePersonalIncome)
-      seq.append(HMRCPIR -> Messages("personal-select-service.personal-income-viewer"))
+      seq.append(HMRCPIR -> Messages("select-service.personal-income-viewer"))
 
     if (showServiceMtdVat)
       seq.append(HMRCMTDVAT -> Messages("select-service.vat"))
