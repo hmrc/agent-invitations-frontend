@@ -450,7 +450,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Are you sure you want to cancel this client's authorisation?",
+        "Are you sure you want to cancel this client’s authorisation?",
         "You will no longer be able to send their Income Tax updates through software.",
         "You will not be able to undo this action.",
         "Yes",
