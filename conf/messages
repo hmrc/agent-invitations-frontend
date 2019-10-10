@@ -1,9 +1,9 @@
 banner.agents.auth=Ask a client to authorise you
-banner.agents.de-auth=Cancel a client''s authorisation
+banner.agents.de-auth=Cancel a client’s authorisation
 banner.clients=Appoint someone to deal with HMRC for you
 
 title.suffix.agents=Ask a client to authorise you
-title.suffix.agents.de-auth=Cancel a client''s authorisation
+title.suffix.agents.de-auth=Cancel a client’s authorisation
 title.suffix.client=Appoint someone to deal with HMRC for you
 
 generic.title={0} - {1} - GOV.UK
@@ -12,14 +12,14 @@ generic.title={0} - {1} - GOV.UK
 
 # Client Type
 client-type.header=What type of client do you need authorisation from?
-client-type.p1=If you need authorisation to deal with both your client''s business and personal tax affairs, you need to ask for these separately.
+client-type.p1=If you need authorisation to deal with both your client’s business and personal tax affairs, you need to ask for these separately.
 client-type.personal=An individual or sole trader
 client-type.business=A company or partnership
 client-type.trust=A trust or an estate
 error.client-type.empty=Select if the type of client you need authorisation from is an individual or sole trader, a limited company or partnership, or a trust or an estate
 
 # Identify Client
-identify-client.header=Enter your client''s details
+identify-client.header=Enter your client’s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
@@ -29,14 +29,14 @@ identify-client.irv.hint=For example, QQ 12 34 56 C
 identify-client.nino.label=National Insurance number
 identify-client.nino.hint=For example, QQ 12 34 56 C
 enter-nino.invalid-format=National Insurance number must be 2 letters, 6 numbers, then A, B, C or D, like QQ 12 34 56 C
-error.nino.required=Enter your client''s National Insurance number
+error.nino.required=Enter your client’s National Insurance number
 
 # Postcode
 identify-client.postcode.label=Postcode
-identify-client.postcode.hint=This is the postcode of your client''s registered address
+identify-client.postcode.hint=This is the postcode of your client’s registered address
 enter-postcode.invalid-format=Enter a valid postcode, like AA1 1AA
 enter-postcode.invalid-characters=Postcode must only include letters a to z, numbers and spaces, for example AA1 1AA
-error.postcode.required=Enter your client''s postcode
+error.postcode.required=Enter your client’s postcode
 
 # Vrn
 identify-client.vrn.label=VAT registration number
@@ -45,27 +45,27 @@ identify-client.vrn.hint=This is 9 numbers, for example, 123456789.
 #UTR
 identify-client.utr.label=Unique Taxpayer Reference (UTR)
 identify-client.utr.hint=Enter the last 10 digits only. For example, 12345 67890
-utr.hint.expandable=Where to find your client's UTR
-utr.hint.expandable.p1=Your client's UTR will be their:
+utr.hint.expandable=Where to find your client’s UTR
+utr.hint.expandable.p1=Your client’s UTR will be their:
 utr.hint.expandable.l1=company UTR for a limited company
 utr.hint.expandable.l2=Self Assessment UTR for an ordinary business partnership
 utr.hint.expandable.l3=individual Self Assessment UTR for a sole trader
-utr.hint.expandable.p2=If they have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ''Tax Reference'', ''UTR'' or ''Official Use''.
+utr.hint.expandable.p2=If they have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ‘Tax Reference’, ‘UTR’ or ‘Official Use’.
 utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on the letter HMRC sent them when they registered for Self Assessment.
-error.utr.required=Enter your client''s UTR
+error.utr.required=Enter your client’s UTR
 enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
-error.cgt.required=Enter your client''s CGT account reference
+error.cgt.required=Enter your client’s CGT account reference
 enter-cgt.invalid-format=Enter a valid CGT reference, like XYCGTP123456789
 
-error.vrn.required=Enter your client''s VAT registration number
+error.vrn.required=Enter your client’s VAT registration number
 enter-vrn.regex-failure=VAT registration number must be 9 numbers
 
 # Vat registration date
 identify-client.vat-registration-date.label=VAT registration date
 identify-client.vat-registration-date.hint=For example, 31 8 2015
 enter-vat-registration-date.invalid-format=Enter a valid VAT registration date
-error.vat-registration-date.required=Enter your client''s VAT registration date
+error.vat-registration-date.required=Enter your client’s VAT registration date
 error.day.invalid-format=Day must only include numbers
 error.month.invalid-format=Month must only include numbers
 error.year.invalid-format=Year must only include numbers
@@ -74,7 +74,7 @@ error.year.invalid-format=Year must only include numbers
 # Date of Birth
 identify-client.irv-date-of-birth.label=Date of birth
 identify-client.irv-date-of-birth.hint=For example, 31 3 1980
-error.irv-date-of-birth.required=Enter your client''s date of birth
+error.irv-date-of-birth.required=Enter your client’s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
 
 # Personal Select Service
@@ -88,22 +88,22 @@ select-service.hint=Select an option.
 service.type.invalid=You must select a service
 select-service.vat=Submit their VAT returns through software
 select-service.trust=Maintain a trust or an estate
-select-service.cgt=Manage a trust's Capital Gains Tax on UK property disposals
+select-service.cgt=Manage a trust’s Capital Gains Tax on UK property disposals
 select-service.personal.header=What do you want the client to authorise you to do?
 select-service.trust.header=What do you want the lead trustee to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
-select-service.alt-suggestion.vat-only=You can use this service to ask for a client''s authorisation to submit their VAT returns through software.
-select-service.alt-suggestion.trust-only=You can use this service to ask for a client''s authorisation to maintain a trust or an estate.
+select-service.alt-suggestion.vat-only=You can use this service to ask for a client’s authorisation to submit their VAT returns through software.
+select-service.alt-suggestion.trust-only=You can use this service to ask for a client’s authorisation to maintain a trust or an estate.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
-business-select-service.header=Do you want to submit this client''s VAT returns through software?
+business-select-service.header=Do you want to submit this client’s VAT returns through software?
 business-select-service.yes=Yes
 business-select-service.no=No
-error.business-service.required=Select yes if you want to submit this client''s VAT returns through software
+error.business-service.required=Select yes if you want to submit this client’s VAT returns through software
 
 ## Trust select service (if single service, assuming CGT disabled)
 trust-select-service.single.header=Do you want to maintain a trust or an estate for this client?
@@ -116,10 +116,10 @@ error.trust-service.required=Select yes if you want to maintain a trust or an es
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.header=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ''reference'', ''UTR'' or ''official use''. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 ## Identify CGT Client
-identify-cgt-client.trust.header=What is the trust's Capital Gains Tax (CGT) account reference?
+identify-cgt-client.trust.header=What is the trust’s Capital Gains Tax (CGT) account reference?
 identify-cgt-client.p1=This will help us match their details against information we hold.
 identify-cgt-client.p2=Capital Gains Tax (CGT) account reference
 identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
@@ -154,12 +154,12 @@ invitation-sent.new-window=(opens a new window or tab)
 invitation-sent.startNewAuthRequest=Start a new authorisation request
 
 #Check Details
-check-details.heading=Check your client''s details before you continue
-check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to send a client''s Income Tax updates through software.
-check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client''s PAYE income record.
-check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to submit a client''s VAT returns through software.
-check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation to submit a client''s tax returns through software.
-check-details.table.heading=Client''s details
+check-details.heading=Check your client’s details before you continue
+check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to send a client’s Income Tax updates through software.
+check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client’s PAYE income record.
+check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to submit a client’s VAT returns through software.
+check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation to submit a client’s tax returns through software.
+check-details.table.heading=Client’s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
 check-details.client-type.business.HMRC-MTD-VAT=Company or partnership
@@ -189,13 +189,13 @@ review-authorisations.table.remove=Remove
 review-authorisations.subheader=Do you need to add another authorisation for this client?
 review-authorisations.radio.yes=Yes
 review-authorisations.radio.no=No
-review-authorisations.different-names=The client''s name may be recorded differently in each service.
-review-authorisations.no-client-name=Client''s name is not available
+review-authorisations.different-names=The client’s name may be recorded differently in each service.
+review-authorisations.no-client-name=Client’s name is not available
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
 
 # Agent led de-auth
 cancel-authorisation.client-type.header=What type of client do you want to cancel your authorisation for?
-cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client''s business and personal tax affairs, you need to do these separately.
+cancel-authorisation.client-type.p1=If you need to cancel your authorisation for both a client’s business and personal tax affairs, you need to do these separately.
 error.cancel-authorisation.client-type.empty=Select if the type of client you need to cancel your authorisation for is an individual or sole trader, a limited company or partnership, or a trust or an estate
 error.fast-track.client-type.empty=Select if the type of client you need to cancel your authorisation for is an individual or sole trader or a limited company or partnership
 
@@ -226,11 +226,11 @@ cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer author
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.print=Print this page
-cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client''s VAT returns through software?
-cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client''s VAT returns through software
+cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client’s VAT returns through software?
+cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client’s VAT returns through software
 
 cancel-authorisation.trust-select-service.header=Do you want to cancel your authorisation for maintaining a trust or an estate for this client?
-cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client''s tax returns through software
+cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client’s tax returns through software
 
 cancel-authorisation.not-matched.header=There is a problem
 cancel-authorisation.not-matched.description=We could not find any clients matching these details.
@@ -260,11 +260,11 @@ delete.radio-no=No
 error.delete.radio=Select yes if you want to remove the authorisation request for this client
 
 #Known fact
-known-fact.HMRC-MTD-IT.heading=What is your client''s postcode?
-known-fact.PERSONAL-INCOME-RECORD.heading=What is your client''s date of birth?
-known-fact.HMRC-MTD-VAT.heading=What is your client''s VAT registration date?
+known-fact.HMRC-MTD-IT.heading=What is your client’s postcode?
+known-fact.PERSONAL-INCOME-RECORD.heading=What is your client’s date of birth?
+known-fact.HMRC-MTD-VAT.heading=What is your client’s VAT registration date?
 known-fact.p1=This will help us match their details against information we hold.
-known-fact.HMRC-MTD-IT.helper=This is the postcode of your client''s registered address
+known-fact.HMRC-MTD-IT.helper=This is the postcode of your client’s registered address
 known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
@@ -294,7 +294,7 @@ new-request.button=Start a new request
 
 #Cannot Create Request
 cannot-create-request.header=You cannot ask this client to authorise you yet
-cannot-create-request.p1=We are processing this client''s sign-up to Making Tax Digital for VAT.
+cannot-create-request.p1=We are processing this client’s sign-up to Making Tax Digital for VAT.
 cannot-create-request.p2=Once this is done, you can ask the client to authorise you for this service.
 cannot-create-request.p3=This may take up to 72 hours, so try again later.
 cannot-create-request.review-auth=Return to your authorisation requests
@@ -319,7 +319,7 @@ create-auth-failed.button.continue=Continue
 landing-page.itsa.header=Do you want to authorise your tax agent to send your Income Tax updates through software?
 landing-page.afi.header=Do you want to authorise your tax agent to view your income record?
 landing-page.vat.header=Do you want to authorise your tax agent to submit your VAT returns through software?
-landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent''s authorisation for the same service.
+landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent’s authorisation for the same service.
 landing-page.radio1=Yes
 landing-page.radio2=No
 landing-page.radio3=I want to decide later
@@ -394,7 +394,7 @@ confirm-terms.subheading2=How to withdraw your consent
 confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new window or tab)</a>.
 confirm-terms.subheading3=Our privacy policy
 confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>. If you appoint someone overseas to act for you, we will need to share your data outside of the UK.
-confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent''s authorisation to act on your behalf.
+confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent’s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 confirm-terms.radio1=Yes
 confirm-terms.radio2=No
@@ -498,7 +498,7 @@ not-authorised.header=You cannot access this page
 not-authorised.description.p1=You do not have permission to access this page. Only your client can access this page.
 not-authorised.description.p2=Ask your client to go to the link that you tried to access, so they can accept your authorisation request.
 
-not-authorised-vat.title=You''re not able to use this service
+not-authorised-vat.title=You’re not able to use this service
 not-authorised-vat.description=To use this service, you need to sign in with a Government Gateway organisation account and have enrolled to submit your VAT returns through software.
 
 # Trust Not claimed
@@ -532,14 +532,14 @@ incorrect-client-type.button=Sign out and try again
 # Cannot confirm identity
 cannot-confirm-identity.header=We could not confirm your identity
 cannot-confirm-identity.p1=The information you have entered does not match our records.
-cannot-confirm-identity.p2=Use the ''Get help with this page'' link if you need help with confirming your identity.
+cannot-confirm-identity.p2=Use the ‘Get help with this page’ link if you need help with confirming your identity.
 cannot-confirm-identity.button=Try again
 
 # Locked-out
 locked-out.header=We could not confirm your identity
 locked-out.p1=You have entered information that does not match our records too many times.
 locked-out.p2=For security reasons, you must wait 24 hours and then sign in to try again.
-locked-out.p3=Use the ''Get help with this page'' link if you need help with confirming your identity.
+locked-out.p3=Use the ‘Get help with this page’ link if you need help with confirming your identity.
 
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
@@ -553,7 +553,7 @@ some-responses-failed.afi=We could not save your response for viewing your PAYE 
 some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
 some-responses-failed.try-again=You can continue without these services, or try again later.
-some-responses-failed.advice=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
+some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
 
 
 technical-issues.header=Sorry, there is a problem with the service
@@ -567,13 +567,13 @@ all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p1=Try again later.
 all-responses-failed.p2=We may not have saved your responses.
 all-responses-failed.check=You can <a href = {0}>check who can deal with HMRC for you</a>.
-all-responses-failed.p3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
+all-responses-failed.p3=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
 
 # Client session expired/lost
 session-lost-client.header=Sorry, you will need to start again
 session-lost-client.description.1=For your security, we have signed you out of the service.
 session-lost-client.description.2=We may not have saved your answers.
-session-lost-client.description.3=If you have any questions, use the ''get help with this page'' link at the bottom of each page in the service.
+session-lost-client.description.3=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
 session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
@@ -582,17 +582,17 @@ global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request
 global.error.400.message=Please check that you have entered the correct web address.
 global.error.403.title=Forbidden - 403
-global.error.403.heading=Sorry, you haven''t been authorised to proceed.
+global.error.403.heading=Sorry, you haven’t been authorised to proceed.
 global.error.403.message=
 global.error.passcode.title=Forbidden - 403
-global.error.passcode.heading=Sorry, you haven''t been authorised to proceed.
+global.error.passcode.heading=Sorry, you haven’t been authorised to proceed.
 global.error.passcode.message=
 global.error.404.title=Page not found - GOV.UK
 global.error.404.heading=Page not found
 global.error.404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
 
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
-global.error.500.heading=Sorry, we''re experiencing technical difficulties
+global.error.500.heading=Sorry, we’re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
 
 #Relationships
@@ -601,12 +601,12 @@ clientEndsRelationship.title=Do you want to stop a tax agent viewing your income
 clientEndsRelationshipEnded.header=Your income record is no longer visible to tax agents
 clientEndsRelationshipEnded.p1=If you want to allow an agent to view your record, ask them to send you an authorisation request.
 clientEndsRelationshipNoAgent.header=There is no authorised tax agent in our system
-clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your income record so we can''t remove authorisation.
+clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your income record so we can’t remove authorisation.
 clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
 clientCancelled.header=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
-error.terminate.500.heading=Sorry, we''re experiencing technical difficulties
+error.terminate.500.heading=Sorry, we’re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 
@@ -623,7 +623,7 @@ recent-invitations.header=Track your recent authorisation requests
 recent-invitations.description=Check the status of your authorisation requests to clients in the last {0} days, or cancel requests and authorisations you no longer need.
 recent-invitations.empty=You do not have any recent authorisation requests.
 recent-invitations.empty.continue=Start a new authorisation request
-recent-invitations.table-row-header.clientName=Client''s details
+recent-invitations.table-row-header.clientName=Client’s details
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
 recent-invitations.table-row-header.actions=Actions
@@ -674,7 +674,7 @@ request-cancelled.track.link=Track your recent authorisation requests
 request-cancelled.p2=If you cancelled your authorisation request by mistake, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
 
 #Confirm cancel authorisation page
-confirm-authorisation-cancelled.header=Are you sure you want to cancel this client''s authorisation?
+confirm-authorisation-cancelled.header=Are you sure you want to cancel this client’s authorisation?
 confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to send their Income Tax updates through software.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
