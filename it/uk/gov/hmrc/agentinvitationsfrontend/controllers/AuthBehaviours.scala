@@ -50,7 +50,7 @@ trait AuthBehaviours extends AuthStubs {
       val result = await(action(authorisedAsAnyIndividualClient(request, confidenceLevel = 50)))
       val failureUrl: String =
         URLEncoder.encode(
-          routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url,
+          routes.ClientInvitationJourneyController.showCannotConfirmIdentity(success = Some(request.uri)).url,
           StandardCharsets.UTF_8.toString)
 
       status(result) shouldBe 303
