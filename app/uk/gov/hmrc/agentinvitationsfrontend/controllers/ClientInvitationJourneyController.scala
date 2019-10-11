@@ -191,7 +191,7 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def signedOut(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+  def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps
       .localFriendlyUrl(env, config)(successUrl, request.host)
@@ -222,7 +222,7 @@ class ClientInvitationJourneyController @Inject()(
           cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
         Forbidden(cannot_confirm_identity())
-      case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.signedOut(success))
+      case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.handleIVTimeout(success))
       case LockedOut              => Redirect(routes.ClientInvitationJourneyController.lockedOut)
       case _                      => Forbidden(cannot_confirm_identity())
     }
