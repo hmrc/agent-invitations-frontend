@@ -61,6 +61,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalCgt(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientTrustCgt(request: AuthorisationRequest, basket: Basket) extends State
+    case class InvalidCgtAccountReference(cgtRef: CgtRef) extends State
 
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
     case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
@@ -101,7 +102,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = Utr => Future[TrustResponse]
-    type GetCgtRefName = CgtRef => Future[String] // XXX placeholder until known fact check done
+    type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -187,19 +188,29 @@ object AgentInvitationJourneyModel extends JourneyModel {
           }
       }
 
-    // TODO build the actual call to DES to confirm Cgt Ref with known fact matching - for now this is stubbed out
-    def identifiedCgtClient(getCgtRefName: GetCgtRefName)(agent: AuthorisedAgent)(cgtClient: CgtClient) =
+    def identifiedCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(cgtClient: CgtClient) =
       Transition {
         case IdentifyTrustClient(HMRCCGTPD, basket) =>
-          getCgtRefName(cgtClient.cgtRef).flatMap { name =>
-            goto(ConfirmClientTrustCgt(AuthorisationRequest(name, CgtInvitation(cgtClient.cgtRef)), basket))
+          getCgtSubscription(cgtClient.cgtRef).flatMap {
+            case Some(sub) =>
+              goto(
+                ConfirmClientTrustCgt(
+                  AuthorisationRequest("Dummy Name for now", CgtInvitation(cgtClient.cgtRef)),
+                  basket))
+            case None =>
+              goto(InvalidCgtAccountReference(cgtClient.cgtRef))
           }
         case IdentifyPersonalClient(HMRCCGTPD, basket) =>
-          getCgtRefName(cgtClient.cgtRef).flatMap { name =>
-            goto(
-              ConfirmClientPersonalCgt(
-                AuthorisationRequest(name, CgtInvitation(cgtClient.cgtRef, clientType = Some(personal))),
-                basket))
+          getCgtSubscription(cgtClient.cgtRef).flatMap {
+            case Some(sub) =>
+              goto(
+                ConfirmClientPersonalCgt(
+                  AuthorisationRequest(
+                    "Dummy Name for now",
+                    CgtInvitation(cgtClient.cgtRef, clientType = Some(personal))),
+                  basket))
+            case None =>
+              goto(InvalidCgtAccountReference(cgtClient.cgtRef))
           }
       }
 

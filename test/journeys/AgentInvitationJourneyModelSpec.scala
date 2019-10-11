@@ -57,9 +57,16 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
 
+  val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
+
+  val cgtAddressDetails =
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("postcode"))
+
+  val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
+
   def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
 
-  def getCgtRefName: GetCgtRefName = CgtRef => Future("myCgtRef")
+  def getCgtSubscription: GetCgtSubscription = CgtRef => Future(Some(cgtSubscription))
 
   "AgentInvitationJourneyService" when {
 
@@ -346,12 +353,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPersonalCgt" in {
 
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(getCgtRefName)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifiedCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (
                 ConfirmClientPersonalCgt(
                   AuthorisationRequest(
-                    "myCgtRef",
+                    "Dummy Name for now",
                     CgtInvitation(CgtRef("myCgtRef"), _, Some(`personal`), HMRCCGTPD, "CGTPDRef"),
                     AuthorisationRequest.NEW,
                     _),
@@ -359,6 +366,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
                 _) =>
           }
 
+      }
+
+      "transition to InvalidCgtAccountReference" in {
+        given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
+          identifiedCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          matchPattern {
+            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+          }
       }
 
       "transition to ConfirmClientPersonalVat" in {
@@ -430,12 +445,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to ConfirmClientTrustCgt when cgt client is identified" in {
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(getCgtRefName)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifiedCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (
                 ConfirmClientTrustCgt(
                   AuthorisationRequest(
-                    "myCgtRef",
+                    "Dummy Name for now",
                     CgtInvitation(CgtRef("myCgtRef"), _, Some(`business`), HMRCCGTPD, "CGTPDRef"),
                     AuthorisationRequest.NEW,
                     _),
@@ -444,6 +459,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           }
       }
 
+      "transition to InvalidCgtAccountReference" in {
+        given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
+          identifiedCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          matchPattern {
+            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+          }
+      }
     }
 
     "at state IdentifyBusinessClient" should {

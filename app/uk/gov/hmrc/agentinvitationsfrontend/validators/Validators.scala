@@ -22,6 +22,7 @@ import play.api.data.format.Formats._
 import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 
@@ -78,8 +79,8 @@ object Validators {
   def validUtr(): Constraint[String] =
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
-  def validCgtRef(): Constraint[String] =
-    patternConstraint(CgtRef.cgtRegex, "error.cgt.required", "enter-cgt.invalid-format")
+  def validCgtRef(clientType: ClientType): Constraint[String] =
+    patternConstraint(CgtRef.cgtRegex, s"error.cgt.required.$clientType", s"enter-cgt.invalid-format.$clientType")
 
   private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>

@@ -36,6 +36,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   val ConfirmClientPersonalGctFormat: OFormat[ConfirmClientPersonalCgt] = Json.format
   val ConfirmClientTrustGctFormat: OFormat[ConfirmClientTrustCgt] = Json.format
+  val InvalidCgtAccountReferenceFormat: OFormat[InvalidCgtAccountReference] = Json.format
 
   val ReviewAuthorisationsPersonalFormat: OFormat[ReviewAuthorisationsPersonal] = Json.format
   val ReviewAuthorisationsTrustFormat: OFormat[ReviewAuthorisationsTrust] = Json.format
@@ -65,6 +66,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientTrust                 => ConfirmClientTrustFormat.writes(s)
     case s: ConfirmClientTrustCgt              => ConfirmClientTrustGctFormat.writes(s)
     case s: ConfirmClientPersonalCgt           => ConfirmClientPersonalGctFormat.writes(s)
+    case s: InvalidCgtAccountReference         => InvalidCgtAccountReferenceFormat.writes(s)
     case s: ReviewAuthorisationsPersonal       => ReviewAuthorisationsPersonalFormat.writes(s)
     case s: ReviewAuthorisationsTrust          => ReviewAuthorisationsTrustFormat.writes(s)
     case s: DeleteAuthorisationRequestPersonal => DeleteAuthorisationRequestPersonalFormat.writes(s)
@@ -90,6 +92,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientTrust"                 => ConfirmClientTrustFormat.reads(properties)
     case "ConfirmClientPersonalCgt"           => ConfirmClientPersonalGctFormat.reads(properties)
     case "ConfirmClientTrustCgt"              => ConfirmClientTrustGctFormat.reads(properties)
+    case "InvalidCgtAccountReference"         => InvalidCgtAccountReferenceFormat.reads(properties)
     case "ConfirmClientItsa"                  => ConfirmClientItsaFormat.reads(properties)
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)
     case "ConfirmClientBusinessVat"           => ConfirmClientBusinessVatFormat.reads(properties)
