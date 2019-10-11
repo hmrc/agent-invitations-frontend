@@ -182,11 +182,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.personal.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("select-service.itsa"),
-        htmlEscapedMessage("select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat")
+        htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
+        htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
+        htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
       )
       journeyState.get shouldBe Some(
         (SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket))))
@@ -201,8 +201,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         htmlEscapedMessage("select-service.no"),
         htmlEscapedMessage("select-service.yes"),
-        htmlEscapedMessage("select-service.alternative"),
-        htmlEscapedMessage("select-service.alt-suggestion.HMRC-MTD-VAT")
+        htmlEscapedMessage("select-service.alternative")
       )
       journeyState.get shouldBe Some((SelectBusinessService, List(SelectClientType(emptyBasket))))
     }
@@ -214,7 +213,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("select-single-service.HMRC-TERS-ORG.header"),
+        htmlEscapedMessage("select-single-service.HMRC-TERS-ORG.business.header"),
         htmlEscapedMessage("select-service.yes"),
         htmlEscapedMessage("select-service.no")
       )
@@ -233,11 +232,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         htmlEscapedMessage(
           "generic.title",
-          htmlEscapedMessage("select-service.personal.header"),
+          htmlEscapedMessage("select-service.header"),
           htmlEscapedMessage("title.suffix.agents")),
-        htmlEscapedMessage("select-service.itsa"),
-        htmlEscapedMessage("select-service.personal-income-viewer"),
-        htmlEscapedMessage("select-service.vat")
+        htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
+        htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
+        htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
       )
       journeyState.get should have[State](
         SelectPersonalService(availableServices, emptyBasket),
@@ -300,7 +299,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to identify-client when yes is selected" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectServiceSingle(
+      val result = controller.submitTrustSelectTrust(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
@@ -314,7 +313,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to select-client-type when no is selected" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectServiceSingle(
+      val result = controller.submitTrustSelectTrust(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -328,7 +327,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "do not blow up if user enters invalid value in the form for confirmation" in {
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectServiceSingle(
+      val result = controller.submitTrustSelectTrust(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
 
       status(result) shouldBe 303

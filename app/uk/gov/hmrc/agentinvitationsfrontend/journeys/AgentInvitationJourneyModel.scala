@@ -134,6 +134,46 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectPersonalService(services, basket))
     }
 
+    def selectedPersonalServiceItsa(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(_, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCMTDIT, basket))
+          } else {
+            goto(root)
+          }
+      }
+
+    def selectedPersonalServiceVat(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(_, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
+          } else {
+            goto(root)
+          }
+      }
+
+    def selectedPersonalServicePir(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(_, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCPIR, basket))
+          } else {
+            goto(root)
+          }
+      }
+
+    def selectedPersonalServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(_, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+          } else {
+            goto(root)
+          }
+      }
+
     def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectBusinessService =>
         if (confirmed.choice) {
@@ -146,6 +186,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def selectedTrustServiceMultiple(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
       service: String) = Transition {
+
       case SelectTrustService(services, basket) =>
         def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
           if (serviceEnabled)
@@ -160,12 +201,21 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectTrustService(services, basket))
     }
 
-    def selectedTrustServiceSingle(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
+    def selectedTrustServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
         case SelectTrustService(_, basket) =>
           if (confirmed.choice) {
-            if (showTrustsFlag) goto(IdentifyTrustClient(TRUST, basket))
-            else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
+            goto(IdentifyTrustClient(HMRCCGTPD, basket))
+          } else {
+            goto(root)
+          }
+      }
+
+    def selectedTrustServiceTrust(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectTrustService(_, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyTrustClient(TRUST, basket))
           } else {
             goto(root)
           }
@@ -472,6 +522,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               TRUST,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           else
+            // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))

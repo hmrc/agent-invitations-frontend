@@ -22,6 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 
 object ServiceTypeForm {
 
+  /** Multiple choice service selection form */
   val form: Form[String] =
     Form[String](
       single(

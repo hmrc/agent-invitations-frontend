@@ -16,24 +16,39 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
+import play.api.Logger
 import play.api.i18n.Messages
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.TrustInvitationsBasket
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class TrustSelectServicePageConfig(
   basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String],
-  submitCall: Call,
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages)
     extends SelectServicePageConfig {
 
+  def submitCall: Call =
+    if (showMultiSelect) {
+      routes.AgentInvitationJourneyController.submitTrustSelectServiceMultiple()
+    } else {
+      remainingService match {
+        case `TRUST`     => routes.AgentInvitationJourneyController.submitTrustSelectTrust()
+        case `HMRCCGTPD` => routes.AgentInvitationJourneyController.submitTrustSelectCgt()
+        case _ =>
+          Logger.error(s"Unexpected service in trust service selection form: $remainingService")
+          routes.AgentInvitationJourneyController.showSelectService()
+      }
+    }
+
   def availableServices: Seq[(String, String)] =
     new TrustInvitationsBasket(services, basket, featureFlags).availableServices
 
-  def selectHeaderMessage: String = Messages("select-service.trust.header")
+  def selectSingleHeaderMessage: String =
+    Messages(s"select-single-service.$firstServiceKey.business.header")
 
 }

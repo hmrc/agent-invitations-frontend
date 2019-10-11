@@ -34,7 +34,7 @@ case class BusinessSelectServicePageConfig(
   // We only need the service key here
   override def availableServices: Seq[(String, String)] = Seq(HMRCMTDVAT -> "unused")
 
-  // Not applicable to business clients, since they only have VAT
-  override def selectHeaderMessage: String = ???
+  def selectSingleHeaderMessage: String =
+    Messages(s"select-single-service.$firstServiceKey.business.header")
 
 }

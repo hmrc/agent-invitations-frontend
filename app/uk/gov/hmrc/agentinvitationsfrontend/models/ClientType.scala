@@ -22,7 +22,7 @@ sealed trait ClientType
 object ClientType {
 
   case object personal extends ClientType
-  case object business extends ClientType
+  case object business extends ClientType // note: also includes trusts; consider making a subtype and/or discriminator
 
   def toEnum: String => ClientType = {
     case "personal" => personal

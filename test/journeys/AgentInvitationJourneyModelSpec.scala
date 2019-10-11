@@ -246,24 +246,17 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceSingle(showTrustsFlag = true)(authorisedAgent)(Confirmation(true)) should
+          selectedTrustServiceTrust(authorisedAgent)(Confirmation(true)) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
       "after selectedTrustService(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceSingle(showTrustsFlag = true)(authorisedAgent)(Confirmation(false)) should
+          selectedTrustServiceTrust(authorisedAgent)(Confirmation(false)) should
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "throw an exception when the show trust feature flag is off" in {
-
-        intercept[Exception] {
-          given(SelectTrustService(availableTrustServices, emptyBasket)) when
-            selectedTrustServiceSingle(showTrustsFlag = false)(authorisedAgent)(Confirmation(true))
-        }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
-      }
     }
 
     // *************************************************

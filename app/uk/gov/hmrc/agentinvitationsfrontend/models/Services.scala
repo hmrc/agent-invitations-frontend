@@ -20,21 +20,10 @@ import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 sealed trait Service
 
-case object InvalidService extends Service
-
-case class ValidService(
-  serviceName: String,
-  enrolmentName: String,
-  enrolmentIdentifier: String,
-  apiIdentifier: String,
-  messageKey: String)
-    extends Service
-
 object Services {
 
   // TODO make a sealed trait
   val HMRCMTDIT = "HMRC-MTD-IT"
-  val MTDITID = "MTDITID"
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
   val HMRCMTDVAT = "HMRC-MTD-VAT"
   val TRUST = "HMRC-TERS-ORG"

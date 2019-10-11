@@ -53,15 +53,17 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
 class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
     extends InvitationsBasket(services, basket, featureFlags) {
 
+  /** Available service selections for trust clients - based on what is configured and already in basket
+    * */
   def availableServices(implicit messages: Messages): Seq[(String, String)] = {
 
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceTrust)
-      seq.append(TRUST -> Messages("select-service.trust"))
+      seq.append(TRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("select-service.cgt"))
+      seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.business"))
 
     seq
   }
@@ -71,21 +73,23 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
 class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
     extends InvitationsBasket(services, basket, featureFlags) {
 
+  /** Available service selections for personal clients - based on what is configured and already in basket
+    * */
   def availableServices(implicit messages: Messages): Seq[(String, String)] = {
 
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceHmrcMtdIt)
-      seq.append(HMRCMTDIT -> Messages("select-service.itsa"))
+      seq.append(HMRCMTDIT -> Messages("select-service.HMRC-MTD-IT.personal"))
 
     if (showServicePersonalIncome)
-      seq.append(HMRCPIR -> Messages("select-service.personal-income-viewer"))
+      seq.append(HMRCPIR -> Messages("select-service.PERSONAL-INCOME-RECORD.personal"))
 
     if (showServiceMtdVat)
-      seq.append(HMRCMTDVAT -> Messages("select-service.vat"))
+      seq.append(HMRCMTDVAT -> Messages("select-service.HMRC-MTD-VAT.personal"))
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("select-service.cgt"))
+      seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.personal"))
 
     seq
   }
