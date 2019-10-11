@@ -29,7 +29,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-cgt-client.trust.header"), "cgt"))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "cgt"))) {
 
     @back_link(backLinkUrl)
 
