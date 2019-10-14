@@ -6,7 +6,7 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ACAStubs {
@@ -723,6 +723,14 @@ trait ACAStubs {
         .willReturn(aResponse()
           .withStatus(responseStatus)
         .withBody(body)))
+
+  def givenGetCgtSubscriptionReturns(cgtRef: CgtRef, responseStatus: Int, body: String) =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/cgt/subscriptions/${cgtRef.value}"))
+        .willReturn(aResponse()
+          .withStatus(responseStatus)
+          .withBody(body)))
 
   def givenMatchingCitizenRecord(nino: Nino, dob: LocalDate) =
     stubFor(

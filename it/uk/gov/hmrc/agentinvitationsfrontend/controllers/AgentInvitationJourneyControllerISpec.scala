@@ -12,7 +12,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -437,6 +438,60 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
+
+    "show the identify client page for Personal CGT service" in {
+
+      journeyState.set(
+        IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+        List(
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-cgt-client.trust.header.personal",
+        "identify-cgt-client.p1",
+        "identify-cgt-client.p2",
+        "identify-cgt-client.hint",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](
+        IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+        List(
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
+
+    "show the identify client page for Trust CGT service" in {
+
+      journeyState.set(
+        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-cgt-client.trust.header.business",
+        "identify-cgt-client.p1",
+        "identify-cgt-client.p2",
+        "identify-cgt-client.hint",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](
+        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
   }
 
   "GET /agents/identify-itsa-client" should {
@@ -762,6 +817,78 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         TrustNotFound,
         List(
           IdentifyTrustClient(TRUST, emptyBasket),
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+    }
+  }
+
+  "POST /agents/identify-cgt-client" should {
+
+    val request = FakeRequest("POST", "/agents/identify-cgt-client")
+
+    "redirect to /agents/confirm-client" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription).toString())
+
+      journeyState.set(
+        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyCgtClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get should havePattern[State](
+        {
+          case ConfirmClientTrustCgt(AuthorisationRequest("Dummy Name for now", CgtInvitation(_, _, _, _, _), _, _), _) =>
+        },
+        List(
+          IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+    }
+
+    "handle invalid CgtRef passed in by the user and redirect back to previous /identify-client page " in {
+
+      journeyState.set(IdentifyTrustClient(HMRCCGTPD, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("cgtRef" -> "12345"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+    }
+
+    "redirect to /agents/invalid-account-reference when cgtRef passed in does not match to any cgt client" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 404, cgtNotFoundJson)
+
+      journeyState.set(
+        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyCgtClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvalidCgtReferencePage().url)
+
+      journeyState.get should have[State](
+        InvalidCgtAccountReference(cgtRef),
+        List(IdentifyTrustClient(HMRCCGTPD, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )

@@ -18,14 +18,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.LocalDate
-import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetCgtRefName
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -33,13 +32,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentInvitationJourneyController @Inject()(
@@ -179,12 +177,29 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
-    def identify: GetCgtRefName = { _: CgtRef =>
-      Future.successful("stubRefName")
+    journeyService.currentState.map(p => p.map(_._1)).flatMap {
+      case Some(s) =>
+        val clientType = s match {
+          case _: IdentifyPersonalClient => Some(personal)
+          case _: IdentifyTrustClient    => Some(business)
+          case p =>
+            Logger.warn(s"unexpected state ($p) for identifying CGT client")
+            None
+        }
+
+        clientType match {
+          case Some(ct) =>
+            whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(ct))(
+              Transitions.identifiedCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+            )
+          case None =>
+            Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
+        }
+
+      case _ =>
+        Logger.warn("expecting some state here, but missing")
+        Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
     }
-    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form)(
-      Transitions.identifiedCgtClient(identify)
-    )
   }
 
   def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -228,6 +243,10 @@ class AgentInvitationJourneyController @Inject()(
   def showNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
     case TrustNotFound          =>
+  }
+
+  def showInvalidCgtReferencePage: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case InvalidCgtAccountReference(cgtRef) => ???
   }
 
   def showCannotCreateRequest: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -276,6 +295,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
@@ -368,7 +388,8 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
       Ok(
         identify_client_cgt(
-          formWithErrors.or(CgtClientForm.form),
+          business,
+          formWithErrors.or(CgtClientForm.form(business)),
           routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )
@@ -404,7 +425,8 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCCGTPD, _) =>
       Ok(
         identify_client_cgt(
-          formWithErrors.or(CgtClientForm.form),
+          personal,
+          formWithErrors.or(CgtClientForm.form(personal)),
           routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )

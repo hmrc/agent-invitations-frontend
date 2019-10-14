@@ -353,6 +353,29 @@ class InvitationsConnector @Inject()(
     }
   }
 
+  def getCgtSubscription(
+    cgtRef: CgtRef)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[CgtSubscription]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/cgt/subscriptions/${cgtRef.value}").toString
+
+    monitor(s"ConsumedAPI-CGTSubscription-GET") {
+      http
+        .GET[HttpResponse](url)
+        .map { response =>
+          response.status match {
+            case 200 => Some(response.json.as[CgtSubscription])
+          }
+        }
+        .recover {
+          case _: NotFoundException =>
+            Logger.warn(s"CGT Subscription not found for given cgtRef: ${cgtRef.value}")
+            None
+          case _: BadRequestException =>
+            Logger.warn(s"BadRequest response when getting CgtSubscription for given cgtRef: ${cgtRef.value}")
+            None
+        }
+    }
+  }
+
   object Reads {
 
     import play.api.libs.functional.syntax._
