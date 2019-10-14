@@ -126,6 +126,10 @@ identify-cgt-client.trust.header.business=What is the trust''s Capital Gains Tax
 identify-cgt-client.p1=This will help us match their details against information we hold.
 identify-cgt-client.p2=Capital Gains Tax (CGT) account reference
 identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
+confirm-postcode-cgt.header=What is your client''s postcode?
+confirm-postcode-cgt.p1=This will help us match their details against information we hold.
+confirm-postcode-cgt.label=Postcode
+confirm-postcode-cgt.hint=This is the postcode of the address where the trust receives their Capital Tax Gains correspondence
 
 continue.button=Continue
 button.back=Back

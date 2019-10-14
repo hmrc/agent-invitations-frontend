@@ -351,9 +351,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
                   agent.arn,
-                  ItsaInvitation(
-                    Nino(fastTrackRequest.clientIdentifier),
-                    Postcode(fastTrackRequest.knownFact.getOrElse(""))),
+                  ItsaInvitation(Nino(fastTrackRequest.clientIdentifier)),
                   continueUrl
                 )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
               case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
@@ -371,7 +369,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
                   agent.arn,
-                  PirInvitation(Nino(fastTrackRequest.clientIdentifier), DOB(knownFact)),
+                  PirInvitation(Nino(fastTrackRequest.clientIdentifier)),
                   continueUrl
                 )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
               case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
@@ -388,7 +386,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
                   agent.arn,
-                  VatInvitation(Some(personal), Vrn(fastTrackRequest.clientIdentifier), VatRegDate(knownFact)),
+                  VatInvitation(Some(personal), Vrn(fastTrackRequest.clientIdentifier)),
                   continueUrl
                 )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
               case Some(_) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
@@ -405,10 +403,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
                   agent.arn,
-                  VatInvitation(
-                    Some(ClientType.business),
-                    Vrn(fastTrackRequest.clientIdentifier),
-                    VatRegDate(knownFact)),
+                  VatInvitation(Some(ClientType.business), Vrn(fastTrackRequest.clientIdentifier)),
                   continueUrl
                 )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
               case Some(_) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
