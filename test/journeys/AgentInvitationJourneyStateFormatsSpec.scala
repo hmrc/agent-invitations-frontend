@@ -181,6 +181,17 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "InvalidCgtAccountReference" in {
+        Json.toJson(InvalidCgtAccountReference(CgtRef("someRef"))) shouldBe Json
+          .obj(
+            "state"      -> "InvalidCgtAccountReference",
+            "properties" -> Json.obj("cgtRef" -> "someRef")
+          )
+        Json
+          .parse("""{"state":"InvalidCgtAccountReference", "properties": {"cgtRef": "someRef"}}""")
+          .as[State] shouldBe InvalidCgtAccountReference(CgtRef("someRef"))
+      }
+
       "ConfirmClientPersonalVat" in {
         val state = ConfirmClientPersonalVat(
           AuthorisationRequest(

@@ -1,8 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.{InvalidTrust, TrustName, TrustResponse}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CgtAddressDetails, CgtSubscription, IndividualName, InvalidTrust, SubscriptionDetails, TrustName, TrustResponse, TypeOfPersonDetails}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait TestDataCommonSupport {
@@ -55,4 +55,16 @@ trait TestDataCommonSupport {
     """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
   val invalidTrustJson =
     """{"code": "INVALID_TRUST_STATE","reason": "The remote endpoint has indicated that the Trust/Estate is Closed and playback is not possible"}"""
+
+  val cgtRef = CgtRef("XMCGTP123456789")
+
+  val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
+
+  val cgtAddressDetails =
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("postcode"))
+
+  val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
+
+  val cgtNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
+
 }
