@@ -127,7 +127,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitTrustSelectTrust: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(TRUST, business))(
-      Transitions.selectedTrustServiceTrust)
+      Transitions.selectedTrustServiceTrust(featureFlags.showHmrcCgt))
   }
 
   def submitTrustSelectCgt: Action[AnyContent] = action { implicit request =>

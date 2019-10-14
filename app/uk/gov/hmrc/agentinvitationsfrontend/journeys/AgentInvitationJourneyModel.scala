@@ -136,41 +136,41 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def selectedPersonalServiceItsa(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectPersonalService(_, basket) =>
+        case SelectPersonalService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyPersonalClient(HMRCMTDIT, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsPersonal(services, basket))
           }
       }
 
     def selectedPersonalServiceVat(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectPersonalService(_, basket) =>
+        case SelectPersonalService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsPersonal(services, basket))
           }
       }
 
     def selectedPersonalServicePir(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectPersonalService(_, basket) =>
+        case SelectPersonalService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyPersonalClient(HMRCPIR, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsPersonal(services, basket))
           }
       }
 
     def selectedPersonalServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectPersonalService(_, basket) =>
+        case SelectPersonalService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyPersonalClient(HMRCCGTPD, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsPersonal(services, basket))
           }
       }
 
@@ -203,21 +203,24 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def selectedTrustServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectTrustService(_, basket) =>
+        case SelectTrustService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyTrustClient(HMRCCGTPD, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsTrust(services, basket))
           }
       }
 
-    def selectedTrustServiceTrust(agent: AuthorisedAgent)(confirmed: Confirmation) =
+    def selectedTrustServiceTrust(showCgtFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectTrustService(_, basket) =>
+        case SelectTrustService(services, basket) =>
           if (confirmed.choice) {
             goto(IdentifyTrustClient(TRUST, basket))
           } else {
-            goto(root)
+            if (showCgtFlag)
+              goto(ReviewAuthorisationsTrust(services, basket)) // only show review if CGT enabled (and hence > 1 service)
+            else
+              goto(root)
           }
       }
 
