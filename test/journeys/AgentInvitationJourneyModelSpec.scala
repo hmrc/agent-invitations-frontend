@@ -55,17 +55,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   def makeBasket(services: Set[String]) = services.map {
     case `HMRCCGTPD` => AuthorisationRequest("client", CgtInvitation(CgtRef("X")), AuthorisationRequest.NEW, "item-cgt")
     case `HMRCMTDVAT` =>
-      AuthorisationRequest(
-        "client",
-        VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10")),
-        AuthorisationRequest.NEW,
-        "item-vat")
+      AuthorisationRequest("client", VatInvitation(Some(personal), Vrn(vrn)), AuthorisationRequest.NEW, "item-vat")
     case `HMRCMTDIT` =>
-      AuthorisationRequest(
-        "client",
-        ItsaInvitation(Nino(nino), Postcode("BN114AW")),
-        AuthorisationRequest.NEW,
-        "item-itsa")
+      AuthorisationRequest("client", ItsaInvitation(Nino(nino)), AuthorisationRequest.NEW, "item-itsa")
   }
 
   val nino = "AB123456A"

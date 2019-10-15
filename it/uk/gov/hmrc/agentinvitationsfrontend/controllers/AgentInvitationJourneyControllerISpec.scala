@@ -452,7 +452,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-cgt-client.trust.header.personal",
+        "identify-cgt-client.header.personal",
         "identify-cgt-client.p1",
         "identify-cgt-client.p2",
         "identify-cgt-client.hint",
@@ -479,7 +479,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-cgt-client.trust.header.business",
+        "identify-cgt-client.header.business",
         "identify-cgt-client.p1",
         "identify-cgt-client.p2",
         "identify-cgt-client.hint",
