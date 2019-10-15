@@ -61,6 +61,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalCgt(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientTrustCgt(request: AuthorisationRequest, basket: Basket) extends State
+    case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket) extends State
     case class InvalidCgtAccountReference(cgtRef: CgtRef) extends State
 
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
@@ -241,31 +242,65 @@ object AgentInvitationJourneyModel extends JourneyModel {
           }
       }
 
-    def identifiedCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(cgtClient: CgtClient) =
+    def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      cgtClient: CgtClient): AgentInvitationJourneyModel.Transition = {
+      def handle(ifUkClient: => Future[State], ifNonUkClient: => Future[State]) =
+        getCgtSubscription(cgtClient.cgtRef).flatMap {
+          case Some(sub) =>
+            if (sub.countryCode() == "GB") {
+              ifUkClient
+            } else {
+              //go to confirm country page
+              ifNonUkClient
+            }
+          case None =>
+            goto(InvalidCgtAccountReference(cgtClient.cgtRef))
+        }
+
       Transition {
         case IdentifyTrustClient(HMRCCGTPD, basket) =>
-          getCgtSubscription(cgtClient.cgtRef).flatMap {
-            case Some(sub) =>
-              goto(
-                ConfirmClientTrustCgt(
-                  AuthorisationRequest("Dummy Name for now", CgtInvitation(cgtClient.cgtRef)),
-                  basket))
-            case None =>
-              goto(InvalidCgtAccountReference(cgtClient.cgtRef))
-          }
+          handle(goto(ConfirmPostcodeCgt(cgtClient.cgtRef, business, basket)), ???)
+
         case IdentifyPersonalClient(HMRCCGTPD, basket) =>
-          getCgtSubscription(cgtClient.cgtRef).flatMap {
-            case Some(sub) =>
-              goto(
-                ConfirmClientPersonalCgt(
-                  AuthorisationRequest(
-                    "Dummy Name for now",
-                    CgtInvitation(cgtClient.cgtRef, clientType = Some(personal))),
-                  basket))
-            case None =>
-              goto(InvalidCgtAccountReference(cgtClient.cgtRef))
+          handle(goto(ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket)), ???)
+      }
+    }
+
+    def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      postcode: Postcode): Transition = {
+      def handle(cgtRef: CgtRef, state: State, basket: Basket) =
+        getCgtSubscription(cgtRef).flatMap {
+          case Some(sub) =>
+            if (sub.postCode().contains(postcode.value)) {
+              goto(state)
+            } else {
+              //TODO: Implement this later for CGT
+              goto(KnownFactNotMatched(basket))
+            }
+
+          case None =>
+            goto(InvalidCgtAccountReference(cgtRef))
+        }
+
+      Transition {
+        case ConfirmPostcodeCgt(cgtRef, clientType, basket) =>
+          if (clientType == personal) {
+            handle(
+              cgtRef,
+              ConfirmClientPersonalCgt(
+                AuthorisationRequest("dummy name for now", CgtInvitation(cgtRef, Some(personal))),
+                basket),
+              basket)
+          } else {
+            handle(
+              cgtRef,
+              ConfirmClientTrustCgt(
+                AuthorisationRequest("dummy name for now", CgtInvitation(cgtRef, Some(business))),
+                basket),
+              basket)
           }
       }
+    }
 
     // format: off
     def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)
@@ -288,7 +323,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ConfirmClientItsa(
                                AuthorisationRequest(
                                  clientName.getOrElse(""),
-                                 ItsaInvitation(Nino(itsaClient.clientIdentifier), Postcode(itsaClient.postcode))),
+                                 ItsaInvitation(Nino(itsaClient.clientIdentifier))),
                                basket))
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
@@ -320,10 +355,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ConfirmClientPersonalVat(
                                AuthorisationRequest(
                                  clientName.getOrElse(""),
-                                 VatInvitation(
-                                   Some(personal),
-                                   Vrn(vatClient.clientIdentifier),
-                                   VatRegDate(vatClient.registrationDate))),
+                                 VatInvitation(Some(personal), Vrn(vatClient.clientIdentifier))),
                                basket
                              ))
                          }
@@ -345,10 +377,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              ConfirmClientBusinessVat(
                                AuthorisationRequest(
                                  clientName.getOrElse(""),
-                                 VatInvitation(
-                                   Some(business),
-                                   Vrn(vatClient.clientIdentifier),
-                                   VatRegDate(vatClient.registrationDate)))))
+                                 VatInvitation(Some(business), Vrn(vatClient.clientIdentifier)))))
 
                          }
                        case Some(423) => goto(CannotCreateRequest(Set.empty))
@@ -381,7 +410,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                            .map { clientName =>
                              AuthorisationRequest(
                                clientName.getOrElse(""),
-                               PirInvitation(Nino(irvClient.clientIdentifier), DOB(irvClient.dob)))
+                               PirInvitation(Nino(irvClient.clientIdentifier)))
                            }
                            .flatMap { request =>
                              checkIfPendingOrActiveAndGoto(

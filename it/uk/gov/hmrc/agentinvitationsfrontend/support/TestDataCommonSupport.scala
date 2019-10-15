@@ -61,7 +61,7 @@ trait TestDataCommonSupport {
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
   val cgtAddressDetails =
-    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("postcode"))
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("BN13 1FN"))
 
   val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
 
