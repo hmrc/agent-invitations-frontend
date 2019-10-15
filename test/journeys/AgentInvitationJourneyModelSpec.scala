@@ -169,7 +169,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ReviewPersonalService when last service selected and user does not confirm" in {
 
         given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
-          selectedPersonalServicePir(authorisedAgent)(Confirmation(false)) should
+          selectedService()("") should
           thenGo(ReviewAuthorisationsPersonal(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD))))
       }
 
@@ -228,14 +228,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedBusinessService(true)(true) transition to IdentifyBusinessClient" in {
 
         given(SelectBusinessService) when
-          selectedBusinessService(showVatFlag = true)(authorisedAgent)(Confirmation(true)) should
+          selectedBusinessService(showVatFlag = true)(authorisedAgent)(HMRCMTDVAT) should
           thenGo(IdentifyBusinessClient)
       }
 
       "after selectedBusinessService(true)(false) transition to SelectClientType" in {
 
         given(SelectBusinessService) when
-          selectedBusinessService(showVatFlag = true)(authorisedAgent)(Confirmation(false)) should
+          selectedBusinessService(showVatFlag = true)(authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
@@ -243,7 +243,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         intercept[Exception] {
           given(SelectBusinessService) when
-            selectedBusinessService(showVatFlag = false)(authorisedAgent)(Confirmation(true))
+            selectedBusinessService(showVatFlag = false)(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
     }
@@ -264,22 +264,29 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceTrust(false)(authorisedAgent)(Confirmation(true)) should
+          selectedTrustService(true, true)(agent = authorisedAgent)(TRUST) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceTrust(false)(authorisedAgent)(Confirmation(false)) should
+          selectedTrustService(true, true)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceTrust(true)(authorisedAgent)(Confirmation(false)) should
-          thenGo(ReviewAuthorisationsTrust(availableTrustServices, emptyBasket))
+          selectedTrustService(true, true)(agent = authorisedAgent)("") should
+          thenGo(SelectClientType(emptyBasket))
+      }
+
+      "after selectedTrustService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
+        val basket = makeBasket(Set(HMRCCGTPD))
+        given(SelectTrustService(availableTrustServices, basket)) when
+          selectedTrustService(true, true)(agent = authorisedAgent)("") should
+          thenGo(ReviewAuthorisationsTrust(availableTrustServices, basket))
       }
 
     }

@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
-import play.api.Logger
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.TrustInvitationsBasket
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class TrustSelectServicePageConfig(
   basket: Basket,
@@ -33,17 +31,10 @@ case class TrustSelectServicePageConfig(
     extends SelectServicePageConfig {
 
   def submitCall: Call =
-    if (showMultiSelect) {
+    if (showMultiSelect)
       routes.AgentInvitationJourneyController.submitTrustSelectServiceMultiple()
-    } else {
-      remainingService match {
-        case `TRUST`     => routes.AgentInvitationJourneyController.submitTrustSelectTrust()
-        case `HMRCCGTPD` => routes.AgentInvitationJourneyController.submitTrustSelectCgt()
-        case _ =>
-          Logger.error(s"Unexpected service in trust service selection form: $remainingService")
-          routes.AgentInvitationJourneyController.showSelectService()
-      }
-    }
+    else
+      routes.AgentInvitationJourneyController.submitTrustSelectSingle(remainingService)
 
   def availableServices: Seq[(String, String)] =
     new TrustInvitationsBasket(services, basket, featureFlags).availableServices
