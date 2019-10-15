@@ -105,8 +105,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         } else goto(SelectServicePersonal(enabledServices))
     }
 
-    def chosenBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
-      case SelectServiceBusiness if confirmation.choice =>
+    def chosenBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(service: String) = Transition {
+      case SelectServiceBusiness if service.nonEmpty =>
         if (showVatFlag) goto(IdentifyClientBusiness)
         else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
 

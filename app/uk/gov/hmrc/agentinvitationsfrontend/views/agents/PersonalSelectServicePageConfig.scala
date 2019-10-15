@@ -22,7 +22,6 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class PersonalSelectServicePageConfig(
   basket: Basket,
@@ -33,19 +32,10 @@ case class PersonalSelectServicePageConfig(
     extends SelectServicePageConfig {
 
   def submitCall: Call =
-    if (showMultiSelect) {
+    if (showMultiSelect)
       routes.AgentInvitationJourneyController.submitPersonalSelectService()
-    } else {
-      remainingService match {
-        case HMRCMTDIT  => routes.AgentInvitationJourneyController.submitPersonalSelectItsa()
-        case HMRCMTDVAT => routes.AgentInvitationJourneyController.submitPersonalSelectVat()
-        case HMRCPIR    => routes.AgentInvitationJourneyController.submitPersonalSelectPir()
-        case HMRCCGTPD  => routes.AgentInvitationJourneyController.submitPersonalSelectCgt()
-        case _ =>
-          Logger.error(s"Unexpected service in personal service selection form: $remainingService")
-          routes.AgentInvitationJourneyController.showSelectService()
-      }
-    }
+    else
+      routes.AgentInvitationJourneyController.submitPersonalSelectSingle(remainingService)
 
   def availableServices: Seq[(String, String)] =
     new PersonalInvitationsBasket(services, basket, featureFlags).availableServices

@@ -30,10 +30,6 @@ object CommonConfirmationForms {
           .verifying(confirmationChoice(errorMessageKey))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  /** single service selection confirmation form */
-  def selectSingleServiceForm(service: String, clientType: ClientType): Form[Confirmation] =
-    confirmationForm(s"select-single-service.$service.$clientType.error")
-
   val confirmCancelForm: Form[Confirmation] =
     confirmationForm("cancel-authorisation.error.confirm-cancel.required")
 }

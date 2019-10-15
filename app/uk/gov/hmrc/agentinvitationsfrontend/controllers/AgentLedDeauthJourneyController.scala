@@ -90,7 +90,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   def submitBusinessService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(Services.HMRCMTDVAT, business))(
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(Services.HMRCMTDVAT, business))(
       chosenBusinessService(featureFlags.showHmrcMtdVat))
   }
 
@@ -228,7 +228,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectServiceBusiness =>
       Ok(
         business_select_service(
-          formWithErrors.or(CommonConfirmationForms.selectSingleServiceForm(Services.HMRCMTDVAT, business)),
+          formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(Services.HMRCMTDVAT, business)),
           routes.AgentLedDeauthJourneyController.submitBusinessService(),
           backLinkFor(breadcrumbs).url
         )
