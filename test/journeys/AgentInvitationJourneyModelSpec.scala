@@ -55,17 +55,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   def makeBasket(services: Set[String]) = services.map {
     case `HMRCCGTPD` => AuthorisationRequest("client", CgtInvitation(CgtRef("X")), AuthorisationRequest.NEW, "item-cgt")
     case `HMRCMTDVAT` =>
-      AuthorisationRequest(
-        "client",
-        VatInvitation(Some(personal), Vrn(vrn)),
-        AuthorisationRequest.NEW,
-        "item-vat")
+      AuthorisationRequest("client", VatInvitation(Some(personal), Vrn(vrn)), AuthorisationRequest.NEW, "item-vat")
     case `HMRCMTDIT` =>
-      AuthorisationRequest(
-        "client",
-        ItsaInvitation(Nino(nino), Postcode("BN114AW")),
-        AuthorisationRequest.NEW,
-        "item-itsa")
+      AuthorisationRequest("client", ItsaInvitation(Nino(nino)), AuthorisationRequest.NEW, "item-itsa")
   }
 
   val nino = "AB123456A"
@@ -164,13 +156,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectPersonalService(availableServices, emptyBasket)) when
           selectedService()(HMRCCGTPD) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
-      }
-
-      "transition to ReviewPersonalService when last service selected and user does not confirm" in {
-
-        given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
-          selectedService()("") should
-          thenGo(ReviewAuthorisationsPersonal(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD))))
       }
 
       "transition to ReviewPersonalService when last service selected and user does not confirm" in {
