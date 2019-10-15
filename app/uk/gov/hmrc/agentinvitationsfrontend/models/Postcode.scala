@@ -21,5 +21,5 @@ import play.api.libs.json.{Format, Json}
 case class Postcode(value: String)
 
 object Postcode {
-  implicit val format: Format[Postcode] = Json.format[Postcode]
+  implicit val format: Format[Postcode] = Json.format
 }
