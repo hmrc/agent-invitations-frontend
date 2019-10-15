@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.models.{DOB, Postcode, Services, VatRegDate}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.test.UnitSpec

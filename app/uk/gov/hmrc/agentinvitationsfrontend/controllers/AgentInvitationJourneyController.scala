@@ -130,6 +130,15 @@ class AgentInvitationJourneyController @Inject()(
     case _: IdentifyPersonalClient | IdentifyBusinessClient | _: IdentifyTrustClient =>
   }
 
+  def showConfirmCgtPostcode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ConfirmPostcodeCgt =>
+  }
+
+  def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt(cgtRef =>
+      invitationsConnector.getCgtSubscription(cgtRef)))
+  }
+
   def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
@@ -174,7 +183,7 @@ class AgentInvitationJourneyController @Inject()(
         clientType match {
           case Some(ct) =>
             whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(ct))(
-              Transitions.identifiedCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+              Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
             )
           case None =>
             Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
@@ -279,6 +288,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmPostcodeCgt           => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
     case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
@@ -456,6 +466,9 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.submitConfirmClient(),
           Some(authorisationRequest.invitation.clientId)
         ))
+
+    case ConfirmPostcodeCgt(_, clientType, _) =>
+      Ok(confirm_postcode_cgt(clientType, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
       Ok(

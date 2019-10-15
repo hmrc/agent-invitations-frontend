@@ -57,7 +57,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     case `HMRCMTDVAT` =>
       AuthorisationRequest(
         "client",
-        VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10")),
+        VatInvitation(Some(personal), Vrn(vrn)),
         AuthorisationRequest.NEW,
         "item-vat")
     case `HMRCMTDIT` =>
@@ -77,7 +77,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
   val cgtAddressDetails =
-    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("postcode"))
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("BN13 1FN"))
 
   val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
 
@@ -164,6 +164,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectPersonalService(availableServices, emptyBasket)) when
           selectedService()(HMRCCGTPD) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
+      }
+
+      "transition to ReviewPersonalService when last service selected and user does not confirm" in {
+
+        given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
+          selectedService()("") should
+          thenGo(ReviewAuthorisationsPersonal(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD))))
       }
 
       "transition to ReviewPersonalService when last service selected and user does not confirm" in {
@@ -353,7 +360,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
                 ConfirmClientItsa(
                   AuthorisationRequest(
                     "Piglet",
-                    ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW"), _, HMRCMTDIT, "ni"),
+                    ItsaInvitation(Nino("AB123456A"), _, HMRCMTDIT, "ni"),
                     AuthorisationRequest.NEW,
                     _),
                   `emptyBasket`),
@@ -368,27 +375,27 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
-      "transition to ConfirmClientPersonalCgt" in {
+      "transition to ConfirmPostcodeCgt for personal cgt clients" in {
 
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (
-                ConfirmClientPersonalCgt(
-                  AuthorisationRequest(
-                    "Dummy Name for now",
-                    CgtInvitation(CgtRef("myCgtRef"), _, Some(`personal`), HMRCCGTPD, "CGTPDRef"),
-                    AuthorisationRequest.NEW,
-                    _),
-                  `emptyBasket`),
-                _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, `emptyBasket`), _) =>
           }
+      }
 
+      "transition to ConfirmPostcodeCgt for trust cgt clients" in {
+
+        given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
+          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          matchPattern {
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, `emptyBasket`), _) =>
+          }
       }
 
       "transition to InvalidCgtAccountReference" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
           }
@@ -403,7 +410,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
                 ConfirmClientPersonalVat(
                   AuthorisationRequest(
                     "Piglet",
-                    VatInvitation(Some(_), Vrn("123456"), VatRegDate("2010-10-10"), HMRCMTDVAT, "vrn"),
+                    VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"),
                     AuthorisationRequest.NEW,
                     _),
                   `emptyBasket`),
@@ -461,27 +468,54 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state IdentifyTrustClient" should {
 
-      "transition to ConfirmClientTrustCgt when cgt client is identified" in {
+      "transition to ConfirmPostcodeCgt when cgt client is identified for a personal" in {
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (
-                ConfirmClientTrustCgt(
-                  AuthorisationRequest(
-                    "Dummy Name for now",
-                    CgtInvitation(CgtRef("myCgtRef"), _, Some(`business`), HMRCCGTPD, "CGTPDRef"),
-                    AuthorisationRequest.NEW,
-                    _),
-                  `emptyBasket`),
-                _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, emptyBasket), _) =>
+          }
+      }
+
+      "transition to ConfirmPostcodeCgt when cgt client is identified for a trust" in {
+        given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
+          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          matchPattern {
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, emptyBasket), _) =>
           }
       }
 
       "transition to InvalidCgtAccountReference" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
-          identifiedCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+          }
+      }
+    }
+
+    "at state ConfirmPostcodeCgt" should {
+
+      "transition to ConfirmClientTrustCgt when the postcode is matched for a UK personal client" in {
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1FN")) should
+          matchPattern {
+            case (ConfirmClientPersonalCgt(AuthorisationRequest("dummy name for now", _, _, _), _), _) =>
+          }
+      }
+
+      "transition to ConfirmClientTrustCgt when the postcode is matched for a UK business client" in {
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), business, emptyBasket)) when
+          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1FN")) should
+          matchPattern {
+            case (ConfirmClientTrustCgt(AuthorisationRequest("dummy name for now", _, _, _), _), _) =>
+          }
+      }
+
+      "transition to KnownFactsNotMatched when the postcode is not matched for a UK client" in {
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1ZZ")) should
+          matchPattern {
+            case (KnownFactNotMatched(_), _) =>
           }
       }
     }
@@ -518,7 +552,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
                 ConfirmClientBusinessVat(
                   AuthorisationRequest(
                     "Piglet",
-                    VatInvitation(Some(_), Vrn("123456"), VatRegDate("2010-10-10"), HMRCMTDVAT, "vrn"),
+                    VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"),
                     AuthorisationRequest.NEW,
                     _)),
                 _) =>
@@ -562,7 +596,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
                 ConfirmClientBusinessVat(
                   AuthorisationRequest(
                     "Piglet",
-                    VatInvitation(Some(_), Vrn("123456"), VatRegDate("2010-10-10"), HMRCMTDVAT, "vrn"),
+                    VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"),
                     AuthorisationRequest.NEW,
                     _)),
                 _) =>
@@ -582,7 +616,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state ConfirmClientItsa" should {
 
-      val authorisationRequest = AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")))
+      val authorisationRequest = AuthorisationRequest("Piglet", ItsaInvitation(Nino("AB123456A")))
 
       def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
@@ -662,8 +696,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
               "Piglet",
               VatInvitation(
                 Some(personal),
-                Vrn("123456"),
-                VatRegDate("2010-10-10")
+                Vrn("123456")
               )
             ),
             emptyBasket
@@ -681,8 +714,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
               "Piglet",
               VatInvitation(
                 Some(personal),
-                Vrn("123456"),
-                VatRegDate("2010-10-10")
+                Vrn("123456")
               )
             ),
             emptyBasket
@@ -703,8 +735,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
               "Piglet",
               VatInvitation(
                 Some(personal),
-                Vrn("123456"),
-                VatRegDate("2010-10-10")
+                Vrn("123456")
               )
             ),
             emptyBasket
@@ -721,7 +752,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       val authorisationRequest =
         AuthorisationRequest(
           "Piglet",
-          VatInvitation(Some(business), Vrn("123456"), VatRegDate("2010-10-10"))
+          VatInvitation(Some(business), Vrn("123456"))
         )
 
       def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] =
@@ -787,7 +818,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyPersonalClient" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Roo", CgtInvitation(CgtRef("myCgtRef"), CountryCode("GB"), Some(personal)))
+          AuthorisationRequest("Roo", CgtInvitation(CgtRef("myCgtRef"), Some(personal)))
 
         def createMultipleInvitations(
           arn: Arn,
@@ -815,7 +846,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyTrustClient" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Roo", CgtInvitation(CgtRef("myCgtRef"), CountryCode("GB"), Some(business)))
+          AuthorisationRequest("Roo", CgtInvitation(CgtRef("myCgtRef"), Some(business)))
 
         def createMultipleInvitations(
           arn: Arn,

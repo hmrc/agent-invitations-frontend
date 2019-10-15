@@ -36,7 +36,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientTrustCgt" in {
         val state = ConfirmClientTrustCgt(
-          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), CountryCode("GB")), itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse("""{
                                 |"state":"ConfirmClientTrustCgt",
@@ -47,8 +47,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
                                 |         {"clientType":"business",
                                 |         "service":"HMRC-CGT-PD",
                                 |         "clientIdentifier":"123456",
-                                |         "clientIdentifierType":"CGTPDRef",
-                                |         "countryCode":"GB"
+                                |         "clientIdentifierType":"CGTPDRef"
                                 |       }
                                 |     },
                                 |    "state":"New",
@@ -63,10 +62,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientPersonalCgt" in {
         val state = ConfirmClientPersonalCgt(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            CgtInvitation(CgtRef("123456"), CountryCode("GB"), Some(personal)),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), Some(personal)), itemId = "ABC"),
           Set.empty)
         val json = Json.parse("""{
                                 |"state":"ConfirmClientPersonalCgt",
@@ -79,8 +75,8 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
                                 |         {"clientType":"personal",
                                 |         "service":"HMRC-CGT-PD",
                                 |         "clientIdentifier":"123456",
-                                |         "clientIdentifierType":"CGTPDRef",
-                                |         "countryCode":"GB"}
+                                |         "clientIdentifierType":"CGTPDRef"
+                                |         }
                                 |       },
                                 |      "state":"New",
                                 |      "itemId":"ABC"
@@ -173,10 +169,10 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientItsa" in {
         val state = ConfirmClientItsa(
-          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")), itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
-          """{"state":"ConfirmClientItsa","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+          """{"state":"ConfirmClientItsa","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -194,25 +190,19 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientPersonalVat" in {
         val state = ConfirmClientPersonalVat(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            VatInvitation(Some(personal), Vrn("123456"), VatRegDate("2010-10-10")),
-            itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", VatInvitation(Some(personal), Vrn("123456")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
-          """{"state":"ConfirmClientPersonalVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+          """{"state":"ConfirmClientPersonalVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
 
       "ConfirmClientBusinessVat" in {
         val state = ConfirmClientBusinessVat(
-          AuthorisationRequest(
-            "Sylvia Plath",
-            VatInvitation(Some(business), Vrn("123456"), VatRegDate("2010-10-10")),
-            itemId = "ABC"))
+          AuthorisationRequest("Sylvia Plath", VatInvitation(Some(business), Vrn("123456")), itemId = "ABC"))
         val json = Json.parse(
-          """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn","vatRegDate":{"value":"2010-10-10"}}},"state":"New","itemId":"ABC"}}}""")
+          """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"}}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -240,6 +230,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
             |    },
             |    "basket": []
             |}}""".stripMargin)
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "ConfirmPostcodeCgt" in {
+        val state = ConfirmPostcodeCgt(CgtRef("123456"), personal, Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmPostcodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[]}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -349,10 +347,10 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "DeleteAuthorisationsPersonal" in {
         val state = DeleteAuthorisationRequestPersonal(
-          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A"), Postcode("BN114AW")), itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino("AB123456A")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse(
-          """{"state":"DeleteAuthorisationRequestPersonal","properties":{"authorisationRequest":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni","postcode":{"value":"BN114AW"}}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+          """{"state":"DeleteAuthorisationRequestPersonal","properties":{"authorisationRequest":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

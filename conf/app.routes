@@ -37,8 +37,11 @@ POST        /agents/identify-irv-client                                 @uk.gov.
 GET         /agents/identify-trust-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
 POST        /agents/identify-trust-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyTrustClient
 
-GET         /agents/identify-cgt-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
-POST        /agents/identify-cgt-client                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyCgtClient
+GET         /agents/identify-cgt-client                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.identifyClientRedirect
+POST        /agents/identify-cgt-client                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitIdentifyCgtClient
+
+GET         /agents/client-postcode                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showConfirmCgtPostcode
+POST        /agents/client-postcode                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitConfirmCgtPostcode
 
 GET         /agents/confirm-client                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showConfirmClient
 POST        /agents/confirm-client                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitConfirmClient

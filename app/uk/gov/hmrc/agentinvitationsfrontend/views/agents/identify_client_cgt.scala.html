@@ -29,7 +29,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "cgt"))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header.$clientType"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"identify-cgt-client.header.$clientType"), "cgt"))) {
 
     @back_link(backLinkUrl)
 
@@ -39,7 +39,7 @@
 
     <!-- TODO use client type here (personal or trust) -->
 
-    <h1 class="heading-xlarge margin-bottom-10">@Messages(s"identify-cgt-client.trust.header.$clientType")</h1>
+    <h1 class="heading-xlarge margin-bottom-10">@Messages(s"identify-cgt-client.header.$clientType")</h1>
 
     <p>@Html(Messages("identify-cgt-client.p1"))</p>
 
