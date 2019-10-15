@@ -100,6 +100,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindIntegerProperty("mongodb.session.expireAfterSeconds")
 
+    bindProperty("country.list.location")
+
     ()
   }
 

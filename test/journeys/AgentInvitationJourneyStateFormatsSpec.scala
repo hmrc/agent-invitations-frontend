@@ -242,6 +242,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "ConfirmCountryCodeCgt" in {
+        val state = ConfirmCountryCodeCgt(CgtRef("123456"), personal, Set.empty)
+        val json = Json.parse(
+          """{"state":"ConfirmCountryCodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[]}}""")
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "ReviewAuthorisationsPersonal" in {
         Json.toJson(ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)) shouldBe Json.obj(
           "state" -> "ReviewAuthorisationsPersonal",
