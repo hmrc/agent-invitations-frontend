@@ -16,24 +16,41 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
+import play.api.Logger
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.{InvitationsBasket, PersonalInvitationsBasket}
+import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class PersonalSelectServicePageConfig(
   basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String],
-  submitCall: Call,
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages)
     extends SelectServicePageConfig {
 
-  def availablePersonalServices: Seq[(String, String)] =
+  def submitCall: Call =
+    if (showMultiSelect) {
+      routes.AgentInvitationJourneyController.submitPersonalSelectService()
+    } else {
+      remainingService match {
+        case HMRCMTDIT  => routes.AgentInvitationJourneyController.submitPersonalSelectItsa()
+        case HMRCMTDVAT => routes.AgentInvitationJourneyController.submitPersonalSelectVat()
+        case HMRCPIR    => routes.AgentInvitationJourneyController.submitPersonalSelectPir()
+        case HMRCCGTPD  => routes.AgentInvitationJourneyController.submitPersonalSelectCgt()
+        case _ =>
+          Logger.error(s"Unexpected service in personal service selection form: $remainingService")
+          routes.AgentInvitationJourneyController.showSelectService()
+      }
+    }
+
+  def availableServices: Seq[(String, String)] =
     new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
 
-  def selectHeaderMessage: String = Messages("select-service.personal.header")
+  def selectSingleHeaderMessage: String =
+    Messages(s"select-single-service.$firstServiceKey.personal.header")
 
 }

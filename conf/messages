@@ -79,39 +79,55 @@ identify-client.irv-date-of-birth.hint=For example, 31 3 1980
 error.irv-date-of-birth.required=Enter your client’s date of birth
 enter-irv-date-of-birth.invalid-format=Enter a valid date
 
-# Personal Select Service
-personal-select-service.personal-income-viewer=View their PAYE income record
-personal-select-service.itsa=Send their Income Tax updates through software
-personal-select-service.cgt=Manage their Capital Gains Tax on UK property disposals
+### Selecting services
 
-# Personal and Business
+select-service.yes=Yes
+select-service.no=No
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
 service.type.invalid=You must select a service
-select-service.vat=Submit their VAT returns through software
-select-service.trust=Maintain a trust or an estate
-select-service.cgt=Manage a trust’s Capital Gains Tax on UK property disposals
-select-service.personal.header=What do you want the client to authorise you to do?
-select-service.trust.header=What do you want the lead trustee to authorise you to do?
+
+# multi-choice selections
+select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
+select-service.HMRC-MTD-IT.personal=Send their Income Tax updates through software
+select-service.HMRC-MTD-VAT.personal=Submit their VAT returns through software
+select-service.HMRC-MTD-VAT.business=Submit their VAT returns through software
+select-service.HMRC-TERS-ORG.business=Maintain a trust or an estate
+
+select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
+select-service.HMRC-CGT-PD.personal=Manage a client's Capital Gains Tax on UK property disposals
+
+# multi-choice header
+select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
-select-service.alt-suggestion.vat-only=You can use this service to ask for a client’s authorisation to submit their VAT returns through software.
-select-service.alt-suggestion.trust-only=You can use this service to ask for a client’s authorisation to maintain a trust or an estate.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
-business-select-service.header=Do you want to submit this client’s VAT returns through software?
-business-select-service.yes=Yes
-business-select-service.no=No
-error.business-service.required=Select yes if you want to submit this client’s VAT returns through software
+# single service selection headers and errors
+select-single-service.HMRC-MTD-VAT.business.header=Do you want to submit this client’s VAT returns through software?
+select-single-service.HMRC-MTD-VAT.business.error=Select yes if you want to submit this client’s VAT returns through software
 
-## Trust select service (if single service, assuming CGT disabled)
-trust-select-service.single.header=Do you want to maintain a trust or an estate for this client?
-trust-select-service.yes=Yes
-trust-select-service.no=No
-error.trust-service.required=Select yes if you want to maintain a trust or an estate for this client
+select-single-service.HMRC-MTD-VAT.personal.header=Do you want to submit this client’s VAT returns through software?
+select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to submit this client’s VAT returns through software
+
+# Note: trusts are internally treated as "business" client type
+select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
+select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
+
+select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client's PAYE income record?
+select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client's PAYE income record
+
+select-single-service.HMRC-MTD-IT.personal.header=Do you want to send this client's Income Tax updates through software?
+select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to send this client's Income Tax updates through software
+
+select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage this client's Capital Gains Tax on UK property disposals?
+select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage this client's Capital Gains Tax on UK property disposals
+
+select-single-service.HMRC-CGT-PD.business.header=Do you want to manage a trust's Capital Gains Tax on UK property disposals?
+select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage a trust's Capital Gains Tax on UK property disposals
 
 
 ## Identify Trust Client
@@ -258,6 +274,8 @@ delete.heading=Are you sure you want to remove your authorisation request for {0
 delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to send their Income Tax updates through software.
 delete.subheading.PERSONAL-INCOME-RECORD=You will not send them an authorisation request to view their PAYE income record.
 delete.subheading.HMRC-MTD-VAT=You will not send them an authorisation request to submit their VAT returns through software.
+delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request to maintain a trust or an estate.
+delete.subheading.HMRC-CGT-PD=You will not send them an authorisation request to manage Capital Gains Tax on UK property disposals.
 delete.radio-yes=Yes
 delete.radio-no=No
 error.delete.radio=Select yes if you want to remove the authorisation request for this client

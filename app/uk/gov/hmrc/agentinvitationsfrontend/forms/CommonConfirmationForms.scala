@@ -17,22 +17,23 @@
 package uk.gov.hmrc.agentinvitationsfrontend.forms
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 
 object CommonConfirmationForms {
 
-  def confirmationForm(errorMessage: String): Form[Confirmation] =
+  def confirmationForm(errorMessageKey: String): Form[Confirmation] =
     Form(
       mapping(
         "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
-          .verifying(confirmationChoice(errorMessage))
+          .verifying(confirmationChoice(errorMessageKey))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val serviceBusinessForm: Form[Confirmation] = confirmationForm("error.business-service.required")
+  /** single service selection confirmation form */
+  def selectSingleServiceForm(service: String, clientType: ClientType): Form[Confirmation] =
+    confirmationForm(s"select-single-service.$service.$clientType.error")
 
-  val serviceTrustForm: Form[Confirmation] = confirmationForm("error.trust-service.required")
-
-  val confirmCancelForm: Form[Confirmation] = confirmationForm("cancel-authorisation.error.confirm-cancel.required")
+  val confirmCancelForm: Form[Confirmation] =
+    confirmationForm("cancel-authorisation.error.confirm-cancel.required")
 }

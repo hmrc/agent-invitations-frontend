@@ -30,6 +30,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
+import scala.collection.immutable.Set
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -50,6 +51,22 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD)
   private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+
+  def makeBasket(services: Set[String]) = services.map {
+    case `HMRCCGTPD` => AuthorisationRequest("client", CgtInvitation(CgtRef("X")), AuthorisationRequest.NEW, "item-cgt")
+    case `HMRCMTDVAT` =>
+      AuthorisationRequest(
+        "client",
+        VatInvitation(Some(personal), Vrn(vrn), VatRegDate("10/10/10")),
+        AuthorisationRequest.NEW,
+        "item-vat")
+    case `HMRCMTDIT` =>
+      AuthorisationRequest(
+        "client",
+        ItsaInvitation(Nino(nino), Postcode("BN114AW")),
+        AuthorisationRequest.NEW,
+        "item-itsa")
+  }
 
   val nino = "AB123456A"
   val postCode = Some("BN114AW")
@@ -123,81 +140,75 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to IdentifyPersonalClient for ITSA service" in {
 
-        await(
-          given(SelectPersonalService(availableServices, emptyBasket)) when
-            selectedService()(HMRCMTDIT)) should
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()(HMRCMTDIT) should
           thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for PIR service" in {
 
-        await(
-          given(SelectPersonalService(availableServices, emptyBasket)) when
-            selectedService()(HMRCPIR)) should
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()(HMRCPIR) should
           thenGo(IdentifyPersonalClient(HMRCPIR, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for VAT service" in {
 
-        await(
-          given(SelectPersonalService(availableServices, emptyBasket)) when
-            selectedService()(HMRCMTDVAT)) should
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()(HMRCMTDVAT) should
           thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for CGT service" in {
 
-        await(
-          given(SelectPersonalService(availableServices, emptyBasket)) when
-            selectedService()(HMRCCGTPD)) should
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()(HMRCCGTPD) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
+      }
+
+      "transition to ReviewPersonalService when last service selected and user does not confirm" in {
+
+        given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
+          selectedPersonalServicePir(authorisedAgent)(Confirmation(false)) should
+          thenGo(ReviewAuthorisationsPersonal(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD))))
       }
 
       "transition to SelectPersonalService" in {
 
-        await(
-          given(SelectPersonalService(availableServices, emptyBasket)) when
-            selectedService()("foo")) should
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()("foo") should
           thenGo(SelectPersonalService(availableServices, emptyBasket))
       }
 
       "throw an exception when the show itsa feature flag is off" in {
 
         intercept[Exception] {
-          await(
-            given(SelectPersonalService(availableServices, emptyBasket)) when
-              selectedService(showItsaFlag = false)(HMRCMTDIT)
-          )
+          given(SelectPersonalService(availableServices, emptyBasket)) when
+            selectedService(showItsaFlag = false)(HMRCMTDIT)
         }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
       }
 
       "throw an exception when the show pir feature flag is off" in {
 
         intercept[Exception] {
-          await(
-            given(SelectPersonalService(availableServices, emptyBasket)) when
-              selectedService(showPirFlag = false)(HMRCPIR)
-          )
+          given(SelectPersonalService(availableServices, emptyBasket)) when
+            selectedService(showPirFlag = false)(HMRCPIR)
         }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
       }
 
       "throw an exception when the show vat feature flag is off" in {
 
         intercept[Exception] {
-          await(
-            given(SelectPersonalService(availableServices, emptyBasket)) when
-              selectedService(showVatFlag = false)(HMRCMTDVAT)
-          )
+          given(SelectPersonalService(availableServices, emptyBasket)) when
+            selectedService(showVatFlag = false)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
 
       "throw an exception when the show cgt feature flag is off" in {
 
         intercept[Exception] {
-          await(
-            given(SelectPersonalService(availableServices, emptyBasket)) when
-              selectedService(showCgtFlag = false)(HMRCCGTPD)
-          )
+          given(SelectPersonalService(availableServices, emptyBasket)) when
+            selectedService(showCgtFlag = false)(HMRCCGTPD)
         }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
       }
 
@@ -250,27 +261,27 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "after selectedTrustService(true)(true) transition to IdentifyTrustClient" in {
+      "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceSingle(showTrustsFlag = true)(authorisedAgent)(Confirmation(true)) should
+          selectedTrustServiceTrust(false)(authorisedAgent)(Confirmation(true)) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
-      "after selectedTrustService(true)(false) transition to SelectClientType" in {
+      "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustServiceSingle(showTrustsFlag = true)(authorisedAgent)(Confirmation(false)) should
+          selectedTrustServiceTrust(false)(authorisedAgent)(Confirmation(false)) should
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "throw an exception when the show trust feature flag is off" in {
+      "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
 
-        intercept[Exception] {
-          given(SelectTrustService(availableTrustServices, emptyBasket)) when
-            selectedTrustServiceSingle(showTrustsFlag = false)(authorisedAgent)(Confirmation(true))
-        }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
+        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+          selectedTrustServiceTrust(true)(authorisedAgent)(Confirmation(false)) should
+          thenGo(ReviewAuthorisationsTrust(availableTrustServices, emptyBasket))
       }
+
     }
 
     // *************************************************

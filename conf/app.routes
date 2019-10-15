@@ -9,10 +9,24 @@ GET         /agents                                                     @uk.gov.
 GET         /agents/client-type                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientType
 POST        /agents/client-type                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitClientType
 GET         /agents/select-service                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSelectService
+
+# multi-select endpoint
 POST        /agents/select-personal-service                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectService
+
+# single select endpoints
+POST        /agents/select-personal-itsa                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectItsa
+POST        /agents/select-personal-vat                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectVat
+POST        /agents/select-personal-pir                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectPir
+POST        /agents/select-personal-cgt                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectCgt
+
 POST        /agents/select-business-service                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
-POST        /agents/select-trust-service                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceSingle
-POST        /agents/select-trust-services                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
+
+# single select endpoints
+POST        /agents/select-trust-trust                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectTrust
+POST        /agents/select-trust-cgt                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectCgt
+
+# multi-select endpoint
+POST /agents/select-trust-services                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
 
 GET         /agents/identify-client                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
 

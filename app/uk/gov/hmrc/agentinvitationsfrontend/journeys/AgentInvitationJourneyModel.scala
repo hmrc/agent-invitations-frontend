@@ -135,6 +135,46 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectPersonalService(services, basket))
     }
 
+    def selectedPersonalServiceItsa(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(services, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCMTDIT, basket))
+          } else {
+            goto(ReviewAuthorisationsPersonal(services, basket))
+          }
+      }
+
+    def selectedPersonalServiceVat(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(services, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
+          } else {
+            goto(ReviewAuthorisationsPersonal(services, basket))
+          }
+      }
+
+    def selectedPersonalServicePir(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(services, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCPIR, basket))
+          } else {
+            goto(ReviewAuthorisationsPersonal(services, basket))
+          }
+      }
+
+    def selectedPersonalServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectPersonalService(services, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+          } else {
+            goto(ReviewAuthorisationsPersonal(services, basket))
+          }
+      }
+
     def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
       case SelectBusinessService =>
         if (confirmed.choice) {
@@ -147,6 +187,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
 
     def selectedTrustServiceMultiple(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
       service: String) = Transition {
+
       case SelectTrustService(services, basket) =>
         def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
           if (serviceEnabled)
@@ -161,14 +202,26 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectTrustService(services, basket))
     }
 
-    def selectedTrustServiceSingle(showTrustsFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
+    def selectedTrustServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
       Transition {
-        case SelectTrustService(_, basket) =>
+        case SelectTrustService(services, basket) =>
           if (confirmed.choice) {
-            if (showTrustsFlag) goto(IdentifyTrustClient(TRUST, basket))
-            else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
+            goto(IdentifyTrustClient(HMRCCGTPD, basket))
           } else {
-            goto(root)
+            goto(ReviewAuthorisationsTrust(services, basket))
+          }
+      }
+
+    def selectedTrustServiceTrust(showCgtFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
+      Transition {
+        case SelectTrustService(services, basket) =>
+          if (confirmed.choice) {
+            goto(IdentifyTrustClient(TRUST, basket))
+          } else {
+            if (showCgtFlag)
+              goto(ReviewAuthorisationsTrust(services, basket)) // only show review if CGT enabled (and hence > 1 service)
+            else
+              goto(root)
           }
       }
 
@@ -483,6 +536,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               TRUST,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           else
+            // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))

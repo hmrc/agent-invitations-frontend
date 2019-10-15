@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
@@ -64,7 +65,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType()))
 
-  val showClientType: Action[AnyContent] =
+  def showClientType: Action[AnyContent] =
     if (featureFlags.showAgentLedDeAuth)
       actionShowStateWhenAuthorised(AsAgent) {
         case SelectClientType =>
@@ -73,50 +74,51 @@ class AgentLedDeauthJourneyController @Inject()(
       Action(NotImplemented)
     }
 
-  val submitClientType: Action[AnyContent] = action { implicit request =>
+  def submitClientType: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.deAuthorisationForm)(selectedClientType)
   }
 
-  val showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showSelectService: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: SelectServicePersonal =>
     case SelectServiceBusiness    =>
     case SelectServiceTrust       =>
   }
 
-  val submitPersonalService: Action[AnyContent] = action { implicit request =>
+  def submitPersonalService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
       chosenPersonalService(featureFlags.showHmrcMtdIt, featureFlags.showPersonalIncome, featureFlags.showHmrcMtdVat))
   }
 
-  val submitBusinessService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.serviceBusinessForm)(
+  def submitBusinessService: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(Services.HMRCMTDVAT, business))(
       chosenBusinessService(featureFlags.showHmrcMtdVat))
   }
 
-  val submitTrustService = action { implicit request =>
+  def submitTrustService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.confirmCancelForm)(
       chosenTrustService(featureFlags.showHmrcTrust))
   }
 
-  val identifyClientRedirect = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
+  val identifyClientRedirect: Action[AnyContent] = Action(
+    Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyClientPersonal =>
     case IdentifyClientBusiness    =>
     case IdentifyClientTrust       =>
   }
 
-  val submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
+  def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
-  val submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
+  def submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService, hasActiveRelationshipFor))
   }
 
-  val submitIdentifyVatClient: Action[AnyContent] = action { implicit request =>
+  def submitIdentifyVatClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(VatClientForm.form)(
       submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService, hasActiveRelationshipFor))
   }
@@ -126,7 +128,7 @@ class AgentLedDeauthJourneyController @Inject()(
       invitationsConnector.getTrustName(utr)))
   }
 
-  val showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmClientItsa        =>
     case _: ConfirmClientIrv         =>
     case _: ConfirmClientPersonalVat =>
@@ -134,38 +136,38 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientTrust       =>
   }
 
-  val submitConfirmClient: Action[AnyContent] = action { implicit request =>
+  def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.confirmCancelForm)(
       clientConfirmed(hasActiveRelationshipFor))
   }
 
-  val showConfirmCancel: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showConfirmCancel: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ConfirmCancel =>
   }
 
-  val submitConfirmCancel: Action[AnyContent] = action { implicit request =>
+  def submitConfirmCancel: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.confirmCancelForm)(
       cancelConfirmed(deleteRelationshipForService, getAgencyName))
   }
 
-  val showAuthorisationCancelled: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showAuthorisationCancelled: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: AuthorisationCancelled =>
   }
 
-  val showKnownFactNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showKnownFactNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case KnownFactNotMatched =>
     case TrustNotFound       =>
   }
 
-  val showNotSignedUp: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showNotSignedUp: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: NotSignedUp =>
   }
 
-  val showNotAuthorised: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showNotAuthorised: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: NotAuthorised =>
   }
 
-  val showResponseFailed: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+  def showResponseFailed: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: ResponseFailed =>
   }
 
@@ -197,7 +199,7 @@ class AgentLedDeauthJourneyController @Inject()(
     breadcrumbs: journeyService.Breadcrumbs,
     formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result = state match {
 
-    case SelectClientType => {
+    case SelectClientType =>
       def backLinkForClientType(implicit request: Request[_]): String =
         breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
           getCallFor(_).url)
@@ -210,7 +212,6 @@ class AgentLedDeauthJourneyController @Inject()(
             routes.AgentLedDeauthJourneyController.submitClientType(),
             featureFlags.showHmrcTrust)
         ))
-    }
 
     case SelectServicePersonal(enabledServices) =>
       Ok(
@@ -227,7 +228,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectServiceBusiness =>
       Ok(
         business_select_service(
-          formWithErrors.or(CommonConfirmationForms.serviceBusinessForm),
+          formWithErrors.or(CommonConfirmationForms.selectSingleServiceForm(Services.HMRCMTDVAT, business)),
           routes.AgentLedDeauthJourneyController.submitBusinessService(),
           backLinkFor(breadcrumbs).url
         )
@@ -250,7 +251,7 @@ class AgentLedDeauthJourneyController @Inject()(
               ItsaClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
               backLinkFor(breadcrumbs).url,
-              true
+              isDeAuthJourney = true
             ))
         case Services.HMRCPIR =>
           Ok(
@@ -258,7 +259,7 @@ class AgentLedDeauthJourneyController @Inject()(
               IrvClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
               backLinkFor(breadcrumbs).url,
-              true
+              isDeAuthJourney = true
             )
           )
         case Services.HMRCMTDVAT =>
@@ -267,7 +268,7 @@ class AgentLedDeauthJourneyController @Inject()(
               formWithErrors.or(VatClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
               backLinkFor(breadcrumbs).url,
-              true
+              isDeAuthJourney = true
             ))
       }
 
@@ -277,7 +278,7 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(VatClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url,
-          true
+          isDeAuthJourney = true
         ))
 
     case IdentifyClientTrust =>
@@ -286,7 +287,7 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(TrustClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url,
-          true
+          isDeAuthJourney = true
         ))
 
     case ConfirmClientItsa(clientName, _) =>
@@ -362,10 +363,10 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>
-      Ok(not_signed_up(service, hasRequests = false, true))
+      Ok(not_signed_up(service, hasRequests = false, isDeAuthJourney = true))
 
     case NotAuthorised(service) =>
-      Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType(), true))
+      Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType(), isDeAuthJourney = true))
 
     case _: ResponseFailed => Ok(response_failed(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
 

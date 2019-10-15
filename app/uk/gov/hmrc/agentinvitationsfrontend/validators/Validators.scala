@@ -113,11 +113,11 @@ object Validators {
       Invalid(ValidationError(invalidError))
   }
 
-  def confirmationChoice(errorMessage: String): Constraint[String] = Constraint[String] { fieldValue: String =>
+  def confirmationChoice(errorMessageKey: String): Constraint[String] = Constraint[String] { fieldValue: String =>
     if (Seq("true", "false").contains(fieldValue.trim))
       Valid
     else
-      Invalid(ValidationError(errorMessage))
+      Invalid(ValidationError(errorMessageKey))
   }
 
   def vatRegDateMapping: Mapping[String] = dateFieldsMapping(validVatDateFormat)

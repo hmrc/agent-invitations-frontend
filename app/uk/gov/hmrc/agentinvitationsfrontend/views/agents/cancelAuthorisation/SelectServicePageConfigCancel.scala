@@ -31,7 +31,7 @@ case class SelectServicePageConfigCancel(
     val map = collection.mutable.Map[String, String]()
 
     if (featureFlags.showPersonalIncome && services.contains(HMRCPIR))
-      map.update(HMRCPIR, Messages("personal-select-service.personal-income-viewer"))
+      map.update(HMRCPIR, Messages("select-service.PERSONAL-INCOME-RECORD.personal"))
 
     if (featureFlags.showHmrcMtdIt && services.contains(HMRCMTDIT))
       map.update(HMRCMTDIT, Messages("cancel-authorisation.select-service.itsa"))
