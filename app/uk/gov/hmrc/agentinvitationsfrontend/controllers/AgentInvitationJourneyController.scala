@@ -213,8 +213,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
-    case _: ConfirmClientPersonalCgt =>
-    case _: ConfirmClientTrustCgt    =>
+    case _: ConfirmClientCgt         =>
   }
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
@@ -299,8 +298,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientCgt             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmPostcodeCgt           => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
     case _: ConfirmCountryCodeCgt        => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
     case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
@@ -458,33 +456,25 @@ class AgentInvitationJourneyController @Inject()(
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
           routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
-    case ConfirmClientPersonalCgt(authorisationRequest, _) =>
+    case ConfirmClientCgt(authorisationRequest, _) =>
       Ok(
         confirm_client(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
           routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
-    case ConfirmClientTrustCgt(authorisationRequest, _) =>
-      Ok(
-        confirm_client(
-          authorisationRequest.clientName,
-          formWithErrors.or(ConfirmClientForm),
-          backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
-        ))
-
-    case ConfirmPostcodeCgt(_, clientType, _) =>
+    case ConfirmPostcodeCgt(_, clientType, _, _, _) =>
       Ok(confirm_postcode_cgt(clientType, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url))
 
-    case ConfirmCountryCodeCgt(_, clientType, _) =>
+    case ConfirmCountryCodeCgt(_, clientType, _, _, _) =>
       Ok(
         confirm_countryCode_cgt(
           clientType,
@@ -498,7 +488,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ConfirmClientPersonalVat(authorisationRequest, _) =>
@@ -507,7 +499,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ConfirmClientBusinessVat(authorisationRequest) =>
@@ -516,7 +510,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ReviewAuthorisationsPersonal(services, basket) =>

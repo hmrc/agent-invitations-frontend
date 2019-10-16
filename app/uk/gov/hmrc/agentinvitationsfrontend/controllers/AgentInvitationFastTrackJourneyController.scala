@@ -380,7 +380,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
           routes.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient(),
-          Some(ftr.clientIdentifier)
+          ftr.clientIdentifierType,
+          ftr.clientIdentifier
         ))
 
     case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDIT =>

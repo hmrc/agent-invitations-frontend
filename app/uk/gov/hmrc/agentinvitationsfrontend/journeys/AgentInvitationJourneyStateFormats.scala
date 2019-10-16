@@ -34,8 +34,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientPersonalVatFormat: OFormat[ConfirmClientPersonalVat] = Json.format
   val ConfirmClientBusinessVatFormat: OFormat[ConfirmClientBusinessVat] = Json.format
 
-  val ConfirmClientPersonalGctFormat: OFormat[ConfirmClientPersonalCgt] = Json.format
-  val ConfirmClientTrustCgtFormat: OFormat[ConfirmClientTrustCgt] = Json.format
+  val ConfirmClientCgtFormat: OFormat[ConfirmClientCgt] = Json.format
   val ConfirmCgtPostcodeFormat: OFormat[ConfirmPostcodeCgt] = Json.format
   val ConfirmCgtCountryCodeFormat: OFormat[ConfirmCountryCodeCgt] = Json.format
   val InvalidCgtAccountReferenceFormat: OFormat[InvalidCgtAccountReference] = Json.format
@@ -66,8 +65,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientPersonalVat           => ConfirmClientPersonalVatFormat.writes(s)
     case s: ConfirmClientBusinessVat           => ConfirmClientBusinessVatFormat.writes(s)
     case s: ConfirmClientTrust                 => ConfirmClientTrustFormat.writes(s)
-    case s: ConfirmClientTrustCgt              => ConfirmClientTrustCgtFormat.writes(s)
-    case s: ConfirmClientPersonalCgt           => ConfirmClientPersonalGctFormat.writes(s)
+    case s: ConfirmClientCgt                   => ConfirmClientCgtFormat.writes(s)
     case s: ConfirmPostcodeCgt                 => ConfirmCgtPostcodeFormat.writes(s)
     case s: ConfirmCountryCodeCgt              => ConfirmCgtCountryCodeFormat.writes(s)
     case s: InvalidCgtAccountReference         => InvalidCgtAccountReferenceFormat.writes(s)
@@ -94,8 +92,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "IdentifyBusinessClient"             => JsSuccess(IdentifyBusinessClient)
     case "IdentifyTrustClient"                => IdentifyTrustClientFormat.reads(properties)
     case "ConfirmClientTrust"                 => ConfirmClientTrustFormat.reads(properties)
-    case "ConfirmClientPersonalCgt"           => ConfirmClientPersonalGctFormat.reads(properties)
-    case "ConfirmClientTrustCgt"              => ConfirmClientTrustCgtFormat.reads(properties)
+    case "ConfirmClientCgt"                   => ConfirmClientCgtFormat.reads(properties)
     case "ConfirmPostcodeCgt"                 => ConfirmCgtPostcodeFormat.reads(properties)
     case "ConfirmCountryCodeCgt"              => ConfirmCgtCountryCodeFormat.reads(properties)
     case "InvalidCgtAccountReference"         => InvalidCgtAccountReferenceFormat.reads(properties)

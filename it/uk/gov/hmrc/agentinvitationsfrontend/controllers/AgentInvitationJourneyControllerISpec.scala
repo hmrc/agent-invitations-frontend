@@ -851,7 +851,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should havePattern[State](
         {
-          case ConfirmPostcodeCgt(cgtRef, personal, emptyBasket) =>
+          case ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, _, _) =>
         },
         List(
           IdentifyTrustClient(HMRCCGTPD, emptyBasket),
@@ -907,7 +907,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "display the page as expected" in {
 
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -926,7 +926,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -940,10 +940,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /confirm-client if postcode matches for a UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
-
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -956,9 +954,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
-        {case ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
         List(
-          ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
+          ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -966,10 +964,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /not-matched if postcode does not matche for a UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
-
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -990,7 +986,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "display the page as expected" in {
 
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -1009,7 +1005,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -1023,10 +1019,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /confirm-client if country code matches for a non UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
-
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -1039,9 +1033,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
-        {case ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
         List(
-          ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+          ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -1049,10 +1043,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /not-matched if country code does not match for a non UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
-
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
         List(
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
@@ -1260,6 +1252,21 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         },
         List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
       )
+    }
+
+    "show the confirm client page for CGT clients" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+      journeyState.set(
+        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)), emptyBasket),
+        List(ConfirmCountryCodeCgt(cgtRef, business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService, SelectClientType(emptyBasket))
+      )
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result, "CGT_NAME")
+      checkHtmlResultWithBodyText(result, "Capital Gains Tax (CGT) account reference: XMCGTP123456789")
+      checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
     }
   }
 
