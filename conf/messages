@@ -35,7 +35,7 @@ error.nino.required=Enter your client’s National Insurance number
 identify-client.postcode.label=Postcode
 identify-client.postcode.hint=This is the postcode of your client’s registered address
 enter-postcode.invalid-format=Enter a valid postcode, like AA1 1AA
-enter-postcode.invalid-characters=Postcode must only include letters a to z, numbers and spaces, for example AA1 1AA
+enter-postcode.invalid-characters=Enter a real postcode
 error.postcode.required=Enter your client’s postcode
 
 # Vrn
@@ -146,6 +146,11 @@ confirm-postcode-cgt.header=What is your client’s postcode?
 confirm-postcode-cgt.p1=This will help us match their details against information we hold.
 confirm-postcode-cgt.label=Postcode
 confirm-postcode-cgt.hint=This is the postcode of the address where the trust receives their Capital Tax Gains correspondence
+confirm-countryCode-cgt.header=Which country is your client from?
+confirm-countryCode-cgt.p1=This will help us match their details against information we hold.
+confirm-countryCode-cgt.hint=Start typing the country
+confirm-countryCode-cgt.label=Country
+error.country.empty=Enter the country that your client is from
 
 continue.button=Continue
 button.back=Back

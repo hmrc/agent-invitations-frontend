@@ -60,10 +60,10 @@ trait TestDataCommonSupport {
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
-  val cgtAddressDetails =
-    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("BN13 1FN"))
+  def cgtAddressDetails(countryCode: String = "FR") =
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), countryCode, Some("BN13 1FN"))
 
-  val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
+  def cgtSubscription(countryCode: String = "FR") = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails(countryCode)))
 
   val cgtNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 

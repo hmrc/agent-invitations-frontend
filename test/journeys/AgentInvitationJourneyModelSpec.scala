@@ -68,14 +68,16 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
-  val cgtAddressDetails =
-    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), "GB", Some("BN13 1FN"))
+  def cgtAddressDetails(countryCode: String = "GB") =
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), countryCode, Some("BN13 1FN"))
 
-  val cgtSubscription = CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails))
+  def cgtSubscription(countryCode: String = "GB") =
+    CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails(countryCode)))
 
   def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
 
-  def getCgtSubscription: GetCgtSubscription = CgtRef => Future(Some(cgtSubscription))
+  def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
+    CgtRef => Future(Some(cgtSubscription(countryCode)))
 
   "AgentInvitationJourneyService" when {
 
@@ -363,7 +365,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmPostcodeCgt for personal cgt clients" in {
 
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
-          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, `emptyBasket`), _) =>
           }
@@ -372,7 +374,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmPostcodeCgt for trust cgt clients" in {
 
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
-          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, `emptyBasket`), _) =>
           }
@@ -455,7 +457,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a personal" in {
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
-          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, emptyBasket), _) =>
           }
@@ -463,7 +465,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a trust" in {
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
-          identifyCgtClient(getCgtSubscription)(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, emptyBasket), _) =>
           }
@@ -480,25 +482,52 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state ConfirmPostcodeCgt" should {
 
-      "transition to ConfirmClientTrustCgt when the postcode is matched for a UK personal client" in {
+      "transition to ConfirmClientPersonalCgt when the postcode is matched for a UK personal client" in {
         given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
-          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1FN")) should
+          confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1FN")) should
           matchPattern {
-            case (ConfirmClientPersonalCgt(AuthorisationRequest("dummy name for now", _, _, _), _), _) =>
+            case (ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
       "transition to ConfirmClientTrustCgt when the postcode is matched for a UK business client" in {
         given(ConfirmPostcodeCgt(CgtRef("cgtRef"), business, emptyBasket)) when
-          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1FN")) should
+          confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1FN")) should
           matchPattern {
-            case (ConfirmClientTrustCgt(AuthorisationRequest("dummy name for now", _, _, _), _), _) =>
+            case (ConfirmClientTrustCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
       "transition to KnownFactsNotMatched when the postcode is not matched for a UK client" in {
         given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
-          confirmPostcodeCgt(getCgtSubscription)(authorisedAgent)(Postcode("BN13 1ZZ")) should
+          confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1ZZ")) should
+          matchPattern {
+            case (KnownFactNotMatched(_), _) =>
+          }
+      }
+    }
+
+    "at state ConfirmCountryCodeCgt" should {
+
+      "transition to ConfirmClientPersonalCgt when the countryCode is matched for a personal client" in {
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+          confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("IN")) should
+          matchPattern {
+            case (ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+          }
+      }
+
+      "transition to ConfirmClientTrustCgt when the countryCode is matched for a business client" in {
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), business, emptyBasket)) when
+          confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("IN")) should
+          matchPattern {
+            case (ConfirmClientTrustCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+          }
+      }
+
+      "transition to KnownFactsNotMatched when the countryCode is not matched for a non UK client" in {
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+          confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("FR")) should
           matchPattern {
             case (KnownFactNotMatched(_), _) =>
           }

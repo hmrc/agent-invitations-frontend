@@ -87,8 +87,13 @@ object SubscriptionDetails {
 }
 
 case class CgtSubscription(regime: String, subscriptionDetails: SubscriptionDetails) {
-  def countryCode(): String = subscriptionDetails.addressDetails.countryCode
-  def postCode(): Option[String] = subscriptionDetails.addressDetails.postalCode
+  val countryCode: String = subscriptionDetails.addressDetails.countryCode
+  val postCode: Option[String] = subscriptionDetails.addressDetails.postalCode
+
+  val name: String = subscriptionDetails.typeOfPersonDetails.name match {
+    case Right(organisationName) => organisationName.name
+    case Left(individualName)    => s"${individualName.firstName} ${individualName.lastName}"
+  }
 }
 
 object CgtSubscription {

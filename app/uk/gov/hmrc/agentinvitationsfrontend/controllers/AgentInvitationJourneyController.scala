@@ -22,7 +22,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
@@ -47,7 +47,8 @@ class AgentInvitationJourneyController @Inject()(
   relationshipsService: RelationshipsService,
   asaConnector: AgentServicesAccountConnector,
   val authActions: AuthActions,
-  override val journeyService: AgentInvitationJourneyService)(
+  override val journeyService: AgentInvitationJourneyService,
+  countryNamesLoader: CountryNamesLoader)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -67,6 +68,9 @@ class AgentInvitationJourneyController @Inject()(
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+
+  private val countries = countryNamesLoader.load
+  private val validCountryCodes = countries.keys.toSet
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -136,6 +140,15 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt(cgtRef =>
+      invitationsConnector.getCgtSubscription(cgtRef)))
+  }
+
+  def showConfirmCgtCountryCode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ConfirmCountryCodeCgt =>
+  }
+
+  def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt(cgtRef =>
       invitationsConnector.getCgtSubscription(cgtRef)))
   }
 
@@ -289,6 +302,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmPostcodeCgt           => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
+    case _: ConfirmCountryCodeCgt        => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
     case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
@@ -469,6 +483,14 @@ class AgentInvitationJourneyController @Inject()(
 
     case ConfirmPostcodeCgt(_, clientType, _) =>
       Ok(confirm_postcode_cgt(clientType, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url))
+
+    case ConfirmCountryCodeCgt(_, clientType, _) =>
+      Ok(
+        confirm_countryCode_cgt(
+          clientType,
+          countries,
+          formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
+          backLinkFor(breadcrumbs).url))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
       Ok(

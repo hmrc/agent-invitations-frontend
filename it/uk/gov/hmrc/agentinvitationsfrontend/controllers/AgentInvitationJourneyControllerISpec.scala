@@ -833,7 +833,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/identify-cgt-client")
 
     "redirect to /agents/client-postcode" in {
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
 
       journeyState.set(
         IdentifyTrustClient(HMRCCGTPD, emptyBasket),
@@ -940,7 +940,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /confirm-client if postcode matches for a UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
       journeyState.set(
         ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
@@ -956,7 +956,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
-        {case ConfirmClientPersonalCgt(AuthorisationRequest("dummy name for now", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        {case ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
         List(
           ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
           IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
@@ -966,7 +966,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /not-matched if postcode does not matche for a UK client" in {
 
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
       journeyState.set(
         ConfirmPostcodeCgt(cgtRef, personal, emptyBasket),
@@ -976,6 +976,89 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket)))
 
       val result = controller.submitConfirmCgtPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody("postcode" -> "BN13 1XX"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+    }
+  }
+
+  "GET /agents/client-country" should {
+
+    val request = FakeRequest("GET", "/agents/client-country")
+
+    "display the page as expected" in {
+
+      journeyState.set(
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        List(
+          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.showConfirmCgtCountryCode()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "confirm-countryCode-cgt.header",
+        "confirm-countryCode-cgt.p1",
+        "confirm-countryCode-cgt.label",
+        "confirm-countryCode-cgt.hint",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        List(
+          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
+  }
+
+  "POST /agents/client-country" should {
+
+    val request = FakeRequest("POST", "/agents/client-country")
+
+    "redirect to /confirm-client if country code matches for a non UK client" in {
+
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      journeyState.set(
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        List(
+          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "FR"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+
+      journeyState.get should havePattern[State](
+        {case ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        List(
+          ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
+
+    "redirect to /not-matched if country code does not match for a non UK client" in {
+
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      journeyState.set(
+        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket),
+        List(
+          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "IN"), arn.value))
 
       status(result) shouldBe 303
 

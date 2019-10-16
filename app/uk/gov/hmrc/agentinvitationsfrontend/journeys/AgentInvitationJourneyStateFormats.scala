@@ -37,6 +37,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientPersonalGctFormat: OFormat[ConfirmClientPersonalCgt] = Json.format
   val ConfirmClientTrustCgtFormat: OFormat[ConfirmClientTrustCgt] = Json.format
   val ConfirmCgtPostcodeFormat: OFormat[ConfirmPostcodeCgt] = Json.format
+  val ConfirmCgtCountryCodeFormat: OFormat[ConfirmCountryCodeCgt] = Json.format
   val InvalidCgtAccountReferenceFormat: OFormat[InvalidCgtAccountReference] = Json.format
 
   val ReviewAuthorisationsPersonalFormat: OFormat[ReviewAuthorisationsPersonal] = Json.format
@@ -68,6 +69,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientTrustCgt              => ConfirmClientTrustCgtFormat.writes(s)
     case s: ConfirmClientPersonalCgt           => ConfirmClientPersonalGctFormat.writes(s)
     case s: ConfirmPostcodeCgt                 => ConfirmCgtPostcodeFormat.writes(s)
+    case s: ConfirmCountryCodeCgt              => ConfirmCgtCountryCodeFormat.writes(s)
     case s: InvalidCgtAccountReference         => InvalidCgtAccountReferenceFormat.writes(s)
     case s: ReviewAuthorisationsPersonal       => ReviewAuthorisationsPersonalFormat.writes(s)
     case s: ReviewAuthorisationsTrust          => ReviewAuthorisationsTrustFormat.writes(s)
@@ -95,6 +97,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientPersonalCgt"           => ConfirmClientPersonalGctFormat.reads(properties)
     case "ConfirmClientTrustCgt"              => ConfirmClientTrustCgtFormat.reads(properties)
     case "ConfirmPostcodeCgt"                 => ConfirmCgtPostcodeFormat.reads(properties)
+    case "ConfirmCountryCodeCgt"              => ConfirmCgtCountryCodeFormat.reads(properties)
     case "InvalidCgtAccountReference"         => InvalidCgtAccountReferenceFormat.reads(properties)
     case "ConfirmClientItsa"                  => ConfirmClientItsaFormat.reads(properties)
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)

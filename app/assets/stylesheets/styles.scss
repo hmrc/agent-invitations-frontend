@@ -349,3 +349,7 @@ details .panel[aria-hidden=true] a {
         margin-bottom: 0;
     }
 }
+
+@import 'partials/_accessibleAutocomplete';
+@import 'partials/_focus';
+@import 'partials/_palette';

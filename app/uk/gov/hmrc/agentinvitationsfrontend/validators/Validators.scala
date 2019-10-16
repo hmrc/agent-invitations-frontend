@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.validators
 
-import play.api.data.Forms.of
+import play.api.data.Forms.{of, text}
 import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation._
@@ -61,6 +61,28 @@ object Validators {
     trimmedUppercaseText.verifying(
       validPostcode("enter-postcode.invalid-format", "error.postcode.required", "enter-postcode.invalid-characters")
     )
+
+  def countryCode(validCountryCodes: Set[String]): Mapping[String] = text.verifying(validCountryCode(validCountryCodes))
+
+  private def validCountryCode(codes: Set[String]) = Constraint { fieldValue: String =>
+    val code = fieldValue.trim
+    nonEmptyWithMessage("error.country.empty")(code) match {
+      case i: Invalid => i
+      case Valid =>
+        if (codes.contains(code) && code != "GB" && code.length == 2) {
+          Valid
+        } else {
+          Invalid(ValidationError("error.country.invalid"))
+        }
+    }
+  }
+
+  // Same as play.api.data.validation.Constraints.nonEmpty but with a custom message instead of error.required
+  private def nonEmptyWithMessage(messageKey: String): Constraint[String] = Constraint[String] { (o: String) =>
+    if (o == null) Invalid(ValidationError(messageKey))
+    else if (o.trim.isEmpty) Invalid(ValidationError(messageKey))
+    else Valid
+  }
 
   val validVrn: Constraint[String] =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure")
