@@ -367,7 +367,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, `emptyBasket`), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, `emptyBasket`, _, _), _) =>
           }
       }
 
@@ -376,15 +376,15 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, `emptyBasket`), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, `emptyBasket`, _, _), _) =>
           }
       }
 
-      "transition to InvalidCgtAccountReference" in {
+      "transition to CgtRefNotFound" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
 
@@ -459,7 +459,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, emptyBasket), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, emptyBasket, _, _), _) =>
           }
       }
 
@@ -467,39 +467,39 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyTrustClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(getCgtSubscription())(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, emptyBasket), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, emptyBasket, _, _), _) =>
           }
       }
 
-      "transition to InvalidCgtAccountReference" in {
+      "transition to CgtRefNotFound" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
     }
 
     "at state ConfirmPostcodeCgt" should {
 
-      "transition to ConfirmClientPersonalCgt when the postcode is matched for a UK personal client" in {
-        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+      "transition to ConfirmClientCgt when the postcode is matched for a UK personal client" in {
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket, Some("BN13 1FN"), "firstName lastName")) when
           confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1FN")) should
           matchPattern {
-            case (ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+            case (ConfirmClientCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
-      "transition to ConfirmClientTrustCgt when the postcode is matched for a UK business client" in {
-        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), business, emptyBasket)) when
+      "transition to ConfirmClientCgt when the postcode is matched for a UK business/trustee client" in {
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), business, emptyBasket, Some("BN13 1FN"), "firstName lastName")) when
           confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1FN")) should
           matchPattern {
-            case (ConfirmClientTrustCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+            case (ConfirmClientCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
       "transition to KnownFactsNotMatched when the postcode is not matched for a UK client" in {
-        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+        given(ConfirmPostcodeCgt(CgtRef("cgtRef"), personal, emptyBasket, Some("BN13 1FN"), "firstName lastName")) when
           confirmPostcodeCgt(getCgtSubscription())(authorisedAgent)(Postcode("BN13 1ZZ")) should
           matchPattern {
             case (KnownFactNotMatched(_), _) =>
@@ -509,24 +509,24 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state ConfirmCountryCodeCgt" should {
 
-      "transition to ConfirmClientPersonalCgt when the countryCode is matched for a personal client" in {
-        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+      "transition to ConfirmClientCgt when the countryCode is matched for a personal client" in {
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket, "IN", "firstName lastName")) when
           confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("IN")) should
           matchPattern {
-            case (ConfirmClientPersonalCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+            case (ConfirmClientCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
       "transition to ConfirmClientTrustCgt when the countryCode is matched for a business client" in {
-        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), business, emptyBasket)) when
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), business, emptyBasket, "IN", "firstName lastName")) when
           confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("IN")) should
           matchPattern {
-            case (ConfirmClientTrustCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
+            case (ConfirmClientCgt(AuthorisationRequest("firstName lastName", _, _, _), _), _) =>
           }
       }
 
       "transition to KnownFactsNotMatched when the countryCode is not matched for a non UK client" in {
-        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket)) when
+        given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), personal, emptyBasket, "IN", "firstName lastName")) when
           confirmCountryCodeCgt(getCgtSubscription("IN"))(authorisedAgent)(CountryCode("FR")) should
           matchPattern {
             case (KnownFactNotMatched(_), _) =>
@@ -846,7 +846,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(false)
 
-        given(ConfirmClientPersonalCgt(authorisationRequest, emptyBasket)) when
+        given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
             hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
@@ -874,7 +874,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(false)
 
-        given(ConfirmClientTrustCgt(authorisationRequest, emptyBasket)) when
+        given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
             hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyTrustClient(HMRCCGTPD, emptyBasket))

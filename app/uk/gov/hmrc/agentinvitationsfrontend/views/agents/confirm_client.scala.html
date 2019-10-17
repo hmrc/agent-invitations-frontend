@@ -21,9 +21,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdentifier: Option[String] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@clientIdentifierText = @{clientIdentifier.fold("")(id => s"Unique Taxpayer Reference: $id")}
+@clientIdentifierText = @{clientIdType match {
+                          case "utr"      => s"Unique Taxpayer Reference: $clientIdentifier"
+                          case "CGTPDRef" => s"Capital Gains Tax (CGT) account reference: $clientIdentifier"
+                          case _      => ""
+                          }
+                         }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(choiceForm) + Messages("generic.title", Messages("confirm-client.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 

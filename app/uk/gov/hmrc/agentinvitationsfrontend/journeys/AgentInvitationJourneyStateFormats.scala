@@ -34,11 +34,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientPersonalVatFormat: OFormat[ConfirmClientPersonalVat] = Json.format
   val ConfirmClientBusinessVatFormat: OFormat[ConfirmClientBusinessVat] = Json.format
 
-  val ConfirmClientPersonalGctFormat: OFormat[ConfirmClientPersonalCgt] = Json.format
-  val ConfirmClientTrustCgtFormat: OFormat[ConfirmClientTrustCgt] = Json.format
+  val ConfirmClientCgtFormat: OFormat[ConfirmClientCgt] = Json.format
   val ConfirmCgtPostcodeFormat: OFormat[ConfirmPostcodeCgt] = Json.format
   val ConfirmCgtCountryCodeFormat: OFormat[ConfirmCountryCodeCgt] = Json.format
-  val InvalidCgtAccountReferenceFormat: OFormat[InvalidCgtAccountReference] = Json.format
 
   val ReviewAuthorisationsPersonalFormat: OFormat[ReviewAuthorisationsPersonal] = Json.format
   val ReviewAuthorisationsTrustFormat: OFormat[ReviewAuthorisationsTrust] = Json.format
@@ -56,6 +54,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val AllAuthorisationsFailedFormat: OFormat[AllAuthorisationsFailed] = Json.format
   val ClientNotSignedUpFormat: OFormat[ClientNotSignedUp] = Json.format
 
+  val TrustNotFoundFormat: OFormat[TrustNotFound] = Json.format
+  val CgtRefNotFoundFormat: OFormat[CgtRefNotFound] = Json.format
+
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType                   => SelectClientTypeFormat.writes(s)
     case s: SelectPersonalService              => SelectPersonalServiceFormat.writes(s)
@@ -66,11 +67,11 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientPersonalVat           => ConfirmClientPersonalVatFormat.writes(s)
     case s: ConfirmClientBusinessVat           => ConfirmClientBusinessVatFormat.writes(s)
     case s: ConfirmClientTrust                 => ConfirmClientTrustFormat.writes(s)
-    case s: ConfirmClientTrustCgt              => ConfirmClientTrustCgtFormat.writes(s)
-    case s: ConfirmClientPersonalCgt           => ConfirmClientPersonalGctFormat.writes(s)
+    case s: ConfirmClientCgt                   => ConfirmClientCgtFormat.writes(s)
     case s: ConfirmPostcodeCgt                 => ConfirmCgtPostcodeFormat.writes(s)
     case s: ConfirmCountryCodeCgt              => ConfirmCgtCountryCodeFormat.writes(s)
-    case s: InvalidCgtAccountReference         => InvalidCgtAccountReferenceFormat.writes(s)
+    case s: CgtRefNotFound                     => CgtRefNotFoundFormat.writes(s)
+    case s: TrustNotFound                      => TrustNotFoundFormat.writes(s)
     case s: ReviewAuthorisationsPersonal       => ReviewAuthorisationsPersonalFormat.writes(s)
     case s: ReviewAuthorisationsTrust          => ReviewAuthorisationsTrustFormat.writes(s)
     case s: DeleteAuthorisationRequestPersonal => DeleteAuthorisationRequestPersonalFormat.writes(s)
@@ -94,11 +95,9 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "IdentifyBusinessClient"             => JsSuccess(IdentifyBusinessClient)
     case "IdentifyTrustClient"                => IdentifyTrustClientFormat.reads(properties)
     case "ConfirmClientTrust"                 => ConfirmClientTrustFormat.reads(properties)
-    case "ConfirmClientPersonalCgt"           => ConfirmClientPersonalGctFormat.reads(properties)
-    case "ConfirmClientTrustCgt"              => ConfirmClientTrustCgtFormat.reads(properties)
+    case "ConfirmClientCgt"                   => ConfirmClientCgtFormat.reads(properties)
     case "ConfirmPostcodeCgt"                 => ConfirmCgtPostcodeFormat.reads(properties)
     case "ConfirmCountryCodeCgt"              => ConfirmCgtCountryCodeFormat.reads(properties)
-    case "InvalidCgtAccountReference"         => InvalidCgtAccountReferenceFormat.reads(properties)
     case "ConfirmClientItsa"                  => ConfirmClientItsaFormat.reads(properties)
     case "ConfirmClientPersonalVat"           => ConfirmClientPersonalVatFormat.reads(properties)
     case "ConfirmClientBusinessVat"           => ConfirmClientBusinessVatFormat.reads(properties)
@@ -108,8 +107,8 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "InvitationSentPersonal"             => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"             => InvitationSentBusinessFormat.reads(properties)
     case "KnownFactNotMatched"                => KnownFactNotMatchedFormat.reads(properties)
-    case "TrustNotFound"                      => JsSuccess(TrustNotFound)
-    case "CgtRefNotFound"                     => JsSuccess(CgtRefNotFound)
+    case "TrustNotFound"                      => TrustNotFoundFormat.reads(properties)
+    case "CgtRefNotFound"                     => CgtRefNotFoundFormat.reads(properties)
     case "CannotCreateRequest"                => CannotCreateRequestFormat.reads(properties)
     case "SomeAuthorisationsFailed"           => SomeAuthorisationsFailedFormat.reads(properties)
     case "AllAuthorisationsFailed"            => AllAuthorisationsFailedFormat.reads(properties)

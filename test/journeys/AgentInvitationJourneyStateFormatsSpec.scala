@@ -34,12 +34,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
     "serialize and deserialize state" when {
 
-      "ConfirmClientTrustCgt" in {
-        val state = ConfirmClientTrustCgt(
+      "ConfirmClientCgt" in {
+        val state = ConfirmClientCgt(
           AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456")), itemId = "ABC"),
           Set.empty)
         val json = Json.parse("""{
-                                |"state":"ConfirmClientTrustCgt",
+                                |"state":"ConfirmClientCgt",
                                 |"properties":
                                 |   {"request":
                                 |     {"clientName":"Sylvia Plath","invitation":
@@ -60,40 +60,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
-      "ConfirmClientPersonalCgt" in {
-        val state = ConfirmClientPersonalCgt(
-          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), Some(personal)), itemId = "ABC"),
-          Set.empty)
-        val json = Json.parse("""{
-                                |"state":"ConfirmClientPersonalCgt",
-                                |"properties":
-                                |   {"request":
-                                |     {"clientName":"Sylvia Plath",
-                                |      "invitation":
-                                |       {"type":"CgtInvitation",
-                                |        "data":
-                                |         {"clientType":"personal",
-                                |         "service":"HMRC-CGT-PD",
-                                |         "clientIdentifier":"123456",
-                                |         "clientIdentifierType":"CGTPDRef"
-                                |         }
-                                |       },
-                                |      "state":"New",
-                                |      "itemId":"ABC"
-                                |     },
-                                |    "basket":[]
-                                |  }
-                                |}""".stripMargin)
-        Json.toJson(state) shouldBe json
-        json.as[State] shouldBe state
-      }
-
       "CgtRefNotFound" in {
-        Json.toJson(CgtRefNotFound) shouldBe Json
-          .obj("state" -> "CgtRefNotFound")
+        Json.toJson(CgtRefNotFound(CgtRef("cgtRef"), Set.empty)) shouldBe Json
+          .obj("state" -> "CgtRefNotFound", "properties" -> Json.obj("cgtRef" -> "cgtRef", "basket" -> JsArray()))
         Json
-          .parse("""{"state":"CgtRefNotFound"}""")
-          .as[State] shouldBe CgtRefNotFound
+          .parse("""{"state":"CgtRefNotFound", "properties": {"cgtRef": "cgtRef", "basket": []}}""")
+          .as[State] shouldBe CgtRefNotFound(CgtRef("cgtRef"), Set.empty)
       }
 
       "SelectClientType" in {
@@ -177,17 +149,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
-      "InvalidCgtAccountReference" in {
-        Json.toJson(InvalidCgtAccountReference(CgtRef("someRef"))) shouldBe Json
-          .obj(
-            "state"      -> "InvalidCgtAccountReference",
-            "properties" -> Json.obj("cgtRef" -> "someRef")
-          )
-        Json
-          .parse("""{"state":"InvalidCgtAccountReference", "properties": {"cgtRef": "someRef"}}""")
-          .as[State] shouldBe InvalidCgtAccountReference(CgtRef("someRef"))
-      }
-
       "ConfirmClientPersonalVat" in {
         val state = ConfirmClientPersonalVat(
           AuthorisationRequest("Sylvia Plath", VatInvitation(Some(personal), Vrn("123456")), itemId = "ABC"),
@@ -235,17 +196,17 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ConfirmPostcodeCgt" in {
-        val state = ConfirmPostcodeCgt(CgtRef("123456"), personal, Set.empty)
+        val state = ConfirmPostcodeCgt(CgtRef("123456"), personal, Set.empty, Some("BN13 1FN"), "firstName lastName")
         val json = Json.parse(
-          """{"state":"ConfirmPostcodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[]}}""")
+          """{"state":"ConfirmPostcodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[], "postcode": "BN13 1FN", "clientName": "firstName lastName"}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
 
       "ConfirmCountryCodeCgt" in {
-        val state = ConfirmCountryCodeCgt(CgtRef("123456"), personal, Set.empty)
+        val state = ConfirmCountryCodeCgt(CgtRef("123456"), personal, Set.empty, "IN", "firstName lastName")
         val json = Json.parse(
-          """{"state":"ConfirmCountryCodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[]}}""")
+          """{"state":"ConfirmCountryCodeCgt","properties":{"cgtRef":"123456","clientType":"personal","basket":[], "countryCode": "IN", "clientName": "firstName lastName"}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
@@ -317,11 +278,11 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "TrustNotFound" in {
-        Json.toJson(TrustNotFound) shouldBe Json
-          .obj("state" -> "TrustNotFound")
+        Json.toJson(TrustNotFound(Set.empty)) shouldBe Json
+          .obj("state" -> "TrustNotFound", "properties" -> Json.obj("basket" -> JsArray()))
         Json
-          .parse("""{"state":"TrustNotFound"}""")
-          .as[State] shouldBe TrustNotFound
+          .parse("""{"state":"TrustNotFound", "properties": {"basket": []}}""")
+          .as[State] shouldBe TrustNotFound(Set.empty)
       }
 
       "CannotCreateRequest" in {
