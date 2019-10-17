@@ -345,12 +345,16 @@ create-auth-failed.HMRC-MTD-IT=Send their Income Tax updates through software
 create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
 create-auth-failed.HMRC-MTD-VAT=Submit their VAT returns through software
 create-auth-failed.HMRC-TERS-ORG=Maintain a trust or an estate
+create-auth-failed.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
+create-auth-failed.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property disposals
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
 create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.button.try=Try again
 create-auth-failed.button.continue=Continue
+
+create-auth-failed.HMRC-CGT-PD.label=Capital Gains Tax account reference:
 
 # Client Pages
 # Landing Page

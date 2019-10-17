@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationCreationFailedPageConfig
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -44,9 +45,19 @@
           <div>
               <dt class="cya-question">
               @request.clientName
+              <p>
+               @if(request.invitation.service == "HMRC-CGT-PD") {
+                  @Messages(s"create-auth-failed.HMRC-CGT-PD.label") <br>
+                  @request.invitation.clientId
+               }
+              </p>
               </dt>
               <dd class="cya-answer" id="client-identifier">
-              @Messages(s"create-auth-failed.${request.invitation.service}")
+                  @if(request.invitation.service == "HMRC-CGT-PD") {
+                   @Messages(s"create-auth-failed.HMRC-CGT-PD.${request.invitation.clientType.getOrElse(personal)}")
+                  } else {
+                   @Messages(s"create-auth-failed.${request.invitation.service}")
+                  }
               </dd>
           </div>
       }

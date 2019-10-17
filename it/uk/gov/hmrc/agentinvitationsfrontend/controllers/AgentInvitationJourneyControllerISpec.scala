@@ -1788,7 +1788,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the some create authorisations failed" in {
       journeyState.set(
-        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", emptyBasket),
+        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1798,7 +1798,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result,
         "create-auth-failed.header",
-        "create-auth-failed.button.continue"
+        "create-auth-failed.button.continue",
+        "create-auth-failed.HMRC-CGT-PD.label",
+        "create-auth-failed.HMRC-CGT-PD.business"
       )
     }
   }
@@ -1808,7 +1810,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the all create authorisations failed page" in {
       journeyState.set(
-        AllAuthorisationsFailed(emptyBasket),
+        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1818,7 +1820,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result,
         "create-auth-failed.header",
-        "create-auth-failed.button.try"
+        "create-auth-failed.button.try",
+        "create-auth-failed.HMRC-CGT-PD.label",
+        "create-auth-failed.HMRC-CGT-PD.business"
       )
     }
   }
