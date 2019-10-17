@@ -18,27 +18,29 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
-@(authRequestsExist: Boolean, service: String, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
   @back_link_referer(request)
 
-  <h1 class="heading-xlarge">@Messages("active-authorisation-exists.header")</h1>
+  <h1 class="heading-xlarge margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
 
-   <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
+  @if(service == "HMRC-CGT-PD") {
+    <p>@Messages(s"active-authorisation-exists.p1.$service.$clientType")</p>
+  } else {
+    <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
+  }
 
-    <p>@Messages("active-authorisation-exists.p2")</p>
+  <p>@Messages("active-authorisation-exists.p2")</p>
 
-    @if(authRequestsExist && !fromFastTrack) {
-
-   <a href=@reviewAuthsCall class="button">@Messages("active-authorisation-exists.return")</a>
+  @if(authRequestsExist && !fromFastTrack) {
+    <a href=@reviewAuthsCall class="button">@Messages("active-authorisation-exists.return")</a>
   }else {
-
      @if(!fromFastTrack) {
       <div><a href=@clientTypeCall class="button">@Messages("pending-authorisation-exists.new-request.link")</a></div>
      }
   }
-
 }

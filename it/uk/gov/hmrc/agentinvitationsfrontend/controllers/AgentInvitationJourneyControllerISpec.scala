@@ -1834,7 +1834,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       supportedServices.foreach { service =>
         journeyState.set(
-          ActiveAuthorisationExists(personal, service, emptyBasket),
+          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)))),
           List()
         )
         val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -1845,9 +1845,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           result,
           "active-authorisation-exists.header",
           s"active-authorisation-exists.p1.$service",
-          "active-authorisation-exists.p2"
+          "active-authorisation-exists.p2",
+          "active-authorisation-exists.p1.HMRC-CGT-PD.personal"
         )
-
       }
     }
   }
