@@ -78,6 +78,22 @@ object TrustTrackRelationship {
 
 }
 
+case class CgtTrackRelationship(arn: Arn, clientType: Option[String], dateTo: Option[LocalDate], clientId: String)
+    extends TrackRelationship {
+  val serviceName = Services.HMRCCGTPD
+}
+
+object CgtTrackRelationship {
+  implicit val relationshipWrites = Json.writes[CgtTrackRelationship]
+
+  implicit val reads: Reads[CgtTrackRelationship] =
+    ((JsPath \ "arn").read[Arn] and
+      (JsPath \ "clientType").readNullable[String] and
+      (JsPath \ "dateTo").readNullable[LocalDate] and
+      (JsPath \ "referenceNumber").read[String])(CgtTrackRelationship.apply _)
+
+}
+
 case class IrvTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
   val serviceName = Services.HMRCPIR
   val clientType = Some("personal")

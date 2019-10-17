@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -59,10 +59,17 @@ class TrackService @Inject()(
     val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
     val trustRelationships: Future[Seq[TrustTrackRelationship]] = relationshipsConnector.getInactiveTrustRelationships
     val irvRelationships: Future[Seq[IrvTrackRelationship]] = pirRelationshipConnector.getInactiveIrvRelationships
+    val cgtRelationships: Future[Seq[CgtTrackRelationship]] = relationshipsConnector.getInactiveCgtRelationships
 
     for {
       relationships <- Future
-                        .sequence(Seq(itsaRelationships, vatRelationships, irvRelationships, trustRelationships))
+                        .sequence(
+                          Seq(
+                            itsaRelationships,
+                            vatRelationships,
+                            irvRelationships,
+                            trustRelationships,
+                            cgtRelationships))
                         .map(_.flatten)
 
       inactiveClients <- Future.traverse(relationships) {
@@ -95,6 +102,18 @@ class TrackService @Inject()(
                                 trustName.getOrElse(""),
                                 clientId,
                                 "utr",
+                                dateTo)
+
+                          case CgtTrackRelationship(_, clientType, dateTo, clientId) =>
+                            for {
+                              cgtName <- getCgtClientName(CgtRef(clientId))
+                            } yield
+                              InactiveClient(
+                                clientType,
+                                "HMRC-CGT-PD",
+                                cgtName.getOrElse(""),
+                                clientId,
+                                "cgtRef",
                                 dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>
