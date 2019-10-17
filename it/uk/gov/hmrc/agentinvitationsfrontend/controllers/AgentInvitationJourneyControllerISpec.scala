@@ -793,7 +793,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
-        TrustNotFound,
+        TrustNotFound(emptyBasket),
         List(IdentifyTrustClient(TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
@@ -819,7 +819,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
-        TrustNotFound,
+        TrustNotFound(emptyBasket),
         List(
           IdentifyTrustClient(TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
@@ -874,7 +874,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
     }
 
-    "redirect to /agents/invalid-account-reference when cgtRef passed in does not match to any cgt client" in {
+    "redirect to /agents/not-matched when cgtRef passed in does not match to any cgt client" in {
       givenGetCgtSubscriptionReturns(cgtRef, 404, cgtNotFoundJson)
 
       journeyState.set(
@@ -889,10 +889,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvalidCgtReferencePage().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
-        InvalidCgtAccountReference(cgtRef),
+        CgtRefNotFound(cgtRef, emptyBasket),
         List(IdentifyTrustClient(HMRCCGTPD, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))

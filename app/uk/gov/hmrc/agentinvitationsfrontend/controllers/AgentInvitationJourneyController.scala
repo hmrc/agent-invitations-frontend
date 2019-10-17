@@ -247,11 +247,8 @@ class AgentInvitationJourneyController @Inject()(
 
   def showNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
-    case TrustNotFound          =>
-  }
-
-  def showInvalidCgtReferencePage: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case InvalidCgtAccountReference(cgtRef) => ???
+    case _: TrustNotFound       =>
+    case _: CgtRefNotFound      =>
   }
 
   def showCannotCreateRequest: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -301,7 +298,6 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientCgt             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmPostcodeCgt           => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
     case _: ConfirmCountryCodeCgt        => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
-    case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
@@ -311,7 +307,8 @@ class AgentInvitationJourneyController @Inject()(
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
-    case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: TrustNotFound             => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CgtRefNotFound            => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
@@ -581,12 +578,21 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
-    case TrustNotFound =>
+    case TrustNotFound(basket) =>
       Ok(
         not_matched(
-          hasJourneyCache = false,
+          basket.nonEmpty,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+        ))
+
+    case CgtRefNotFound(cgtRef, basket) =>
+      Ok(
+        cgtRef_notFound(
+          basket.nonEmpty,
+          routes.AgentInvitationJourneyController.showIdentifyClient(),
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+          cgtRef.value
         ))
 
     case CannotCreateRequest(basket) =>

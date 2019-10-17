@@ -61,11 +61,11 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "CgtRefNotFound" in {
-        Json.toJson(CgtRefNotFound) shouldBe Json
-          .obj("state" -> "CgtRefNotFound")
+        Json.toJson(CgtRefNotFound(CgtRef("cgtRef"), Set.empty)) shouldBe Json
+          .obj("state" -> "CgtRefNotFound", "properties" -> Json.obj("cgtRef" -> "cgtRef", "basket" -> JsArray()))
         Json
-          .parse("""{"state":"CgtRefNotFound"}""")
-          .as[State] shouldBe CgtRefNotFound
+          .parse("""{"state":"CgtRefNotFound", "properties": {"cgtRef": "cgtRef", "basket": []}}""")
+          .as[State] shouldBe CgtRefNotFound(CgtRef("cgtRef"), Set.empty)
       }
 
       "SelectClientType" in {
@@ -147,17 +147,6 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           """{"state":"ConfirmClientItsa","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"ItsaInvitation","data":{"clientType":"personal","service":"HMRC-MTD-IT","clientIdentifier":"AB123456A","clientIdentifierType":"ni"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
-      }
-
-      "InvalidCgtAccountReference" in {
-        Json.toJson(InvalidCgtAccountReference(CgtRef("someRef"))) shouldBe Json
-          .obj(
-            "state"      -> "InvalidCgtAccountReference",
-            "properties" -> Json.obj("cgtRef" -> "someRef")
-          )
-        Json
-          .parse("""{"state":"InvalidCgtAccountReference", "properties": {"cgtRef": "someRef"}}""")
-          .as[State] shouldBe InvalidCgtAccountReference(CgtRef("someRef"))
       }
 
       "ConfirmClientPersonalVat" in {
@@ -289,11 +278,11 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "TrustNotFound" in {
-        Json.toJson(TrustNotFound) shouldBe Json
-          .obj("state" -> "TrustNotFound")
+        Json.toJson(TrustNotFound(Set.empty)) shouldBe Json
+          .obj("state" -> "TrustNotFound", "properties" -> Json.obj("basket" -> JsArray()))
         Json
-          .parse("""{"state":"TrustNotFound"}""")
-          .as[State] shouldBe TrustNotFound
+          .parse("""{"state":"TrustNotFound", "properties": {"basket": []}}""")
+          .as[State] shouldBe TrustNotFound(Set.empty)
       }
 
       "CannotCreateRequest" in {

@@ -380,11 +380,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           }
       }
 
-      "transition to InvalidCgtAccountReference" in {
+      "transition to CgtRefNotFound" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
 
@@ -471,11 +471,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           }
       }
 
-      "transition to InvalidCgtAccountReference" in {
+      "transition to CgtRefNotFound" in {
         given(IdentifyPersonalClient(HMRCCGTPD, emptyBasket)) when
           identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
-            case (InvalidCgtAccountReference(CgtRef("myCgtRef")), _) =>
+            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
     }

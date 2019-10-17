@@ -64,7 +64,6 @@ GET         /agents/already-authorisation-present                       @uk.gov.
 GET         /agents/all-create-authorisation-failed                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsFailed
 GET         /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSomeAuthorisationsFailed
 POST        /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSomeAuthorisationsFailed
-GET         /agents/invalid-account-reference                           @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showInvalidCgtReferencePage
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack

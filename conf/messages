@@ -34,7 +34,7 @@ error.nino.required=Enter your client’s National Insurance number
 # Postcode
 identify-client.postcode.label=Postcode
 identify-client.postcode.hint=This is the postcode of your client’s registered address
-enter-postcode.invalid-format=Enter a valid postcode, like AA1 1AA
+enter-postcode.invalid-format=Enter a real postcode
 enter-postcode.invalid-characters=Enter a real postcode
 error.postcode.required=Enter your client’s postcode
 
@@ -151,7 +151,15 @@ confirm-countryCode-cgt.p1=This will help us match their details against informa
 confirm-countryCode-cgt.hint=Start typing the country
 confirm-countryCode-cgt.label=Country
 error.country.empty=Enter the country that your client is from
+error.country.invalid=Enter the country that your client is from
 
+## CGT Not Matched
+cgt-not-matched.header=Capital Gains Tax (CGT) account reference is not valid
+cgt-not-matched.p1=You entered {0}.
+cgt-not-matched.p2=This does not match any registered CGT account reference.
+cgt-not-matched.advice=You can:
+cgt-not-matched.advice.l1=check the account reference is correct and try again
+cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
 continue.button=Continue
 button.back=Back
 finish.button=Finish and sign out

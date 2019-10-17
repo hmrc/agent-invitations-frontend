@@ -52,8 +52,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
-    case object TrustNotFound extends State
-    case object CgtRefNotFound extends State
+    case class TrustNotFound(basket: Basket) extends State
+    case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
 
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
@@ -74,7 +74,6 @@ object AgentInvitationJourneyModel extends JourneyModel {
       countryCode: String,
       clientName: String)
         extends State
-    case class InvalidCgtAccountReference(cgtRef: CgtRef) extends State
 
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
     case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
@@ -196,14 +195,14 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 )
               case Left(invalidTrust) =>
                 Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
-                goto(TrustNotFound)
+                goto(TrustNotFound(basket))
             }
           }
       }
 
     def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       cgtClient: CgtClient): AgentInvitationJourneyModel.Transition = {
-      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State) =
+      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State, basket: Basket) =
         getCgtSubscription(cgtClient.cgtRef).flatMap {
           case Some(subscription) =>
             if (subscription.countryCode == "GB") {
@@ -212,7 +211,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
               goto(showCountryCode(subscription))
             }
           case None =>
-            goto(InvalidCgtAccountReference(cgtClient.cgtRef))
+            goto(CgtRefNotFound(cgtClient.cgtRef, basket))
         }
 
       Transition {
@@ -226,7 +225,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 business,
                 basket,
                 cgtSubscription.countryCode,
-                cgtSubscription.name)
+                cgtSubscription.name),
+            basket
           )
 
         case IdentifyPersonalClient(HMRCCGTPD, basket) =>
@@ -239,7 +239,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 personal,
                 basket,
                 cgtSubscription.countryCode,
-                cgtSubscription.name)
+                cgtSubscription.name),
+            basket
           )
       }
     }
