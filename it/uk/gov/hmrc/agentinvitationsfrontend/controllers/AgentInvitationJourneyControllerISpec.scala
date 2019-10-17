@@ -1841,12 +1841,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         status(result) shouldBe 200
 
+        val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD.personal" else s"active-authorisation-exists.p1.$service"
+
         checkHtmlResultWithBodyMsgs(
           result,
           "active-authorisation-exists.header",
-          s"active-authorisation-exists.p1.$service",
-          "active-authorisation-exists.p2",
-          "active-authorisation-exists.p1.HMRC-CGT-PD.personal"
+          serviceKey,
+          "active-authorisation-exists.p2"
         )
       }
     }
