@@ -24,8 +24,7 @@ import javax.inject.{Inject, Named, Singleton}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PersonalDetailsValidationConnector @Inject()(
   @Named("personal-details-validation-baseUrl") baseUrl: URL,
   metrics: Metrics,
-  http: HttpClient,
+  http: HttpGet,
   env: Environment,
   config: Configuration)
     extends HttpAPIMonitor {

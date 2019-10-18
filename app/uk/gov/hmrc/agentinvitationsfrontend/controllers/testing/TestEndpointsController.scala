@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
 import java.net.URL
 
-import javax.inject.Inject
+import javax.inject.{Inject, Named}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport

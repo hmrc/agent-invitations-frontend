@@ -54,8 +54,6 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def externalUrls: ExternalUrls
 
-  def pdvBaseUrl: URL
-
   val isDevEnv: Boolean =
     if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
 

@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
-import java.net.URLEncoder
+import java.net.{URL, URLEncoder}
 import java.nio.charset.StandardCharsets
 
 import akka.stream.Materializer
@@ -50,6 +50,7 @@ abstract class BaseISpec
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
+  val pdvBaseUrl = "/pdv-base-url"
 
   lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
@@ -82,8 +83,8 @@ abstract class BaseISpec
         "microservice.services.sso.port"                                      -> wireMockPort,
         "microservice.services.identity-verification-frontend.host"           -> wireMockHost,
         "microservice.services.identity-verification-frontend.port"           -> wireMockPort,
-        "microservice.services.personal-details-validation-frontend.host"     -> wireMockHost,
-        "microservice.services.personal-details-validation-frontend.port"     -> wireMockPort,
+        "microservice.services.identity-verification.host"                    -> wireMockHost,
+        "microservice.services.identity-verification.port"                    -> wireMockPort,
         "microservice.services.personal-details-validation.host"              -> wireMockHost,
         "microservice.services.personal-details-validation.port"              -> wireMockPort,
         "microservice.services.personal-details-validation-frontend.host"     -> wireMockHost,
