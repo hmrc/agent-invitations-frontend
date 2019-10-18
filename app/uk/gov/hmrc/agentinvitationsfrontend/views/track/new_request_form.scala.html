@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 @import org.joda.time.LocalDate
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
@@ -27,6 +27,7 @@
     'id -> s"fastTrackInvitationCreate-${index}",
     'class -> "form js-form"
 ) {
+    <input type="hidden" name="clientType" id="clientType-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(personal)}">
     <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{index}" value="@{invitationOrRelationship.clientIdType}">
     <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{index}" value="@{invitationOrRelationship.clientId}">

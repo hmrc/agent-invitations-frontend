@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-case class RequestCancelledPageConfig(service: String, clientName: String) {
+case class RequestCancelledPageConfig(service: String, clientType: String, clientName: String) {
 
   val hideClientName = service match {
     case "PERSONAL-INCOME-RECORD" => "Your client"

@@ -25,7 +25,8 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientTypes, supportedServices}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -139,10 +140,9 @@ object TestEndpointsController {
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(
-          text
-            .verifying("Unsupported client type", clientType => supportedClientTypes.contains(clientType))
-            .transform(ClientType.toEnum, ClientType.fromEnum)),
+        "clientType" -> optional(text
+          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+          .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
@@ -152,7 +152,9 @@ object TestEndpointsController {
       mapping(
         "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
         "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientName"   -> text
+        "clientType" -> text
+          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
+        "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
   }

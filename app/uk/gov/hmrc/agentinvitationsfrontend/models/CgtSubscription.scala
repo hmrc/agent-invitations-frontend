@@ -94,6 +94,8 @@ case class CgtSubscription(regime: String, subscriptionDetails: SubscriptionDeta
     case Right(organisationName) => organisationName.name
     case Left(individualName)    => s"${individualName.firstName} ${individualName.lastName}"
   }
+
+  val isUKBasedClient: Boolean = countryCode == "GB"
 }
 
 object CgtSubscription {
