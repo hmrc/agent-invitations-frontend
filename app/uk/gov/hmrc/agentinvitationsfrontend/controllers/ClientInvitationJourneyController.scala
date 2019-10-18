@@ -232,8 +232,9 @@ class ClientInvitationJourneyController @Inject()(
                 .updateEntry(NinoClStoreEntry(providerId, nino, None, None, None), providerId)
                 .map(_ => Redirect(targetUrl.getOrElse("TODO")))
             case None => {
-              Logger.warn(s"no Nino returned from personal-details-validation using validationId ${validationId.getOrElse("no id found!")}")
-
+              Logger.warn(
+                s"no Nino returned from personal-details-validation using validationId ${validationId.getOrElse("no id found!")}")
+              Future.successful(Forbidden(cannot_confirm_identity()))
             }
           }
       }

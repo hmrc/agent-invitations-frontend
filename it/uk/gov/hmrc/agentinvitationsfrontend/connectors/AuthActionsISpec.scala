@@ -1,5 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
+import java.net.URL
+
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
@@ -21,6 +23,8 @@ class AuthActionsISpec extends BaseISpec {
     override def config: Configuration = app.injector.instanceOf[Configuration]
     override def env: Environment = app.injector.instanceOf[Environment]
     override def withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
+
+    override def pdvBaseUrl: URL = new URL("/some")
 
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")

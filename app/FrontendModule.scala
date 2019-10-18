@@ -65,6 +65,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("citizen-details")
     bindBaseUrl("agent-client-relationships")
     bindBaseUrl("identity-verification-frontend")
+    bindBaseUrl("identity-verification")
     bindBaseUrl("personal-details-validation-frontend")
     bindBaseUrl("personal-details-validation")
 
